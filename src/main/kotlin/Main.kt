@@ -1,22 +1,6 @@
-import bottomup.BottomUp
-import sketchral.InputFactory
-import sketchral.OutputParser
-import sketchral.Result
-import sketchral.withNegEx
-import util.*
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.TimeUnit 
- 
-/*fun bottomUpTests() {
-    val bu = BottomUp(listquery)
-    println("Running bottom-up for MutableList.add")
-    println("Found ${bu.enumerate(addFunc, 6)}")
-    println("Running bottom-up for MutableList.addAll")
-    println("Found ${bu.enumerate(addAllFunc, 6)}")
-    println("Running bottom-up for duplicate")
-    println("Found ${bu.enumerate(dupFunc, 6)}")
-}*/
+import java.util.concurrent.TimeUnit
 
 fun writeToTmp(content: String) = File("tmp.sk").printWriter().use { out -> out.println(content) }
 
