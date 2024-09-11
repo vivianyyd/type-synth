@@ -1,0 +1,7 @@
+
+Initial synthesized property: 1 != length(x0);
+Example:     Example(inputs=[cat, 0, 1], output=c)
+Example:     Example(inputs=[compute, 0, 7], output=compute)
+Property with increased precision: length(o) <= length(x0);
+Example:     Example(inputs=[cat, 0, 1], output=c)
+Example:     Example(inputs=[compute, 0, 7], output=compute)

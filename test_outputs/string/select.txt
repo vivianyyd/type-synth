@@ -1,0 +1,7 @@
+
+Initial synthesized property: length(x2) <= length(x1);
+Example:     Example(inputs=[true, first111, second], output=first111)
+Example:     Example(inputs=[false, true, ], output=)
+Property with increased precision: length(x1) >= length(o);
+Example:     Example(inputs=[true, first111, second], output=first111)
+Example:     Example(inputs=[false, true, ], output=)

@@ -1,0 +1,7 @@
+
+Initial synthesized property: 1 != length(o);
+Example:     Example(inputs=[word], output=WORD)
+Example:     Example(inputs=[], output=)
+Property with increased precision: length(x0) == length(o);
+Example:     Example(inputs=[word], output=WORD)
+Example:     Example(inputs=[], output=)

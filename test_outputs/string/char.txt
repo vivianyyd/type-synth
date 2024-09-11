@@ -1,0 +1,2 @@
+
+Initial synthesized property: length(x0) >= length(x0);

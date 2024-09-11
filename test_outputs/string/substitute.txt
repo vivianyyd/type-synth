@@ -1,0 +1,16 @@
+
+Initial synthesized property: length(x2) >= length(x2);
+Example:     Example(inputs=[1 x-, 2 x-, x-, _], output=1 _, 2 _)
+Example:     Example(inputs=[1 x, 2 x, x, __], output=1 __, 2 __)
+Example:     Example(inputs=[1x, 2x, x, ___], output=1___, 2___)
+Example:     Example(inputs=[cat, dog, fish], output=cat)
+Property with increased precision: length(x2) != length(o);
+Example:     Example(inputs=[1 x-, 2 x-, x-, _], output=1 _, 2 _)
+Example:     Example(inputs=[1 x, 2 x, x, __], output=1 __, 2 __)
+Example:     Example(inputs=[1x, 2x, x, ___], output=1___, 2___)
+Example:     Example(inputs=[cat, dog, fish], output=cat)
+Property with increased precision: (length(x0) - length(o)) < length(o);
+Example:     Example(inputs=[1 x-, 2 x-, x-, _], output=1 _, 2 _)
+Example:     Example(inputs=[1 x, 2 x, x, __], output=1 __, 2 __)
+Example:     Example(inputs=[1x, 2x, x, ___], output=1___, 2___)
+Example:     Example(inputs=[cat, dog, fish], output=cat)

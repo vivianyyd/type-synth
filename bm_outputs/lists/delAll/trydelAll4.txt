@@ -1,0 +1,4 @@
+outputs for posterity: Example(inputs=[[1, 2]], output=[])
+Example(inputs=[[]], output=[])
+Example(inputs=[[0]], output=[])
+Initial synthesized property: 0 >= length(o);

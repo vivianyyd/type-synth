@@ -1,0 +1,9 @@
+
+Initial synthesized property: length(x2) >= length(x2);
+Example:     Example(inputs=[first phrase, second phrase, third phrase, phrase, _], output=first _, second phrase, third phrase)
+Example:     Example(inputs=[first phrase, second phrase, third phrase, phrase, __________], output=first__________, second phrase, third phrase)
+Example:     Example(inputs=[cat, dog, fish], output=cat)
+Property with increased precision: length(x1) <= length(o);
+Example:     Example(inputs=[first phrase, second phrase, third phrase, phrase, _], output=first _, second phrase, third phrase)
+Example:     Example(inputs=[first phrase, second phrase, third phrase, phrase, __________], output=first__________, second phrase, third phrase)
+Example:     Example(inputs=[cat, dog, fish], output=cat)

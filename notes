@@ -1,0 +1,203 @@
+Just synthInput fed to Sketch
+
+addAll
+    val posExamplesAddAll = mutableListOf<Example>()
+    posExamplesAddAll.add(Example(listOf(mutableListOf(1, 2, 3), listOf(5)), listOf(1, 2, 3, 5)))
+    posExamplesAddAll.add(Example(listOf(mutableListOf(1, 2), listOf()), listOf(1, 2)))
+    posExamplesAddAll.add(Example(listOf(mutableListOf(), listOf(3)), listOf(3)))
+    val negExamplesAddAll = mutableListOf<Example>()
+    negExamplesAddAll.add(Example(listOf(mutableListOf(1, 2), listOf(3)), listOf(1, 2, 3, 4)))
+we get absolute garbage with squared terms, definitely not sound
+but if we add
+    posExamplesAddAll.add(Example(listOf(mutableListOf(1, 2, 3), listOf(5, 6, 7, 8)), listOf(1, 2, 3, 5, 6, 7, 8)))
+we get
+   0 <= ((((b + a) - c) * c) - 0)
+   <=>
+   c <= b + a
+   sound, but not precise
+
+
+add
+    val posExamplesAdd = mutableListOf<Example>()
+    posExamplesAdd.add(Example(listOf(mutableListOf(1, 2), 3), listOf(1, 2, 3)))
+    posExamplesAdd.add(Example(listOf(mutableListOf<Int>(), 3), listOf(3)))
+
+    val negExamplesAdd = mutableListOf<Example>()
+    negExamplesAdd.add(Example(listOf(mutableListOf(1, 2), 3), listOf(1, 2, 3, 4)))
+we get
+    (o - (x - 0)) <= 1
+    <=>
+    o <= x + 1
+    sound, but not precise
+
+
+duplicate
+    val posExamplesDup = mutableListOf<Example>()
+    posExamplesDup.add(Example(listOf(listOf(1, 2)), listOf(1, 1, 2, 2)))
+    posExamplesDup.add(Example(listOf(listOf<Int>()), listOf<Int>()))
+    val negExamplesDup = mutableListOf<Example>()
+    negExamplesDup.add(Example(listOf(listOf(1, 2)), listOf(1, 2)))
+we get
+    (o - ((x0 + 1) - o)) != 1
+    <=>
+    (o + o - x0) != 2
+not sound: incorrect if x0 is length 1. Try again, and add :
+    posExamplesDup.add(Example(listOf(listOf(1)), listOf(1, 1)))
+we get
+    ((0 - (2 * (1 - x0))) - 0) != o
+    (-2 + 2 * x0) != o
+    o is not twice the length of x0 minus 2. True, since o is twice the length of x0.
+sound, but not precise.
+
+
+these examples support our claim that positive examples improve soundness
+
+
+
+
+
+
+
+
+
+
+
+Idea: maybe we can prefer predicates that are false for other functions but true for this one. Like neg may. Ask
+sketch to minimize size of expr. Kevin can email the thing where he uses structs to make sketch print prettier
+Or at least we can use example inputs of correct type for other functions
+
+Might actually be better that we avoid uninterpreted functions.
+
+more readable sketch maybe: create a sketch struct
+struct Prog(x = ??, y = ??,...)
+then prog = Prog
+int interpret(int input, Prog p) that needs a parser
+maybe can make genreator return struct who knows if will do the thing
+
+Note that we don't rly think about generics. ie all lists have to be for ex. int list or str list. shouldn't be that bad
+to generalize. we accept this limitation bc kotlin reflection is confusing and we didn't bother making a nicer
+representation of types. so. this for arbitrary kotlin library
+
+/*
+Done:
+    variables are for ex. list l; list lout. We produce these from the query: x1...xn for n inputs and out for the output
+    relation states reverse(l, lout), describes functions with which synth spec. free with query
+    generator is the DSL for specs. we hard-code this
+
+example generator - recursive constructor for each type. we'll have to look at the parsing details but this should instead in our impl be a choice between inputs and any output not equal to the true output. key: we only have lengths. I think this might actually be bad since functions aren't unique mappings from size to size. ex filter
+we'll tell it len is uninterpreted but give it values on all example elements including ones we synthesize
+what about this
+pos example
+f(x, y) = z
+len x, y, z given
+negative example
+f(x, y) = w
+len x, y, w given
+
+We should never need to mention f to sketch at all!! Except for producing negative examples. But we could even get
+around that too with asserts, forcing it to only pick things that aren't already pairs.
+ie. if (gen inputs == ex1 inputs) assert gen output != ex1 output
+
+This is sketch code, it is polymorphic. Len will be a polymorphic uninterpreted fn
+void forall<T>([int n], fun f, ref T[n] x){
+    for(int i=0; i<n; ++i){
+        f(x[i]);
+    }
+}
+Len will have a bunch of ifs
+
+length is a polymorphic function which has ifs that check if arg is equal to one of the known example values which we pass in, or global values
+OR
+length is polymorphic uninterpreted function and we have assumes that say its value on example vars
+
+Should we use this for generating negative examples?
+Sketch supports the use of the $(type) construct to instruct the synthesizer to consider all variables of the
+specified type within scope when searching for a solution.
+harness void main(int x) {
+int a = 2;
+double b = 2.3;
+assert x * $(int) == x + x; // $(int) === {| 0 | a | x |}
+}
+BUT The default
+value of any primitive type will also be considered as one of the choices - this may be dangerous
+vars can't be uninitialized, so if we have some dummy x of type T, where T mapsto 3, we need int[1][1][1] x = {{{randint}}}; in the sketch. if y == x, we need y to be the same thing
+
+need generation to take in variables else it'll just output garbage
+
+Harness functions are not allowed to take heap allocated objects (struct, adt) as inputs and all
+global variables are reset to their initial values before the evaluation of each harness.
+
+uninterpreted function cannot involve structs, even if temporary
+    ret_type name(args);
+ */
+// template.implementation is all the input code except for var, relation, generator, example
+
+// DO NOT TRANSLATE THESE THEY ARE USELESS
+/*
+private fun generators(): String {
+    val rules = template.getGeneratorRules()
+    return rules.joinToString(separator = "\n") { ruleToCode(it) }
+}
+private fun ruleToCode(rule: Any): String {
+    val typ = rule[0]
+    val symbol = rule[1]
+    val exprList = rule[2]
+
+    val context = template.getContext()
+    val numCallsPrev = mutableMapOf()
+
+    val argDefn = template.getArgsDefn()
+
+    var code = "generator ${typ} ${symbol}_gen(${argDefn}) {\n"
+    code += "\tint t = ??;\n"
+    exprList.forEachIndexed { n, e ->
+        val numCalls = countGeneratorCalls(context, e)
+        code += subcallGen(context, numCallsPrev, numCalls)
+        numCallsPrev = max_dict(numCallsPrev, numCalls)
+
+        val contextInit = context.mapValues { _ -> 0 }
+        val (_, eCode, eOut) = exprToCode(contextInit, e, typ)
+
+        if (n + 1 == exprList.size) {
+            code += eCode
+            code += "\treturn ${eOut};\n"
+        } else {
+            code += "\tif (t == ${n}) {\n"
+            code += eCode
+            code += "\t\treturn ${eOut};\n"
+            code += "\t}\n"
+        }
+    }
+    code += "}\n"
+    return code
+}
+*/
+
+
+
+
+
+
+
+When removing allllll negative examples for dupquery, our first iteration with check precision yields
+Initial synthesized property: length(o) >= length(x0);
+Property with increased precision: (length(x0) + length(x0)) >= length(o);
+let's add another precision round
+Initial synthesized property: length(o) >= length(x0);
+Property with increased precision: (length(x0) + length(x0)) >= length(o);
+Property with increased increased precision: length(o) >= length(x0);
+
+we need to && them together! (turns out no need)
+we also need to build up the set of negative examples by parsing the ones we synthesize
+
+implemented parsing negative examples and adding to the set. now, we get
+Initial synthesized property: length(o) >= length(x0);
+Property with increased precision: (length(x0) + length(x0)) <= length(o);
+Property with increased increased precision: (length(o) - length(x0)) == length(x0);
+yay!
+
+TODO try doing this with all examples and see how it improves!
+
+
+current bug: we get unsat for addFunc with no precision updating, when we should be able to increase precision even
+with no passed in counter examples by pairing [], 3 with [1,2,3]

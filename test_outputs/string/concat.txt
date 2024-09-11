@@ -1,0 +1,10 @@
+
+Initial synthesized property: length(o) >= length(o);
+Example:     Example(inputs=[sub, string], output=substring)
+Example:     Example(inputs=[, concat], output=concat)
+Property with increased precision: (length(x0) * length(x0)) <= length(o);
+Example:     Example(inputs=[sub, string], output=substring)
+Example:     Example(inputs=[, concat], output=concat)
+Property with increased precision: length(o) == (length(x1) + length(x0));
+Example:     Example(inputs=[sub, string], output=substring)
+Example:     Example(inputs=[, concat], output=concat)

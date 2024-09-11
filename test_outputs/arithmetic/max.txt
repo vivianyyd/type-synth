@@ -1,0 +1,10 @@
+
+Initial synthesized property: length(x0) != length(x1);
+Example:     Example(inputs=[2, 5], output=5)
+Example:     Example(inputs=[3, 1], output=3)
+Property with increased precision: length(o) >= length(x1);
+Example:     Example(inputs=[2, 5], output=5)
+Example:     Example(inputs=[3, 1], output=3)
+Property with increased precision: (length(o) - length(x0)) != (length(x0) - 1);
+Example:     Example(inputs=[2, 5], output=5)
+Example:     Example(inputs=[3, 1], output=3)

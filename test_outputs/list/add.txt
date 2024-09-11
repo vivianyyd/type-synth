@@ -1,0 +1,13 @@
+
+Initial synthesized property: 1;
+Example:     Example(inputs=[[1, 2], 3], output=[1, 2, 3])
+Example:     Example(inputs=[[], 3], output=[3])
+Example:     Example(inputs=[[], 1], output=[1])
+Property with increased precision: length(o) > length(x0);
+Example:     Example(inputs=[[1, 2], 3], output=[1, 2, 3])
+Example:     Example(inputs=[[], 3], output=[3])
+Example:     Example(inputs=[[], 1], output=[1])
+Property with increased precision: length(x0) == (length(o) - 1);
+Example:     Example(inputs=[[1, 2], 3], output=[1, 2, 3])
+Example:     Example(inputs=[[], 3], output=[3])
+Example:     Example(inputs=[[], 1], output=[1])

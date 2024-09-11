@@ -1,0 +1,17 @@
+
+Initial synthesized property: length(x0) <= 1;
+Example:     Example(inputs=[1, 3], output=-2)
+Example:     Example(inputs=[0, 1], output=1)
+Example:     Example(inputs=[1, 0], output=1)
+Property with increased precision: (length(o) + length(x1)) >= 0;
+Example:     Example(inputs=[1, 3], output=-2)
+Example:     Example(inputs=[0, 1], output=1)
+Example:     Example(inputs=[1, 0], output=1)
+Property with increased precision: (length(o) * length(x1)) <= length(o);
+Example:     Example(inputs=[1, 3], output=-2)
+Example:     Example(inputs=[0, 1], output=1)
+Example:     Example(inputs=[1, 0], output=1)
+Property with increased precision: (length(o) + length(o)) >= (length(o) * length(x1));
+Example:     Example(inputs=[1, 3], output=-2)
+Example:     Example(inputs=[0, 1], output=1)
+Example:     Example(inputs=[1, 0], output=1)
