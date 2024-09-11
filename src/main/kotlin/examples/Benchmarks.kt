@@ -1,4 +1,3 @@
-import bottomup.BottomUp
 import sketchral.InputFactory
 import sketchral.OutputParser
 import sketchral.Result

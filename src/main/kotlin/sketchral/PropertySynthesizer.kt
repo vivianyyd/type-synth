@@ -38,7 +38,7 @@ class PropertySynthesizer(function: Func, query: Query) {
 
     /**
      * */
-    private fun synthesize(negMay: Examples, lams: Lambdas): Pair<U?, Lambdas?> {
+    private fun synthesize(negMay: Examples, lams: Lambdas): Pair<TreeConstraint?, Lambdas?> {
         // TODO Run Sketch with temp file
         val code = inputFactory.synthInput(negMay, lams)
         val output = callSketch(code)
@@ -64,8 +64,8 @@ class PropertySynthesizer(function: Func, query: Query) {
         negMust: Examples,
         negMay: Examples,
         lams: Lambdas,
-        phiInit: U?
-    ): Pair<Pair<Examples, Examples>, Pair<U, Lambdas>> {
+        phiInit: TreeConstraint?
+    ): Pair<Pair<Examples, Examples>, Pair<TreeConstraint, Lambdas>> {
         val code = inputFactory.maxsatInput(pos, negMust, negMay, lams)
         val output = callSketch(code)
         return if (output != null) {
@@ -82,7 +82,7 @@ class PropertySynthesizer(function: Func, query: Query) {
         }
     }
 
-    fun checkSoundness(phi: U, lams: Lambdas): Triple<Example?, Lambdas?, Boolean> {
+    fun checkSoundness(phi: TreeConstraint, lams: Lambdas): Triple<Example?, Lambdas?, Boolean> {
         val code = inputFactory.soundnessInput(phi, lams)
         val output = callSketch(code)
         return if (output != null) {
@@ -101,7 +101,7 @@ class PropertySynthesizer(function: Func, query: Query) {
         phiList: List<String>,
         negMay: Examples,
         lams: Lambdas
-    ): Triple<Example?, U?, Lambdas?> {
+    ): Triple<Example?, TreeConstraint?, Lambdas?> {
         val code = inputFactory.precisionInput(phi, phiList, negMay, lams)
         val output = callSketch(code)
         if (output != null) {
@@ -139,22 +139,22 @@ class PropertySynthesizer(function: Func, query: Query) {
         negMusti: Examples,
         negMayi: Examples,
         lamFunctionsi: Lambdas,
-        phiListi: List<U?>,
-        phiInit: U?,
+        phiListi: List<TreeConstraint?>,
+        phiInit: TreeConstraint?,
         mostPrecise: Boolean,
         updatePsi: Boolean
-    ): Pair<Pair<U, Examples>, Triple<Examples, Examples, Lambdas>> {
+    ): Pair<Pair<TreeConstraint, Examples>, Triple<Examples, Examples, Lambdas>> {
         var pos = posi
         var negMust = negMusti
         var negMay = negMayi
         var lamFunctions = lamFunctionsi
         var phiList = phiListi
         var phiE = phiInit
-        var phiLastSound: U? = null
+        var phiLastSound: TreeConstraint? = null
         var negDelta = listOf<Example>()
-        var phiSound = listOf<U?>()
+        var phiSound = listOf<TreeConstraint?>()
         while (true) {
-            var (ePos, lam, timeout) = checkSoundness(phiE as U, lamFunctions)
+            var (ePos, lam, timeout) = checkSoundness(phiE as TreeConstraint, lamFunctions)
             if (ePos != null) {
                 pos = pos.plus(ePos)
                 lamFunctions = lamFunctions.plus(lam as Lambdas)
@@ -197,15 +197,15 @@ class PropertySynthesizer(function: Func, query: Query) {
         return TODO()
     }
 
-    fun synthesizeAllProperties(): Pair<List<U?>, List<U?>> {
-        var phiList = listOf<U?>()
-        var funList = listOf<U?>()
+    fun synthesizeAllProperties(): Pair<List<TreeConstraint?>, List<TreeConstraint?>> {
+        var phiList = listOf<TreeConstraint?>()
+        var funList = listOf<TreeConstraint?>()
         var pos = listOf<Example>()
         var negMay = listOf<Example>()
         var negMust = listOf<Example>()
         var lamFunctions = mapOf<String, String>()
-        var phiInit: U?
-        var phi: U?
+        var phiInit: TreeConstraint?
+        var phi: TreeConstraint?
         var lam: Lambdas
         while (true) {
             if (negMay.isNotEmpty()) {
@@ -274,7 +274,7 @@ class PropertySynthesizer(function: Func, query: Query) {
      * looks useful for analysis.
      *
      * */
-    fun run(): Triple<List<U?>, List<U?>, List<Float>?> {
+    fun run(): Triple<List<TreeConstraint?>, List<TreeConstraint?>, List<Float>?> {
         /**skipping logging code insert*/
         val (phiList, funList) = synthesizeAllProperties()
         val statistics = null

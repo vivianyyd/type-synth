@@ -3,7 +3,7 @@ package sketchral
 import util.Example
 import util.Func
 import util.Query
-import util.U
+import util.TreeConstraint
 
 fun InputFactory.withNegEx(neg: Example): InputFactory {
     val newFunc = function.withNegExample(neg)
@@ -149,7 +149,7 @@ class InputFactory(val function: Func, val query: Query) {
         TODO()
     }
 
-    fun soundnessInput(phi: U, lams: Lambdas): String {
+    fun soundnessInput(phi: TreeConstraint, lams: Lambdas): String {
         TODO()
     }
 
