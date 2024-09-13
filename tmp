@@ -88,17 +88,9 @@ harness void not_parametrized() {
         case Unknown:{
              assert x0.children == zeroChildren();
         }
-        case Parameter:{
-            assert false;
-        }
-        case Child:{
-            assert false;
-        }
-        case TypeApplication:{
-            assert false;
-        }
-        case Dummy:{
-            assert false;
-        }
+        case Parameter:{ assert false; }
+        case Child:{ assert false; }
+        case TypeApplication:{ assert false; }
+        case Dummy:{ assert false; }
     }
 }

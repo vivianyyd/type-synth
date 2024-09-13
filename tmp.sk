@@ -43,62 +43,51 @@ Tree newUnknown(int len, char[len] name) {
 }
 
 // -------------------------------- Constraint trying ----------------------------------
-generator void positive_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
+
+
+generator void negative_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
     int t = ??;
-    if (t == 0) {
-        x0 = new LiteralTree(
-                    label = new LiteralLabel(label = str(4, "int")),
-                    children = zeroChildren()
-                );
-        x1 = newUnknown(3, "t2");
-        o = newUnknown(3, "t2");
+    x0 = get_ex(t, 0);
+    x1 = get_ex(t, 1);
+    x2 = get_ex(t, 2);
+
+    int s = ??;
+    o = get_ex(s, 2);
+    assert o != x2;
+}
+
+// Returns the ith argument of the tth example.
+int get_ex(int t, int i) {
+	if (t == 0) {
+	    if (i == 0) {
+	        return new LiteralTree(label = new LiteralLabel(label = str(4, "int")),
+                                   children = zeroChildren());
+	    }
+	    if (i == 1) { return newUnknown(3, "t2"); }
+	    if (i == 2) { return newUnknown(3, "t2"); }
+	}
+    if (t == 1) {
+        if (i == 0) { return newUnknown(3, "t1"); }
+        if (i == 1) { return newUnknown(3, "t2"); }
+        if (i == 2) { return newUnknown(3, "t2"); }
     }
-    else if (t == 1) {
-        x0 = newUnknown(3, "t1");
-        x1 = newUnknown(3, "t2");
-        o = newUnknown(3, "t2");
-    }
-    else if (t == 2) {
-        x0 = newUnknown(3, "t2");
-        x1 = newUnknown(3, "t3");
-        o = newUnknown(3, "t3");
-    }
-    else {
-        assert false;
+    if (t == 2) {
+        if (i == 0) { return newUnknown(3, "t2"); }
+        if (i == 1) { return newUnknown(3, "t3"); }
+        if (i == 2) { return newUnknown(3, "t3"); }
     }
 }
 
-void positive_example(ref Tree x0, ref Tree x1, ref Tree o){
-	positive_example_finder(x0, x1, o);
+void negative_example(ref Tree x0, ref Tree x1, ref Tree o){
+	negative_example_finder(x0, x1, o);
 }
 
 // TODO this is kinda dumb bc we can just linear scan for this in Kotlin
 // TODO try concrete fixed type and total type equality first
 //    (concrete can be subsumed by total type eq?)
-harness void not_parametrized() {
-	Tree x0 = new Dummy();
-	Tree x1 = new Dummy();
-	Tree o = new Dummy();
-	positive_example(x0, x1, o);
 
-    switch(x0){  // we'll make separate copies of this function for each argument
-        case LiteralTree:{
-             assert x0.children == zeroChildren();
-        }
-        case Unknown:{
-             assert x0.children == zeroChildren();
-        }
-        case Parameter:{
-            assert false;
-        }
-        case Child:{
-            assert false;
-        }
-        case TypeApplication:{
-            assert false;
-        }
-        case Dummy:{
-            assert false;
-        }
-    }
-}
+
+
+
+
+
