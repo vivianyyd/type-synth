@@ -1,3 +1,4 @@
+import util.*
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -12,12 +13,28 @@ fun callSketch(input: String): String {
 
 //val tests = listOf(ListQuery(), ArithmeticQuery)
 fun main(args: Array<String>) {
-    listTest.runTest()
-    arithmeticTest.runTest()
-    stringTest.runTest()
+    val initialConstraints = listOf(
+        // we can get these by propagating equalities, still nontrivial
+        Equality(
+            TypeApplication("cons", listOf(Parameter(0), Parameter(1))),
+            Parameter(2)
+        ),
+        Equality(
+            TypeApplication("cons", listOf(UnknownType("t1"), UnknownType("t2"))),
+            UnknownType("t2")
+        ),
+        Equality(
+            TypeApplication("cons", listOf(UnknownType("t2"), UnknownType("t3"))),
+            UnknownType("t3")
+        ),
+        Equality(
+            TypeApplication("cons", listOf(LiteralTree(LiteralLabel("int"), listOf()), UnknownType("t2"))),
+            UnknownType("t2")
+        ),
+    )
 }
 
-fun String.runCommand( 
+fun String.runCommand(
     workingDir: File = File(System.getProperty("user.dir"))
 ): String? {
     try {

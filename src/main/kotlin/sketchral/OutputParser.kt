@@ -41,16 +41,16 @@ class OutputParser(val output: String, val inputFactory: InputFactory) {
         TODO()
     }
 
-    fun parseNegExPrecision(): Example {
-        val lines = blockOfSignature("void negative_example")
-        val line = lines.first { "get_ex" in it }.substringAfter('(')
-        val t = line.substringBefore(',').toInt()
-        val outDummy = lines.find{ "o =" in it}?.substringAfter("o =")?.trim()?.toInt() ?:throw Exception("I'm sad")
-        return Example(
-            inputFactory.function.posExamples[t].inputs,
-            inputFactory.dummyToArg[outDummy]!!
-        )
-    }
+//    fun parseNegExPrecision(): Example {
+//        val lines = blockOfSignature("void negative_example")
+//        val line = lines.first { "get_ex" in it }.substringAfter('(')
+//        val t = line.substringBefore(',').toInt()
+//        val outDummy = lines.find{ "o =" in it}?.substringAfter("o =")?.trim()?.toInt() ?:throw Exception("I'm sad")
+//        return Example(
+//            inputFactory.function.posExamples[t].inputs,
+//            inputFactory.dummyToArg[outDummy]!!
+//        )
+//    }
 
     fun parseMaxsat(neg_may: List<Example>): Pair<List<Example>, List<Example>> {
         TODO()

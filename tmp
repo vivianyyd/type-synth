@@ -1,145 +1,104 @@
-int length(int x) {
-	if (x == 0) { return 2; }
-	if (x == 1) { return 4; }
-	if (x == 2) { return 0; }
-	if (x == 3) { return 1; }
-	if (x == 4) { return 2; }
-	if (x == 5) { return 3; }
-	if (x == 6) { return 6; }
-	assert false;
-}
-// -------------------- Grammar of properties ------------------------
-generator boolean U_gen(int x0, int o, int n) {
-	if (n > 0) {
-		int e1 = U_gen_expr(x0, o, n - 1);
-		int e2 = U_gen_expr(x0, o, n - 1);
-		return U_gen_cmp(e1, e2, n - 1);
-	}
-	assert false;
-}
-generator boolean U_gen_cmp(int x, int y, int n) {
-	if (n > 0) {
-		int t = ??;
-		if (t == 0) { return x == y; }
-		if (t == 1) { return x <= y; }
-		if (t == 2) { return x >= y; }
-		if (t == 3) { return x < y; }
-		if (t == 4) { return x > y; }
-		return x != y;
-	}
-	assert false;
-}
-generator int U_gen_expr(int x0, int o, int n) {
-	if (n > 0) {
-		int t = ??;
-		if (t == 0) { return 0; }
-		if (t == 1) { return 1; }
-		if (t == 2) { return length(x0); }
-		if (t == 3) { return length(o); }
-		int e1 = U_gen_expr(x0, o, n - 1);
-		int e2 = U_gen_expr(x0, o, n - 1);
-		return U_gen_op(e1, e2, n - 1);
-	}
-	assert false;
-}
-generator int U_gen_op(int x, int y, int n) {
-	if (n > 0) {
-		int t = ??;
-		if (t == 0) { return x + y; }
-		if (t == 1) { return x * y; }
-		return x - y;
-	}
-	assert false;
-}
-// -------------------- End grammar of properties ------------------------
+include "/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/array.skh";
 
-generator void negative_example_gen(ref int x0, ref int o){
-	int t = ??;
-	x0 = get_ex(t, 0);
-	int o = dummy_out();
-	int real_out = get_ex(t, 1);
-	assert o != real_out;
-}
-// Returns the ith argument of the tth example.
-	int get_ex(int t, int i) {
-	if (t == 0 && i == 0) { return 0; }
-	if (t == 0 && i == 1) { return 1; }
-	if (t == 1 && i == 0) { return 2; }
-	if (t == 1 && i == 1) { return 2; }
-	if (t == 2 && i == 0) { return 3; }
-	if (t == 2 && i == 1) { return 4; }
-	if (t == 3 && i == 0) { return 5; }
-	if (t == 3 && i == 1) { return 6; }
-}
-generator int dummy_out() {
-	int t = ??;
-	if (t == 0) { return 1; }
-	if (t == 1) { return 2; }
-	if (t == 2) { return 4; }
-	if (t == 3) { return 6; }
-	assert false;
+// -------------------------------- Definitions ----------------------------------
+adt Nullable<T> {
+    None { }
+    Some { T elem; }
 }
 
-// -------------------- Begin examples ------------------------
-harness void positive_example_0 () {
-	boolean out;
-	int x0 = 0;
-	int o = 1;
-	property(x0, o, out);
-	assert out;
-}
-harness void positive_example_1 () {
-	boolean out;
-	int x0 = 2;
-	int o = 2;
-	property(x0, o, out);
-	assert out;
-}
-harness void positive_example_2 () {
-	boolean out;
-	int x0 = 3;
-	int o = 4;
-	property(x0, o, out);
-	assert out;
-}
-harness void positive_example_3 () {
-	boolean out;
-	int x0 = 5;
-	int o = 6;
-	property(x0, o, out);
-	assert out;
-}
-// -------------------- End examples ------------------------
-
-generator boolean property_gen(int x0, int o) {
-	if (??) { return false; }
-	int n = ??;
-	boolean atom_0 = U_gen(x0, o, n);
-	minimize(n);
-	return atom_0;
-}
-void property(int x0, int o, ref boolean out) {
-	out = property_gen(x0, o);
-}
-void obtained_property(int x0, int o, ref boolean out) {
-	out = length(o) >= length(x0);
+adt Label {
+    LiteralLabel { SArray<char> label; }
+    NodeLabel { Tree node; }
 }
 
-void property_conj(int x0, int o, ref boolean out) {
-	out = true;
+adt Tree{
+    LiteralTree { Label label; Nullable<Array<Tree>> children; }
+    Unknown { SArray<char> name; Nullable<Label> label; Nullable<Array<Tree>> children; }
+    Parameter { int index; }
+    Child { Tree parent; int index; }
+    TypeApplication { SArray<char> fn; Array<Tree> args; }
+    Dummy { }  // TODO idk
 }
-harness void precision() {
-	int x0 = 0;
-	negative_example_gen(x0, o);
-	boolean out_1;
-	obtained_property(x0, o, out_1);
-	assert out_1;
 
-	boolean out_2;
-	property_conj(x0, o, out_2);
-	assert out_2;
 
-	boolean out_3;
-	property(x0, o, out_3);
-	assert !out_3;
+// -------------------------------- Helpers ----------------------------------
+SArray<char> str(int len, char[len] s) {
+    return new SArray<char>(n=len, val=s);
+}
+
+Nullable<Label> noLabel() {
+    return new None<Label>();
+}
+
+Nullable<Array<Tree>> noChildren() {
+    return new None<Array<Tree>>();
+}
+
+Nullable<Array<Tree>> zeroChildren() {
+    return new Some<Array<Tree>>(newArray<Tree>());
+}
+
+Tree newUnknown(int len, char[len] name) {
+    return new Unknown(name = str(len, name), label=noLabel(), children=noChildren());
+}
+
+// -------------------------------- Constraint trying ----------------------------------
+generator void positive_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
+    int t = ??;
+    if (t == 0) {
+        x0 = new LiteralTree(
+                    label = new LiteralLabel(label = str(4, "int")),
+                    children = zeroChildren()
+                );
+        x1 = newUnknown(3, "t2");
+        o = newUnknown(3, "t2");
+    }
+    else if (t == 1) {
+        x0 = newUnknown(3, "t1");
+        x1 = newUnknown(3, "t2");
+        o = newUnknown(3, "t2");
+    }
+    else if (t == 2) {
+        x0 = newUnknown(3, "t2");
+        x1 = newUnknown(3, "t3");
+        o = newUnknown(3, "t3");
+    }
+    else {
+        assert false;
+    }
+}
+
+void positive_example(ref Tree x0, ref Tree x1, ref Tree o){
+	positive_example_finder(x0, x1, o);
+}
+
+// TODO this is kinda dumb bc we can just linear scan for this in Kotlin
+// TODO try concrete fixed type and exact param type equality first
+//    (concrete can be subsumed by total type eq?)
+harness void not_parametrized() {
+	Tree x0 = new Dummy();
+	Tree x1 = new Dummy();
+	Tree o = new Dummy();
+	positive_example(x0, x1, o);
+
+    switch(x0){  // we'll make separate copies of this function for each argument
+        case LiteralTree:{
+             assert x0.children == zeroChildren();
+        }
+        case Unknown:{
+             assert x0.children == zeroChildren();
+        }
+        case Parameter:{
+            assert false;
+        }
+        case Child:{
+            assert false;
+        }
+        case TypeApplication:{
+            assert false;
+        }
+        case Dummy:{
+            assert false;
+        }
+    }
 }

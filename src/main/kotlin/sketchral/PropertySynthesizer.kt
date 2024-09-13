@@ -42,12 +42,13 @@ class PropertySynthesizer(function: Func, query: Query) {
         // TODO Run Sketch with temp file
         val code = inputFactory.synthInput(negMay, lams)
         val output = callSketch(code)
-        return if (output != null) {
-//            val outParser = OutputParser(output, function)
-            val phi = ULiteral(123456) // TODO outParser.parseProperty()
-//            val lam = outParser.getLams()
-            Pair(phi, mapOf())
-        } else Pair(null, null)
+        return Pair(null, null)
+//        return if (output != null) {
+////            val outParser = OutputParser(output, function)
+//            val phi = ULiteral(123456) // TODO outParser.parseProperty()
+////            val lam = outParser.getLams()
+//            Pair(phi, mapOf())
+//        } else Pair(null, null)
     }
 
     /**
@@ -68,18 +69,22 @@ class PropertySynthesizer(function: Func, query: Query) {
     ): Pair<Pair<Examples, Examples>, Pair<TreeConstraint, Lambdas>> {
         val code = inputFactory.maxsatInput(pos, negMust, negMay, lams)
         val output = callSketch(code)
-        return if (output != null) {
-//            val outParser = OutputParser(output)
-//            val (newNegMay, delta) = outParser.parseMaxsat(negMay)
-            val phi = ULiteral(123456) // TODO outParser.parseProperty()
-//            val lam = outParser.getLams()
-//            Pair(Pair(newNegMay, delta), Pair(phi, lam))
-            Pair(Pair(listOf(), listOf()), Pair(phi, mapOf()))
-        } else {
-            if (phiInit == null) throw Exception("MaxSynth failed")
-            val (newNegMay, delta) = Pair(listOf<Example>(), negMay)
-            Pair(Pair(newNegMay, delta), Pair(phiInit, lams))
-        }
+        return Pair(
+            Pair(listOf(), listOf()),
+            Pair(Equality(UnknownType("just here so it compiles"), UnknownType("")), mapOf())
+        )
+//        return if (output != null) {
+////            val outParser = OutputParser(output)
+////            val (newNegMay, delta) = outParser.parseMaxsat(negMay)
+//            val phi = ULiteral(123456) // TODO outParser.parseProperty()
+////            val lam = outParser.getLams()
+////            Pair(Pair(newNegMay, delta), Pair(phi, lam))
+//            Pair(Pair(listOf(), listOf()), Pair(phi, mapOf()))
+//        } else {
+//            if (phiInit == null) throw Exception("MaxSynth failed")
+//            val (newNegMay, delta) = Pair(listOf<Example>(), negMay)
+//            Pair(Pair(newNegMay, delta), Pair(phiInit, lams))
+//        }
     }
 
     fun checkSoundness(phi: TreeConstraint, lams: Lambdas): Triple<Example?, Lambdas?, Boolean> {
@@ -90,7 +95,7 @@ class PropertySynthesizer(function: Func, query: Query) {
 //            val posEx = outParser.parsePosEx()
 //            val lam = outParser.getLams()
 //            Triple(posEx, lam, false)
-            Triple (null, null, false)
+            Triple(null, null, false)
         } else {
             Triple(null, null, true /* TODO elapsed_time >= timeout */)
         }
