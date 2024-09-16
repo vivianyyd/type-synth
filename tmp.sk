@@ -1,33 +1,5 @@
 include "/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/array.skh";
 
-// -------------------------------- Definitions ----------------------------------
-adt Label {
-    LiteralLabel { SArray<char> label; }
-    NodeLabel { Tree node; }
-}
-
-adt Tree{
-    LiteralTree { Label label; Array<Tree> children; }
-    Unknown { SArray<char> name; Label label; Array<Tree> children; }
-    Parameter { int index; }
-    Child { Tree parent; int index; }
-    TypeApplication { SArray<char> fn; Array<Tree> args; }
-    Dummy { }  // TODO idk
-}
-
-// -------------------------------- Constraint trying ----------------------------------
-
-void negative_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
-    int t = ??;
-    x0 = get_ex(t, 0);
-    x1 = get_ex(t, 1);
-    Tree real_o = get_ex(t, 2);
-
-    int s = ??;
-    o = get_ex(s, 2);
-    assert o != real_o;
-}
-
 // Returns the ith argument of the tth example.
 Tree get_ex(int t, int i) {
 	if (t == 0) {
@@ -50,10 +22,6 @@ Tree get_ex(int t, int i) {
     }
 }
 
-void negative_example(ref Tree x0, ref Tree x1, ref Tree o){
-	negative_example_finder(x0, x1, o);
-}
-
 void positive_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
     int t = ??;
     x0 = get_ex(t, 0);
@@ -61,9 +29,23 @@ void positive_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
     o = get_ex(t, 2);
 }
 
+void negative_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
+    int t = ??;
+    x0 = get_ex(t, 0);
+    x1 = get_ex(t, 1);
+    Tree real_o = get_ex(t, 2);
+
+    int s = ??;
+    o = get_ex(s, 2);
+    assert o != real_o;
+}
+
 void positive_example(ref Tree x0, ref Tree x1, ref Tree o){
 	positive_example_finder(x0, x1, o);
-	assert !equalsTree(x1,o);
+}
+
+void negative_example(ref Tree x0, ref Tree x1, ref Tree o){
+	negative_example_finder(x0, x1, o);
 }
 
 // For all selections of examples, x1 and o match
@@ -73,6 +55,22 @@ harness void type_equality(int t) {
 	Tree x1 = get_ex(t, 1);
 	Tree o =  get_ex(t, 2);
     assert equalsTree(x1, o);
+}
+
+// ================================ Beginning of boilerplate ======================================
+// -------------------------------- Definitions ----------------------------------
+adt Label {
+    LiteralLabel { SArray<char> label; }
+    NodeLabel { Tree node; }
+}
+
+adt Tree{
+    LiteralTree { Label label; Array<Tree> children; }
+    Unknown { SArray<char> name; Label label; Array<Tree> children; }
+    Parameter { int index; }
+    Child { Tree parent; int index; }
+    TypeApplication { SArray<char> fn; Array<Tree> args; }
+    Dummy { }  // TODO idk
 }
 
 // -------------------------------- Helpful constructors ----------------------------------
