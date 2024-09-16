@@ -20,15 +20,11 @@ adt Tree{
 
 // Does comparison only one level down, not deep equals
 boolean equalsSArray<T>(SArray<T> a, SArray<T> b) {
-    |SArray|<T> c = a;
-    |SArray|<T> d = b;
-    return c == d;
+    return a.val == b.val;
 }
 
 boolean equalsArray<T>(Array<T> a, Array<T> b) {
-    |Array|<T> c = a;
-    |Array|<T> d = b;
-    return c == d;
+    return equalsSArray(a.inner, b.inner);
 }
 
 boolean equalsLabel<T>(Label a, Label b) {
@@ -49,10 +45,6 @@ Tree newUnknown(int len, char[len] name) {
 }
 
 // -------------------------------- Constraint trying ----------------------------------
-
-harness void tester(){
-    Tree t = newUnknown(3, "t2");
-}
 
 generator void negative_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
     int t = ??;
@@ -191,6 +183,7 @@ boolean equalsTree(ref Tree a, ref Tree b) {
     }
     assert false;
 }
+
 // we want to assert that there does not exist a positive example for which this doesn't hold
 harness void type_equality() {
 	Tree x0 = new Dummy();
@@ -198,4 +191,15 @@ harness void type_equality() {
 	Tree o = new Dummy();
 	positive_example(x0, x1, o);
     assert !equalsTree(x1, o);
+}
+
+harness void tester() {
+	Tree t = newUnknown(3, "t2");
+	Tree t1 = newUnknown(3, "t2");
+    assert equalsTree(t, t1);
+    
+    SArray<char> a = new SArray<char>(n=2, val="a");
+    SArray<char> b = new SArray<char>(n=2, val="a");
+    assert !(a==b);
+    assert equalsSArray(a, b);
 }

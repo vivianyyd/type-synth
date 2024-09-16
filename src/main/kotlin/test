@@ -4,7 +4,6 @@
 // t2 = [int]
 // t3 = [[int]]
 
-
 cons p1 p2 = p3
 
 // ``type application'', can be discovered by just checking equality or whatever
@@ -13,7 +12,6 @@ cons t2 t3 = t3
 cons int t2 = t2
 
 need to distinguish this from the fn that takes any p1 and produces the identity fn
-
 
 Equality(
     TypeApplication("cons", listOf(Parameter("cons", 0), Parameter("cons", 1))),
@@ -39,21 +37,10 @@ Equality(
 // TODO try concrete fixed type and total type equality first
 //    (concrete can be subsumed by total type eq?)
 
-
-
-
-
-
-
-
-
 /*
 TODO try encoding the whole thing as a sketch problem
 or by introducing constraints one by one
-I don't think we can use sketch's equals
+   we wanna see if SAT a node is a node with no children
 */
 
-// TODO maybe we want normal arrays so we can make the size a hole. But can you have holes inside an ADT? I don't think so
-//   we wanna see if SAT a node is a node with no children
-//   is there an example such that its a LiteralTree with children==None or Unknown with children==None
 =========================================================================================================================================================
