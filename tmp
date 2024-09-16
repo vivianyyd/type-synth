@@ -72,9 +72,6 @@ void positive_example(ref Tree x0, ref Tree x1, ref Tree o){
 	positive_example_finder(x0, x1, o);
 }
 
-// TODO this is kinda dumb bc we can just linear scan for this in Kotlin
-// TODO try concrete fixed type and exact param type equality first
-//    (concrete can be subsumed by total type eq?)
 harness void not_parametrized() {
 	Tree x0 = new Dummy();
 	Tree x1 = new Dummy();
@@ -94,3 +91,15 @@ harness void not_parametrized() {
         case Dummy:{ assert false; }
     }
 }
+
+
+/* Copy pastable
+    switch(x0){  // we'll make separate copies of this function for each argument
+        case LiteralTree:{ }
+        case Unknown:{ }
+        case Parameter:{ }
+        case Child:{ }
+        case TypeApplication:{ }
+        case Dummy:{ }
+    }
+*/

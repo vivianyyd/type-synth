@@ -1,19 +1,14 @@
 include "/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/array.skh";
 
 // -------------------------------- Definitions ----------------------------------
-adt Nullable<T> {
-    None { }
-    Some { T elem; }
-}
-
 adt Label {
     LiteralLabel { SArray<char> label; }
     NodeLabel { Tree node; }
 }
 
 adt Tree{
-    LiteralTree { Label label; Nullable<Array<Tree>> children; }
-    Unknown { SArray<char> name; Nullable<Label> label; Nullable<Array<Tree>> children; }
+    LiteralTree { Label label; Array<Tree> children; }
+    Unknown { SArray<char> name; Label label; Array<Tree> children; }
     Parameter { int index; }
     Child { Tree parent; int index; }
     TypeApplication { SArray<char> fn; Array<Tree> args; }
@@ -22,42 +17,56 @@ adt Tree{
 
 
 // -------------------------------- Helpers ----------------------------------
+
+// Does comparison only one level down, not deep equals
+boolean equalsSArray<T>(SArray<T> a, SArray<T> b) {
+    |SArray|<T> c = a;
+    |SArray|<T> d = b;
+    return c == d;
+}
+
+boolean equalsArray<T>(Array<T> a, Array<T> b) {
+    |Array|<T> c = a;
+    |Array|<T> d = b;
+    return c == d;
+}
+
+boolean equalsLabel<T>(Label a, Label b) {
+    //TODO
+    return true;
+}
+
 SArray<char> str(int len, char[len] s) {
     return new SArray<char>(n=len, val=s);
 }
 
-Nullable<Label> noLabel() {
-    return new None<Label>();
-}
-
-Nullable<Array<Tree>> noChildren() {
-    return new None<Array<Tree>>();
-}
-
-Nullable<Array<Tree>> zeroChildren() {
-    return new Some<Array<Tree>>(newArray<Tree>());
+Array<Tree> zeroChildren() {
+    return newArray();
 }
 
 Tree newUnknown(int len, char[len] name) {
-    return new Unknown(name = str(len, name), label=noLabel(), children=noChildren());
+    return new Unknown(name = str(len, name), label=null, children=null);
 }
 
 // -------------------------------- Constraint trying ----------------------------------
 
+harness void tester(){
+    Tree t = newUnknown(3, "t2");
+}
 
 generator void negative_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
     int t = ??;
     x0 = get_ex(t, 0);
     x1 = get_ex(t, 1);
-    x2 = get_ex(t, 2);
+    Tree real_o = get_ex(t, 2);
 
     int s = ??;
     o = get_ex(s, 2);
-    assert o != x2;
+    assert o != real_o;
 }
 
 // Returns the ith argument of the tth example.
-int get_ex(int t, int i) {
+Tree get_ex(int t, int i) {
 	if (t == 0) {
 	    if (i == 0) {
 	        return new LiteralTree(label = new LiteralLabel(label = str(4, "int")),
@@ -82,12 +91,111 @@ void negative_example(ref Tree x0, ref Tree x1, ref Tree o){
 	negative_example_finder(x0, x1, o);
 }
 
-// TODO this is kinda dumb bc we can just linear scan for this in Kotlin
-// TODO try concrete fixed type and total type equality first
-//    (concrete can be subsumed by total type eq?)
+generator void positive_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
+    int t = ??;
+    if (t == 0) {
+        x0 = new LiteralTree(
+                    label = new LiteralLabel(label = str(4, "int")),
+                    children = zeroChildren()
+                );
+        x1 = newUnknown(3, "t2");
+        o = newUnknown(3, "t2");
+    }
+    else if (t == 1) {
+        x0 = newUnknown(3, "t1");
+        x1 = newUnknown(3, "t2");
+        o = newUnknown(3, "t2");
+    }
+    else if (t == 2) {
+        x0 = newUnknown(3, "t2");
+        x1 = newUnknown(3, "t3");
+        o = newUnknown(3, "t3");
+    }
+    else {
+        assert false;
+    }
+}
 
+void positive_example(ref Tree x0, ref Tree x1, ref Tree o){
+	positive_example_finder(x0, x1, o);
+	assert !equalsTree(x1,o);
+}
 
-
-
-
-
+// Because comparing refs uses physical equality, and we pass around refs a lot for multiple returns
+boolean equalsTree(ref Tree a, ref Tree b) {
+    switch(a){
+        case LiteralTree:{ 
+            switch(b){
+                case LiteralTree:{
+                    return a.label == b.label && equalsArray(a.children, b.children);
+                }
+                case Unknown:{ return false; }
+                case Parameter:{ return false; }
+                case Child:{ return false; }
+                case TypeApplication:{ return false; }
+                case Dummy:{ return false; }
+            }
+        }
+        case Unknown:{ 
+            switch(b){
+                case LiteralTree:{ return false; }
+                case Unknown:{
+                    return equalsSArray(a.name, b.name) && equalsLabel(a.label, b.label) && equalsArray(a.children, b.children);
+                }
+                case Parameter:{ return false; }
+                case Child:{ return false; }
+                case TypeApplication:{ return false; }
+                case Dummy:{ return false; }
+            }
+        }
+        case Parameter:{ 
+            switch(b){
+                case LiteralTree:{ return false; }
+                case Unknown:{ return false; }
+                case Parameter:{ return a.index == b.index; }
+                case Child:{ return false; }
+                case TypeApplication:{ return false; }
+                case Dummy:{ return false; }
+            }
+        }
+        case Child:{ 
+            switch(b){
+                case LiteralTree:{ return false; }
+                case Unknown:{ return false; }
+                case Parameter:{ return false; }
+                case Child:{ return a.parent == b.parent && a.index == b.index; }
+                case TypeApplication:{ return false; }
+                case Dummy:{ return false; }
+            }
+        }
+        case TypeApplication:{ 
+            switch(b){
+                case LiteralTree:{ return false; }
+                case Unknown:{ return false; }
+                case Parameter:{ return false; }
+                case Child:{ return false; }
+                case TypeApplication:{ return equalsSArray(a.fn, b.fn) && equalsArray(a.args, b.args); }
+                case Dummy:{ return false; }
+            }
+        }
+        case Dummy:{ 
+            switch(b){
+                case LiteralTree:{ return false; }
+                case Unknown:{ return false; }
+                case Parameter:{ return false; }
+                case Child:{ return false; }
+                case TypeApplication:{ return false; }
+                case Dummy:{ return true; }
+            }
+        }
+    }
+    assert false;
+}
+// we want to assert that there does not exist a positive example for which this doesn't hold
+harness void type_equality() {
+	Tree x0 = new Dummy();
+	Tree x1 = new Dummy();
+	Tree o = new Dummy();
+	positive_example(x0, x1, o);
+    assert !equalsTree(x1, o);
+}
