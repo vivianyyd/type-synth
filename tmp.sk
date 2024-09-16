@@ -15,38 +15,9 @@ adt Tree{
     Dummy { }  // TODO idk
 }
 
-
-// -------------------------------- Helpers ----------------------------------
-
-// Does comparison only one level down, not deep equals
-boolean equalsSArray<T>(SArray<T> a, SArray<T> b) {
-    return a.val == b.val;
-}
-
-boolean equalsArray<T>(Array<T> a, Array<T> b) {
-    return equalsSArray(a.inner, b.inner);
-}
-
-boolean equalsLabel<T>(Label a, Label b) {
-    //TODO
-    return true;
-}
-
-SArray<char> str(int len, char[len] s) {
-    return new SArray<char>(n=len, val=s);
-}
-
-Array<Tree> zeroChildren() {
-    return newArray();
-}
-
-Tree newUnknown(int len, char[len] name) {
-    return new Unknown(name = str(len, name), label=null, children=null);
-}
-
 // -------------------------------- Constraint trying ----------------------------------
 
-generator void negative_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
+void negative_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
     int t = ??;
     x0 = get_ex(t, 0);
     x1 = get_ex(t, 1);
@@ -83,29 +54,11 @@ void negative_example(ref Tree x0, ref Tree x1, ref Tree o){
 	negative_example_finder(x0, x1, o);
 }
 
-generator void positive_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
+void positive_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
     int t = ??;
-    if (t == 0) {
-        x0 = new LiteralTree(
-                    label = new LiteralLabel(label = str(4, "int")),
-                    children = zeroChildren()
-                );
-        x1 = newUnknown(3, "t2");
-        o = newUnknown(3, "t2");
-    }
-    else if (t == 1) {
-        x0 = newUnknown(3, "t1");
-        x1 = newUnknown(3, "t2");
-        o = newUnknown(3, "t2");
-    }
-    else if (t == 2) {
-        x0 = newUnknown(3, "t2");
-        x1 = newUnknown(3, "t3");
-        o = newUnknown(3, "t3");
-    }
-    else {
-        assert false;
-    }
+    x0 = get_ex(t, 0);
+    x1 = get_ex(t, 1);
+    o = get_ex(t, 2);
 }
 
 void positive_example(ref Tree x0, ref Tree x1, ref Tree o){
@@ -113,10 +66,63 @@ void positive_example(ref Tree x0, ref Tree x1, ref Tree o){
 	assert !equalsTree(x1,o);
 }
 
-// Because comparing refs uses physical equality, and we pass around refs a lot for multiple returns
-boolean equalsTree(ref Tree a, ref Tree b) {
+// For all selections of examples, x1 and o match
+harness void type_equality(int t) {
+    assume t <= 3;  // the number of examples goes here
+	Tree x0 = get_ex(t, 0);
+	Tree x1 = get_ex(t, 1);
+	Tree o =  get_ex(t, 2);
+    assert equalsTree(x1, o);
+}
+
+// -------------------------------- Helpful constructors ----------------------------------
+SArray<char> str(int len, char[len] s) {
+    return new SArray<char>(n=len, val=s);
+}
+
+Array<Tree> zeroChildren() {
+    return newArray();
+}
+
+Unknown newUnknown(int len, char[len] name) {
+    return new Unknown(name = str(len, name), label=null, children=null);
+}
+
+// -------------------------------- Equals ----------------------------------
+
+// Does comparison only one level down, not deep equals
+boolean equalsSArray<T>(SArray<T> a, SArray<T> b) {
+    return (a == null && b == null) || (a.val == b.val);
+}
+
+boolean equalsArray<T>(Array<T> a, Array<T> b) {
+    return (a == null && b == null) || equalsSArray(a.inner, b.inner);
+}
+
+boolean equalsLabel(Label a, Label b) {
+    if (a == null && b == null) return true;
     switch(a){
-        case LiteralTree:{ 
+        case LiteralLabel:{
+            switch(b){
+                case LiteralLabel:{ return equalsSArray(a.label, b.label); }
+                case NodeLabel:{ return false; }
+            }
+        }
+        case NodeLabel:{
+            switch(b){
+                case LiteralLabel:{ return false; }
+                case NodeLabel:{ return equalsTree(a.node, b.node); }
+                // TODO I think this is a broken cyclic call and should be fixed once I figure out how to represent stuff
+            }
+        }
+    }
+}
+
+// Because comparing refs uses physical equality, and we pass around refs a lot for multiple returns
+boolean equalsTree(Tree a, Tree b) {
+    if (a == null && b == null) return true;
+    switch(a){
+        case LiteralTree:{
             switch(b){
                 case LiteralTree:{
                     return a.label == b.label && equalsArray(a.children, b.children);
@@ -128,7 +134,7 @@ boolean equalsTree(ref Tree a, ref Tree b) {
                 case Dummy:{ return false; }
             }
         }
-        case Unknown:{ 
+        case Unknown:{
             switch(b){
                 case LiteralTree:{ return false; }
                 case Unknown:{
@@ -140,7 +146,7 @@ boolean equalsTree(ref Tree a, ref Tree b) {
                 case Dummy:{ return false; }
             }
         }
-        case Parameter:{ 
+        case Parameter:{
             switch(b){
                 case LiteralTree:{ return false; }
                 case Unknown:{ return false; }
@@ -150,7 +156,7 @@ boolean equalsTree(ref Tree a, ref Tree b) {
                 case Dummy:{ return false; }
             }
         }
-        case Child:{ 
+        case Child:{
             switch(b){
                 case LiteralTree:{ return false; }
                 case Unknown:{ return false; }
@@ -160,7 +166,7 @@ boolean equalsTree(ref Tree a, ref Tree b) {
                 case Dummy:{ return false; }
             }
         }
-        case TypeApplication:{ 
+        case TypeApplication:{
             switch(b){
                 case LiteralTree:{ return false; }
                 case Unknown:{ return false; }
@@ -170,7 +176,7 @@ boolean equalsTree(ref Tree a, ref Tree b) {
                 case Dummy:{ return false; }
             }
         }
-        case Dummy:{ 
+        case Dummy:{
             switch(b){
                 case LiteralTree:{ return false; }
                 case Unknown:{ return false; }
@@ -184,22 +190,3 @@ boolean equalsTree(ref Tree a, ref Tree b) {
     assert false;
 }
 
-// we want to assert that there does not exist a positive example for which this doesn't hold
-harness void type_equality() {
-	Tree x0 = new Dummy();
-	Tree x1 = new Dummy();
-	Tree o = new Dummy();
-	positive_example(x0, x1, o);
-    assert !equalsTree(x1, o);
-}
-
-harness void tester() {
-	Tree t = newUnknown(3, "t2");
-	Tree t1 = newUnknown(3, "t2");
-    assert equalsTree(t, t1);
-    
-    SArray<char> a = new SArray<char>(n=2, val="a");
-    SArray<char> b = new SArray<char>(n=2, val="a");
-    assert !(a==b);
-    assert equalsSArray(a, b);
-}
