@@ -1,0 +1,67 @@
+package UTIL;
+
+include "/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/array.skh";
+
+int MAX_NUM_VARS = 3;
+
+adt Type{
+    Variable { int id; }
+    Function { Type in; Type out; }
+    Node { int label; Array<Type> params; }
+    Error { }
+}
+
+generator Type type() {
+    // todo
+    return null;
+}
+
+struct UnificationResult {
+    Type type;
+    Type[MAX_NUM_VARS] var_map;
+}
+
+UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
+// Rules: if a or b is a variable, they become the other one
+    switch(a){
+        case Variable:{
+            if (var_map[a.id] == null) { // todo test that this actually checks variable not in map
+                var_map[a.id] = b;
+                return new UnificationResult(type=b, var_map=var_map);
+            }
+            else { return unify(var_map[a.id], b, var_map); }
+        }
+        case Function:{
+            switch(b){
+                case Variable:{  }
+                case Function:{  }
+                case Node:{  }
+                case Error:{  }
+            }
+        }
+        case Node:{  }
+        case Error:{  }
+    }
+    return null;
+    // TODO
+}
+
+// For each test which is an example of application,
+harness void passes_positives(int t) {
+    assume t > -1 && t < 3;
+    Type fun_type = type();  // todo this will be produced by calling generator
+//    Type in = get_example(t, 0);
+//    Type out = get_example(t, 1);
+    // TODO The example might only be a partial application, account for that eventually.
+    //      Or maybe we only apply one argument by default? Idk. Why can't we just unify the whole function with each
+    //      example rather than calling "Apply" on the whiteboard
+}
+
+/*
+switch(b){
+    case Variable:{  }
+    case Function:{  }
+    case Node:{  }
+    case Error:{  }
+}
+*/

@@ -1,5 +1,6 @@
 package UTIL;
 
+// TODO names can just be integer identifiers
 // -------------------------------- Definitions ----------------------------------
 adt Label {
     LiteralLabel { SArray<char> label; }
