@@ -30,17 +30,8 @@ Equality(
     UnknownType("t2")
 ),
 
-
-
-
-// TODO this is kinda dumb bc we can just linear scan for this in Kotlin
-// TODO try concrete fixed type and total type equality first
-//    (concrete can be subsumed by total type eq?)
-
 /*
 TODO try encoding the whole thing as a sketch problem
 or by introducing constraints one by one
-   we wanna see if SAT a node is a node with no children
+   we wanna see if SAT there exists node with no children
 */
-
-=========================================================================================================================================================

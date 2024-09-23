@@ -1,63 +1,5 @@
-include "/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/array.skh";
+package UTIL;
 
-// Returns the ith argument of the tth example.
-Tree get_ex(int t, int i) {
-	if (t == 0) {
-	    if (i == 0) {
-	        return new LiteralTree(label = new LiteralLabel(label = str(4, "int")),
-                                   children = zeroChildren());
-	    }
-	    if (i == 1) { return newUnknown(3, "t2"); }
-	    if (i == 2) { return newUnknown(3, "t2"); }
-	}
-    if (t == 1) {
-        if (i == 0) { return newUnknown(3, "t1"); }
-        if (i == 1) { return newUnknown(3, "t2"); }
-        if (i == 2) { return newUnknown(3, "t2"); }
-    }
-    if (t == 2) {
-        if (i == 0) { return newUnknown(3, "t2"); }
-        if (i == 1) { return newUnknown(3, "t3"); }
-        if (i == 2) { return newUnknown(3, "t3"); }
-    }
-}
-
-void positive_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
-    int t = ??;
-    x0 = get_ex(t, 0);
-    x1 = get_ex(t, 1);
-    o = get_ex(t, 2);
-}
-
-void negative_example_finder(ref Tree x0, ref Tree x1, ref Tree o){
-    int t = ??;
-    x0 = get_ex(t, 0);
-    x1 = get_ex(t, 1);
-    Tree real_o = get_ex(t, 2);
-
-    int s = ??;
-    o = get_ex(s, 2);
-    assert o != real_o;
-}
-
-void positive_example(ref Tree x0, ref Tree x1, ref Tree o){
-	positive_example_finder(x0, x1, o);
-}
-
-void negative_example(ref Tree x0, ref Tree x1, ref Tree o){
-	negative_example_finder(x0, x1, o);
-}
-
-// For all selections of examples, x1 and o match
-harness void type_equality(int t) {
-    assume t <= 3;  // the number of examples goes here
-	Tree x0 = get_ex(t, 0);
-	Tree x1 = get_ex(t, 1);
-	Tree o =  get_ex(t, 2);
-    assert equalsTree(x1, o);
-}
-
-// ================================ Beginning of boilerplate ======================================
 // -------------------------------- Definitions ----------------------------------
 adt Label {
     LiteralLabel { SArray<char> label; }
@@ -187,4 +129,3 @@ boolean equalsTree(Tree a, Tree b) {
     }
     assert false;
 }
-

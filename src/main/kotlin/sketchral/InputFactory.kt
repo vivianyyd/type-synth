@@ -15,51 +15,183 @@ class InputFactory(val function: Func, val query: Query) {
     private val minimizeTerms = false  // TODO add commandline flag later
     private val numInputs = function.numArgs
 
-
-    private val definitions by lazy {
-
-        val sb = StringBuilder("// -------------------- Definitions ------------------------\n")
-
-        val nullable = mutableListOf("adt Nullable<T> {")
-        nullable.add("None { }")
-        nullable.add("Some { T elem; }")
-        sb.append(nullable.joinToString(separator = "\n\t")).append("}")
-
-        val label = mutableListOf("adt Label {")
-        label.add("LiteralLabel { SArray<char> label; }")
-        label.add("NodeLabel { Tree node; }")
-        sb.append(label.joinToString(separator = "\n\t")).append("}")
-
-        val tree = mutableListOf("adt Tree{")
-        tree.add("    LiteralTree { Label label; Nullable<Array<Tree>> children; }\n" +
-                "    Unknown { SArray<char> name; Nullable<Label> label; Nullable<Array<Tree>> children; }\n" +
+    // TODO fix this very beautiful definitely not codesmelly definition
+    private val boilerplate =
+        "// ================================ Beginning of boilerplate ======================================\n" +
+                "// -------------------------------- Definitions ----------------------------------\n" +
+                "adt Label {\n" +
+                "    LiteralLabel { SArray<char> label; }\n" +
+                "    NodeLabel { Tree node; }\n" +
+                "}\n" +
+                "\n" +
+                "adt Tree{\n" +
+                "    LiteralTree { Label label; Array<Tree> children; }\n" +
+                "    Unknown { SArray<char> name; Label label; Array<Tree> children; }\n" +
                 "    Parameter { int index; }\n" +
                 "    Child { Tree parent; int index; }\n" +
                 "    TypeApplication { SArray<char> fn; Array<Tree> args; }\n" +
-                "    Dummy { }")
-        sb.append(tree.joinToString()).append("}")
-        sb.toString()
-    }
-
-    private val helpers by lazy {
-        val sb = StringBuilder("// -------------------- Helpers ------------------------\n")
-        sb.append("SArray<char> str(int len, char[len] s) {\n" +
+                "    Dummy { }  // TODO idk\n" +
+                "}\n" +
+                "\n" +
+                "// -------------------------------- Helpful constructors ----------------------------------\n" +
+                "SArray<char> str(int len, char[len] s) {\n" +
                 "    return new SArray<char>(n=len, val=s);\n" +
                 "}\n" +
-                "Nullable<Label> noLabel() {\n" +
-                "    return new None<Label>();\n" +
+                "\n" +
+                "Array<Tree> zeroChildren() {\n" +
+                "    return newArray();\n" +
                 "}\n" +
-                "Nullable<Array<Tree>> noChildren() {\n" +
-                "    return new None<Array<Tree>>();\n" +
+                "\n" +
+                "Unknown newUnknown(int len, char[len] name) {\n" +
+                "    return new Unknown(name = str(len, name), label=null, children=null);\n" +
                 "}\n" +
-                "Nullable<Array<Tree>> zeroChildren() {\n" +
-                "    return new Some<Array<Tree>>(newArray<Tree>());\n" +
+                "\n" +
+                "// -------------------------------- Equals ----------------------------------\n" +
+                "\n" +
+                "// Does comparison only one level down, not deep equals\n" +
+                "boolean equalsSArray<T>(SArray<T> a, SArray<T> b) {\n" +
+                "    return (a == null && b == null) || (a.val == b.val);\n" +
                 "}\n" +
-                "Tree newUnknown(int len, char[len] name) {\n" +
-                "    return new Unknown(name = str(len, name), label=noLabel(), children=noChildren());\n" +
-                "}")
-        sb.toString()
-    }
+                "\n" +
+                "boolean equalsArray<T>(Array<T> a, Array<T> b) {\n" +
+                "    return (a == null && b == null) || equalsSArray(a.inner, b.inner);\n" +
+                "}\n" +
+                "\n" +
+                "boolean equalsLabel(Label a, Label b) {\n" +
+                "    if (a == null && b == null) return true;\n" +
+                "    switch(a){\n" +
+                "        case LiteralLabel:{\n" +
+                "            switch(b){\n" +
+                "                case LiteralLabel:{ return equalsSArray(a.label, b.label); }\n" +
+                "                case NodeLabel:{ return false; }\n" +
+                "            }\n" +
+                "        }\n" +
+                "        case NodeLabel:{\n" +
+                "            switch(b){\n" +
+                "                case LiteralLabel:{ return false; }\n" +
+                "                case NodeLabel:{ return equalsTree(a.node, b.node); }\n" +
+                "                // TODO I think this is a broken cyclic call and should be fixed once I figure out how to represent stuff\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n" +
+                "\n" +
+                "// Because comparing refs uses physical equality, and we pass around refs a lot for multiple returns\n" +
+                "boolean equalsTree(Tree a, Tree b) {\n" +
+                "    if (a == null && b == null) return true;\n" +
+                "    switch(a){\n" +
+                "        case LiteralTree:{\n" +
+                "            switch(b){\n" +
+                "                case LiteralTree:{\n" +
+                "                    return a.label == b.label && equalsArray(a.children, b.children);\n" +
+                "                }\n" +
+                "                case Unknown:{ return false; }\n" +
+                "                case Parameter:{ return false; }\n" +
+                "                case Child:{ return false; }\n" +
+                "                case TypeApplication:{ return false; }\n" +
+                "                case Dummy:{ return false; }\n" +
+                "            }\n" +
+                "        }\n" +
+                "        case Unknown:{\n" +
+                "            switch(b){\n" +
+                "                case LiteralTree:{ return false; }\n" +
+                "                case Unknown:{\n" +
+                "                    return equalsSArray(a.name, b.name) && equalsLabel(a.label, b.label) && equalsArray(a.children, b.children);\n" +
+                "                }\n" +
+                "                case Parameter:{ return false; }\n" +
+                "                case Child:{ return false; }\n" +
+                "                case TypeApplication:{ return false; }\n" +
+                "                case Dummy:{ return false; }\n" +
+                "            }\n" +
+                "        }\n" +
+                "        case Parameter:{\n" +
+                "            switch(b){\n" +
+                "                case LiteralTree:{ return false; }\n" +
+                "                case Unknown:{ return false; }\n" +
+                "                case Parameter:{ return a.index == b.index; }\n" +
+                "                case Child:{ return false; }\n" +
+                "                case TypeApplication:{ return false; }\n" +
+                "                case Dummy:{ return false; }\n" +
+                "            }\n" +
+                "        }\n" +
+                "        case Child:{\n" +
+                "            switch(b){\n" +
+                "                case LiteralTree:{ return false; }\n" +
+                "                case Unknown:{ return false; }\n" +
+                "                case Parameter:{ return false; }\n" +
+                "                case Child:{ return a.parent == b.parent && a.index == b.index; }\n" +
+                "                case TypeApplication:{ return false; }\n" +
+                "                case Dummy:{ return false; }\n" +
+                "            }\n" +
+                "        }\n" +
+                "        case TypeApplication:{\n" +
+                "            switch(b){\n" +
+                "                case LiteralTree:{ return false; }\n" +
+                "                case Unknown:{ return false; }\n" +
+                "                case Parameter:{ return false; }\n" +
+                "                case Child:{ return false; }\n" +
+                "                case TypeApplication:{ return equalsSArray(a.fn, b.fn) && equalsArray(a.args, b.args); }\n" +
+                "                case Dummy:{ return false; }\n" +
+                "            }\n" +
+                "        }\n" +
+                "        case Dummy:{\n" +
+                "            switch(b){\n" +
+                "                case LiteralTree:{ return false; }\n" +
+                "                case Unknown:{ return false; }\n" +
+                "                case Parameter:{ return false; }\n" +
+                "                case Child:{ return false; }\n" +
+                "                case TypeApplication:{ return false; }\n" +
+                "                case Dummy:{ return true; }\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "    assert false;\n" +
+                "}\n"
+
+//    private val definitions by lazy {
+//
+//        val sb = StringBuilder("// -------------------- Definitions ------------------------\n")
+//
+//        val nullable = mutableListOf("adt Nullable<T> {")
+//        nullable.add("None { }")
+//        nullable.add("Some { T elem; }")
+//        sb.append(nullable.joinToString(separator = "\n\t")).append("}")
+//
+//        val label = mutableListOf("adt Label {")
+//        label.add("LiteralLabel { SArray<char> label; }")
+//        label.add("NodeLabel { Tree node; }")
+//        sb.append(label.joinToString(separator = "\n\t")).append("}")
+//
+//        val tree = mutableListOf("adt Tree{")
+//        tree.add("    LiteralTree { Label label; Nullable<Array<Tree>> children; }\n" +
+//                "    Unknown { SArray<char> name; Nullable<Label> label; Nullable<Array<Tree>> children; }\n" +
+//                "    Parameter { int index; }\n" +
+//                "    Child { Tree parent; int index; }\n" +
+//                "    TypeApplication { SArray<char> fn; Array<Tree> args; }\n" +
+//                "    Dummy { }")
+//        sb.append(tree.joinToString()).append("}")
+//        sb.toString()
+//    }
+//
+//    private val helpers by lazy {
+//        val sb = StringBuilder("// -------------------- Helpers ------------------------\n")
+//        sb.append("SArray<char> str(int len, char[len] s) {\n" +
+//                "    return new SArray<char>(n=len, val=s);\n" +
+//                "}\n" +
+//                "Nullable<Label> noLabel() {\n" +
+//                "    return new None<Label>();\n" +
+//                "}\n" +
+//                "Nullable<Array<Tree>> noChildren() {\n" +
+//                "    return new None<Array<Tree>>();\n" +
+//                "}\n" +
+//                "Nullable<Array<Tree>> zeroChildren() {\n" +
+//                "    return new Some<Array<Tree>>(newArray<Tree>());\n" +
+//                "}\n" +
+//                "Tree newUnknown(int len, char[len] name) {\n" +
+//                "    return new Unknown(name = str(len, name), label=noLabel(), children=noChildren());\n" +
+//                "}")
+//        sb.toString()
+//    }
 
     private val argsAndOut by lazy {
         (0..numInputs).joinToString(separator = ",") { "ref Tree x$it" }

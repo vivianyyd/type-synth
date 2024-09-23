@@ -9,7 +9,7 @@ sealed class Result {
 }
 
 class OutputParser(val output: String, val inputFactory: InputFactory) {
-    private val numInputs = inputFactory.function.type.inputs.size
+    private val numInputs = inputFactory.function.numArgs
     private fun paramToName(param: Int) = if (param == numInputs) "o" else "x$param"
 
     private fun blockOfSignature(sig: String): List<String> {
