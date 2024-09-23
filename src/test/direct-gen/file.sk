@@ -21,47 +21,72 @@ struct UnificationResult {
     Type[MAX_NUM_VARS] var_map;
 }
 
+UnificationResult unifyVar(Variable var, Type target, Type[MAX_NUM_VARS] var_map) {
+    if (var_map[var.id] != null) { return unify(var_map[var.id], target, var_map); }
+    else {  // todo test this actually checks variable not in map
+        var_map[var.id] = target;
+        return new UnificationResult(type=target, var_map=var_map);
+    }
+}
+
 UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
-// Rules: if a or b is a variable, they become the other one
     switch(a){
         case Variable:{
-            if (var_map[a.id] == null) { // todo test that this actually checks variable not in map
-                var_map[a.id] = b;
-                return new UnificationResult(type=b, var_map=var_map);
+            // There needs to be a switch on b directly under each case, since we want errors to redirect quickly.
+            switch(b){
+                case Variable:{
+                    // Unwrap b if possible
+                    if (var_map[b.id] != null) { return unify(var_map[b.id], a, var_map); }
+                    return unifyVar(a, b, var_map);
+                }
+                case Function:{ return unifyVar(a, b, var_map); }
+                case Node:{ return unifyVar(a, b, var_map); }
+                case Error:{ return new UnificationResult(type=b, var_map=var_map); }
             }
-            else { return unify(var_map[a.id], b, var_map); }
         }
         case Function:{
             switch(b){
-                case Variable:{  }
-                case Function:{  }
-                case Node:{  }
-                case Error:{  }
+                case Variable:{ return unifyVar(b, a, var_map); }
+                case Function:{
+                    UnificationResult curry = unify(a.in, b.in, var_map);  // TODO is this even a sensible name
+                    return unify(a.out, b.out, curry.var_map);
+                }
+                case Node:{ assert false; }
+                case Error:{ return new UnificationResult(type=b, var_map=var_map); }
             }
         }
-        case Node:{  }
-        case Error:{  }
+        case Node:{
+            switch(b){
+                case Variable:{ return unifyVar(b, a, var_map); }
+                case Function:{ assert false; }
+                case Node:{
+                    assert a.label == b.label;
+                    assert a.params.sz == b.params.sz;
+                    // TODO do we even need to recursively unify the parameters? They'll always be variables
+                    return new UnificationResult(type=a, var_map=var_map);
+                }
+                case Error:{ return new UnificationResult(type=b, var_map=var_map); }
+            }
+        }
+        case Error:{ return new UnificationResult(type=b, var_map=var_map); }
     }
-    return null;
-    // TODO
 }
 
 // For each test which is an example of application,
 harness void passes_positives(int t) {
     assume t > -1 && t < 3;
     Type fun_type = type();  // todo this will be produced by calling generator
-//    Type in = get_example(t, 0);
-//    Type out = get_example(t, 1);
+
+
     // TODO The example might only be a partial application, account for that eventually.
     //      Or maybe we only apply one argument by default? Idk. Why can't we just unify the whole function with each
-    //      example rather than calling "Apply" on the whiteboard
+    //      example rather than calling "Apply" like on the whiteboard
 }
 
 /*
 switch(b){
-    case Variable:{  }
-    case Function:{  }
-    case Node:{  }
-    case Error:{  }
-}
+    case Variable:{ }
+    case Function:{ }
+    case Node:{ }
+    case Error:{ return new UnificationResult(type=b, var_map=var_map) }}
 */
