@@ -11,10 +11,16 @@ adt Type{
     Error { }
 }
 
+// TODO see if this actually helps anything
+generator int bounded_number(int bound) {
+    int n = ??;
+    assert n > -1 && n < bound;
+    return n;
+}
+
 generator Type type() {
     int t = ??;
-    if (t == 0) { return new Error(); }
-    if (t == 1) { return new Variable(id = ??); }
+    if (t == 1) { return new Variable(id = bounded_number(2*MAX_NUM_VARS)); }  // arbitrarily picked
     Type a = type();
     Type b = type();
     if (t == 2) { return new Function(in = a, out = b); }
@@ -30,7 +36,7 @@ generator Type type() {
             else { elem = type(); }
             add(arr, elem);
         }
-        return new Node(label = ??, params=arr);
+        return new Node(label = bounded_number(2*MAX_NUM_VARS), params=arr);
     }
 }
 
@@ -48,6 +54,7 @@ UnificationResult unifyVar(Variable var, Type target, Type[MAX_NUM_VARS] var_map
 }
 
 UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
+    // TODO remove the assert falses from unifying Errors
     switch(a){
         case Variable:{
             // There needs to be a switch on b directly under each case, since we want errors to redirect quickly.
@@ -59,7 +66,7 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
                 }
                 case Function:{ return unifyVar(a, b, var_map); }
                 case Node:{ return unifyVar(a, b, var_map); }
-                case Error:{ return new UnificationResult(type=b, var_map=var_map); }
+                case Error:{ assert false; return new UnificationResult(type=b, var_map=var_map); }
             }
         }
         case Function:{
@@ -70,7 +77,7 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
                     return unify(a.out, b.out, curry.var_map);
                 }
                 case Node:{ assert false; }
-                case Error:{ return new UnificationResult(type=b, var_map=var_map); }
+                case Error:{ assert false; return new UnificationResult(type=b, var_map=var_map); }
             }
         }
         case Node:{
@@ -86,10 +93,10 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
                     }
                     return new UnificationResult(type=a, var_map=var_map);
                 }
-                case Error:{ return new UnificationResult(type=b, var_map=var_map); }
+                case Error:{ assert false; return new UnificationResult(type=b, var_map=var_map); }
             }
         }
-        case Error:{ return new UnificationResult(type=b, var_map=var_map); }
+        case Error:{ assert false; return new UnificationResult(type=a, var_map=var_map); }
     }
 }
 
@@ -102,10 +109,14 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
 //    return arr;
 //}
 
+Type generated_function_type() {
+    return type();
+}
+
 // For each test which is an example of application,
 harness void passes_positives(int t) {
     assume t > -1 && t < 3;
-    Type fun_type = type();  // todo this will be produced by calling generator
+    Type fun_type = generated_function_type();  // todo this will be produced by calling generator
 
     // a -> a list
 //    Type alpha = new Variable(id=2);
@@ -137,6 +148,9 @@ harness void passes_positives(int t) {
 
     // TODO Think about how to unify errors actually
     // TODO will it work if I just force all negative examples to unify with Error or something, maybe this is why we need an Apply function
+
+// TODO Function type was not inlined enough. Increase inlining with --inlineamnt flag.
+
 /*
 adt Type{
     Variable { int id; }
