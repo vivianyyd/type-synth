@@ -8,10 +8,10 @@ adt Label {
 }
 
 adt Tree{
-    LiteralTree { Label label; Array<Tree> children; }
-    Unknown { SArray<char> name; Label label; Array<Tree> children; }
-    Parameter { int index; }
-    Child { Tree parent; int index; }
+    LiteralTree { Label label; Array<Tree> children; }  // fully concrete
+    Unknown { SArray<char> name; Label label; Array<Tree> children; }  // l of alpha, but with uncertainty
+    Parameter { int index; }  // alpha
+    Child { Tree parent; int index; }  // child of somebody else
     TypeApplication { SArray<char> fn; Array<Tree> args; }
     Dummy { }  // TODO idk
 }

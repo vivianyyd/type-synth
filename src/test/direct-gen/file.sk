@@ -11,7 +11,7 @@ adt Type{
     Error { }
 }
 
-// TODO see if this actually helps anything
+// TODO see if this actually helps
 generator int bounded_number(int bound) {
     int n = ??;
     assert n > -1 && n < bound;
@@ -120,10 +120,10 @@ harness void passes_positives(int t) {
 
     // a -> a list
 //    Type alpha = new Variable(id=2);
-//    Array<Type> childVar = newArray();
-//    add(childVar, alpha);
-//    Type listalpha = new Node(label=1, params=childVar);
-//    Type fun_type = new Function(in=alpha, out=listalpha);
+//    Array<Type> childAlpha = newArray();
+//    add(childAlpha, alpha);
+//    Type listAlpha = new Node(label=1, params=childAlpha);
+//    Type fun_type = new Function(in=alpha, out=listAlpha);
 
     // int -> int list
     Type intNode = new Node(label=0, params=newArray());
@@ -132,19 +132,19 @@ harness void passes_positives(int t) {
     Type listIntNode = new Node(label=1, params=childInt);
     Type example = new Function(in=intNode, out=listIntNode);
 
-    Type[MAX_NUM_VARS] var_map;
-    UnificationResult dummy = unify(fun_type, example, var_map);
+    Type[MAX_NUM_VARS] map;
+    UnificationResult dummy = unify(fun_type, example, map);
 
     // int -> int
 //    Type negative_example = new Function(in=intNode, out=intNode);
-//    Type[MAX_NUM_VARS] var_map2;
-//    UnificationResult dummy2 = unify(fun_type, negative_example, var_map2);
+//    Type[MAX_NUM_VARS] map2;
+//    UnificationResult dummy2 = unify(fun_type, negative_example, map2);
 
     // bool -> int list
 //    Type boolNode = new Node(label=3, params=newArray());
 //    Type negative_example2 = new Function(in=boolNode, out=listIntNode);
-//    Type[MAX_NUM_VARS] var_map3;
-//    UnificationResult dummy3 = unify(fun_type, negative_example2, var_map3);
+//    Type[MAX_NUM_VARS] map3;
+//    UnificationResult dummy3 = unify(fun_type, negative_example2, map3);
 
     // TODO Think about how to unify errors actually
     // TODO will it work if I just force all negative examples to unify with Error or something, maybe this is why we need an Apply function

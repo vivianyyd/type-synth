@@ -59,3 +59,24 @@ harness void type_equality(int t) {
 	Tree o =  get_ex(t, 2);
     assert equalsTree(x1, o);
 }
+
+/* Confirms that an argument is not a node with children. */
+//harness void not_parametrized() {
+//	Tree x0 = new Dummy();
+//	Tree x1 = new Dummy();
+//	Tree o = new Dummy();
+//	positive_example_finder(x0, x1, o);
+//
+//    switch(x0){  // we'll make separate copies of this function for each argument
+//        case LiteralTree:{
+//             assert x0.children == zeroChildren();
+//        }
+//        case Unknown:{
+//             assert x0.children == zeroChildren();
+//        }
+//        case Parameter:{ assert false; }
+//        case Child:{ assert false; }
+//        case TypeApplication:{ assert false; }
+//        case Dummy:{ assert false; }
+//    }
+//}
