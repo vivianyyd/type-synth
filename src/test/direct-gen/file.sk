@@ -12,8 +12,26 @@ adt Type{
 }
 
 generator Type type() {
-    // todo
-    return null;
+    int t = ??;
+    if (t == 0) { return new Error(); }
+    if (t == 1) { return new Variable(id = ??); }
+    Type a = type();
+    Type b = type();
+    if (t == 2) { return new Function(in = a, out = b); }
+    if (t == 3) {
+        int n_params = ??;
+        assert n_params < MAX_NUM_VARS;
+        Array<Type> arr = newArray();
+        for (int i = 0; i < n_params; i++) {
+            Type elem;
+            // Reuse previous calls to type generator
+            if (i == 0) { elem = a; }
+            if (i == 1) { elem = b; }
+            else { elem = type(); }
+            add(arr, elem);
+        }
+        return new Node(label = ??, params=arr);
+    }
 }
 
 struct UnificationResult {
@@ -62,7 +80,10 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
                 case Node:{
                     assert a.label == b.label;
                     assert a.params.sz == b.params.sz;
-                    // TODO do we even need to recursively unify the parameters? They'll always be variables
+                    for (int i = 0; i < a.params.sz; i++) {
+                        // params should be independent, so the var map shouldn't change between them
+                        unify(a.params.inner.val[i], b.params.inner.val[i], var_map);
+                    }
                     return new UnificationResult(type=a, var_map=var_map);
                 }
                 case Error:{ return new UnificationResult(type=b, var_map=var_map); }
@@ -72,21 +93,59 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
     }
 }
 
+// TODO make this work
+//T arrayOf<T>(int n, T[n] elems) {
+//    Array<T> arr = newArray();
+//    for (int i = 0; i < n; i++) {
+//        add(arr, elems[i]);
+//    }
+//    return arr;
+//}
+
 // For each test which is an example of application,
 harness void passes_positives(int t) {
     assume t > -1 && t < 3;
     Type fun_type = type();  // todo this will be produced by calling generator
 
+    // a -> a list
+//    Type alpha = new Variable(id=2);
+//    Array<Type> childVar = newArray();
+//    add(childVar, alpha);
+//    Type listalpha = new Node(label=1, params=childVar);
+//    Type fun_type = new Function(in=alpha, out=listalpha);
 
+    // int -> int list
+    Type intNode = new Node(label=0, params=newArray());
+    Array<Type> childInt = newArray();
+    add(childInt, intNode);
+    Type listIntNode = new Node(label=1, params=childInt);
+    Type example = new Function(in=intNode, out=listIntNode);
+
+    Type[MAX_NUM_VARS] var_map;
+    UnificationResult dummy = unify(fun_type, example, var_map);
+
+    // int -> int
+//    Type negative_example = new Function(in=intNode, out=intNode);
+//    Type[MAX_NUM_VARS] var_map2;
+//    UnificationResult dummy2 = unify(fun_type, negative_example, var_map2);
+
+    // bool -> int list
+//    Type boolNode = new Node(label=3, params=newArray());
+//    Type negative_example2 = new Function(in=boolNode, out=listIntNode);
+//    Type[MAX_NUM_VARS] var_map3;
+//    UnificationResult dummy3 = unify(fun_type, negative_example2, var_map3);
+
+    // TODO Think about how to unify errors actually
+    // TODO will it work if I just force all negative examples to unify with Error or something, maybe this is why we need an Apply function
+/*
+adt Type{
+    Variable { int id; }
+    Function { Type in; Type out; }
+    Node { int label; Array<Type> params; }
+    Error { }
+}
+*/
     // TODO The example might only be a partial application, account for that eventually.
     //      Or maybe we only apply one argument by default? Idk. Why can't we just unify the whole function with each
     //      example rather than calling "Apply" like on the whiteboard
 }
-
-/*
-switch(b){
-    case Variable:{ }
-    case Function:{ }
-    case Node:{ }
-    case Error:{ return new UnificationResult(type=b, var_map=var_map) }}
-*/
