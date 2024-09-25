@@ -26,7 +26,7 @@ generator Type type() {
     if (t == 2) { return new Function(in = a, out = b); }
     if (t == 3) {
         int n_params = ??;
-        assert n_params < MAX_NUM_VARS;
+        assert n_params <= MAX_NUM_VARS;
         Array<Type> arr = newArray();
         for (int i = 0; i < n_params; i++) {
             Type elem;

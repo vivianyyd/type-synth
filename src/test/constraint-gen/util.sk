@@ -1,51 +1,129 @@
 package UTIL;
 
-// TODO names can just be integer identifiers
+include "/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/array.skh";
+
+int MAX_NUM_TYPE_PARAMS = 3;
+
 // -------------------------------- Definitions ----------------------------------
-adt Label {
-    LiteralLabel { SArray<char> label; }
-    NodeLabel { Tree node; }
+
+adt Type {
+    LiteralType { LiteralLabel label; Array<Type> children; }  // fully concrete
+    Uncertain { LiteralLabel label; Array<Type> children; }  // l of alpha, but with uncertainty
 }
 
-adt Tree{
-    LiteralTree { Label label; Array<Tree> children; }  // fully concrete
-    Unknown { SArray<char> name; Label label; Array<Tree> children; }  // l of alpha, but with uncertainty
-    Parameter { int index; }  // alpha
-    Child { Tree parent; int index; }  // child of somebody else
-    TypeApplication { SArray<char> fn; Array<Tree> args; }
-    Dummy { }  // TODO idk
+adt Tree {
+    TypeTree { Type t; }
+    Parameter { int index; }  /** Parameter of a function. TODO when supporting multiple functions, this will change */
+    // TODO parameters occur in constraints, but we never check them directly; we check values in the corresponding positions in examples
+    Child { Tree parent; int index; }
+    /** Equivalently, functions could be a type of Tree.
+    Add this later when supporting multiple functions */
+//    TypeApplication { SArray<char> fn; Array<Tree> args; }
+}
+
+adt Label {
+    NodeLabel { Tree node; }
+    LiteralLabel { int label; }  // TODO there should probably be two declarations of LiteralLabels, one that occurs directly in Types and one that's in the constraint language
+}
+
+// Constraints operate on Trees, which are defined in terms of Types
+adt Constraint {
+    TreeEquals { Tree left; Tree right; }
+    LabelEquals { Label left; Label right; }
+}
+// an alpha is induced by constraints and never occurs as a node here
+
+// -------------------------------- Constraint generator ----------------------------------
+generator Type type() {
+    LiteralLabel l = new LiteralLabel(label=??);
+    int n_params = ??;
+    assert n_params <= MAX_NUM_TYPE_PARAMS;
+    Array<Type> arr = newArray();
+    for (int i = 0; i < n_params; i++) {
+        Type elem = type();
+        add(arr, elem);
+    }
+    int t = ??;
+    if (t == 0) {
+        return new LiteralType(label=l; children=arr);
+    }
+    if (t == 1) {
+        return new Uncertain(label=l; children=arr);
+    }
+}
+
+generator Tree tree() {
+    int t = ??;
+    if (t == 0) {
+        Type ty = type();
+        return new TypeTree(t=ty);
+    }
+    if (t == 1) {  // todo want heavy bias towards this one
+        return new Parameter(index=??);
+    }
+    if (t == 2) {
+        Tree p = tree();
+        return new Child(parent=p; index=??);
+    }
+}
+
+generator Label label() {
+    int t = ??;
+    if (t == 0) {
+        Tree n = tree();
+        return new NodeLabel(node=n);
+    }
+    if (t == 1) {
+        return new LiteralLabel(label=??);
+    }
+}
+
+generator Constraint constraint() {
+    int t = ??;
+    if (t == 0) {
+        Tree l = tree();
+        Tree r = tree();
+        return new TreeEquals(left=l, right=r);
+    }
+    if (t == 1) {
+        Label l = label();
+        Label r = label();
+        return new Label(left=l, right=r);
+    }
 }
 
 // -------------------------------- Helpful constructors ----------------------------------
-SArray<char> str(int len, char[len] s) {
-    return new SArray<char>(n=len, val=s);
-}
-
-Array<Tree> zeroChildren() {
+Array<Type> zeroChildren() {
     return newArray();
 }
 
-Unknown newUnknown(int len, char[len] name) {
-    return new Unknown(name = str(len, name), label=null, children=null);
+/* TODO maybe take in a label */
+Uncertain newUncertain() {
+    return new Uncertain(label=null, children=null);
 }
 
 // -------------------------------- Equals ----------------------------------
 
 // Does comparison only one level down, not deep equals
 boolean equalsSArray<T>(SArray<T> a, SArray<T> b) {
-    return (a == null && b == null) || (a.val == b.val);
+    if (a == null && b == null) return true;
+    else if (a == null || b == null) return false;
+    return (a.val == b.val);
 }
 
 boolean equalsArray<T>(Array<T> a, Array<T> b) {
-    return (a == null && b == null) || equalsSArray(a.inner, b.inner);
+    if (a == null && b == null) return true;
+    else if (a == null || b == null) return false;
+    return equalsSArray(a.inner, b.inner);
 }
 
 boolean equalsLabel(Label a, Label b) {
     if (a == null && b == null) return true;
+    else if (a == null || b == null) return false;
     switch(a){
         case LiteralLabel:{
             switch(b){
-                case LiteralLabel:{ return equalsSArray(a.label, b.label); }
+                case LiteralLabel:{ return a.label == b.label; }
                 case NodeLabel:{ return false; }
             }
         }
@@ -53,80 +131,63 @@ boolean equalsLabel(Label a, Label b) {
             switch(b){
                 case LiteralLabel:{ return false; }
                 case NodeLabel:{ return equalsTree(a.node, b.node); }
-                // TODO I think this is a broken cyclic call and should be fixed once I figure out how to represent stuff
+                // TODO I think this is a broken cyclic call and should be fixed by casing on the node type
+            }
+        }
+    }
+}
+
+boolean equalsTree(Tree a, Tree b) {
+    if (a == null && b == null) return true;
+    else if (a == null || b == null) return false;
+    switch(a){
+        case TypeTree:{
+            switch(b){
+                case TypeTree:{ return equalsType(a.t, b.t); }
+                case Parameter:{ return false; }
+                case Child:{ return false; }
+            }
+        }
+        case Parameter:{
+            switch(b){
+                case TypeTree:{ return false; }
+                case Parameter:{ return a.index == b.index; }
+                case Child:{ return false; }
+            }
+        }
+        case Child:{
+            switch(b){
+                case TypeTree:{ return false; }
+                case Parameter:{ return false; }
+                case Child:{ return a.index == b.index && equalsTree(a.parent, b.parent); }
             }
         }
     }
 }
 
 // Because comparing refs uses physical equality, and we pass around refs a lot for multiple returns
-boolean equalsTree(Tree a, Tree b) {
+boolean equalsType(Type a, Type b) {
     if (a == null && b == null) return true;
+    else if (a == null || b == null) return false;
     switch(a){
-        case LiteralTree:{
+        case LiteralType:{
             switch(b){
-                case LiteralTree:{
+                case LiteralType:{
                     return a.label == b.label && equalsArray(a.children, b.children);
                 }
-                case Unknown:{ return false; }
-                case Parameter:{ return false; }
-                case Child:{ return false; }
-                case TypeApplication:{ return false; }
-                case Dummy:{ return false; }
+                case Uncertain:{ return false; }
             }
         }
-        case Unknown:{
+        case Uncertain:{
             switch(b){
-                case LiteralTree:{ return false; }
-                case Unknown:{
-                    return equalsSArray(a.name, b.name) && equalsLabel(a.label, b.label) && equalsArray(a.children, b.children);
+                case LiteralType:{ return false; }
+                case Uncertain:{
+                    return equalsLabel(a.label, b.label) && equalsArray(a.children, b.children);
                 }
-                case Parameter:{ return false; }
-                case Child:{ return false; }
-                case TypeApplication:{ return false; }
-                case Dummy:{ return false; }
-            }
-        }
-        case Parameter:{
-            switch(b){
-                case LiteralTree:{ return false; }
-                case Unknown:{ return false; }
-                case Parameter:{ return a.index == b.index; }
-                case Child:{ return false; }
-                case TypeApplication:{ return false; }
-                case Dummy:{ return false; }
-            }
-        }
-        case Child:{
-            switch(b){
-                case LiteralTree:{ return false; }
-                case Unknown:{ return false; }
-                case Parameter:{ return false; }
-                case Child:{ return a.parent == b.parent && a.index == b.index; }
-                case TypeApplication:{ return false; }
-                case Dummy:{ return false; }
-            }
-        }
-        case TypeApplication:{
-            switch(b){
-                case LiteralTree:{ return false; }
-                case Unknown:{ return false; }
-                case Parameter:{ return false; }
-                case Child:{ return false; }
-                case TypeApplication:{ return equalsSArray(a.fn, b.fn) && equalsArray(a.args, b.args); }
-                case Dummy:{ return false; }
-            }
-        }
-        case Dummy:{
-            switch(b){
-                case LiteralTree:{ return false; }
-                case Unknown:{ return false; }
-                case Parameter:{ return false; }
-                case Child:{ return false; }
-                case TypeApplication:{ return false; }
-                case Dummy:{ return true; }
             }
         }
     }
     assert false;
 }
+
+// TODO: How to check constraints against examples
