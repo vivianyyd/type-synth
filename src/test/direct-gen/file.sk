@@ -11,7 +11,7 @@ adt Type{
     Error { }
 }
 
-// TODO see if this actually helps
+// TODO does this actually help
 generator int bounded_number(int bound) {
     int n = ??;
     assert n > -1 && n < bound;
@@ -53,8 +53,12 @@ UnificationResult unifyVar(Variable var, Type target, Type[MAX_NUM_VARS] var_map
     }
 }
 
+/** Just here for readability */
+UnificationResult error(Type[MAX_NUM_VARS] var_map) {
+    return new UnificationResult(type=new Error(), var_map=var_map);
+}
+
 UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
-    // TODO remove the assert falses from unifying Errors
     switch(a){
         case Variable:{
             // There needs to be a switch on b directly under each case, since we want errors to redirect quickly.
@@ -66,7 +70,7 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
                 }
                 case Function:{ return unifyVar(a, b, var_map); }
                 case Node:{ return unifyVar(a, b, var_map); }
-                case Error:{ assert false; return new UnificationResult(type=b, var_map=var_map); }
+                case Error:{ return error(var_map); }
             }
         }
         case Function:{
@@ -76,27 +80,35 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
                     UnificationResult curry = unify(a.in, b.in, var_map);  // TODO is this even a sensible name
                     return unify(a.out, b.out, curry.var_map);
                 }
-                case Node:{ assert false; }
-                case Error:{ assert false; return new UnificationResult(type=b, var_map=var_map); }
+                case Node:{ return error(var_map); }
+                case Error:{ return error(var_map); }
             }
         }
         case Node:{
             switch(b){
                 case Variable:{ return unifyVar(b, a, var_map); }
-                case Function:{ assert false; }
+                case Function:{ return error(var_map); }
                 case Node:{
-                    assert a.label == b.label;
-                    assert a.params.sz == b.params.sz;
+                    if (a.label != b.label) return error(var_map);
+                    if (a.params.sz != b.params.sz) return error(var_map);
                     for (int i = 0; i < a.params.sz; i++) {
                         // params should be independent, so the var map shouldn't change between them
-                        unify(a.params.inner.val[i], b.params.inner.val[i], var_map);
+                        // TODO think about variable binding here more
+                        UnificationResult unifyChild = unify(a.params.inner.val[i], b.params.inner.val[i], var_map);
+                        Type ty = unifyChild.type;
+                        switch (ty) {
+                            case Variable:{}
+                            case Function:{}
+                            case Node:{}
+                            case Error:{ return error(var_map); }
+                        }
                     }
                     return new UnificationResult(type=a, var_map=var_map);
                 }
-                case Error:{ assert false; return new UnificationResult(type=b, var_map=var_map); }
+                case Error:{ return error(var_map); }
             }
         }
-        case Error:{ assert false; return new UnificationResult(type=a, var_map=var_map); }
+        case Error:{ return error(var_map); }
     }
 }
 
@@ -113,17 +125,16 @@ Type generated_function_type() {
     return type();
 }
 
-// For each test which is an example of application,
-harness void passes_positives(int t) {
+harness void typecheck_passes_positives(int t) {
     assume t > -1 && t < 3;
-    Type fun_type = generated_function_type();  // todo this will be produced by calling generator
+//    Type fun_type = generated_function_type();
 
     // a -> a list
-//    Type alpha = new Variable(id=2);
-//    Array<Type> childAlpha = newArray();
-//    add(childAlpha, alpha);
-//    Type listAlpha = new Node(label=1, params=childAlpha);
-//    Type fun_type = new Function(in=alpha, out=listAlpha);
+    Type alpha = new Variable(id=2);
+    Array<Type> childAlpha = newArray();
+    add(childAlpha, alpha);
+    Type listAlpha = new Node(label=1, params=childAlpha);
+    Type fun_type = new Function(in=alpha, out=listAlpha);
 
     // int -> int list
     Type intNode = new Node(label=0, params=newArray());
@@ -131,20 +142,16 @@ harness void passes_positives(int t) {
     add(childInt, intNode);
     Type listIntNode = new Node(label=1, params=childInt);
     Type example = new Function(in=intNode, out=listIntNode);
-
     Type[MAX_NUM_VARS] map;
-    UnificationResult dummy = unify(fun_type, example, map);
+    UnificationResult result = unify(fun_type, example, map);
 
-    // int -> int
-//    Type negative_example = new Function(in=intNode, out=intNode);
-//    Type[MAX_NUM_VARS] map2;
-//    UnificationResult dummy2 = unify(fun_type, negative_example, map2);
-
-    // bool -> int list
-//    Type boolNode = new Node(label=3, params=newArray());
-//    Type negative_example2 = new Function(in=boolNode, out=listIntNode);
-//    Type[MAX_NUM_VARS] map3;
-//    UnificationResult dummy3 = unify(fun_type, negative_example2, map3);
+    Type ty = result.type;
+    switch (ty) {
+        case Variable:{}
+        case Function:{}
+        case Node:{}
+        case Error:{ assert false; }
+    }
 
     // TODO Think about how to unify errors actually
     // TODO will it work if I just force all negative examples to unify with Error or something, maybe this is why we need an Apply function
@@ -162,4 +169,40 @@ adt Type{
     // TODO The example might only be a partial application, account for that eventually.
     //      Or maybe we only apply one argument by default? Idk. Why can't we just unify the whole function with each
     //      example rather than calling "Apply" like on the whiteboard
+}
+
+harness void typecheck_fails_negatives(int t) {
+    assume t > -1 && t < 3;  // TODO this will select one example to test at a time
+//    Type fun_type = generated_function_type();
+
+    // a -> a list
+    Type alpha = new Variable(id=2);
+    Array<Type> childAlpha = newArray();
+    add(childAlpha, alpha);
+    Type listAlpha = new Node(label=1, params=childAlpha);
+    Type fun_type = new Function(in=alpha, out=listAlpha);
+
+    Type intNode = new Node(label=0, params=newArray());
+    Array<Type> childInt = newArray();
+    add(childInt, intNode);
+    Type listIntNode = new Node(label=1, params=childInt);
+
+    // int -> int
+//    Type negative_example = new Function(in=intNode, out=intNode);
+//    Type[MAX_NUM_VARS] map2;
+//    UnificationResult result = unify(fun_type, negative_example, map2);
+
+    // bool -> int list
+    Type boolNode = new Node(label=3, params=newArray());
+    Type negative_example2 = new Function(in=boolNode, out=listIntNode);
+    Type[MAX_NUM_VARS] map3;
+    UnificationResult result = unify(fun_type, negative_example2, map3);
+
+    Type ty = result.type;
+    switch (ty) {
+        case Variable:{ assert false; }
+        case Function:{ assert false; }
+        case Node:{ assert false; }
+        case Error:{}
+    }
 }
