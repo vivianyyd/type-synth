@@ -1,0 +1,5 @@
+package enumgen
+
+class Enumerator {
+
+}
