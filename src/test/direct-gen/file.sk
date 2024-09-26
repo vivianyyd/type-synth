@@ -112,6 +112,41 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
     }
 }
 
+UnificationResult resolve(Type t, Type[MAX_NUM_VARS] var_map) {
+    switch (ty) {
+        case Variable: {
+            // alpha should never mention itself
+            return resolve(var_map[ty.id], var_map);
+        }
+        case Function: {
+            UnificationResult resolveIn = resolve(ty.in, var_map);
+            UnificationResult resolveOut = resolve(ty.out, resolveIn.var_map);
+            Type fun = new Function(in=resolveIn.type, out=resolveOut.type);
+            return new UnificationResult(type=fun, var_map=resolveOut.var_map);
+            // TODO check I did the following: resolve both in and out and return new function with them
+            // resolve out using the var map from resolving in.
+        }
+        case Node: {
+            // TODO
+//            int label; Array<Type> params;
+        }
+        case Error: { }
+    }
+    return null; // TODO removeme
+}
+
+UnificationResult apply(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
+    switch(a){
+        case Function:{
+            UnificationResult app = unify(a.in, b, var_map);
+            return resolve(app.type, var_map);
+        }
+        case Variable:{ return error(var_map); }
+        case Node:{ return error(var_map); }
+        case Error:{ return error(var_map); }
+    }
+}
+
 // TODO make this work
 //T arrayOf<T>(int n, T[n] elems) {
 //    Array<T> arr = newArray();
@@ -153,6 +188,7 @@ harness void typecheck_passes_positives(int t) {
         case Error:{ assert false; }
     }
 
+    // TODO check apply works by typechecking using it. positive examples
     // TODO Think about how to unify errors actually
     // TODO will it work if I just force all negative examples to unify with Error or something, maybe this is why we need an Apply function
 
