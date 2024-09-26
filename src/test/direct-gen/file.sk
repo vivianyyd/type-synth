@@ -65,6 +65,7 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
             switch(b){
                 case Variable:{
                     // Unwrap b if possible
+                    // TODO check if this unwrapping is right
                     if (var_map[b.id] != null) { return unify(var_map[b.id], a, var_map); }
                     return unifyVar(a, b, var_map);
                 }
@@ -77,8 +78,9 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
             switch(b){
                 case Variable:{ return unifyVar(b, a, var_map); }
                 case Function:{
+                    // TODO is this even right, don't I need to return a function type
                     UnificationResult curry = unify(a.in, b.in, var_map);  // TODO is this even a sensible name
-                    return unify(a.out, b.out, curry.var_map);
+                    return unify(a.out, b.out, curry.var_map);  // TODO need to return OG context?
                 }
                 case Node:{ return error(var_map); }
                 case Error:{ return error(var_map); }
@@ -103,6 +105,7 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
                             case Error:{ return error(var_map); }
                         }
                     }
+                    // TODO we actually have to make a new type containing all the results of unifying the children
                     return new UnificationResult(type=a, var_map=var_map);
                 }
                 case Error:{ return error(var_map); }
