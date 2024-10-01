@@ -78,6 +78,7 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
             switch(b){
                 case Variable:{ return unifyVar(b, a, var_map); }
                 case Function:{
+                    // TODO check for errors and return error if exists. and think about variable shadowing
                     // TODO is this even right, don't I need to return a function type
                     UnificationResult curry = unify(a.in, b.in, var_map);  // TODO is this even a sensible name
                     return unify(a.out, b.out, curry.var_map);  // TODO need to return OG context? check this is the correct context to return. if fn is (a->a) -> a unify with (int->int)-> int
@@ -94,7 +95,8 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
                     if (a.label != b.label) return error(var_map);
                     if (a.params.sz != b.params.sz) return error(var_map);
                     for (int i = 0; i < a.params.sz; i++) {
-                        // TODO think about variable binding here more
+                        // params should be independent, so the var map shouldn't change between them
+                        // TODO think about variable binding here more. this is wrong, refer to kotlin unify
                         UnificationResult unifyChild = unify(a.params.inner.val[i], b.params.inner.val[i], var_map);
                         Type ty = unifyChild.type;
                         switch (ty) {
@@ -118,6 +120,7 @@ UnificationResult resolve(Type t, Type[MAX_NUM_VARS] var_map) {
     switch (ty) {
         case Variable: {
             // alpha should never mention itself
+            // TODO if not in map, error
             return resolve(var_map[ty.id], var_map);
         }
         case Function: {
@@ -132,7 +135,8 @@ UnificationResult resolve(Type t, Type[MAX_NUM_VARS] var_map) {
             // TODO
 //            int label; Array<Type> params;
         }
-        case Error: { }
+        case Error: { //TODO
+        }
     }
     return null; // TODO removeme
 }
@@ -141,7 +145,8 @@ UnificationResult apply(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
     switch(a){
         case Function:{
             UnificationResult app = unify(a.in, b, var_map);
-            return resolve(app.type, var_map);
+                    // TODO here's where we check not an error
+            return resolve(app.type, var_map);  // TODO use resulting map, not var_map. Also, it shouldn't return the unified function type, but the output.. right?
         }
         case Variable:{ return error(var_map); }
         case Node:{ return error(var_map); }

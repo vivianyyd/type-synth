@@ -4,6 +4,7 @@ typealias Context = MutableMap<Variable, Type>
 
 fun err(map: Context) = Pair(Error, map)
 
+// TODO throughout this file need to make consistent which context gets returned with Errors
 class Unify {
     /** Assumes [target] is not a variable with an entry in [map]. */
     private fun unifyVar(v: Variable, target: Type, map: Context): Pair<Type, Context> =
@@ -27,7 +28,9 @@ class Unify {
                 is Variable -> unifyVar(b, a, map)
                 is Function -> {
                     val (param, innerContext) = unify(a.param, b.param, map)
+                    if (param is Error) err(innerContext)
                     val (outputType, outerContext) = unify(a.out, b.out, innerContext)
+                    if (outputType is Error) err(outerContext)
                     Pair(
                         Function(param, outputType),
                         outerContext  // If unifying inputs of (a->a)->a and (int->int)->int, need to store a:=int
@@ -57,5 +60,34 @@ class Unify {
             is Function, Error -> err(map)
         }
         Error -> err(map)
+    }
+
+    private fun apply(f: Function, arg: Type, map: Context): Pair<Type, Context> {
+        val (specializedF, fnContext) = unify(f.param, arg, map)
+        if (specializedF is Error) return err(fnContext)
+        return resolve((specializedF as Function).out, fnContext)
+    }
+
+    // Notice it's similar to unify
+    /** Should never produce new errors */
+    private fun resolve(t: Type, map: Context): Pair<Type, Context> = when (t) {
+        Error -> err(map)
+        is Variable -> map[t]?.let { resolve(it, map) } ?: Pair(t, map)
+            // I think we want to keep variables not in the Context, instead of throwing an error
+        is Function -> {
+            val (inT, inMap) = resolve(t.param, map)
+            val (outT, outMap) = resolve(t.out, inMap)
+            Pair(Function(inT, outT), outMap)
+        }
+        is Node -> {
+            var currMap = map
+            val params = (0 until t.typeParams.size).map {
+                val (param, newMap) = resolve(t.typeParams[it], currMap)
+                currMap = newMap
+                param
+            }
+            assert (Error !in params)  // TODO I think this is right..
+            Pair(Node(t.label, params), currMap)
+        }
     }
 }
