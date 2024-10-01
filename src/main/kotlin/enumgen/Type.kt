@@ -1,18 +1,30 @@
 package enumgen
 
-interface Type
+sealed interface Type
 
-data class Variable(val id: String): Type
+interface Name
+data class NameLiteral(val name: String) : Name
+class NameHole : Name
 
-data class Function(/* TODO val id: String,*/ val param: Type, val out: Type): Type
+data class Variable(val id: Name) : Type
 
-data class Node(val label: String, val typeParams: List<Type>): Type
+data class Function(val param: Type, val out: Type) : Type
+
+data class Node(val label: Name, val typeParams: List<Type>) : Type
 
 /** Unifies with everything, producing itself. Represents a type that can never successfully resolve. */
-object Error: Type
+object Error : Type
 
-/** Unifies with everything, producing the other type. Represents a hole/tree not yet completely enumerated. */
-object Incomplete: Type
+/**
+ * Unifies with everything, producing the other type. Represents a hole/tree not yet completely enumerated.
+ *
+ * Needs to be a class rather than Object since we want to have pointers to distinct holes
+ */
+class TypeHole : Type {
+    // We want physical equals and for some reason the compiler complains if we don't do this
+    override fun equals(other: Any?): Boolean = this === other
+    override fun hashCode(): Int = System.identityHashCode(this)
+}
 
 // TODO how do we use negative examples in pruning? We prune when something fails a positive example and we know where
 //  to prune bc of unify algo. But with negative examples, we don't know where the failure was supposed to be, only that
