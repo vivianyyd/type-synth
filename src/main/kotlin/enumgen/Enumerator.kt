@@ -2,9 +2,11 @@ package enumgen
 
 import io.michaelrocks.bimap.HashBiMap
 
-class Example {
-    // TODO
-}
+/**
+ * If [arguments] is null, the function [name] is not applied.
+ * If [arguments] is empty, [name] is applied with no arguments.
+ */
+data class Application(val name: String, val arguments: List<Application>?)
 
 typealias Expansion = Pair<String, Type>
 
@@ -21,7 +23,13 @@ typealias Guesses = MutableMap<String, List<Type>>
 private fun Guesses.more() =
     this.entries.fold(false) { acc, (_, guesses) -> !guesses.isEmpty() || acc }
 
-class Enumerator(val names: List<String>, val examples: Set<Example>) {
+object FilledCompleteTree : Exception()
+
+class Enumerator(val names: List<String>, val posExamples: Set<Application>, val MAX_TYPE_PARAMS: Int) {
+    init {
+        TODO("Assert that [posExamples] only contains names in [names]")
+    }
+
     // Enumerate in same order as Unify traverses? Will it reduce to DFS?
     // Invariant: All types here may unify with something. How to keep pairwise conflicts?
     // Heuristic: lower priority in heap if more conflicts
@@ -30,7 +38,7 @@ class Enumerator(val names: List<String>, val examples: Set<Example>) {
     private val conflicts = HashBiMap<Expansion, Expansion>()
     private val solved = mutableMapOf<String, Type>()
 
-    var counter = 0
+    private var counter = 0
 
     /** Returns the index of the next function to step */
     private fun next(): Int {
@@ -38,56 +46,53 @@ class Enumerator(val names: List<String>, val examples: Set<Example>) {
         return if (names[counter] in solved) next() else counter
     }
 
-    /** Returns a list of trees resulting from replacing one hole in [tree] with all productions */
+    private fun containsHole(tree: Type): Boolean {
+        return TODO()
+    }
+
+    /**
+     * Returns a list of trees resulting from replacing one hole in [tree] with all productions
+     *
+     * If there are no holes in [tree], returns empty list.
+     */
     private fun fill(tree: Type): List<Type> {
         val typeExpansion = listOf(
             Variable(NameHole()),
             Function(TypeHole(), TypeHole()),
-            Node(NameHole(), listOf(TypeHole()))
-        )
+        ) + (0..MAX_TYPE_PARAMS).map { Node(NameHole(), List(it) { TypeHole() }) }
 
-        // TODO consider how to find variable names and node labels. Pick from fixed set?
-        //  Can we do something cleverer based on output of unify?
-        val nameExpansion = listOf<Name>()
-
-        fun indexOfTypeHole(l: List<Type>): Int {
-            for (i in l.indices) {
-                if (l[i] is TypeHole) return i
-            }
-            return -1
-        }
+        val nameExpansion = listOf<Name>(NameLiteral("0"), NameLiteral("1"), NameLiteral("2"))
 
         when (tree) {
             is TypeHole -> return typeExpansion
-            // TODO just put this check into a separate thing that checks if complete tree already.
-            //  No need to loop through trees with no holes, even though we need to keep them around as guesses since
-            //  we don't know if the types of other fns they're compatible with work yet
-            // no-op if it's already filled.
-            is Variable -> return if (tree.id is NameHole) nameExpansion.map { Variable(it) } else listOf(tree)
+            // TODO This doesn't go deep enough. Needs to be recursive call, otherwise holes two layers down will
+            //  never get filled
+            //  before recursive call, we check if subtrees contain holes then call if there is. then return trees
+            //  constructed from result by mapping.
+            //  maybe in complete case we return empty list. Then after each recursive call assert the list isn't empty
+            //  since we should never call if the tree is complete
+            is Variable -> return if (tree.id is NameHole) nameExpansion.map { Variable(it) } else throw FilledCompleteTree
             is Function -> return if (tree.param is TypeHole) typeExpansion.map { tree.copy(param = it) }
-            else if (tree.out is TypeHole) typeExpansion.map { tree.copy(out = it) } else listOf(tree)
+            else if (tree.out is TypeHole) typeExpansion.map { tree.copy(out = it) }
+            else
+            /* TODO for example this is not sufficient to determine that this node contains no holes in its subtree.
+                we need to just check each child for completeness and if contains a hole, blindly call fill on that
+                child. then we also don't need to call typeExpansion all those other times, we just call fill on them.
+                still need to map on the result to nest it within this node's structure tho. */ throw FilledCompleteTree
             is Node -> return if (tree.label is NameHole) nameExpansion.map { tree.copy(label = it) } else {
-                val holeLoc = indexOfTypeHole(tree.typeParams)
+                val holeLoc = tree.typeParams.indexOfFirst { it is TypeHole }
                 if (holeLoc != -1)
-                    typeExpansion.map { ty ->
-                        tree.copy(typeParams=tree.typeParams.indices.map {
-                            if (it != holeLoc) tree.typeParams[it] else ty
+                    typeExpansion.map { newTy ->
+                        tree.copy(typeParams = tree.typeParams.mapIndexed { ind, ogTy ->
+                            if (ind == holeLoc) newTy else ogTy
                         })
                     }
-                else listOf(tree)
+                else throw FilledCompleteTree
             }
-            Error -> throw Exception("Why")
+            Error -> throw FilledCompleteTree
         }
 
-        // TODO we will need to modify unify to unify nodes with type holes
-        //   idea. if l of inc, inc, that unifies with l of a, b, c.
-        //   but l of a, inc doesn't.
-        //   nor does l of inc, inc, inc, inc, since it definitely has too many
-        //   otherwise, we will have trouble figuring out how many params there are thru enumeration.
 
-        //  for nodes, begin by figuring out how many args by filling a bunch of incompletes. then start filling in holes after we figure out the number. ex. l of inc gets filled to l of inc, inc
-        //  alternative: fill one arg at a time, always ending the list with an Incomplete. and unify says it is ok as long as the first params match, and incomplete expands to one or more additional params. ex. l of inc gets filled to l of var, inc; l of fn, inc; l of node, inc.
-        //    but then if we will leftmost first, we can get a really deep left side
     }
 
     private fun enumerate() {
@@ -98,7 +103,7 @@ class Enumerator(val names: List<String>, val examples: Set<Example>) {
             // TODO for all combinations of guesses (+solve values if some are solved),
             //  test the examples of successful applications and record conflicts
 
-
+            // TODO error needs to be a class with information pointing into the tree so we can learn from it
 
             // TODO for now try testing all combinations. It's 3^n tried per round of filling where n the number of functions since there are 3 productions.
             //    actually that's not true bc the prev round might've had multiple candidates make it?
