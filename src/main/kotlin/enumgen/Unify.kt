@@ -21,6 +21,7 @@ class Unify {
                 }
                 is Function, is Node -> unifyVar(a, b, map)
                 Error -> err(map)
+                is TypeHole -> Pair(a, map)
             }
         }
         is Function -> {
@@ -37,6 +38,7 @@ class Unify {
                     )
                 }  // TODO think about variable shadowing. I think a->(a->a) is fine! what about unifying a-> (a->b) if they have diff names. should each type just have disjoint sets of variables?
                 is Node, Error -> err(map)
+                is TypeHole -> Pair(a, map)
             }
         }
         is Node -> when (b) {
@@ -58,8 +60,10 @@ class Unify {
                 Pair(Node(a.label, params), currMap)
             }
             is Function, Error -> err(map)
+            is TypeHole -> Pair(a, map)
         }
         Error -> err(map)
+        is TypeHole -> Pair(b, map)
     }
 
     private fun apply(f: Function, arg: Type, map: Context): Pair<Type, Context> {
@@ -72,6 +76,7 @@ class Unify {
     /** Should never produce new errors */
     private fun resolve(t: Type, map: Context): Pair<Type, Context> = when (t) {
         Error -> err(map)
+        is TypeHole -> Pair(t, map)
         is Variable -> map[t]?.let { resolve(it, map) } ?: Pair(t, map)
             // I think we want to keep variables not in the Context, instead of throwing an error
         is Function -> {
