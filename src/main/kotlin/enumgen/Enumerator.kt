@@ -46,9 +46,24 @@ class Enumerator(val names: List<String>, val posExamples: Set<Application>, val
 
     /* TODO
         What if instead of tracking constraints as the disjunction of negations of trees, we represent our choices
-        as a single subtree/selection of the tree where the root is a tuple of types, one elment for each function
+        as a single subtree/selection of the tree where the root is a tuple of types, one element for each function
         Then when we eliminate a choice, we eliminate a complete subtree
+        we only ever try combinations anyway. why not enumerate them that way
+
+
+        SMT way: build in constraints. if we ever want to make a new candidate combo, check whether violates constraints
+        but if we just top down enum using a queue, we just remove anything that will violate constraints bc we go top down
+        we can match against stuff. like if the fn param type doesn't work, we can delete anything with the same param type
+        regardless of the out type. but maybe we can essentially do the same thing by only perform one enum step one group at a time
      */
+
+    private val typeExpansion = listOf(
+        Variable(NameHole()),
+        Function(TypeHole(), TypeHole()),
+    ) + (0..MAX_TYPE_PARAMS).map { Node(NameHole(), List(it) { TypeHole() }) }
+
+    // TODO what if we keep around a lot of duplicate trees because of renaming and alpha equivalence
+    private val nameExpansion = listOf<Name>(NameLiteral("0"), NameLiteral("1"), NameLiteral("2"))
 
     /**
      * Returns a list of trees resulting from replacing one hole in [tree] with all productions
@@ -56,13 +71,6 @@ class Enumerator(val names: List<String>, val posExamples: Set<Application>, val
      * If there are no holes in [tree], returns empty list.
      */
     private fun fill(tree: Type): List<Type> {
-        val typeExpansion = listOf(
-            Variable(NameHole()),
-            Function(TypeHole(), TypeHole()),
-        ) + (0..MAX_TYPE_PARAMS).map { Node(NameHole(), List(it) { TypeHole() }) }
-
-        val nameExpansion = listOf<Name>(NameLiteral("0"), NameLiteral("1"), NameLiteral("2"))
-
         when (tree) {
             is TypeHole -> return typeExpansion
             is Variable -> return if (tree.id is NameHole) nameExpansion.map { Variable(it) } else listOf()
@@ -87,25 +95,57 @@ class Enumerator(val names: List<String>, val posExamples: Set<Application>, val
             }
             Error -> return listOf()
         }
+    }
 
+    private fun cartesianProduct(candidates: Map<String, List<Type>>): List<Map<String, Type>> {
+        // Need to init or else flatMap won't work
+        var result: List<Map<String, Type>> = candidates[names[0]]?.map {
+            mapOf(names[0] to it)
+        }?: throw Exception("there are no functions")
 
+        candidates.forEach { (name, types) ->
+            if (name != names[0]) {
+                result = result.flatMap { mapping ->
+                    // For each partial context, make |[types]| new maps which are the context plus a candidate for [name].
+                    types.map { ty -> mapping + mapOf(name to ty) }
+                }
+            }
+        }
+        return result
     }
 
     private fun enumerate() {
         while (guesses.more()) {
-            for (name in guesses.keys) {
-                guesses[name] = guesses.remove(name)?.flatMap { fill(it) } ?: throw Exception("This shouldn't happen")
+            // Step one name
+            val name = names[next()]
+            guesses[name] = guesses.remove(name)?.flatMap { fill(it) } ?: throw Exception("This shouldn't happen")
+
+            // Step every fn type at once. This might produce conflicts which are duplicate in spirit,
+            // so first let's try filling one at a time
+//            for (name in guesses.keys) {
+//                guesses[name] = guesses.remove(name)?.flatMap { fill(it) } ?: throw Exception("This shouldn't happen")
+//            }
+
+            val typesToTry = guesses + solved.mapValues { (_, ty) -> listOf(ty) }
+            if (typesToTry.isEmpty()) throw Exception("wat")
+
+            // For now try testing all combinations.
+            //   we can do a try after filling one additional level in one group.
+            //   or we can fill all groups then try all combos. we can see which faster empirically
+            val jillionMappings = cartesianProduct(typesToTry)
+            jillionMappings.forEach { mapping ->
+                // TODO try to typecheck every example! record conflicts.
+
+                // TODO possible speedup is instead of adding solved to typesToTry, separately look them up when typechecking
+                //  examples. there shouldn't actually be much speedup bc solved types add no branching. but maybe less memory idk
+
             }
-            // TODO for all combinations of guesses (+solve values if some are solved),
-            //  test the examples of successful applications and record conflicts
 
-            // TODO error needs to be a class with information pointing into the tree so we can learn from it
+            // TODO figure out what info needs to be in unification error. class with information pointing into the tree so we can learn from it
+            // TODO remember the don't cares. if the param type of a fn is wrong, we don't care the out type
 
-            // TODO for now try testing all combinations. It's 3^n tried per round of filling where n the number of functions since there are 3 productions.
-            //    actually that's not true bc the prev round might've had multiple candidates make it?
-            //    we need negative examples or else we will just make everything a variable.
-            //   we can do a try after filling one additional level in one group. or we can fill all groups then try all combos. we can see which faster empirically
-            // TODO fill one hole, then try any complete trees? <- no need for them to be complete. randomly try with stuff?
+            // TODO think about how effective negative examples are at avoiding making everything a variable.
+
         }
         // TODO if there are names still that are not in the set solved, but we are out of guesses, that means everything has a conflict. unsat
         TODO()

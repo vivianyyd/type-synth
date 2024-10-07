@@ -13,7 +13,13 @@ data class Function(val param: Type, val out: Type) : Type
 data class Node(val label: Name, val typeParams: List<Type>) : Type
 
 /** Unifies with everything, producing itself. Represents a type that can never successfully resolve. */
-object Error : Type
+data class Error(val t1: Type, val t2: Type, val category: ErrorCategory) : Type
+
+enum class ErrorCategory {
+    NODE_FUNCTION,
+    LABEL_MISMATCH,
+    PARAM_QUANTITY_MISMATCH
+}
 
 /**
  * Unifies with everything, producing the other type. Represents a hole/tree not yet completely enumerated.
