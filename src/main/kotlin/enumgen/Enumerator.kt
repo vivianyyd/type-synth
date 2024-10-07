@@ -23,8 +23,6 @@ typealias Guesses = MutableMap<String, List<Type>>
 private fun Guesses.more() =
     this.entries.fold(false) { acc, (_, guesses) -> !guesses.isEmpty() || acc }
 
-object FilledCompleteTree : Exception()
-
 class Enumerator(val names: List<String>, val posExamples: Set<Application>, val MAX_TYPE_PARAMS: Int) {
     init {
         TODO("Assert that [posExamples] only contains names in [names]")
@@ -46,9 +44,11 @@ class Enumerator(val names: List<String>, val posExamples: Set<Application>, val
         return if (names[counter] in solved) next() else counter
     }
 
-    private fun containsHole(tree: Type): Boolean {
-        return TODO()
-    }
+    /* TODO
+        What if instead of tracking constraints as the disjunction of negations of trees, we represent our choices
+        as a single subtree/selection of the tree where the root is a tuple of types, one elment for each function
+        Then when we eliminate a choice, we eliminate a complete subtree
+     */
 
     /**
      * Returns a list of trees resulting from replacing one hole in [tree] with all productions
@@ -65,31 +65,27 @@ class Enumerator(val names: List<String>, val posExamples: Set<Application>, val
 
         when (tree) {
             is TypeHole -> return typeExpansion
-            // TODO This doesn't go deep enough. Needs to be recursive call, otherwise holes two layers down will
-            //  never get filled
-            //  before recursive call, we check if subtrees contain holes then call if there is. then return trees
-            //  constructed from result by mapping.
-            //  maybe in complete case we return empty list. Then after each recursive call assert the list isn't empty
-            //  since we should never call if the tree is complete
-            is Variable -> return if (tree.id is NameHole) nameExpansion.map { Variable(it) } else throw FilledCompleteTree
-            is Function -> return if (tree.param is TypeHole) typeExpansion.map { tree.copy(param = it) }
-            else if (tree.out is TypeHole) typeExpansion.map { tree.copy(out = it) }
-            else
-            /* TODO for example this is not sufficient to determine that this node contains no holes in its subtree.
-                we need to just check each child for completeness and if contains a hole, blindly call fill on that
-                child. then we also don't need to call typeExpansion all those other times, we just call fill on them.
-                still need to map on the result to nest it within this node's structure tho. */ throw FilledCompleteTree
-            is Node -> return if (tree.label is NameHole) nameExpansion.map { tree.copy(label = it) } else {
-                val holeLoc = tree.typeParams.indexOfFirst { it is TypeHole }
-                if (holeLoc != -1)
-                    typeExpansion.map { newTy ->
-                        tree.copy(typeParams = tree.typeParams.mapIndexed { ind, ogTy ->
-                            if (ind == holeLoc) newTy else ogTy
-                        })
-                    }
-                else throw FilledCompleteTree
+            is Variable -> return if (tree.id is NameHole) nameExpansion.map { Variable(it) } else listOf()
+            is Function -> {
+                val paramTrees = fill(tree.param)
+                if (paramTrees.isNotEmpty()) return paramTrees.map { tree.copy(param = it) }
+                val outTrees = fill(tree.out)
+                if (outTrees.isNotEmpty()) return outTrees.map { tree.copy(out = it) }
+                return listOf()
             }
-            Error -> throw FilledCompleteTree
+            is Node -> {
+                if (tree.label is NameHole) return nameExpansion.map { tree.copy(label = it) }
+                for (i in tree.typeParams.indices) {
+                    val iParamTrees = fill(tree.typeParams[i])
+                    if (iParamTrees.isNotEmpty()) {
+                        return iParamTrees.map { newTy ->
+                            tree.copy(typeParams = tree.typeParams.mapIndexed { ind, ogTy -> if (ind == i) newTy else ogTy })
+                        }
+                    }
+                }
+                return listOf()
+            }
+            Error -> return listOf()
         }
 
 
