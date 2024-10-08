@@ -18,7 +18,8 @@ data class Error(val t1: Type, val t2: Type, val category: ErrorCategory) : Type
 enum class ErrorCategory {
     NODE_FUNCTION,
     LABEL_MISMATCH,
-    PARAM_QUANTITY_MISMATCH
+    PARAM_QUANTITY_MISMATCH,
+    APPLIED_NON_FUNCTION
 }
 
 /**

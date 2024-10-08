@@ -4,7 +4,9 @@ import io.michaelrocks.bimap.HashBiMap
 
 /**
  * If [arguments] is null, the function [name] is not applied.
- * If [arguments] is empty, [name] is applied with no arguments.
+ *
+ * Later: If [arguments] is empty, [name] is applied with no arguments. For now, unit doesn't exist, all fn must have an
+ * argument to be applied, this is WLOG since we can just have a unit value be passed
  */
 data class Application(val name: String, val arguments: List<Application>?)
 
@@ -24,6 +26,7 @@ private fun Guesses.more() =
     this.entries.fold(false) { acc, (_, guesses) -> !guesses.isEmpty() || acc }
 
 class Enumerator(val names: List<String>, val posExamples: Set<Application>, val MAX_TYPE_PARAMS: Int) {
+    private val u = Unify()  // TODO make this less dumb
     init {
         TODO("Assert that [posExamples] only contains names in [names]")
     }
@@ -93,7 +96,7 @@ class Enumerator(val names: List<String>, val posExamples: Set<Application>, val
                 }
                 return listOf()
             }
-            Error -> return listOf()
+            is Error -> return listOf()
         }
     }
 
@@ -135,13 +138,53 @@ class Enumerator(val names: List<String>, val posExamples: Set<Application>, val
             val jillionMappings = cartesianProduct(typesToTry)
             jillionMappings.forEach { mapping ->
                 // TODO try to typecheck every example! record conflicts.
+                //  maybe apply needs to record which two functions had the conflict
+                val results = posExamples.map { checkApplication(it, mapping) }
+                val errors = results.filterIsInstance<Error>()
+
+                /* Learning from errors
+
+                Unifying a node with a function
+                    Add a constraint if neither is solved.
+                    If one is solved, delete the other mismatching one.
+
+                Label mismatch
+                    Add a constraint if neither is solved.
+                    If one is solved, delete the other mismatching one.
+
+                Param quantity mismatch
+                    Add a constraint if neither is solved.
+                    If one is solved, delete the other mismatching one.
+                    
+                Applied a non-function A B
+                    A should be a function. Remove any trees where it is not
+                        It's not that simple. What if A is alpha, which gets bound earlier?
+                        Can we apply anonymous stuff?
+                        C(D, A) where C is alpha -> alpha -> int
+                        Then later A(B), lets say A should be beta -> gamma
+                        Then these two examples only work if D is a function of any type
+                        I think it's ok, because we can just remove examples where A not a function
+                        Then we can try all the remaining examples again to see that D not a function should be removed
+                        too, or else D won't match with A as alpha. Or we might only have examples where D = A to begin
+                        with.
+                 */
+
+                /*
+                Can't just delete tree if error. Need to record combination that's bad
+
+                if we record candidates for each fn separately then the combos are implicit
+                    we will do cartesian product each time and keep track of bad combos with sat
+                if we record all possible combos as different ways of highlighting a gigatree with root
+                branching to all fns, allowed combos are explicit and bad combos are implicit, we just delete them
+
+                I really don't want to think about smt solvers
+                 */
 
                 // TODO possible speedup is instead of adding solved to typesToTry, separately look them up when typechecking
                 //  examples. there shouldn't actually be much speedup bc solved types add no branching. but maybe less memory idk
 
             }
 
-            // TODO figure out what info needs to be in unification error. class with information pointing into the tree so we can learn from it
             // TODO remember the don't cares. if the param type of a fn is wrong, we don't care the out type
 
             // TODO think about how effective negative examples are at avoiding making everything a variable.
@@ -150,7 +193,6 @@ class Enumerator(val names: List<String>, val posExamples: Set<Application>, val
         // TODO if there are names still that are not in the set solved, but we are out of guesses, that means everything has a conflict. unsat
         TODO()
     }
-
     /*
     A conflict exists in a set of assignments
     But the first conflict only occurs between two nodes/functions, one edge
@@ -161,4 +203,20 @@ class Enumerator(val names: List<String>, val posExamples: Set<Application>, val
     map A -> set of conflicts
     for each conflict they should also map to A
      */
+
+    private fun checkApplication(app: Application, map: Map<String, Type>): Type =
+        checkApplicationHelper(app, map, mutableMapOf()).first
+
+    private fun checkApplicationHelper(app: Application, map: Map<String, Type>, context: Context): Pair<Type, Context> {
+        var currContext = context
+        var fn = map[app.name]?: throw Exception("Function name not found")
+        app.arguments?.forEach {
+            val (argType, newContext) = checkApplicationHelper(it, map, currContext)
+            currContext = newContext
+            val (resultType, resultContext) = u.apply(fn, argType, currContext)
+            currContext = resultContext
+            fn = resultType
+        }
+        return Pair(fn, currContext)
+    }
 }

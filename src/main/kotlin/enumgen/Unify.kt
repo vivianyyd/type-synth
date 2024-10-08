@@ -66,7 +66,8 @@ class Unify {
         is TypeHole -> Pair(b, map)
     }
 
-    private fun apply(f: Function, arg: Type, map: Context): Pair<Type, Context> {
+    fun apply(f: Type, arg: Type, map: Context): Pair<Type, Context> {
+        if (f !is Function) return Pair(Error(f, arg, ErrorCategory.APPLIED_NON_FUNCTION), map)
         val (specializedF, fnContext) = unify(f.param, arg, map)
         if (specializedF is Error) return Pair(specializedF, fnContext)
         return resolve((specializedF as Function).out, fnContext)
