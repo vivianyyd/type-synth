@@ -6,7 +6,7 @@ interface Name
 data class NameLiteral(val name: String) : Name
 class NameHole : Name
 
-data class Variable(val id: Name) : Type
+data class Variable(val id: NameLiteral) : Type
 
 data class Function(val param: Type, val out: Type) : Type
 
@@ -19,7 +19,8 @@ enum class ErrorCategory {
     NODE_FUNCTION,
     LABEL_MISMATCH,
     PARAM_QUANTITY_MISMATCH,
-    APPLIED_NON_FUNCTION
+    APPLIED_NON_FUNCTION,
+    VAR_REFERENCES_SELF
 }
 
 /**
