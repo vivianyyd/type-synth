@@ -155,7 +155,7 @@ class Enumerator(val names: List<String>, val posExamples: Set<Application>, val
                 Param quantity mismatch
                     Add a constraint if neither is solved.
                     If one is solved, delete the other mismatching one.
-                    
+
                 Applied a non-function A B
                     A should be a function. Remove any trees where it is not
                         It's not that simple. What if A is alpha, which gets bound earlier?
@@ -176,6 +176,11 @@ class Enumerator(val names: List<String>, val posExamples: Set<Application>, val
                     we will do cartesian product each time and keep track of bad combos with sat
                 if we record all possible combos as different ways of highlighting a gigatree with root
                 branching to all fns, allowed combos are explicit and bad combos are implicit, we just delete them
+
+                It really just depends on if we think there are more good combinations or bad ones. Which would we
+                rather store directly?
+                If we store bad combinations in sat solver, we still have to store types which generate the space of
+                possible combinations
 
                 I really don't want to think about smt solvers
                  */
