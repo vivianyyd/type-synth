@@ -4,9 +4,14 @@ sealed interface Type
 
 interface Name
 data class NameLiteral(val name: String) : Name
-class NameHole : Name
+class NameHole : Name {
+    override fun toString(): String = "??"
+}
 
-data class Variable(val id: NameLiteral) : Type
+data class Variable(val id: NameLiteral) : Type {
+    override fun toString(): String =
+        "Variable(${id.name})"
+}
 
 data class Function(val param: Type, val out: Type) : Type
 
@@ -32,6 +37,7 @@ class TypeHole : Type {
     // We want physical equals and for some reason the compiler complains if we don't do this
     override fun equals(other: Any?): Boolean = this === other
     override fun hashCode(): Int = System.identityHashCode(this)
+    override fun toString(): String = "??"
 }
 
 // TODO how do we use negative examples in pruning? We prune when something fails a positive example and we know where
