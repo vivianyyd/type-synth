@@ -30,7 +30,6 @@ class Enumerator(
     private val guesses: MutableSet<Assignment> = mutableSetOf(names.associateWith { TypeHole() }.toMutableMap())
 
     init {
-        println(guesses)
 //        TODO("Assert that [posExamples] only contains names in [names]")
     }
 
@@ -123,7 +122,7 @@ class Enumerator(
                 is Error -> -1
                 is Function -> minUnlessNegative(depthOfHoleHelper(t.param, acc + 1), depthOfHoleHelper(t.out, acc + 1))
                 is Node -> if (t.label is NameHole) acc
-                else acc + t.typeParams.fold(-1) { a, param -> minUnlessNegative(a, depthOfHoleHelper(param, 0)) }
+                else acc + 1 + t.typeParams.fold(-1) { a, param -> minUnlessNegative(a, depthOfHoleHelper(param, 0)) }
                 is TypeHole -> acc
                 is Variable -> -1
             }
@@ -134,21 +133,27 @@ class Enumerator(
     fun enumerate(): Set<Assignment> {
         var x = 0
         do {
+            println("guesses at start of loop $guesses")
             val tmp = guesses.flatMap { candidateAssignment ->
+
                 // In each assignment, fill one fn's type's hole
-                val (fnName, fnType) = candidateAssignment.entries.minBy { (_, ty) -> depthOfHole(ty) }
+                var tmpMinDepth = -1
 
-//                println(fnName)
-//                println(fnType)
-//                println(fill(fnType))
+                val depths = candidateAssignment.entries.associate { (k, v) -> Pair(k, depthOfHole(v)) }
+                val (fnName, _) = depths.filterValues { it != -1 }.minBy { it.value }
 
-                fill(fnType).map { newType ->
+                println("FILLING FOR $fnName")
+                val filled = fill(candidateAssignment[fnName]!!)
+                val tmptmp = filled.map { newType ->
                     (candidateAssignment.minus(fnName) + (mapOf(fnName to newType))).toMutableMap()
                 }
+                tmptmp
             }
+
             val newGuesses: Set<Assignment> = tmp.toSet()
 
-//            println("new guesses: $newGuesses")
+            println("new guesses: $newGuesses")
+            println("new concrete guesses: ${newGuesses.filter { it.all { (_, ty) -> depthOfHole(ty) < 0 } }}")
             val successfulNewGuesses = newGuesses.filter { assignment ->
                 posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
             }
@@ -157,7 +162,8 @@ class Enumerator(
             guesses.clear()
             guesses.addAll(successfulNewGuesses)
 
-            println(guesses)
+            println("successful guesses: $guesses")
+            println("successful concrete guesses: ${guesses.filter { it.all { (_, ty) -> depthOfHole(ty) < 0 } }}")
 
             /* Learning from errors
 
@@ -211,8 +217,8 @@ class Enumerator(
             // TODO remember the don't cares. if the param type of a fn is wrong, we don't care the out type
 
             // TODO think about how effective negative examples are at avoiding making everything a variable.
-            if (x == 15) println("HIT THE SAFEGUARD")
-        } while (!(guesses.any { it.all { (_, ty) -> depthOfHole(ty) < 0 } }) && x < 15) // TODO remove this safeguard
+            if (x == 10) println("HIT THE SAFEGUARD")
+        } while (!(guesses.any { it.all { (_, ty) -> depthOfHole(ty) < 0 } }) && x < 5) // TODO remove this safeguard
         // TODO if there are names still that are not in the set solved, but we are out of guesses, that means everything has a conflict. unsat
         return guesses.filter { it.all { (_, ty) -> depthOfHole(ty) < 0 } }.toSet()
     }
