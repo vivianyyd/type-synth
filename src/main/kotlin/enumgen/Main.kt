@@ -3,6 +3,7 @@ package enumgen
 fun main() {
     val integer = Application("int", null)
     val f = Application("f", listOf(integer))
+    val bool = Application("bool", null)
 
     val e = Enumerator(listOf("int", "f"), setOf(integer, f), 0)
     println("result: ${e.enumerate()}")

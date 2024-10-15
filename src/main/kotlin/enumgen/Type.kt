@@ -13,7 +13,10 @@ data class Variable(val id: NameLiteral) : Type {
         "Variable(${id.name})"
 }
 
-data class Function(val param: Type, val out: Type) : Type
+data class Function(val param: Type, val out: Type) : Type {
+    override fun toString(): String =
+        "($param) -> ($out)"
+}
 
 data class Node(val label: Name, val typeParams: List<Type>) : Type
 

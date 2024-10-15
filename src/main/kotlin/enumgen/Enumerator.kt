@@ -133,27 +133,18 @@ class Enumerator(
     fun enumerate(): Set<Assignment> {
         var x = 0
         do {
-            println("guesses at start of loop $guesses")
             val tmp = guesses.flatMap { candidateAssignment ->
-
-                // In each assignment, fill one fn's type's hole
-                var tmpMinDepth = -1
-
                 val depths = candidateAssignment.entries.associate { (k, v) -> Pair(k, depthOfHole(v)) }
                 val (fnName, _) = depths.filterValues { it != -1 }.minBy { it.value }
 
-                println("FILLING FOR $fnName")
-                val filled = fill(candidateAssignment[fnName]!!)
-                val tmptmp = filled.map { newType ->
+                fill(candidateAssignment[fnName]!!).map { newType ->
                     (candidateAssignment.minus(fnName) + (mapOf(fnName to newType))).toMutableMap()
                 }
-                tmptmp
             }
 
             val newGuesses: Set<Assignment> = tmp.toSet()
 
             println("new guesses: $newGuesses")
-            println("new concrete guesses: ${newGuesses.filter { it.all { (_, ty) -> depthOfHole(ty) < 0 } }}")
             val successfulNewGuesses = newGuesses.filter { assignment ->
                 posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
             }
@@ -162,12 +153,24 @@ class Enumerator(
             guesses.clear()
             guesses.addAll(successfulNewGuesses)
 
-            println("successful guesses: $guesses")
             println("successful concrete guesses: ${guesses.filter { it.all { (_, ty) -> depthOfHole(ty) < 0 } }}")
+
+            /*
+            TODO idea
+                Version spaces?
+                Guide enum order by unification. What will matter next? Enum that.
+                During unification, tag each hole with what it can expand to.
+                Or what would allow it to unify. Constraints.
+                Then somehow join those options across examples. Needs to be an and of those constraints.
+
+             */
 
             /* Learning from errors
 
-        Now I think learning from errors is just deleting all the trees with errors
+            Now I think learning from errors is just deleting all the trees with errors,
+            since each tree represents a combination.
+
+            For constraint on tree representation:
 
             Unifying a node with a function
                 Add a constraint if neither is solved.
@@ -217,7 +220,7 @@ class Enumerator(
             // TODO remember the don't cares. if the param type of a fn is wrong, we don't care the out type
 
             // TODO think about how effective negative examples are at avoiding making everything a variable.
-            if (x == 10) println("HIT THE SAFEGUARD")
+            if (x == 5) println("HIT THE SAFEGUARD")
         } while (!(guesses.any { it.all { (_, ty) -> depthOfHole(ty) < 0 } }) && x < 5) // TODO remove this safeguard
         // TODO if there are names still that are not in the set solved, but we are out of guesses, that means everything has a conflict. unsat
         return guesses.filter { it.all { (_, ty) -> depthOfHole(ty) < 0 } }.toSet()
