@@ -36,20 +36,6 @@ class Enumerator(
     // TODO invariant: If a function is completely solved, it is not in guesses
     private var counter = 0
 
-    /* TODO
-        What if instead of tracking constraints as the disjunction of negations of trees, we represent our choices
-        as a single subtree/selection of the tree where the root is a tuple of types, one element for each function
-        Then when we eliminate a choice, we eliminate a complete subtree
-        we only ever try combinations anyway. why not enumerate them that way
-
-
-        SMT way: build in constraints. if we ever want to make a new candidate combo, check whether violates constraints
-        but if we just top down enum using a queue, we just remove anything that will violate constraints bc we go top down
-        we can match against stuff. like if the fn param type doesn't work, we can delete anything with the same param type
-        regardless of the out type. but maybe we can essentially do the same thing by only perform one enum step one group at a time
-     */
-
-
     // TODO what if we keep around a lot of duplicate trees because of renaming and alpha equivalence
     private val nameExpansion = listOf(NameLiteral("0"), NameLiteral("1"), NameLiteral("2"))
 
@@ -143,81 +129,17 @@ class Enumerator(
             }
 
             val newGuesses: Set<Assignment> = tmp.toSet()
-
             println("new guesses: $newGuesses")
             val successfulNewGuesses = newGuesses.filter { assignment ->
                 posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
             }
-
             x++
             guesses.clear()
             guesses.addAll(successfulNewGuesses)
-
             println("successful concrete guesses: ${guesses.filter { it.all { (_, ty) -> depthOfHole(ty) < 0 } }}")
-
-            /*
-            TODO idea
-                Version spaces?
-                Guide enum order by unification. What will matter next? Enum that.
-                During unification, tag each hole with what it can expand to.
-                Or what would allow it to unify. Constraints.
-                Then somehow join those options across examples. Needs to be an and of those constraints.
-
-             */
-
-            /* Learning from errors
-
-            Now I think learning from errors is just deleting all the trees with errors,
-            since each tree represents a combination.
-
-            For constraint on tree representation:
-
-            Unifying a node with a function
-                Add a constraint if neither is solved.
-                If one is solved, delete the other mismatching one.
-
-            Label mismatch
-                Add a constraint if neither is solved.
-                If one is solved, delete the other mismatching one.
-
-            Param quantity mismatch
-                Add a constraint if neither is solved.
-                If one is solved, delete the other mismatching one.
-
-            Applied a non-function A B
-                A should be a function. Remove any trees where it is not
-                    It's not that simple. What if A is alpha, which gets bound earlier?
-                    Can we apply anonymous stuff?
-                    C(D, A) where C is alpha -> alpha -> int
-                    Then later A(B), lets say A should be beta -> gamma
-                    Then these two examples only work if D is a function of any type
-                    I think it's ok, because we can just remove examples where A not a function
-                    Then we can try all the remaining examples again to see that D not a function should be removed
-                    too, or else D won't match with A as alpha. Or we might only have examples where D = A to begin
-                    with.
-             */
-
-            /*
-            Can't just delete tree if error. Need to record combination that's bad
-
-            if we record candidates for each fn separately then the combos are implicit
-                we will do cartesian product each time and keep track of bad combos with sat
-            if we record all possible combos as different ways of highlighting a gigatree with root
-            branching to all fns, allowed combos are explicit and bad combos are implicit, we just delete them
-
-            It really just depends on if we think there are more good combinations or bad ones. Which would we
-            rather store directly?
-            If we store bad combinations in sat solver, we still have to store types which generate the space of
-            possible combinations
-
-            I really don't want to think about smt solvers
-             */
 
             // TODO possible speedup is instead of adding solved to typesToTry, separately look them up when typechecking
             //  examples. there shouldn't actually be much speedup bc solved types add no branching. but maybe less memory idk
-
-
-            // TODO remember the don't cares. if the param type of a fn is wrong, we don't care the out type
 
             // TODO think about how effective negative examples are at avoiding making everything a variable.
             if (x == 5) println("HIT THE SAFEGUARD")
@@ -225,16 +147,6 @@ class Enumerator(
         // TODO if there are names still that are not in the set solved, but we are out of guesses, that means everything has a conflict. unsat
         return guesses.filter { it.all { (_, ty) -> depthOfHole(ty) < 0 } }.toSet()
     }
-/*
-A conflict exists in a set of assignments
-But the first conflict only occurs between two nodes/functions, one edge
-
-Well the way we'll use it is if we discover something is definitely of the form A,
-all trees which conflict with A will be removed from the heaps of their fns
-
-map A -> set of conflicts
-for each conflict they should also map to A
- */
 
     private fun checkApplication(app: Application, map: Map<String, Type>): Type =
         checkApplicationHelper(app, map, mutableMapOf()).first
