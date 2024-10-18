@@ -37,7 +37,7 @@ class Enumerator(
     private var counter = 0
 
     // TODO what if we keep around a lot of duplicate trees because of renaming and alpha equivalence
-    private val nameExpansion = listOf(NameLiteral("0"), NameLiteral("1"), NameLiteral("2"))
+    private val nameExpansion = listOf(NameLiteral("0"), NameLiteral("1"))
 
     private val typeExpansion =
         listOf(Function(TypeHole(), TypeHole())) +
@@ -51,7 +51,21 @@ class Enumerator(
      */
     private fun fill(tree: Type): List<Type> {
         when (tree) {
-            is TypeHole -> return typeExpansion
+            is TypeHole -> {
+                println("mustunifywith ${tree.mustUnifyWith}")
+                val tmp = typeExpansion.filter { potentialTy ->
+                    tree.mustUnifyWith.all {
+                        u.unify(
+                            it.first,
+                            potentialTy,
+                            it.second,
+                            tagHoles = false
+                        ).first !is Error
+                    }
+                }
+                println("typehole is expanding to $tmp")
+                return tmp
+            }
             is Variable -> return listOf()
             is Function -> {
                 val paramHole = depthOfHole(tree.param)
@@ -118,11 +132,14 @@ class Enumerator(
 
     fun enumerate(): Set<Assignment> {
         var x = 0
-        do {
+        while (!(guesses.any { it.all { (_, ty) -> depthOfHole(ty) < 0 } }) && x < 5) {  // TODO remove this safeguard
             val tmp = guesses.flatMap { candidateAssignment ->
+                println("Current assignment to be filled $candidateAssignment")
+
                 val depths = candidateAssignment.entries.associate { (k, v) -> Pair(k, depthOfHole(v)) }
                 val (fnName, _) = depths.filterValues { it != -1 }.minBy { it.value }
 
+                println("Filling for $fnName")
                 fill(candidateAssignment[fnName]!!).map { newType ->
                     (candidateAssignment.minus(fnName) + (mapOf(fnName to newType))).toMutableMap()
                 }
@@ -130,6 +147,26 @@ class Enumerator(
 
             val newGuesses: Set<Assignment> = tmp.toSet()
             println("new guesses: $newGuesses")
+
+            // TODO clear each typehole's mustunifywith before unifying with examples?
+            // TODO also, if each unify adds to typehole's mustunifywith, what to do when negative example? I think
+            //  unify should take in a flag that says whether it's a negex or not. only modify mustunifywith if it's a
+            //  positive example
+
+
+
+
+
+            // Starting with everything a hole and filling in with all possible results bad
+            // what about start with all variable, then begin getting more precise using negative examples?
+
+            // first, try to run unify on everything with just holes before any filling in order to populate mustunifywith
+            // TODO add to mustunifywith in apply function
+
+
+            // TODO TODO mustunifywith is conditioned on that the other assignments are correct. Like if we have example f(i), we have guesses for i and we could say that f must be function whose param unifies with i. But we don't actuallly know what i is so it gets complicated. i think it's better to be more vague!
+            //   but then if variables involved at all we pretty much want to steer clear. then is this equiv to just heuristic for fn param number? what if we're certain of the type of i? then we can say f must take in i. Need a way to encode certainty?
+            // TODO when adding to mustunifywith, only keep relevant variables in the mapping that's saved.
             val successfulNewGuesses = newGuesses.filter { assignment ->
                 posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
             }
@@ -143,7 +180,7 @@ class Enumerator(
 
             // TODO think about how effective negative examples are at avoiding making everything a variable.
             if (x == 5) println("HIT THE SAFEGUARD")
-        } while (!(guesses.any { it.all { (_, ty) -> depthOfHole(ty) < 0 } }) && x < 5) // TODO remove this safeguard
+        }
         // TODO if there are names still that are not in the set solved, but we are out of guesses, that means everything has a conflict. unsat
         return guesses.filter { it.all { (_, ty) -> depthOfHole(ty) < 0 } }.toSet()
     }

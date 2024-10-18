@@ -37,6 +37,8 @@ enum class ErrorCategory {
  * Needs to be a class rather than Object since we want to have pointers to distinct holes
  */
 class TypeHole : Type {
+    val mustUnifyWith = mutableSetOf<Pair<Type, Context>>()
+
     // We want physical equals and for some reason the compiler complains if we don't do this
     override fun equals(other: Any?): Boolean = this === other
     override fun hashCode(): Int = System.identityHashCode(this)

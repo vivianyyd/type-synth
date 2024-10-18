@@ -5,8 +5,8 @@ typealias Context = MutableMap<Variable, Type>
 // TODO throughout this file need to make consistent which context gets returned with Errors
 class Unify {
     /** Assumes [target] is not a variable with an entry in [map]. */
-    private fun unifyVar(v: Variable, target: Type, map: Context): Pair<Type, Context> =
-        map[v]?.let { unify(it, target, map) } ?: run {
+    private fun unifyVar(v: Variable, target: Type, map: Context, tagHoles: Boolean): Pair<Type, Context> =
+        map[v]?.let { unify(it, target, map, tagHoles) } ?: run {
             if (target is Variable) {
                 val cmp = v.id.name.compareTo(target.id.name)
                 if (cmp < 0) {
@@ -21,8 +21,14 @@ class Unify {
             } else {
                 if (containsVar(v, target, map)) Pair(Error(v, target, ErrorCategory.VAR_REFERENCES_SELF), map)
                 else {
-                    map[v] = target
-                    Pair(target, map)
+                    if (target is TypeHole) {
+//                        if (tagHoles) target.mustUnifyWith.add(Pair(v, map))
+                        Pair(v, map) // TODO I hope this doesn't produce var references self error
+                    }
+                    else {
+                        map[v] = target
+                        Pair(target, map)
+                    }
                 }
             }
         }
@@ -40,24 +46,26 @@ class Unify {
         }
     }
 
-    private fun unify(a: Type, b: Type, map: Context): Pair<Type, Context> = when (a) {
+    fun unify(a: Type, b: Type, map: Context, tagHoles: Boolean): Pair<Type, Context> = when (a) {
         is Variable -> {
             when (b) {
                 is Variable -> { // Unwrap b if possible
-                    map[b]?.let { unify(a, it, map) } ?: unifyVar(a, b, map)
+                    map[b]?.let { unify(a, it, map, tagHoles) } ?: unifyVar(a, b, map, tagHoles)
                 }
-                is Function, is Node -> unifyVar(a, b, map)
+                is Function, is Node -> unifyVar(a, b, map, tagHoles)
                 is Error -> Pair(b, map)
-                is TypeHole -> Pair(a, map)
+                is TypeHole -> {
+                    unifyVar(a, b, map, tagHoles)
+                }
             }
         }
         is Function -> {
             when (b) {
-                is Variable -> unifyVar(b, a, map)
+                is Variable -> unifyVar(b, a, map, tagHoles)
                 is Function -> {
-                    val (param, innerContext) = unify(a.param, b.param, map)
+                    val (param, innerContext) = unify(a.param, b.param, map, tagHoles)
                     if (param is Error) Pair(param, innerContext)
-                    val (outputType, outerContext) = unify(a.out, b.out, innerContext)
+                    val (outputType, outerContext) = unify(a.out, b.out, innerContext, tagHoles)
                     if (outputType is Error) Pair(outputType, outerContext)
                     Pair(
                         Function(param, outputType),
@@ -66,11 +74,15 @@ class Unify {
                 }  // TODO think about variable shadowing. I think a->(a->a) is fine! what about unifying a-> (a->b) if they have diff names. should each type just have disjoint sets of variables?
                 is Node -> Pair(Error(b, a, ErrorCategory.NODE_FUNCTION), map)
                 is Error -> Pair(b, map)
-                is TypeHole -> Pair(a, map)
+                is TypeHole -> {
+//                    if (tagHoles) b.mustUnifyWith.add(Pair(a, map))
+                    if (tagHoles) b.mustUnifyWith.add(Pair(Function(TypeHole(), TypeHole()), mutableMapOf()))
+                    Pair(a, map)
+                }
             }
         }
         is Node -> when (b) {
-            is Variable -> unifyVar(b, a, map)
+            is Variable -> unifyVar(b, a, map, tagHoles)
             is Node -> {
                 if (a.label != b.label) Pair(Error(a, b, ErrorCategory.LABEL_MISMATCH), map)
                 if (a.typeParams.size != b.typeParams.size) Pair(
@@ -80,7 +92,7 @@ class Unify {
                 var currMap = map
                 var error: Pair<Type, Context>? = null
                 val params = a.typeParams.indices.map {
-                    val (param, newMap) = unify(a.typeParams[it], b.typeParams[it], currMap)
+                    val (param, newMap) = unify(a.typeParams[it], b.typeParams[it], currMap, tagHoles)
                     if (param is Error) error = Pair(param, currMap)
                     currMap = newMap
                     param
@@ -89,17 +101,25 @@ class Unify {
             }
             is Function -> Pair(Error(a, b, ErrorCategory.NODE_FUNCTION), map)
             is Error -> Pair(b, map)
-            is TypeHole -> Pair(a, map)
+            is TypeHole -> {
+//                if (tagHoles) b.mustUnifyWith.add(Pair(a, map))
+                Pair(a, map)
+            }
         }
         is Error -> Pair(a, map)
-        is TypeHole -> Pair(b, map)
+        is TypeHole -> {
+            if (b is TypeHole) Pair(b, map)
+            else unify(b, a, map, tagHoles)
+//            if (tagHoles) a.mustUnifyWith.add(Pair(b, map))
+//            Pair(b, map)
+        }
     }
 
     fun apply(f: Type, arg: Type, map: Context): Pair<Type, Context> {
         // TODO figure out what to output if f is a hole. alternatively just always enum functions first but sometimes cyclic
-        if (f is TypeHole) return Pair(TypeHole(), map) // TODO this is not quite right
+        if (f is TypeHole) return Pair(TypeHole(), map) // TODO this is not quite right, it should be some other bottom value. also if this is a positive example, f.mustunifywith is a function with arg as a param
         if (f !is Function) return Pair(Error(f, arg, ErrorCategory.APPLIED_NON_FUNCTION), map)
-        val (parameter, fnContext) = unify(f.param, arg, map)
+        val (parameter, fnContext) = unify(f.param, arg, map, tagHoles = true) // TODO tagHoles changes depending on if pos or neg ex
         if (parameter is Error) return Pair(parameter, fnContext)
         return resolve(f.out, fnContext)
     }
