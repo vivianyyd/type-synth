@@ -117,7 +117,10 @@ class Unify {
 
     fun apply(f: Type, arg: Type, map: Context): Pair<Type, Context> {
         // TODO figure out what to output if f is a hole. alternatively just always enum functions first but sometimes cyclic
-        if (f is TypeHole) return Pair(TypeHole(), map) // TODO this is not quite right, it should be some other bottom value. also if this is a positive example, f.mustunifywith is a function with arg as a param
+        if (f is TypeHole) {
+            f.mustUnifyWith.add(Pair(Function(TypeHole(), TypeHole()), mutableMapOf()))
+            return Pair(TypeHole(), map)
+        } // TODO this is not quite right, it should be some other bottom value. also if this is a positive example, f.mustunifywith is a function with arg as a param
         if (f !is Function) return Pair(Error(f, arg, ErrorCategory.APPLIED_NON_FUNCTION), map)
         val (parameter, fnContext) = unify(f.param, arg, map, tagHoles = true) // TODO tagHoles changes depending on if pos or neg ex
         if (parameter is Error) return Pair(parameter, fnContext)

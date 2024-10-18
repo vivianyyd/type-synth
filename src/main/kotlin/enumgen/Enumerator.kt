@@ -160,8 +160,6 @@ class Enumerator(
             // Starting with everything a hole and filling in with all possible results bad
             // what about start with all variable, then begin getting more precise using negative examples?
 
-            // first, try to run unify on everything with just holes before any filling in order to populate mustunifywith
-            // TODO add to mustunifywith in apply function
 
 
             // TODO TODO mustunifywith is conditioned on that the other assignments are correct. Like if we have example f(i), we have guesses for i and we could say that f must be function whose param unifies with i. But we don't actuallly know what i is so it gets complicated. i think it's better to be more vague!
