@@ -114,7 +114,7 @@ UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
     }
 }
 
-UnificationResult resolve(Type t, Type[MAX_NUM_VARS] var_map) {
+UnificationResult resolve(Type ty, Type[MAX_NUM_VARS] var_map) {
     switch (ty) {
         case Variable: {
             // alpha should never mention itself
@@ -123,8 +123,8 @@ UnificationResult resolve(Type t, Type[MAX_NUM_VARS] var_map) {
         case Function: {
             UnificationResult resolveIn = resolve(ty.in, var_map);
             UnificationResult resolveOut = resolve(ty.out, resolveIn.var_map);
-            Type fun = new Function(in=resolveIn.type, out=resolveOut.type);
-            return new UnificationResult(type=fun, var_map=resolveOut.var_map);
+            Type fn = new Function(in=resolveIn.type, out=resolveOut.type);
+            return new UnificationResult(type=fn, var_map=resolveOut.var_map);
             // TODO check I did the following: resolve both in and out and return new function with them
             // resolve out using the var map from resolving in.
         }
@@ -164,14 +164,14 @@ Type generated_function_type() {
 
 harness void typecheck_passes_positives(int t) {
     assume t > -1 && t < 3;
-//    Type fun_type = generated_function_type();
+    Type fun_type = generated_function_type();
 
     // a -> a list
     Type alpha = new Variable(id=2);
     Array<Type> childAlpha = newArray();
     add(childAlpha, alpha);
     Type listAlpha = new Node(label=1, params=childAlpha);
-    Type fun_type = new Function(in=alpha, out=listAlpha);
+//    Type fun_type = new Function(in=alpha, out=listAlpha);
 
     // int -> int list
     Type intNode = new Node(label=0, params=newArray());
