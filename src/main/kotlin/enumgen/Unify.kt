@@ -30,8 +30,8 @@ class Unify {
     private fun containsVar(v: Variable, t: Type, map: Context): Boolean {
         return when (t) {
             is Error -> false
-            is Function -> containsVar(v, t.param, map) || containsVar(v, t.out, map)
-            is Node -> t.typeParams.fold(false) { a, ty -> a || containsVar(v, ty, map) }
+            is Function -> containsVar(v, t.left, map) || containsVar(v, t.rite, map)
+            is LabelNode -> t.typeParams.fold(false) { a, ty -> a || containsVar(v, ty, map) }
             is TypeHole -> false
             is Variable -> if (t == v) true else {
                 val ty = map[t]
@@ -46,7 +46,7 @@ class Unify {
                 is Variable -> { // Unwrap b if possible
                     map[b]?.let { unify(a, it, map) } ?: unifyVar(a, b, map)
                 }
-                is Function, is Node -> unifyVar(a, b, map)
+                is Function, is LabelNode -> unifyVar(a, b, map)
                 is Error -> Pair(b, map)
                 is TypeHole -> Pair(a, map)
             }
@@ -55,23 +55,23 @@ class Unify {
             when (b) {
                 is Variable -> unifyVar(b, a, map)
                 is Function -> {
-                    val (param, innerContext) = unify(a.param, b.param, map)
+                    val (param, innerContext) = unify(a.left, b.left, map)
                     if (param is Error) Pair(param, innerContext)
-                    val (outputType, outerContext) = unify(a.out, b.out, innerContext)
+                    val (outputType, outerContext) = unify(a.rite, b.rite, innerContext)
                     if (outputType is Error) Pair(outputType, outerContext)
                     Pair(
                         Function(param, outputType),
                         outerContext  // If unifying inputs of (a->a)->a and (int->int)->int, need to store a:=int
                     )
                 }  // TODO think about variable shadowing. I think a->(a->a) is fine! what about unifying a-> (a->b) if they have diff names. should each type just have disjoint sets of variables?
-                is Node -> Pair(Error(b, a, ErrorCategory.NODE_FUNCTION), map)
+                is LabelNode -> Pair(Error(b, a, ErrorCategory.NODE_FUNCTION), map)
                 is Error -> Pair(b, map)
                 is TypeHole -> Pair(a, map)
             }
         }
-        is Node -> when (b) {
+        is LabelNode -> when (b) {
             is Variable -> unifyVar(b, a, map)
-            is Node -> {
+            is LabelNode -> {
                 if (a.label != b.label) Pair(Error(a, b, ErrorCategory.LABEL_MISMATCH), map)
                 if (a.typeParams.size != b.typeParams.size) Pair(
                     Error(a, b, ErrorCategory.PARAM_QUANTITY_MISMATCH),
@@ -85,7 +85,7 @@ class Unify {
                     currMap = newMap
                     param
                 }
-                error ?: Pair(Node(a.label, params), currMap)
+                error ?: Pair(LabelNode(a.label, params), currMap)
             }
             is Function -> Pair(Error(a, b, ErrorCategory.NODE_FUNCTION), map)
             is Error -> Pair(b, map)
@@ -99,9 +99,9 @@ class Unify {
         // TODO figure out what to output if f is a hole. alternatively just always enum functions first but sometimes cyclic
         if (f is TypeHole) return Pair(TypeHole(), map) // TODO this is not quite right
         if (f !is Function) return Pair(Error(f, arg, ErrorCategory.APPLIED_NON_FUNCTION), map)
-        val (parameter, fnContext) = unify(f.param, arg, map)
+        val (parameter, fnContext) = unify(f.left, arg, map)
         if (parameter is Error) return Pair(parameter, fnContext)
-        return resolve(f.out, fnContext)
+        return resolve(f.rite, fnContext)
     }
 
     // Notice it's similar to unify
@@ -113,11 +113,11 @@ class Unify {
             is Variable -> map[t]?.let { resolve(it, map) } ?: Pair(t, map)
             // I think we want to keep variables not in the Context, instead of throwing an error
             is Function -> {
-                val (inT, inMap) = resolve(t.param, map)
-                val (outT, outMap) = resolve(t.out, inMap)
+                val (inT, inMap) = resolve(t.left, map)
+                val (outT, outMap) = resolve(t.rite, inMap)
                 Pair(Function(inT, outT), outMap)
             }
-            is Node -> {
+            is LabelNode -> {
                 var currMap = map
                 val params = (0 until t.typeParams.size).map {
                     val (param, newMap) = resolve(t.typeParams[it], currMap)
@@ -125,7 +125,7 @@ class Unify {
                     param
                 }
                 assert(params.indexOfFirst { it is Error } == -1)  // TODO I think this is right..
-                Pair(Node(t.label, params), currMap)
+                Pair(LabelNode(t.label, params), currMap)
             }
         }
     }

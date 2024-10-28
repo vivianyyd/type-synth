@@ -2,23 +2,41 @@ package enumgen
 
 sealed interface Type
 
-interface Name
-data class NameLiteral(val name: String) : Name
-class NameHole : Name {
+data class Variable(val id: String) : Type {
+    override fun toString(): String =
+        "Var(${id})"
+}
+
+data class Function(val left: Type, val rite: Type) : Type {
+    override fun toString(): String =
+        "($left) -> ($rite)"
+}
+
+data class LabelNode(val label: String, val typeParams: List<Type>) : Type {
+    override fun toString(): String = "{$label of $typeParams}"
+}
+
+/**
+ * Unifies with everything, producing the other type. Represents a hole/tree not yet completely enumerated.
+ *
+ * Needs to be a class rather than Object since we want to have pointers to distinct holes
+ */
+open class TypeHole : Type {
+    // We want physical equals and for some reason the compiler complains if we don't do this
+    override fun equals(other: Any?): Boolean = this === other
+    override fun hashCode(): Int = System.identityHashCode(this)
     override fun toString(): String = "??"
 }
 
-data class Variable(val id: NameLiteral) : Type {
-    override fun toString(): String =
-        "Variable(${id.name})"
+/** A hole to be filled by a child node. */
+class ChildHole : TypeHole() {
+    override fun toString(): String = "_"
 }
 
-data class Function(val param: Type, val out: Type) : Type {
-    override fun toString(): String =
-        "($param) -> ($out)"
+/** A hole to be filled by a sibling node. */
+class SiblingHole(val depth: Int) : TypeHole() {
+    override fun toString(): String = ".${depth}"
 }
-
-data class Node(val label: Name, val typeParams: List<Type>) : Type
 
 /** Unifies with everything, producing itself. Represents a type that can never successfully resolve. */
 data class Error(val t1: Type, val t2: Type, val category: ErrorCategory) : Type
@@ -30,19 +48,3 @@ enum class ErrorCategory {
     APPLIED_NON_FUNCTION,
     VAR_REFERENCES_SELF
 }
-
-/**
- * Unifies with everything, producing the other type. Represents a hole/tree not yet completely enumerated.
- *
- * Needs to be a class rather than Object since we want to have pointers to distinct holes
- */
-class TypeHole : Type {
-    // We want physical equals and for some reason the compiler complains if we don't do this
-    override fun equals(other: Any?): Boolean = this === other
-    override fun hashCode(): Int = System.identityHashCode(this)
-    override fun toString(): String = "??"
-}
-
-// TODO how do we use negative examples in pruning? We prune when something fails a positive example and we know where
-//  to prune bc of unify algo. But with negative examples, we don't know where the failure was supposed to be, only that
-//  we erroneously accept a negative example.
