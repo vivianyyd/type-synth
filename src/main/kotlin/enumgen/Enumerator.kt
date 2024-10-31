@@ -25,102 +25,136 @@ class Enumerator(
     private fun freshVariable() =  // alph for readability
         Variable("${if (varCounter++ in 0..25) (varCounter + 96).toChar() else varCounter}")
 
-    private fun typeExpansion() =
-        listOf(Function(TypeHole(), TypeHole())) +
-                freshVariable() +
-                labels.map { lbl ->
-                    (0..MAX_TYPE_PARAMS).map { numParams ->
-                        LabelNode(lbl, List(numParams) { TypeHole() })
+    private fun typeExpansion(): List<Type> =
+        (listOf(
+            freshVariable(),
+            Function(ChildHole(), ChildHole()),
+        ) + (labels.flatMap { lbl ->
+            (0..MAX_TYPE_PARAMS).map { numParams ->
+                LabelNode(lbl, List(numParams) { ChildHole() })
+            }
+        })).toMutableList()
+
+    /**
+     * Returns list of possible children
+     * [this] must contain a hole(?)
+     */
+    private fun Type.expansions(depth: Int): List<List<Type>> {
+        assert(this.recursiveNumChildHoles() > 0)  // TODO maybe we can take this away at some pt
+        when (this) {
+            is ChildHole -> return listOf(typeExpansion())  // TODO I think this never needs to get called
+            is Variable -> throw Exception("No expansions. alternative is to return empty list")
+            is LabelNode -> {
+                // If all holes, then fill in each param with multiple options and put sibling holes in all others
+                if (this.directChildHoles()) {
+                    assert(this.params.all { it is ChildHole })
+                    return List(this.params.size) { filledPortInd ->
+                        typeExpansion().map { exp ->
+                            LabelNode(
+                                this.label,
+                                List(this.params.size) { i ->
+                                    if (i == filledPortInd) exp else SiblingHole(depth)
+                                }
+                            )
+                        }
                     }
                 }
-
-    private fun fillAll(nodes: List<SearchNode>): Boolean {
-        return nodes.fold(false) { acc, node -> fill(node) || acc }
+                // If not all holes (param is l of ??), no direct child holes. fill children recursively, propagate up
+                else {
+                    val holeChild = this.params.withIndex()
+                        .filter { (_, ty) -> ty.recursiveNumChildHoles() != 0 }  // save intermediate result
+                    // Only one child should have holes at a time
+                    assert(holeChild.size == 1)
+                    val exps = holeChild[0].value.expansions(depth + 1)
+                    // call expansion on the child with holes, then return result of mapping across all expansions and
+                    // attaching this node plus all the non-holey children (siblings of the direct child who had holes)
+                    //this type but instead of hole in all params, fill this param w various things, put sibling holes in all the others
+                    return exps.map {
+                        it.map { exp ->
+                            LabelNode(
+                                this.label,
+                                this.params.mapIndexed { i, p ->
+                                    if (i == holeChild[0].index) exp else p
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+            is Error -> throw Exception("wth the heck error")
+            is Function -> {
+                if (this.directChildHoles()) {
+                    assert(this.left is ChildHole && this.rite is ChildHole)
+                    return listOf(
+                        typeExpansion().map { exp ->
+                            Function(left = exp, rite = SiblingHole(depth))
+                        },
+                        typeExpansion().map { exp ->
+                            Function(left = SiblingHole(depth), rite = exp)
+                        }
+                    )
+                } else {
+                    val leftHasHole = this.left.recursiveNumChildHoles() != 0
+                    assert(leftHasHole xor (this.rite.recursiveNumChildHoles() != 0))
+                    val exps = (if (leftHasHole) left else rite).expansions(depth + 1)
+                    return exps.map {
+                        it.map { exp ->
+                            Function(
+                                left = if (leftHasHole) exp else this.left,
+                                rite = if (leftHasHole) this.rite else exp
+                            )
+                        }
+                    }
+                }
+            }
+            is SiblingHole -> throw Exception("wth the heck sibling")
+        }
     }
 
     /**
-     * Fill one shallowest child hole in [tree].
+     * Exhaustively attempt to increase the height of [tree] by 1.
      * Returns true if a change was made.
      */
-    private fun fill(tree: SearchNode): Boolean {
-        when (tree) {
-            is Hole -> throw Exception("Parent should've filled this")
-            is LangNode -> TODO()
-            is VariableNode -> return false
-            is ArrowNode -> {
-                var flag = false
-                tree.left.map {
-                    // TODO expand all children. but wait, my rep is wrong
+    private fun fill(tree: SearchNode, depth: Int): Boolean {
+        if (tree.children.any { it == null }) {
+            when (tree) {
+                is LangNode -> {
+                    tree.addChildren(ArrayList(names.map {
+                        typeExpansion().map { ty -> TypeSearchNode(ty) }.toMutableList()
+                    }))
                 }
-                val l = if (tree.left is ChildHole) true else fillAll(tree.left)
-
-                val leftHole = depthOfHole(tree.left)
-                val riteHole = depthOfHole(tree.rite)
-                if (leftHole == -1 && riteHole == -1) return false
-                if (leftHole == 0) TODO("Fill this one")
-                else if (riteHole == 0) TODO("Fill this one")
-                else if ((leftHole < riteHole || riteHole == -1) && leftHole != -1)
-                    return fillAll(tree.left) // Could also just fill one but why not
-                else if ((riteHole < leftHole || leftHole == -1) && riteHole != -1)
-                    return fillAll(tree.rite)
-                else throw Exception("Missed case")
+                is TypeSearchNode -> {
+                    if (tree.numPorts > 0) tree.addChildren(tree.type.expansions(depth).map { optionsForPort ->
+                        optionsForPort.map { ty -> TypeSearchNode(ty) }.toMutableList()
+                    })
+                }
             }
-            is LabelNode -> {
-                val depths = tree.params.map { depthOfHole(it) }
-                val closestHole =
-                    depths.fold(-1) { prev, curr -> if (minUnlessNegative(prev, curr) == prev) prev else curr }
-                val indToFill = depths.indexOf(closestHole)
-                // TODO will throw exception if tree param is a hole i think
-                return if (indToFill > -1) fillAll(tree.params[indToFill])  // Why not
-                else false
+            return true
+        }
+        return tree.children.fold(false) { acc, port ->
+            acc || port!!.fold(false) { a, option ->
+                a || fill(option, depth + 1)
             }
         }
     }
 
-    private fun minUnlessNegative(a: Int, b: Int): Int =
-        if (a < 0) b else if (b < 0) a else a.coerceAtMost(b)
-
-    private fun depthOfHole(t: Type): Int {
-        fun depthOfHoleHelper(t: Type, acc: Int): Int {
-            return when (t) {
-                is Error -> -1
-                is Function -> minUnlessNegative(depthOfHoleHelper(t.left, acc + 1), depthOfHoleHelper(t.rite, acc + 1))
-                is LabelNode -> if (t.label is NameHole) acc
-                else acc + 1 + t.typeParams.fold(-1) { a, param -> minUnlessNegative(a, depthOfHoleHelper(param, 0)) }
-                is TypeHole -> acc
-                is Variable -> -1
-            }
-        }
-        return depthOfHoleHelper(t, 0)
+    private fun unfilledPorts(): Boolean {
+        TODO()
     }
 
     fun enumerate(): Set<Assignment> {
         var x = 0
-        do {
-            val tmp = guesses.flatMap { candidateAssignment ->
-                val depths = candidateAssignment.entries.associate { (k, v) -> Pair(k, depthOfHole(v)) }
-                val (fnName, _) = depths.filterValues { it != -1 }.minBy { it.value }
+        while (unfilledPorts() && x < 5) { // TODO remove this safeguard
+            // Each time filling, keep track of new leaves
+            // test all children of new leaves from previous round (the children are the new leaves,
+            //  but we access them thru their parents so we can delete them from the tree)
+            //  and prune all the ones that will never work regardless of sibling hole values
+            // now the new leaves set (once we also delete the failures from there too) is the leaf parent set for the next round
 
-                fill(candidateAssignment[fnName]!!).map { newType ->
-                    (candidateAssignment.minus(fnName) + (mapOf(fnName to newType))).toMutableMap()
-                }
-            }
-
-            val newGuesses: Set<Assignment> = tmp.toSet()
-            println("new guesses: $newGuesses")
-            val successfulNewGuesses = newGuesses.filter { assignment ->
-                posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
-            }
             x++
-            guesses.clear()
-            guesses.addAll(successfulNewGuesses)
-            println("successful concrete guesses: ${guesses.filter { it.all { (_, ty) -> depthOfHole(ty) < 0 } }}")
-
-            // TODO think about how effective negative examples are at avoiding making everything a variable.
             if (x == 5) println("HIT THE SAFEGUARD")
-        } while (!(guesses.any { it.all { (_, ty) -> depthOfHole(ty) < 0 } }) && x < 5) // TODO remove this safeguard
-        // TODO if there are names still that are not in the set solved, but we are out of guesses, that means everything has a conflict. unsat
-        return guesses.filter { it.all { (_, ty) -> depthOfHole(ty) < 0 } }.toSet()
+        }
+        return TODO()
     }
 
     private fun checkApplication(app: Application, map: Map<String, Type>): Type =

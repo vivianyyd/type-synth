@@ -8,7 +8,7 @@ class Unify {
     private fun unifyVar(v: Variable, target: Type, map: Context): Pair<Type, Context> =
         map[v]?.let { unify(it, target, map) } ?: run {
             if (target is Variable) {
-                val cmp = v.id.name.compareTo(target.id.name)
+                val cmp = v.id.compareTo(target.id)
                 if (cmp < 0) {
                     map[v] = target
                     Pair(target, map)
@@ -31,7 +31,7 @@ class Unify {
         return when (t) {
             is Error -> false
             is Function -> containsVar(v, t.left, map) || containsVar(v, t.rite, map)
-            is LabelNode -> t.typeParams.fold(false) { a, ty -> a || containsVar(v, ty, map) }
+            is LabelNode -> t.params.fold(false) { a, ty -> a || containsVar(v, ty, map) }
             is TypeHole -> false
             is Variable -> if (t == v) true else {
                 val ty = map[t]
@@ -73,14 +73,14 @@ class Unify {
             is Variable -> unifyVar(b, a, map)
             is LabelNode -> {
                 if (a.label != b.label) Pair(Error(a, b, ErrorCategory.LABEL_MISMATCH), map)
-                if (a.typeParams.size != b.typeParams.size) Pair(
+                if (a.params.size != b.params.size) Pair(
                     Error(a, b, ErrorCategory.PARAM_QUANTITY_MISMATCH),
                     map
                 )
                 var currMap = map
                 var error: Pair<Type, Context>? = null
-                val params = a.typeParams.indices.map {
-                    val (param, newMap) = unify(a.typeParams[it], b.typeParams[it], currMap)
+                val params = a.params.indices.map {
+                    val (param, newMap) = unify(a.params[it], b.params[it], currMap)
                     if (param is Error) error = Pair(param, currMap)
                     currMap = newMap
                     param
@@ -97,7 +97,7 @@ class Unify {
 
     fun apply(f: Type, arg: Type, map: Context): Pair<Type, Context> {
         // TODO figure out what to output if f is a hole. alternatively just always enum functions first but sometimes cyclic
-        if (f is TypeHole) return Pair(TypeHole(), map) // TODO this is not quite right
+        if (f is TypeHole) return Pair(f, map) // TODO this is not quite right
         if (f !is Function) return Pair(Error(f, arg, ErrorCategory.APPLIED_NON_FUNCTION), map)
         val (parameter, fnContext) = unify(f.left, arg, map)
         if (parameter is Error) return Pair(parameter, fnContext)
@@ -119,8 +119,8 @@ class Unify {
             }
             is LabelNode -> {
                 var currMap = map
-                val params = (0 until t.typeParams.size).map {
-                    val (param, newMap) = resolve(t.typeParams[it], currMap)
+                val params = (0 until t.params.size).map {
+                    val (param, newMap) = resolve(t.params[it], currMap)
                     currMap = newMap
                     param
                 }
