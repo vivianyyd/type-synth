@@ -13,12 +13,14 @@ typealias Assignment = MutableMap<String, Type>
 class Enumerator(
     private val names: List<String>,
     private val posExamples: Set<Application>,
+    private val negExamples: Set<Application>,
     private val MAX_TYPE_PARAMS: Int
 ) {
     // TODO("Assert that [posExamples] only contains names in [names]")
     private val u = Unify()  // TODO make this less dumb
     private val searchTree = SearchTree(names)
 
+    // TODO
     private val labels = listOf("l0", "l1", "l2")
 
     private var varCounter = 0
@@ -119,9 +121,9 @@ class Enumerator(
         if (tree.children.any { it == null }) {
             when (tree) {
                 is LangNode -> {
-                    tree.addChildren(ArrayList(names.map {
-                        typeExpansion().map { ty -> TypeSearchNode(ty) }.toMutableList()
-                    }))
+                    tree.addChildren(
+                        ArrayList(names.map { mutableListOf(TypeSearchNode(ChildHole())) })
+                    )
                 }
                 is TypeSearchNode -> {
                     if (tree.numPorts > 0) tree.addChildren(tree.type.expansions(depth).map { optionsForPort ->
@@ -142,15 +144,41 @@ class Enumerator(
         TODO()
     }
 
+    private fun passesChecks(fn: String, t: Type): Boolean {
+        val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
+        return posExamples.map { checkApplication(it, assignment) }.all { it !is Error } &&
+                negExamples.map { checkApplication(it, assignment) }.all { it is Error }
+    }
+
     fun enumerate(): Set<Assignment> {
+        fill(searchTree.root, 0)  // This is kind of frivolous and could really be done separately
+        val frontier: MutableMap<String, List<SearchNode>> =
+            names.withIndex().associate { (i, fn) -> fn to listOf(searchTree.root.functions[i]!![0]) }.toMutableMap()
+
         var x = 0
         while (unfilledPorts() && x < 5) { // TODO remove this safeguard
-            // Each time filling, keep track of new leaves
+            val changed = fill(searchTree.root, 0)
+            if (!changed) break
             // test all children of new leaves from previous round (the children are the new leaves,
             //  but we access them thru their parents so we can delete them from the tree)
             //  and prune all the ones that will never work regardless of sibling hole values
-            // now the new leaves set (once we also delete the failures from there too) is the leaf parent set for the next round
-
+            frontier.forEach { (fn, parents) ->
+                parents.map { parent ->
+                    parent.children.forEach { options ->
+                        options?.retainAll { tyNode ->
+                            passesChecks(fn, tyNode.type)
+                        }
+                    }
+                }
+            }
+            // TODO consider how diff assignments to functions are sibling holes for checking exs
+            //  alternative dumb bad impl but might be easier is hard code sibling root holes when we check
+            //   like don't put them in the tree for now, but we just know they behave like sibling holes
+            // new leaves are children of previous frontier
+            // new leaves set (once we also delete the failures from there too) is the leaf parent set for the next round
+            names.forEach {
+                frontier[it] = frontier[it]!!.flatMap { t: SearchNode -> t.children.filterNotNull().flatten() }
+            }
             x++
             if (x == 5) println("HIT THE SAFEGUARD")
         }
