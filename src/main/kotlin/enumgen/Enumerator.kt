@@ -140,9 +140,14 @@ class Enumerator(
         }
     }
 
-    private fun unfilledPorts(): Boolean {
-        TODO()
-    }
+    /** it's easier to take the frontier than the search tree, bc no need to recurse to the leaves */
+    private fun unfilledPorts(frontier: Map<String, List<SearchNode>>): Boolean =
+        frontier.values.flatten().any {
+            when (it) {
+                is LangNode -> it.functions.any { f -> f == null }
+                is TypeSearchNode -> it.type.recursiveNumChildHoles() != 0
+            }
+        }
 
     private fun passesChecks(fn: String, t: Type): Boolean {
         val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
@@ -155,8 +160,9 @@ class Enumerator(
         val frontier: MutableMap<String, List<SearchNode>> =
             names.withIndex().associate { (i, fn) -> fn to listOf(searchTree.root.functions[i]!![0]) }.toMutableMap()
 
+        // Deep enumeration step
         var x = 0
-        while (unfilledPorts() && x < 5) { // TODO remove this safeguard
+        while (unfilledPorts(frontier) && x < 5) { // TODO remove this safeguard
             val changed = fill(searchTree.root, 0)
             if (!changed) break
             // test all children of new leaves from previous round (the children are the new leaves,
@@ -171,14 +177,14 @@ class Enumerator(
                     }
                 }
             }
-            // TODO consider how diff assignments to functions are sibling holes for checking exs
-            //  alternative dumb bad impl but might be easier is hard code sibling root holes when we check
-            //   like don't put them in the tree for now, but we just know they behave like sibling holes
             // new leaves are children of previous frontier
             // new leaves set (once we also delete the failures from there too) is the leaf parent set for the next round
             names.forEach {
                 frontier[it] = frontier[it]!!.flatMap { t: SearchNode -> t.children.filterNotNull().flatten() }
             }
+
+            // TODO how to decide when done, and move onto sibling step?
+            //  we could keep enumerating indefinitely?
             x++
             if (x == 5) println("HIT THE SAFEGUARD")
         }
