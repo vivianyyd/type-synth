@@ -5,7 +5,7 @@ fun main() {
     val f = Application("f", listOf(integer))
     val bool = Application("bool", null)
 
-    val e = Enumerator(listOf("int", "f"), setOf(integer, f), 0)
+    val e = Enumerator(listOf("int", "f", "bool"), setOf(integer, f, bool), setOf(Application("f", listOf(bool))), 0)
     println("result: ${e.enumerate()}")
 }
 /*
