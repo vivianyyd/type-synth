@@ -23,8 +23,7 @@ class Enumerator(
     private val searchTree = SearchTree(names)
 
     private var varCounter = 0
-    private fun freshVariable() =  // alph for readability
-        Variable("${if (varCounter++ in 0..25) (varCounter + 96).toChar() else varCounter}")
+    private fun freshVariable() = Variable(varCounter)
 
     private fun holeExpansion(): List<Type> =
         (listOf(
@@ -127,7 +126,7 @@ class Enumerator(
                     tree.addChildren(ArrayList(names.map { mutableListOf(TypeSearchNode(ChildHole())) }))
                 }
                 is TypeSearchNode -> {
-                    if (tree.numPorts > 0) tree.addChildren(tree.type.expansions(depth).map { optionsForPort ->
+                    if (tree.numPorts() > 0) tree.addChildren(tree.type.expansions(depth).map { optionsForPort ->
                         optionsForPort.map { ty -> TypeSearchNode(ty) }.toMutableList()
                     })
                 }
@@ -158,20 +157,31 @@ class Enumerator(
         // Deep enumeration/vertical growing step
         var x = 0
         while (unfilledPorts(leafParents) && x < 5) { // TODO remove this safeguard
+//            println(Visualizer(searchTree).viz())
+
             val changed = fill(searchTree.root, 0)
+            println(Visualizer(searchTree).viz())
+
             if (!changed) break
             // Prune leaf if type is wrong shape regardless of siblings
             leafParents.forEach { (fn, parents) ->
                 parents.map { parent ->
-                    parent.children.forEach { options -> options?.retainAll { ty -> passesChecks(fn, ty.type) } }
+                    parent.children.forEach { options ->
+                        options?.retainAll { ty ->
+                            passesChecks(fn, ty.type)
+                        }
+                    }
                 }
             }
+            println(Visualizer(searchTree).viz())
+            println(leafParents)
             // Next round of leaves will be current leaves' children
             names.forEach { n -> leafParents[n] = leafParents[n]!!.flatMap { it.children.filterNotNull().flatten() } }
-
+            println(leafParents)
             // TODO how to decide when done / move onto sibling step?
             if (++x == 5) println("HIT THE SAFEGUARD")
         }
+//        println(Visualizer(searchTree).viz())
 
         // Fn sibling resolution step
 
