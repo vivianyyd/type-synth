@@ -7,7 +7,7 @@ sealed interface Type {
 
 data class Variable(val id: Int) : Type {
     override fun toString(): String =
-        "v(${if (id in 0..25) (id + 96).toChar() else id})"
+        "v(${if (id in 0..25) (id + 97).toChar() else id})"
 
     override fun recursiveNumChildHoles() = 0
     override fun directChildHoles() = false
