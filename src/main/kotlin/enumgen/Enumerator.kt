@@ -168,8 +168,6 @@ class Enumerator(
                 else false
             }
 
-            visualization = Visualizer(searchTree).viz()
-
             // Prune leaf if type is wrong shape regardless of siblings
             val pruned = searchTree.root.names.associateWith { false }.toMutableMap()
             leafParents.forEach { (fn, parents) ->
@@ -178,12 +176,13 @@ class Enumerator(
                         println("About to prune expansions of ${parent.type} for function $fn")
                         println("Began with ${options?.size} options for current port")
                         val prunedSome = options?.retainAll { ty ->
-                            println("testing")
-                            println(ty.type)
-                            passesChecks(fn, ty.type)
+                            val passesPosExs = passesChecks(fn, ty.type)
+                            // TODO uncomment
+//                            val fullyApplied = applied(fn, ty.type)  // if not fully applied, it's definitely this node that introduced the issue.
+//                            if (!fullyApplied) println("pruned ${ty.type}")
+                            passesPosExs //&& fullyApplied
                         } ?: false
                         pruned[fn] = pruned[fn]!! || prunedSome
-                        // TODO can we get in an infinite loop if we enum l _ then l alpha then prune alpha then try to enum under l_ again Do we avoid this bc leafParents gets changed? So we always just move on to next layer?
                         println("Now have ${options?.size} options")
                     }
                 }
@@ -195,6 +194,9 @@ class Enumerator(
 
             if (changedFns.all { !it }) break
             // Next round of leaves will be current leaves' children
+            /* We don't need to worry about the following infinite loop:
+             enum l _, enum l 'a, prune l 'a *without immediately propagating pruning up*, enum l _ again.
+             Since leafParents changes, we always move onto next layer. We can defer propagating up */
             names.forEachIndexed { i, n ->
                 if (!changedFns[i]) leafParents[n] = listOf()  // We won't be enumerating any further
                 else leafParents[n] = leafParents[n]!!.flatMap { it.children.filterNotNull().flatten() }
@@ -203,12 +205,16 @@ class Enumerator(
 
             /*
 
-            TODO: Implement propagating pruning: If all children in one port die, the parent dies. Etc
+            TODO: Implement propagating pruning: If all children in one port die, the parent dies. Etc.
+                only necessary to propagate before sibling merging steps, because vertical growth we have the changed
+                flags to tell us what to grow and leafparents always moves on
              */
+            visualization = Visualizer(searchTree).viz()
+
             if (++x == DEPTH_BOUND) println("HIT THE SAFEGUARD")
         }
 //        println(Visualizer(searchTree).viz())
-        // Some leaves might be unfilled here if we realized we weren't getting any changes from purning
+        // Some leaves might be unfilled here if we realized we weren't getting any changes from pruning
         // Fn sibling resolution step
 
 
@@ -219,10 +225,44 @@ class Enumerator(
 
     private fun passesChecks(fn: String, t: Type): Boolean {
         val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
-        println("Now testing $t")
         // TODO pruning is very wrong right now! It's ok if something doesn't yet eliminate all negative examples!
         return posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
         // && negExamples.map { checkApplication(it, assignment) }.all { it is Error }
+    }
+
+    /** Checks whether the function is ever fully applied with the given hypothesis. */
+    /*
+    TODO: There's a more general form of this which does the following.
+     * Checks whether the function at greatest depth is ever applied.
+     * The function in question is always unique since functions which are not ancestors are siblings/uncles/nephews
+     * which are sibling holes.
+     */
+    private fun applied(fn: String, t: Type): Boolean {
+
+        /*
+        Examples
+
+        singleton: 'a -> l['a]
+        ex: singleton x
+        candidate: (-1) -> (_ -> _) should be eliminated
+
+        What about (_ -> _) -> -1
+
+        fn list: l[_ -> _]
+        Ok we'd have to first enum the type of get() so let's skip this for now
+         */
+        println("Checking if $fn is applied fully")
+        val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
+        // TODO memoize, this is obviously duplicated with [passesChecks]
+        return !posExamples.map { checkApplication(it, assignment) }.all {
+            println(it)
+            /*
+
+            TODO this currently doesn't work because of how functions with holes are unify/applied. Need to rethink
+
+             */
+            it is Function
+        }
     }
 
     private fun checkApplication(app: Application, map: Map<String, Type>): Type {
