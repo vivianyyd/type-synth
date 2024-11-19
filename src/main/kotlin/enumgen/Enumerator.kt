@@ -119,19 +119,15 @@ class Enumerator(
      * Exhaustively attempt to increase the height of [tree] by 1.
      * Returns true if a change was made.
      */
-    private fun fill(tree: SearchNode, depth: Int): Boolean {
+    private fun fill(tree: TypeSearchNode, depth: Int): Boolean {
         if (tree.children.any { it == null }) {
-            when (tree) {
-                is LangNode -> {
-                    tree.addChildren(ArrayList(names.map { mutableListOf(TypeSearchNode(ChildHole())) }))
-                }
-                is TypeSearchNode -> {
-                    if (tree.numPorts() > 0) tree.addChildren(tree.type.expansions(depth).map { optionsForPort ->
-                        optionsForPort.map { ty -> TypeSearchNode(ty) }.toMutableList()
-                    })
-                }
+            if (tree.numPorts() > 0) {
+                tree.addChildren(tree.type.expansions(depth).map { optionsForPort ->
+                    optionsForPort.map { ty -> TypeSearchNode(ty) }.toMutableList()
+                })
+                return true
             }
-            return true
+            return false  // TODO think about this
         }
         // Do not change the order of the || with accumulators... Forces avoiding short circuit
         return tree.children.fold(false) { acc, port ->
@@ -154,42 +150,60 @@ class Enumerator(
     val DEPTH_BOUND = 2  // TODO remove this safeguard
 
     fun enumerate(): String /* TODO Set<Assignment>*/ {
-        fill(searchTree.root, 0)  // This is kind of frivolous and could really be done separately
-        val leafParents: MutableMap<String, List<SearchNode>> =
+        // Init
+        searchTree.root.addChildren(ArrayList(names.map { mutableListOf(TypeSearchNode(ChildHole())) }))
+
+        /** Whether the most recent step affected the search space for a given function */
+        var changedFns = searchTree.root.children.map { true }
+
+        val leafParents: MutableMap<String, List<TypeSearchNode>> =
             names.withIndex().associate { (i, fn) -> fn to listOf(searchTree.root.functions[i]!![0]) }.toMutableMap()
 
         // Deep enumeration/vertical growing step
         var x = 0
         while (unfilledPorts(leafParents) && x < DEPTH_BOUND) {
-//            println(Visualizer(searchTree).viz())
+            // Expand only types that changed in the past
+            changedFns = searchTree.root.children.zip(changedFns).map { (portOptions, changed) ->
+                if (changed) fill(portOptions!![0], 0)
+                else false
+            }
 
-            val changed = fill(searchTree.root, 0)
             visualization = Visualizer(searchTree).viz()
 
-            if (!changed) break
             // Prune leaf if type is wrong shape regardless of siblings
+            val pruned = searchTree.root.names.associateWith { false }.toMutableMap()
             leafParents.forEach { (fn, parents) ->
                 parents.map { parent ->
                     parent.children.forEach { options ->
-                        when(parent) {
-                            is LangNode -> println("hello lang")
-                            is TypeSearchNode -> println(parent.type)
-                        }
-                        options?.retainAll { ty ->
+                        println("About to prune expansions of ${parent.type} for function $fn")
+                        println("Began with ${options?.size} options")
+                        val prunedSome = options?.retainAll { ty ->
                             println("testing")
                             println(ty.type)
                             passesChecks(fn, ty.type)
-                        }
-                        println(options?.size)
+                        } ?: false
+                        pruned[fn] = pruned[fn]!! || prunedSome
+                        // TODO can we get in an infinite loop if we enum l _ then l alpha then prune alpha then try to enum under l_ again Do we avoid this bc leafParents gets changed? So we always just move on to next layer?
+                        println("Now have ${options?.size} options")
                     }
                 }
             }
-            println(Visualizer(searchTree).viz())
-            println(leafParents)
+            // Set changed to false for fn if pruning did nothing, even if filling did something
+            changedFns = searchTree.root.names.zip(changedFns).map { (fn, changed) ->
+                if (!pruned[fn]!!) false else changed
+            }
+
+            if (changedFns.all { !it }) break
             // Next round of leaves will be current leaves' children
             names.forEach { n -> leafParents[n] = leafParents[n]!!.flatMap { it.children.filterNotNull().flatten() } }
-            println(leafParents)
             // TODO how to decide when done / move onto sibling step?
+
+            /*
+
+            TODO: Fix all the useless iterations where we see null printed!
+
+            TODO: Implement propagating pruning: If all children in one port die, the parent dies. Etc
+             */
             if (++x == DEPTH_BOUND) println("HIT THE SAFEGUARD")
         }
 //        println(Visualizer(searchTree).viz())
@@ -205,11 +219,9 @@ class Enumerator(
     private fun passesChecks(fn: String, t: Type): Boolean {
         val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
         println("Now testing $t")
-        println(posExamples.map { checkApplication(it, assignment) })
         // TODO pruning is very wrong right now! It's ok if something doesn't yet eliminate all negative examples!
-        println(negExamples.map { checkApplication(it, assignment) })
         return posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
-                // && negExamples.map { checkApplication(it, assignment) }.all { it is Error }
+        // && negExamples.map { checkApplication(it, assignment) }.all { it is Error }
     }
 
     private fun checkApplication(app: Application, map: Map<String, Type>): Type {
