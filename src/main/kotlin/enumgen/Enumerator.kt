@@ -23,16 +23,16 @@ class Enumerator(
     private val searchTree = SearchTree(names)
 
     private var varCounter = 0
-    private fun freshVariable() = Variable(varCounter)
+    private fun freshVariable() = Variable(varCounter++)
 
     private fun holeExpansion(): List<Type> =
         (listOf(
             freshVariable(),
             Function(ChildHole(), ChildHole()),
         ) + listOf(
-            LabelNode("l0", List(1) { ChildHole() }),
-            LabelNode("l1", List(0) { ChildHole() }),
-            LabelNode("l2", List(0) { ChildHole() }),
+            LabelNode("ℓ0", List(1) { ChildHole() }),
+            LabelNode("ℓ1", List(0) { ChildHole() }),
+            LabelNode("ℓ2", List(0) { ChildHole() }),
         )).toMutableList()
 //            (listOf("l0", "l1", "l2").flatMap { lbl ->
 //                (0..MAX_TYPE_PARAMS).map { numParams ->
@@ -133,10 +133,11 @@ class Enumerator(
             }
             return true
         }
+        // Do not change the order of the || with accumulators... Forces avoiding short circuit
         return tree.children.fold(false) { acc, port ->
-            acc || port!!.fold(false) { a, option ->
-                a || fill(option, depth + 1)
-            }
+            port!!.fold(false) { a, option ->
+                fill(option, depth + 1) || a
+            } || acc
         }
     }
 
@@ -149,27 +150,37 @@ class Enumerator(
             }
         }
 
-    fun enumerate(): Set<Assignment> {
+    var visualization = ""
+    val DEPTH_BOUND = 2  // TODO remove this safeguard
+
+    fun enumerate(): String /* TODO Set<Assignment>*/ {
         fill(searchTree.root, 0)  // This is kind of frivolous and could really be done separately
         val leafParents: MutableMap<String, List<SearchNode>> =
             names.withIndex().associate { (i, fn) -> fn to listOf(searchTree.root.functions[i]!![0]) }.toMutableMap()
 
         // Deep enumeration/vertical growing step
         var x = 0
-        while (unfilledPorts(leafParents) && x < 5) { // TODO remove this safeguard
+        while (unfilledPorts(leafParents) && x < DEPTH_BOUND) {
 //            println(Visualizer(searchTree).viz())
 
             val changed = fill(searchTree.root, 0)
-            println(Visualizer(searchTree).viz())
+            visualization = Visualizer(searchTree).viz()
 
             if (!changed) break
             // Prune leaf if type is wrong shape regardless of siblings
             leafParents.forEach { (fn, parents) ->
                 parents.map { parent ->
                     parent.children.forEach { options ->
+                        when(parent) {
+                            is LangNode -> println("hello lang")
+                            is TypeSearchNode -> println(parent.type)
+                        }
                         options?.retainAll { ty ->
+                            println("testing")
+                            println(ty.type)
                             passesChecks(fn, ty.type)
                         }
+                        println(options?.size)
                     }
                 }
             }
@@ -179,7 +190,7 @@ class Enumerator(
             names.forEach { n -> leafParents[n] = leafParents[n]!!.flatMap { it.children.filterNotNull().flatten() } }
             println(leafParents)
             // TODO how to decide when done / move onto sibling step?
-            if (++x == 5) println("HIT THE SAFEGUARD")
+            if (++x == DEPTH_BOUND) println("HIT THE SAFEGUARD")
         }
 //        println(Visualizer(searchTree).viz())
 
@@ -188,13 +199,17 @@ class Enumerator(
 
         // TODO should we go back to the vertical step?
 
-        return TODO()
+        return ""
     }
 
     private fun passesChecks(fn: String, t: Type): Boolean {
         val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
-        return posExamples.map { checkApplication(it, assignment) }.all { it !is Error } &&
-                negExamples.map { checkApplication(it, assignment) }.all { it is Error }
+        println("Now testing $t")
+        println(posExamples.map { checkApplication(it, assignment) })
+        // TODO pruning is very wrong right now! It's ok if something doesn't yet eliminate all negative examples!
+        println(negExamples.map { checkApplication(it, assignment) })
+        return posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
+                // && negExamples.map { checkApplication(it, assignment) }.all { it is Error }
     }
 
     private fun checkApplication(app: Application, map: Map<String, Type>): Type {
