@@ -147,7 +147,7 @@ class Enumerator(
         }
 
     var visualization = ""
-    val DEPTH_BOUND = 2  // TODO remove this safeguard
+    val DEPTH_BOUND = 3  // TODO remove this safeguard
 
     fun enumerate(): String /* TODO Set<Assignment>*/ {
         // Init
@@ -176,7 +176,7 @@ class Enumerator(
                 parents.map { parent ->
                     parent.children.forEach { options ->
                         println("About to prune expansions of ${parent.type} for function $fn")
-                        println("Began with ${options?.size} options")
+                        println("Began with ${options?.size} options for current port")
                         val prunedSome = options?.retainAll { ty ->
                             println("testing")
                             println(ty.type)
@@ -195,19 +195,20 @@ class Enumerator(
 
             if (changedFns.all { !it }) break
             // Next round of leaves will be current leaves' children
-            names.forEach { n -> leafParents[n] = leafParents[n]!!.flatMap { it.children.filterNotNull().flatten() } }
+            names.forEachIndexed { i, n ->
+                if (!changedFns[i]) leafParents[n] = listOf()  // We won't be enumerating any further
+                else leafParents[n] = leafParents[n]!!.flatMap { it.children.filterNotNull().flatten() }
+            }
             // TODO how to decide when done / move onto sibling step?
 
             /*
-
-            TODO: Fix all the useless iterations where we see null printed!
 
             TODO: Implement propagating pruning: If all children in one port die, the parent dies. Etc
              */
             if (++x == DEPTH_BOUND) println("HIT THE SAFEGUARD")
         }
 //        println(Visualizer(searchTree).viz())
-
+        // Some leaves might be unfilled here if we realized we weren't getting any changes from purning
         // Fn sibling resolution step
 
 
