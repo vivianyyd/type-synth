@@ -240,6 +240,9 @@ class Enumerator(
     private fun applied(fn: String, t: Type): Boolean {
 
         /*
+        TODO let's just assume glass box access to type checker for now which allows us to skip this and assume
+          we are given this info
+
         Examples
 
         singleton: 'a -> l['a]

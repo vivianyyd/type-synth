@@ -11,9 +11,9 @@ fun main() {
     val emptyBoolList = Application("l[b]", null)
     val emptyIntListList = Application("l[[i]]", null)
 
-    val cons0empty = Application("cons", listOf(zero, emptyIntList, emptyIntList))
-    val consTempty = Application("cons", listOf(t, emptyBoolList, emptyBoolList))
-    val consListList = Application("cons", listOf(emptyIntList, emptyIntListList, emptyIntListList))
+    val cons0empty = Application("cons", listOf(zero, emptyIntList))
+    val consTempty = Application("cons", listOf(t, emptyBoolList))
+    val consListList = Application("cons", listOf(emptyIntList, emptyIntListList))
 
     val e = Enumerator(
         names = listOf("0", "cons", "t", "l[i]", "l[b]", "l[[i]]"),
@@ -28,7 +28,14 @@ fun main() {
             consTempty,
             consListList
         ),
-        negExamples = setOf(Application("cons", listOf(t))),
+        negExamples = setOf(
+            // TODO There are lots more which we can generate ourselves
+            Application("cons", listOf(t, emptyIntList)),
+            Application("cons", listOf(emptyIntList, zero)),
+            Application("cons", listOf(zero, emptyBoolList)),
+            Application("cons", listOf(t, emptyIntListList)),
+            Application("cons", listOf(zero, emptyIntListList))
+        ),
         0
     )
     println("result: ${e.enumerate()}")
