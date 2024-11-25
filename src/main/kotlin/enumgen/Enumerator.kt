@@ -34,10 +34,6 @@ class Enumerator(
             LabelNode("ℓ1", List(0) { ChildHole() }),
             LabelNode("ℓ2", List(0) { ChildHole() }),
         )).toMutableList()
-//            (listOf("l0", "l1", "l2").flatMap { lbl ->
-//                (0..MAX_TYPE_PARAMS).map { numParams ->
-//                    LabelNode(lbl, List(numParams) { ChildHole() })
-//                }})
 
     /**
      * Returns list of possible children
@@ -173,17 +169,13 @@ class Enumerator(
             leafParents.forEach { (fn, parents) ->
                 parents.map { parent ->
                     parent.children.forEach { options ->
-                        println("About to prune expansions of ${parent.type} for function $fn")
-                        println("Began with ${options?.size} options for current port")
                         val prunedSome = options?.retainAll { ty ->
                             val passesPosExs = passesChecks(fn, ty.type)
-                            // TODO uncomment
-//                            val fullyApplied = applied(fn, ty.type)  // if not fully applied, it's definitely this node that introduced the issue.
-//                            if (!fullyApplied) println("pruned ${ty.type}")
-                            passesPosExs //&& fullyApplied
+                            // If not fully applied, it's definitely this node that introduced the issue.
+                            val fullyApplied = applied(fn, ty.type)
+                            passesPosExs && fullyApplied
                         } ?: false
                         pruned[fn] = pruned[fn]!! || prunedSome
-                        println("Now have ${options?.size} options")
                     }
                 }
             }
@@ -192,7 +184,10 @@ class Enumerator(
                 if (!pruned[fn]!!) false else changed
             }
 
-            if (changedFns.all { !it }) break
+            if (changedFns.all { !it }) {
+                println("No pruning occurred!")
+                break
+            }
             // Next round of leaves will be current leaves' children
             /* We don't need to worry about the following infinite loop:
              enum l _, enum l 'a, prune l 'a *without immediately propagating pruning up*, enum l _ again.
@@ -203,12 +198,6 @@ class Enumerator(
             }
             // TODO how to decide when done / move onto sibling step?
 
-            /*
-
-            TODO: Implement propagating pruning: If all children in one port die, the parent dies. Etc.
-                only necessary to propagate before sibling merging steps, because vertical growth we have the changed
-                flags to tell us what to grow and leafparents always moves on
-             */
             visualization = Visualizer(searchTree).viz()
 
             if (++x == DEPTH_BOUND) println("HIT THE SAFEGUARD")
@@ -216,7 +205,6 @@ class Enumerator(
 //        println(Visualizer(searchTree).viz())
         // Some leaves might be unfilled here if we realized we weren't getting any changes from pruning
         // Fn sibling resolution step
-
 
         // TODO should we go back to the vertical step?
 
@@ -231,41 +219,10 @@ class Enumerator(
     }
 
     /** Checks whether the function is ever fully applied with the given hypothesis. */
-    /*
-    TODO: There's a more general form of this which does the following.
-     * Checks whether the function at greatest depth is ever applied.
-     * The function in question is always unique since functions which are not ancestors are siblings/uncles/nephews
-     * which are sibling holes.
-     */
     private fun applied(fn: String, t: Type): Boolean {
-
-        /*
-        TODO let's just assume glass box access to type checker for now which allows us to skip this and assume
-          we are given this info
-
-        Examples
-
-        singleton: 'a -> l['a]
-        ex: singleton x
-        candidate: (-1) -> (_ -> _) should be eliminated
-
-        What about (_ -> _) -> -1
-
-        fn list: l[_ -> _]
-        Ok we'd have to first enum the type of get() so let's skip this for now
-         */
-        println("Checking if $fn is applied fully")
         val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
         // TODO memoize, this is obviously duplicated with [passesChecks]
-        return !posExamples.map { checkApplication(it, assignment) }.all {
-            println(it)
-            /*
-
-            TODO this currently doesn't work because of how functions with holes are unify/applied. Need to rethink
-
-             */
-            it is Function
-        }
+        return !posExamples.filter { it.name == fn }.map { checkApplication(it, assignment) }.all { it is Function }
     }
 
     private fun checkApplication(app: Application, map: Map<String, Type>): Type {

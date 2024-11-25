@@ -15,6 +15,8 @@ fun main() {
     val consTempty = Application("cons", listOf(t, emptyBoolList))
     val consListList = Application("cons", listOf(emptyIntList, emptyIntListList))
 
+    // TODO Currently, assume all nested calls are given names and we have examples for those and they're referred to
+    //  e.g. instead of [y = f(g())] we have examples [x = g(), y = f(x)]
     val e = Enumerator(
         names = listOf("0", "cons", "t", "l[i]", "l[b]", "l[[i]]"),
         posExamples = setOf(
