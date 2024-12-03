@@ -18,9 +18,12 @@ class Enumerator(
     private val negExamples: Set<Application>,
     private val MAX_TYPE_PARAMS: Int
 ) {
+    val DEPTH_BOUND = 3  // TODO remove this safeguard
+
     // TODO("Assert that [posExamples] and [negExamples] only contain names in [names]")
     private val u = Unify()  // TODO make this less dumb
     private val searchTree = SearchTree(names)
+    private val exampleAnalysis = ExampleAnalysis(posExamples, negExamples)
 
     private var varCounter = 0
     private fun freshVariable() = Variable(varCounter++)
@@ -143,7 +146,6 @@ class Enumerator(
         }
 
     var visualization = ""
-    val DEPTH_BOUND = 3  // TODO remove this safeguard
 
     fun enumerate(): String /* TODO Set<Assignment>*/ {
         // Init
@@ -173,7 +175,8 @@ class Enumerator(
                             val passesPosExs = passesChecks(fn, ty.type)
                             // If not fully applied, it's definitely this node that introduced the issue.
                             val fullyApplied = applied(fn, ty.type)
-                            passesPosExs && fullyApplied
+                            val pruneDueToPrimitiveParam = prunePrimitiveParam(fn, ty.type)
+                            passesPosExs && fullyApplied && !pruneDueToPrimitiveParam
                         } ?: false
                         pruned[fn] = pruned[fn]!! || prunedSome
                     }
@@ -211,10 +214,33 @@ class Enumerator(
         return ""
     }
 
+    private fun prunePrimitiveParam(fn: String, t: Type): Boolean {
+        if (t !is Function) return false
+        var height = 2
+        // Iterate to bottom-rightmost arrow node
+        var curr: Function = t
+        var next = curr.rite
+        while (next is Function) {
+            curr = next
+            next = curr.rite
+            height++
+        }
+        if (height != t.height) return false  // We didn't fill this fn recently, so no need to prune against examples
+        // Check if left child is a primitive
+        return if (curr.left is LabelNode && (curr.left as LabelNode).params.isEmpty()) {
+            // Check whether all examples have args in corresponding spot which can be the same type
+            val argumentsUsed = posExamples.filter { it.name == fn }.mapNotNull { it.arguments?.getOrNull(height - 1) }
+            // TODO More general: Check that they can all simultaneously unify with the proposed type. Then the param
+            //   in question need not be a primitive literal to do the check
+            //   edit, idk what I meant by this. Think about it again
+            !(exampleAnalysis.canBeEqual(argumentsUsed.toSet()))
+        } else false  // Left child isn't primitive
+    }
+
     private fun passesChecks(fn: String, t: Type): Boolean {
         val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
-        // TODO pruning is very wrong right now! It's ok if something doesn't yet eliminate all negative examples!
         return posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
+        // TODO It's ok if something doesn't yet eliminate all negative examples!
         // && negExamples.map { checkApplication(it, assignment) }.all { it is Error }
     }
 

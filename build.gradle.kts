@@ -35,7 +35,7 @@ kotlin {
 }
 
 application {
-    mainClass.set("MainKt")
+    mainClass.set("enumgen.MainKt")
 }
 
 tasks.named<JavaExec>("run") {
