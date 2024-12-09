@@ -14,6 +14,31 @@ class ExampleAnalysis(
     private val posExamples: Set<Application>,
     private val negExamples: Set<Application>
 ) {
+    private fun partialArgParamCompatible(fn: String, fnTy: Type, arg: String, argTy: Type, tree: SearchTree): Boolean {
+        val assignment =
+            tree.root.names.associateWith { if (it == fn) fnTy else if (it == arg) argTy else SiblingHole(-1) }
+        return posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
+    }
+
+    fun partialArgsParamsCompatible(fn: String, t: Type, tree: SearchTree): Boolean {
+        val exs = posExamples.filter { it.name == fn }
+        val arguments = exs.flatMap { it.arguments ?: listOf() }.map { it.name }.toSet()
+        val argTyRoots =
+            arguments.associateWith { tree.getRootFor(it) }  // Should be no NPE, just single ChildHole
+        return argTyRoots.all { (argName, treeRoot) ->
+            val leaves = mutableListOf<TypeSearchNode>()
+            val frontier = (treeRoot.children[0] ?: listOf()).toMutableList()
+            while (frontier.isNotEmpty()) {
+                val node = frontier.removeFirst()
+                if (node.children.isEmpty() || node.children.all { it == null || it.isEmpty() }) leaves.add(node)
+                else frontier.addAll(node.children.flatMap { it ?: listOf() })
+            }
+            leaves.any { leaf ->
+                partialArgParamCompatible(fn, t, argName, leaf.type, tree)
+            }
+        }
+    }
+
     // TODO actually flatten the posexs, negexs so each application is named, then enum types for everything in posexs names
     fun canBeEqual(expressions: Set<Application>): Boolean {
         return expressions.all { e ->

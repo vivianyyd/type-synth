@@ -14,7 +14,7 @@ class Enumerator(
     private val searchTree = SearchTree(names)
     private val exampleAnalysis = ExampleAnalysis(posExamples, negExamples)
 
-//    private var varCounter = 0
+    //    private var varCounter = 0
     private fun freshVariable() = Variable(0)//Variable(varCounter++) // We decided we should start coarse
 
     private fun holeExpansion(): List<Type> =
@@ -167,7 +167,21 @@ class Enumerator(
                             val pruneDueToPrimitiveParam = prunePrimitiveParam(fn, ty.type)
                             passesPosExs && fullyApplied && !pruneDueToPrimitiveParam
                         } ?: false
-                        pruned[fn] = pruned[fn]!! || prunedSome
+                        options?.retainAll { ty ->
+                            !nullaryHasTypeParams(fn, ty.type)
+                            // Check for nullary type params after pruning unapplied functions, so we know they're nullary. TODO this is jank
+                        }
+                        val prunedMoree = options?.retainAll { ty ->
+                            // After posex validation so we don't have to worry abt non-fn types w application examples
+                            // After pruning nullary fns with type params, bc useless variables erroneously unify.
+                            //    We probably wouldn't need to do this if we didn't only examine leaves when pruning
+                            val argsParamsCompatible =
+                                exampleAnalysis.partialArgsParamsCompatible(fn, ty.type, searchTree)
+                            argsParamsCompatible
+                        } ?: false
+                        pruned[fn] = pruned[fn]!! || prunedSome || prunedMoree
+                        // If all we pruned was a useless parameter for nullary, do not mark a change; stop enum.
+                        // I think the nice explanation for this is that variable doesn't have any children? TODO think
                     }
                 }
             }
@@ -201,6 +215,20 @@ class Enumerator(
         // TODO should we go back to the vertical step?
 
         return ""
+    }
+
+    private fun nullaryHasTypeParams(fn: String, t: Type): Boolean {
+        val nullary = searchTree.getRootFor(fn).children[0]!!.none { it.type is Function }
+        val hasParams = hasParams(t)
+        return nullary && hasParams
+    }
+
+    private fun hasParams(t: Type): Boolean = when (t) {
+        is Variable -> true
+        is Error -> false
+        is TypeHole -> false
+        is Function -> hasParams(t.left) || hasParams(t.rite)
+        is LabelNode -> t.params.any { hasParams(it) }
     }
 
     private fun prunePrimitiveParam(fn: String, t: Type): Boolean {
