@@ -1,5 +1,9 @@
 package enumgen
 
+import java.io.File
+import java.io.FileOutputStream
+import java.io.PrintWriter
+
 object Visualizer {
     private var ctr = 0
     private val dw = DotWriter()
@@ -43,7 +47,7 @@ object Visualizer {
         }
     }
 
-    fun viz(node: TypeSearchNode): String {
+    private fun visualize(node: TypeSearchNode): String {
         dw.startGraph()
         node.display()
         dw.finishGraph()
@@ -52,7 +56,10 @@ object Visualizer {
         return out
     }
 
-    fun viz(tree: SearchTree): String {
+    fun viz(node: TypeSearchNode, fileID: Int) = writeDotOutput(visualize(node), fileID)
+    fun viz(tree: SearchTree, fileID: Int) = writeDotOutput(visualize(tree), fileID)
+
+    private fun visualize(tree: SearchTree): String {
         dw.startGraph()
         val tags = tree.root.names.associateWith { "fn${ctr++}" }
         tree.root.names.forEach {
@@ -64,5 +71,11 @@ object Visualizer {
         val out = dw.output()
         dw.restart()
         return out
+    }
+
+    fun writeDotOutput(contents: String, id: Int) {
+        val out = PrintWriter(FileOutputStream("results${File.separator}type-$id.dot"))
+        out.println(contents)
+        out.close()
     }
 }

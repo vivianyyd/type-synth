@@ -8,7 +8,8 @@ class Enumerator(
     private val negExamples: Set<Application>,
     private val MAX_TYPE_PARAMS: Int
 ) {
-    val DEPTH_BOUND = 3  // TODO remove this safeguard
+    val DEPTH_BOUND = 4  // TODO remove this safeguard
+    var vizFileID = 0
 
     // TODO("Assert that [posExamples] and [negExamples] only contain names in [names]")
     private val searchTree = SearchTree(names)
@@ -22,6 +23,7 @@ class Enumerator(
             freshVariable(),
             Function(ChildHole(), ChildHole()),
         ) + listOf(
+//            LabelNode("d", List(2) { ChildHole() }),
             LabelNode("ℓ0", List(1) { ChildHole() }),
             LabelNode("ℓ1", List(0) { ChildHole() }),
             LabelNode("ℓ2", List(0) { ChildHole() }),
@@ -148,12 +150,14 @@ class Enumerator(
 
         // Deep enumeration/vertical growing step
         var x = 0
+        viz()
         while (unfilledPorts(leafParents) && x < DEPTH_BOUND) {
             // Expand only types that changed in the past
             changedFns = searchTree.root.children.zip(changedFns).map { (portOptions, changed) ->
                 if (changed) fill(portOptions!![0], 0)
                 else false
             }
+            viz()
 
             // Prune leaf if type is wrong shape regardless of type-siblings
             val pruned = searchTree.root.names.associateWith { false }.toMutableMap()
@@ -163,6 +167,7 @@ class Enumerator(
                         val prunedSome = options?.retainAll { ty ->
                             val passesPosExs = passesChecks(fn, ty.type)
                             // If never fully applied, it's definitely this node that introduced the issue.
+                            // We can do something different if we have glass box access to *why* type checking failed
                             val fullyApplied = applied(fn, ty.type)
                             val pruneDueToPrimitiveParam = prunePrimitiveParam(fn, ty.type)
                             passesPosExs && fullyApplied && !pruneDueToPrimitiveParam
@@ -204,11 +209,10 @@ class Enumerator(
             }
             // TODO how to decide when done / move onto sibling step?
 
-            visualization = Visualizer.viz(searchTree)
+            viz()
 
-            if (++x == DEPTH_BOUND) println("HIT THE SAFEGUARD")
+//            if (++x == DEPTH_BOUND) println("HIT THE SAFEGUARD")
         }
-//        println(Visualizer(searchTree).viz())
         // Some leaves might be unfilled here if we realized we weren't getting any changes from pruning
         // Fn sibling resolution step
 
@@ -287,4 +291,6 @@ class Enumerator(
         }
         return checkAppRec(app, map, mutableMapOf()).first
     }
+
+    private fun viz() = Visualizer.viz(searchTree, vizFileID++)
 }
