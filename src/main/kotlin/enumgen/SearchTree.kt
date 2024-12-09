@@ -2,6 +2,7 @@ package enumgen
 
 class SearchTree(names: List<String>) {
     val root = LangNode(names)
+    fun getRootFor(fn: String) = root.children[root.names.indexOf(fn)]!![0]
 }
 
 sealed class SearchNode {

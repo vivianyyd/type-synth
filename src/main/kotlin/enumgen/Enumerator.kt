@@ -1,15 +1,5 @@
 package enumgen
 
-/**
- * If [arguments] is null, the function [name] is not applied.
- *
- * Later: If [arguments] is empty, [name] is applied with no arguments. For now, unit doesn't exist, all fn must have an
- * argument to be applied, this is WLOG since we can just have a unit value be passed
- * TODO idk wtf the above comment is saying, let's use ocaml model of no such thing as applying function with no
- *  arguments, need to apply with unit. Is this WLOG?
- */
-data class Application(val name: String, val arguments: List<Application>?)
-
 typealias Assignment = MutableMap<String, Type>
 
 class Enumerator(
@@ -21,12 +11,11 @@ class Enumerator(
     val DEPTH_BOUND = 3  // TODO remove this safeguard
 
     // TODO("Assert that [posExamples] and [negExamples] only contain names in [names]")
-    private val u = Unify()  // TODO make this less dumb
     private val searchTree = SearchTree(names)
     private val exampleAnalysis = ExampleAnalysis(posExamples, negExamples)
 
-    private var varCounter = 0
-    private fun freshVariable() = Variable(varCounter++)
+//    private var varCounter = 0
+    private fun freshVariable() = Variable(0)//Variable(varCounter++) // We decided we should start coarse
 
     private fun holeExpansion(): List<Type> =
         (listOf(
@@ -155,7 +144,7 @@ class Enumerator(
         var changedFns = searchTree.root.children.map { true }
 
         val leafParents: MutableMap<String, List<TypeSearchNode>> =
-            names.withIndex().associate { (i, fn) -> fn to listOf(searchTree.root.functions[i]!![0]) }.toMutableMap()
+            names.associateWith { listOf(searchTree.getRootFor(it)) }.toMutableMap()
 
         // Deep enumeration/vertical growing step
         var x = 0
@@ -166,14 +155,14 @@ class Enumerator(
                 else false
             }
 
-            // Prune leaf if type is wrong shape regardless of siblings
+            // Prune leaf if type is wrong shape regardless of type-siblings
             val pruned = searchTree.root.names.associateWith { false }.toMutableMap()
             leafParents.forEach { (fn, parents) ->
                 parents.map { parent ->
                     parent.children.forEach { options ->
                         val prunedSome = options?.retainAll { ty ->
                             val passesPosExs = passesChecks(fn, ty.type)
-                            // If not fully applied, it's definitely this node that introduced the issue.
+                            // If never fully applied, it's definitely this node that introduced the issue.
                             val fullyApplied = applied(fn, ty.type)
                             val pruneDueToPrimitiveParam = prunePrimitiveParam(fn, ty.type)
                             passesPosExs && fullyApplied && !pruneDueToPrimitiveParam
@@ -201,7 +190,7 @@ class Enumerator(
             }
             // TODO how to decide when done / move onto sibling step?
 
-            visualization = Visualizer(searchTree).viz()
+            visualization = Visualizer.viz(searchTree)
 
             if (++x == DEPTH_BOUND) println("HIT THE SAFEGUARD")
         }
@@ -262,7 +251,7 @@ class Enumerator(
             app.arguments?.forEach {
                 val (argType, newContext) = checkAppRec(it, map, currContext)
                 currContext = newContext
-                val (resultType, resultContext) = u.apply(fn, argType, currContext)
+                val (resultType, resultContext) = Unify.apply(fn, argType, currContext)
                 currContext = resultContext
                 fn = resultType
             }

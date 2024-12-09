@@ -1,6 +1,6 @@
 package enumgen
 
-class Visualizer(private val tree: SearchTree) {
+object Visualizer {
     private var ctr = 0
     private val dw = DotWriter()
 
@@ -27,11 +27,11 @@ class Visualizer(private val tree: SearchTree) {
 
     /** Adds the graphviz code that draws the subtree rooted at [this], and
      * returns the name of the graphviz node representing [this]. */
-    private fun TypeSearchNode.viz(): String {
+    private fun TypeSearchNode.display(): String {
         val gNode = "n${ctr++}"
         val childTags = this.children.map { "c${ctr++}" }
-        dw.writeTypeNode(gNode, display(this.type), childTags)
-        val children = this.children.map { it?.map { n -> n.viz() } }
+        dw.writeTypeNode(gNode, display(type), childTags)
+        val children = this.children.map { it?.map { n -> n.display() } }
         drawArrows(childTags.map { "\"$gNode\":$it" }, children)
         return gNode
     }
@@ -43,15 +43,26 @@ class Visualizer(private val tree: SearchTree) {
         }
     }
 
-    fun viz(): String {
+    fun viz(node: TypeSearchNode): String {
+        dw.startGraph()
+        node.display()
+        dw.finishGraph()
+        val out = dw.output()
+        dw.restart()
+        return out
+    }
+
+    fun viz(tree: SearchTree): String {
         dw.startGraph()
         val tags = tree.root.names.associateWith { "fn${ctr++}" }
         tree.root.names.forEach {
             dw.writeNode("${tags[it]}", it.replace("[", "\\[").replace("]", "\\]"))
         }
-        val fns = tree.root.functions.map { it?.map { n -> n.viz() } }
+        val fns = tree.root.functions.map { it?.map { n -> n.display() } }
         drawArrows(tree.root.names.map { "\"${tags[it]}\"" }, fns)
         dw.finishGraph()
-        return dw.output()
+        val out = dw.output()
+        dw.restart()
+        return out
     }
 }

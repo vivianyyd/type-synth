@@ -5,6 +5,8 @@ import java.io.PrintWriter
 class DotWriter {
     private val sb = StringBuilder()
 
+    fun restart() = sb.delete(0, sb.length)
+
     fun startGraph() {
         sb.append("digraph g {")
         sb.appendLine()

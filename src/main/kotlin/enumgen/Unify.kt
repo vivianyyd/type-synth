@@ -3,7 +3,7 @@ package enumgen
 typealias Context = MutableMap<Variable, Type>
 
 // TODO throughout this file need to make consistent which context gets returned with Errors
-class Unify {
+object Unify {
     /** Assumes [target] is not a variable with an entry in [map]. */
     private fun unifyVar(v: Variable, target: Type, map: Context): Pair<Type, Context> =
         map[v]?.let { unify(it, target, map) } ?: run {
