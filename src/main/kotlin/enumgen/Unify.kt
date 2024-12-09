@@ -73,19 +73,19 @@ object Unify {
             is Variable -> unifyVar(b, a, map)
             is LabelNode -> {
                 if (a.label != b.label) Pair(Error(a, b, ErrorCategory.LABEL_MISMATCH), map)
-                if (a.params.size != b.params.size) Pair(
-                    Error(a, b, ErrorCategory.PARAM_QUANTITY_MISMATCH),
-                    map
-                )
-                var currMap = map
-                var error: Pair<Type, Context>? = null
-                val params = a.params.indices.map {
-                    val (param, newMap) = unify(a.params[it], b.params[it], currMap)
-                    if (param is Error) error = Pair(param, currMap)
-                    currMap = newMap
-                    param
+                else if (a.params.size != b.params.size)
+                    Pair(Error(a, b, ErrorCategory.PARAM_QUANTITY_MISMATCH), map)
+                else {
+                    var currMap = map
+                    var error: Pair<Type, Context>? = null
+                    val params = a.params.indices.map {
+                        val (param, newMap) = unify(a.params[it], b.params[it], currMap)
+                        if (param is Error) error = Pair(param, currMap)
+                        currMap = newMap
+                        param
+                    }
+                    error ?: Pair(LabelNode(a.label, params), currMap)
                 }
-                error ?: Pair(LabelNode(a.label, params), currMap)
             }
             is Function -> Pair(Error(a, b, ErrorCategory.NODE_FUNCTION), map)
             is Error -> Pair(b, map)
