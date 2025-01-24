@@ -5,6 +5,18 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 fun main() {
+    val t = "(->  a (-> (l a) (l a)) )"
+    val p = "(int)"
+    val lp = "(l (int))"
+
+    // make a test for list map
+
+    listOf(t, p, lp).map{
+        println(SExprParser(it).parse().toType())
+    }
+}
+
+fun testEnumeration(){
     val zero = Application("0", null)
     val cons = Application("cons", null)
     val tr = Application("tr", null)
