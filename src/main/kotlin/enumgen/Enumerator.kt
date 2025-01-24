@@ -16,8 +16,7 @@ class Enumerator(
     private val exampleAnalysis = ExampleAnalysis(posExamples, negExamples)
 
     //    private var varCounter = 0
-    private fun freshVariable() = Variable(0)//Variable(varCounter++) // We decided we should start coarse
-
+    private fun freshVariable() = Variable("a")//Variable(varCounter++) // We decided we should start coarse
     private fun holeExpansion(): List<Type> =
         (listOf(
             freshVariable(),

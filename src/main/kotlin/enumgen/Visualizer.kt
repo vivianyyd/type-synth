@@ -25,7 +25,8 @@ object Visualizer {
             "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta", "iota", "kappa",
             "lambda", "mu", "nu", "xi", "omicron", "pi", "rho", "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega"
             )
-            if (type.id in greeks.indices) "&${greeks[type.id]};" else "v${type.id}"
+            type.id
+//            if (type.id in greeks.indices) "&${greeks[type.id]};" else "v${type.id}"
         }
     }
 

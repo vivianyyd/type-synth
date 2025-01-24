@@ -15,19 +15,15 @@ sealed class AbstractType : Type {
     }
 }
 
-data class Variable(val id: Int) : AbstractType() {
-    override fun toString(): String =
-        "v(${if (id in 0..25) (id + 97).toChar() else id})"
-
+data class Variable(val id: String) : AbstractType() {
+    override fun toString(): String = "v($id)"
     override fun recursiveNumChildHoles() = 0
     override fun directChildHoles() = false
     override val children = listOf<Type>()
 }
 
 data class Function(val left: Type, val rite: Type) : AbstractType() {
-    override fun toString(): String =
-        "($left) -> ($rite)"
-
+    override fun toString(): String = "($left) -> $rite"
     override fun recursiveNumChildHoles() = left.recursiveNumChildHoles() + rite.recursiveNumChildHoles()
     override fun directChildHoles() = left is ChildHole || rite is ChildHole
     override val children = listOf(left, rite)
@@ -35,7 +31,6 @@ data class Function(val left: Type, val rite: Type) : AbstractType() {
 
 data class LabelNode(val label: String, val params: List<Type>) : AbstractType() {
     override fun toString(): String = "{$label of $params}"
-
     override fun recursiveNumChildHoles() = params.fold(0) { acc, type -> acc + type.recursiveNumChildHoles() }
     override fun directChildHoles() = params.any { it is ChildHole }
     override val children = params
