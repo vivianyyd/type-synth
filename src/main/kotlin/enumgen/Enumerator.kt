@@ -139,13 +139,13 @@ class Enumerator(
 
         // Deep enumeration/vertical growing step
 //        var iter = 0
-        viz()
+        viz("init")
         while (unfilledPorts(leafParents)) {  // && iter < DEPTH_BOUND
             // Expand only types that changed in the past
             changedFns = state.allTrees.zip(changedFns).map { (root, changed) ->
                 if (changed) fill(root, 0) else false
             }
-            viz()
+            viz("fill")
 
             // Prune leaf if type is wrong shape regardless of type-siblings
             val pruned = state.names.associateWith { false }.toMutableMap()
@@ -153,7 +153,7 @@ class Enumerator(
                 parents.map { parent ->
                     parent.children.forEach { options ->
                         val prunedSome = options.retainAll { ty ->
-                            val passesPosExs = passesChecks(fn, ty.type)
+                            val passesPosExs = passesPositives(fn, ty.type)
                             // If never fully applied, it's definitely this node that introduced the issue.
                             // We can do something different if we have glass box access to *why* type checking failed
                             val fullyApplied = applied(fn, ty.type)
@@ -199,7 +199,7 @@ class Enumerator(
             }
             // TODO how to decide when done / move onto sibling step?
 
-            viz()
+            viz("pruned")
 
             if (changedFns.all { !it }) {
                 println("No pruning occurred!")
@@ -250,11 +250,9 @@ class Enumerator(
         } else false  // Left child isn't primitive
     }
 
-    private fun passesChecks(fn: String, t: Type): Boolean {
+    private fun passesPositives(fn: String, t: Type): Boolean {
         val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
         return posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
-        // TODO It's ok if something doesn't yet eliminate all negative examples!
-        // && negExamples.map { checkApplication(it, assignment) }.all { it is Error }
     }
 
     /** Checks whether the function is ever fully applied with the given hypothesis. */
@@ -264,5 +262,5 @@ class Enumerator(
         return !posExamples.filter { it.name == fn }.map { checkApplication(it, assignment) }.all { it is Function }
     }
 
-    private fun viz() = Visualizer.viz(state, vizFileID++)
+    private fun viz(stage: String = "") = Visualizer.viz(state, "${vizFileID++}${if (stage == "") "" else "-"}$stage")
 }

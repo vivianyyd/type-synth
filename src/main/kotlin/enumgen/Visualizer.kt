@@ -61,8 +61,8 @@ object Visualizer {
         return out
     }
 
-    fun viz(node: SearchNode, fileID: Int) = writeDotOutput(visualize(node), fileID)
-    fun viz(tree: SearchState, fileID: Int) = writeDotOutput(visualize(tree), fileID)
+    fun viz(node: SearchNode, fileID: String) = writeDotOutput(visualize(node), fileID)
+    fun viz(tree: SearchState, fileID: String) = writeDotOutput(visualize(tree), fileID)
 
     private fun visualize(state: SearchState): String {
         dw.startGraph()
@@ -78,7 +78,7 @@ object Visualizer {
         return out
     }
 
-    fun writeDotOutput(contents: String, id: Int) {
+    fun writeDotOutput(contents: String, id: String) {
         val out = PrintWriter(FileOutputStream("results${File.separator}type-$id.dot"))
         out.println(contents)
         out.close()
