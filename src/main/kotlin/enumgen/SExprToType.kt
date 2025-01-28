@@ -20,6 +20,7 @@ fun SExpr.toType(): Type = when (this) {
 }
 
     /*
-Lst(elements=[Atm(value=->), Atm(value=a), Lst(elements=[Atm(value=->), Lst(elements=[Atm(value=l), Atm(value=a)]), Lst(elements=[Atm(value=l), Atm(value=a)])])])
-Lst(elements=[Atm(value=lbl)])
+    Function (-> left rite)
+    Variable a
+    Label (l a b c), primitive (l)
      */

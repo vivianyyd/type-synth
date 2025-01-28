@@ -40,7 +40,7 @@ class ExampleGenerator {
         // We arbitrarily choose to explode the labels with max depth 2.
         // define function cartesian product(set, n) to do set^n. this will give all combos of params.
         // then for each label, include all combo assignments to parameters.
-
+        TODO()
 
 
 //        ts.forEach {
@@ -76,5 +76,6 @@ class ExampleGenerator {
         ts.forEach {
 
         }
+        TODO()
     }
 }

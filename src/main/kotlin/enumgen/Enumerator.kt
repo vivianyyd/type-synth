@@ -175,7 +175,7 @@ class Enumerator(
                             !nullaryHasTypeParams(fn, ty.type)
                             // Check for nullary type params after pruning unapplied functions, so we know they're nullary. TODO this is jank
                         }
-                        val prunedMoree = options?.retainAll { ty ->
+                        val prunedMore = options?.retainAll { ty ->
                             // After posex validation so we don't have to worry abt non-fn types w application examples
                             // After pruning nullary fns with type params, bc useless variables erroneously unify.
                             //    We probably wouldn't need to do this if we didn't only examine leaves when pruning
@@ -183,7 +183,7 @@ class Enumerator(
                                 exampleAnalysis.partialArgsParamsCompatible(fn, ty.type, searchTree)
                             argsParamsCompatible
                         } ?: false
-                        pruned[fn] = pruned[fn]!! || prunedSome || prunedMoree
+                        pruned[fn] = pruned[fn]!! || prunedSome || prunedMore
                         // If all we pruned was a useless parameter for nullary, do not mark a change; stop enum.
                         // I think the nice explanation for this is that variable doesn't have any children? TODO think
                     }
@@ -214,8 +214,6 @@ class Enumerator(
         }
         // Some leaves might be unfilled here if we realized we weren't getting any changes from pruning
         // Fn sibling resolution step
-
-        // TODO should we go back to the vertical step?
 
         return ""
     }

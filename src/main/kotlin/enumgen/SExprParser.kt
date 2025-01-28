@@ -1,8 +1,12 @@
 package enumgen
 
 sealed class SExpr {
-    data class Atm(val value: String) : SExpr()
-    data class Lst(val elements: List<SExpr>) : SExpr()
+    data class Atm(val value: String) : SExpr() {
+        override fun toString(): String = value
+    }
+    data class Lst(val elements: List<SExpr>) : SExpr() {
+        override fun toString(): String = "(${elements.joinToString(separator=" ")})"
+    }
 }
 
 class SExprParser(private val input: String) {
