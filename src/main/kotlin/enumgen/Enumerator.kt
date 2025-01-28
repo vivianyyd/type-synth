@@ -269,6 +269,7 @@ class Enumerator(
         return !posExamples.filter { it.name == fn }.map { checkApplication(it, assignment) }.all { it is Function }
     }
 
+    // TODO Maybe move this to a TypeEvaluation file. Map<String, Type> is an EvaluationContext
     private fun checkApplication(app: Application, map: Map<String, Type>): Type {
         fun checkAppRec(
             app: Application,

@@ -7,7 +7,7 @@ fun SearchNode.types(): Set<Type> {
     val expandedChildren = this.children.map { port ->
         port!!.fold(setOf<Type>()) { acc, child ->
             acc.union(child.types())
-        }
+        }.toList()
     }
     naryCartesianProduct(expandedChildren).forEach { selection ->
         result.add(merge(selection))
@@ -15,17 +15,17 @@ fun SearchNode.types(): Set<Type> {
     return result
 }
 
-fun SearchTree.contexts(): Set<Context> {
-    val possTys = this.root.names.associateWith{ f->
+fun SearchTree.contexts(): Set<Map<String, Type>> {
+    val possTys = this.root.names.map{ f->
         if (this.getRootFor(f).children[0].isNullOrEmpty()) throw Exception("Can't find a type!")
         else this.getRootFor(f).children[0]!!.flatMap{it.types()}
     }
-    TODO("cartesian product")
+    return naryCartesianProduct(possTys).map { this.root.names.zip(it).toMap() }.toSet()
 }
 
-fun naryCartesianProduct(tys: List<Set<Type>>): Set<List<Type>> {
+fun naryCartesianProduct(tys: List<List<Type>>): Set<List<Type>> {
     if (tys.isEmpty()) return setOf()
-    var result = setOf(tys[0].toList())
+    var result = setOf(tys[0])
     var rest = tys.drop(1)
     while (rest.isNotEmpty()) {
         result = binaryCartesianProduct(result, rest[0])
@@ -34,7 +34,7 @@ fun naryCartesianProduct(tys: List<Set<Type>>): Set<List<Type>> {
     return result
 }
 
-fun binaryCartesianProduct(a: Set<List<Type>>, b: Set<Type>): Set<List<Type>> {
+fun binaryCartesianProduct(a: Set<List<Type>>, b: List<Type>): Set<List<Type>> {
     val result = mutableSetOf<List<Type>>()
     a.forEach { ita -> b.forEach { itb -> result.add(ita + itb) } }
     return result
