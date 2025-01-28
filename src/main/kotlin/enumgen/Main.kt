@@ -51,8 +51,7 @@ fun testEnumeration(){
             Application("cons", listOf(zero, emptyBoolList)),
             Application("cons", listOf(tr, emptyIntListList)),
             Application("cons", listOf(zero, emptyIntListList))
-        ),
-        0
+        )
     )
 
 
@@ -78,8 +77,7 @@ fun testEnumeration(){
             // TODO There are lots more which we can generate ourselves
             Application("put", listOf(one, emptyDict, tr)),
             Application("put", listOf(zero, zero, emptyDict))
-        ),
-        0
+        )
     )   // TODO Why does it think second argument can't be a literal?
 
 

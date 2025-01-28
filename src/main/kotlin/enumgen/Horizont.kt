@@ -1,11 +1,11 @@
 package enumgen
 
 fun SearchNode.types(): Set<Type> {
-    if (this.children.any { it.isNullOrEmpty() }) return setOf()
+    if (this.children.any { it.isEmpty() }) return setOf()
 
     val result = mutableSetOf<Type>()
     val expandedChildren = this.children.map { port ->
-        port!!.fold(setOf<Type>()) { acc, child ->
+        port.fold(setOf<Type>()) { acc, child ->
             acc.union(child.types())
         }.toList()
     }
@@ -15,12 +15,12 @@ fun SearchNode.types(): Set<Type> {
     return result
 }
 
-fun SearchTree.contexts(): Set<Map<String, Type>> {
-    val possTys = this.root.names.map{ f->
-        if (this.getRootFor(f).children[0].isNullOrEmpty()) throw Exception("Can't find a type!")
-        else this.getRootFor(f).children[0]!!.flatMap{it.types()}
+fun SearchState.contexts(): Set<Map<String, Type>> {
+    val possTys = this.names.map{ f->
+        if (this.tree(f).children[0].isEmpty()) throw Exception("Can't find a type!")
+        else this.tree(f).children[0].flatMap{it.types()}
     }
-    return naryCartesianProduct(possTys).map { this.root.names.zip(it).toMap() }.toSet()
+    return naryCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()
 }
 
 fun naryCartesianProduct(tys: List<List<Type>>): Set<List<Type>> {
@@ -87,7 +87,7 @@ private fun checkEqMerge(tys: List<Type>): Type {
  * Returns a list of lists, each built from elements of all lists with the same indexes.
  * Output has length of shortest input list.
  */
-inline fun <T> zip(vararg lists: List<T>): List<List<T>> {
+fun <T> zip(vararg lists: List<T>): List<List<T>> {
     return zip(*lists, transform = { it })
 }
 
@@ -96,9 +96,8 @@ inline fun <T> zip(vararg lists: List<T>): List<List<T>> {
  * Output has length of shortest input list.
  */
 inline fun <T, V> zip(vararg lists: List<T>, transform: (List<T>) -> V): List<V> {
-    val minSize = lists.map(List<T>::size).min() ?: return emptyList()
+    val minSize = lists.minOfOrNull(List<T>::size) ?: return emptyList()
     val list = ArrayList<V>(minSize)
-
     val iterators = lists.map { it.iterator() }
     var i = 0
     while (i < minSize) {

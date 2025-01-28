@@ -32,11 +32,11 @@ object Visualizer {
 
     /** Adds the graphviz code that draws the subtree rooted at [this], and
      * returns the name of the graphviz node representing [this]. */
-    private fun TypeSearchNode.display(): String {
+    private fun SearchNode.display(): String {
         val gNode = "n${ctr++}"
         val childTags = this.children.map { "c${ctr++}" }
         dw.writeTypeNode(gNode, display(type), childTags)
-        val children = this.children.map { it?.map { n -> n.display() } }
+        val children = this.children.map { it.map { n -> n.display() } }
         drawArrows(childTags.map { "\"$gNode\":$it" }, children)
         return gNode
     }
@@ -44,11 +44,15 @@ object Visualizer {
     /** Draws arrows from ports to appropriate children */
     private fun drawArrows(ports: List<String>, children: List<List<String>?>) {
         ports.forEachIndexed { iPort, port ->
-            children[iPort]?.run { this.forEach { dw.writeEdge(port, it) } }
+            children[iPort]?.run {
+                this.forEach {
+                    dw.writeEdge(port, it)
+                }
+            }
         }
     }
 
-    private fun visualize(node: TypeSearchNode): String {
+    private fun visualize(node: SearchNode): String {
         dw.startGraph()
         node.display()
         dw.finishGraph()
@@ -57,17 +61,17 @@ object Visualizer {
         return out
     }
 
-    fun viz(node: TypeSearchNode, fileID: Int) = writeDotOutput(visualize(node), fileID)
-    fun viz(tree: SearchTree, fileID: Int) = writeDotOutput(visualize(tree), fileID)
+    fun viz(node: SearchNode, fileID: Int) = writeDotOutput(visualize(node), fileID)
+    fun viz(tree: SearchState, fileID: Int) = writeDotOutput(visualize(tree), fileID)
 
-    private fun visualize(tree: SearchTree): String {
+    private fun visualize(state: SearchState): String {
         dw.startGraph()
-        val tags = tree.root.names.associateWith { "fn${ctr++}" }
-        tree.root.names.forEach {
+        val tags = state.names.associateWith { "fn${ctr++}" }
+        state.names.forEach {
             dw.writeNode("${tags[it]}", it.replace("[", "\\[").replace("]", "\\]"))
         }
-        val fns = tree.root.functions.map { it?.map { n -> n.display() } }
-        drawArrows(tree.root.names.map { "\"${tags[it]}\"" }, fns)
+        val fns = state.allTrees.map { n -> n.display() }
+        drawArrows(state.names.map { "\"${tags[it]}\"" }, fns.map { listOf(it) })
         dw.finishGraph()
         val out = dw.output()
         dw.restart()
