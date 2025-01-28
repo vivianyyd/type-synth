@@ -183,22 +183,28 @@ class Enumerator(
                 if (!pruned[fn]!!) false else changed
             }
 
-            if (changedFns.all { !it }) {
-                println("No pruning occurred!")
-                break
-            }
             // Next round of leaves will be current leaves' children
             /* We don't need to worry about the following infinite loop:
              enum l _, enum l 'a, prune l 'a *without immediately propagating pruning up*, enum l _ again.
              Since leafParents changes, we always move onto next layer. We can defer propagating up */
             names.forEachIndexed { i, n ->
-                if (!changedFns[i]) leafParents[n] = listOf()  // We won't be enumerating any further
-                else leafParents[n] = leafParents[n]!!.flatMap { it.children.flatten() }
+                if (!changedFns[i]) {
+                    leafParents[n]!!.forEach { parent ->
+                        parent.children.forEach { it.clear() }
+                    }  // TODO this is brittle: Only works because if it didn't change from pruning,
+                    //   we can get rid of the children. Fine with jank fix for now bc this will be improved when
+                    //   we pause enumeration on branch level rather than fn level
+                    leafParents[n] = listOf()  // We won't be enumerating any further
+                } else leafParents[n] = leafParents[n]!!.flatMap { it.children.flatten() }
             }
             // TODO how to decide when done / move onto sibling step?
 
             viz()
 
+            if (changedFns.all { !it }) {
+                println("No pruning occurred!")
+                break
+            }
 //            if (++iter == DEPTH_BOUND) println("HIT THE SAFEGUARD")
         }
         // Some leaves might be unfilled here if we realized we weren't getting any changes from pruning
