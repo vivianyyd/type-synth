@@ -192,7 +192,10 @@ class Enumerator(
                     leafParents[n]!!.forEach { parent ->
                         parent.ports.forEach { it.clear() }
                     }
-                    /* TODO this is brittle: Only works because if it didn't change from pruning,
+                    /* TODO This removes newly enumerated nodes in a layer if we weren't able to prune any of them
+                        This erroneously removes nodes that we want, such as l0(l1()) for []i.
+                        But eliding it gives us out of memory error.
+                        also this is brittle: Only works because if it didn't change from pruning,
                         we can get rid of the children. Fine with jank fix for now bc this will be improved when
                         we pause enumeration on branch level rather than fn level */
                     leafParents[n] = listOf()  // We won't be enumerating any further
