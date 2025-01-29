@@ -1,35 +1,54 @@
 package enumgen
 
-fun SearchNode.types(): Set<Type> {
-    if (this.ports.any { it.isEmpty() }) return setOf()
+fun SearchNode.types(root: Boolean): Set<Type> {
+    if (root) {
+        return this.ports.fold(setOf()) { acc, port ->
+            acc.union(port.fold(setOf()) { a, c -> a.union(c.types(root = false)) })
+        }
+    }
+    if (this.ports.isEmpty() || this.ports.any { it.isEmpty() }) {
+        return setOf(this.type)  // concrete type or unfinished leaf
+    }
 
     val result = mutableSetOf<Type>()
-    val expandedChildren = this.ports.map { port ->
-        port.fold(setOf<Type>()) { acc, child ->
-            acc.union(child.types())
+    val expandedPorts = this.ports.map { port ->
+        port.fold(setOf<Type>()) { acc, portOption ->
+            acc.union(portOption.types(root = false))
         }.toList()
     }
-    naryCartesianProduct(expandedChildren).forEach { selection ->
+    naryCartesianProduct(expandedPorts).forEach { selection ->
         result.add(merge(selection))
     }
     return result
 }
 
 fun SearchState.contexts(): Set<Map<String, Type>> {
-    val possTys = this.names.map{ f->
+    val possTys = this.names.map { f ->
         if (this.tree(f).ports[0].isEmpty()) throw Exception("Can't find a type!")
-        else this.tree(f).ports[0].flatMap{it.types()}
+        else this.tree(f).types(root = true).toList()
     }
     return naryCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()
 }
 
+/*
+[[a, b]] should become [[a], [b]]
+[[a, b], [c, d]] > [[a, c], [a, d], [b, c], [b, d]]
+ */
+
+fun main() {
+    val l1 = listOf(Variable("a"), Variable("b"))
+    val l2 = listOf(Variable("c"), Variable("d"))
+    println(naryCartesianProduct(listOf(l1)))
+    println(naryCartesianProduct(listOf(l1, l2)))
+}
+
 fun naryCartesianProduct(tys: List<List<Type>>): Set<List<Type>> {
     if (tys.isEmpty()) return setOf()
-    var result = setOf(tys[0])
+    var result = tys[0].map { listOf(it) }.toSet()
     var rest = tys.drop(1)
     while (rest.isNotEmpty()) {
         result = binaryCartesianProduct(result, rest[0])
-        rest = tys.drop(1)
+        rest = rest.drop(1)
     }
     return result
 }
@@ -45,9 +64,12 @@ object MergeException : Exception("Merged mismatched types")
 fun merge(tys: List<Type>): Type {
     assert(tys.isNotEmpty())
 
-    val (siblingHoles, noSiblings) = tys.partition{it is SiblingHole}
-    if (siblingHoles.size <= 1) return checkEqMerge(noSiblings)
-    else throw MergeException
+    val (siblingHoles, noSiblings) = tys.partition { it is SiblingHole }
+    return if (siblingHoles.size <= 1 && noSiblings.isNotEmpty()) {
+        checkEqMerge(noSiblings)
+    } else if (noSiblings.isEmpty()) {
+        checkEqMerge(siblingHoles)
+    } else throw MergeException
 }
 
 private fun checkEqMerge(tys: List<Type>): Type {
@@ -79,7 +101,11 @@ private fun checkEqMerge(tys: List<Type>): Type {
             if (tys.all { it is ChildHole }) return tys[0]
             else throw MergeException
         }
-        is SiblingHole, is Error -> throw MergeException
+        is SiblingHole -> {
+            if (tys.all { it is SiblingHole } && tys.all { (it as SiblingHole).depth == (tys[0] as SiblingHole).depth }) return tys[0]
+            else throw MergeException
+        }
+        is Error -> throw MergeException
     }
 }
 

@@ -28,6 +28,7 @@ fun testEnumeration(){
     val emptyIntListList = Application("[[]]i", null)
 
     val cons0empty = Application("cons", listOf(zero, emptyIntList))
+    val cons00empty = Application("cons", listOf(zero, cons0empty))
     val consTempty = Application("cons", listOf(tr, emptyBoolList))
     val consListList = Application("cons", listOf(emptyIntList, emptyIntListList))
 
@@ -41,6 +42,7 @@ fun testEnumeration(){
             emptyBoolList,
             emptyIntListList,
             cons0empty,
+            cons00empty,
             consTempty,
             consListList
         ),

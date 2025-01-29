@@ -1,0 +1,29 @@
+Contexts: 11664
+Filter- passes all positives: 130
+Some of our favorite candidates:
+{0={ℓ1 of []}, cons=(v(a)) -> ({ℓ0 of [_]}) -> {ℓ0 of [_]}, tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ0 of [_]}, [[]]i={ℓ0 of [_]}}
+Rejects 1 negexs
+{0={ℓ2 of []}, cons=(v(a)) -> ({ℓ0 of [_]}) -> {ℓ0 of [_]}, tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ0 of [_]}, [[]]i={ℓ0 of [_]}}
+Rejects 1 negexs
+Total negexs: 5
+Max rejected: 3
+
+The below examples perform better because they distinguish 0,[]i from true,[]b by erroneously giving any
+int-related values one label and bool-related values a different one. The restrictions made by type variables need to
+be more first-class
+When we do sibling merging, also pick variables
+    blowup factor = num partitions of (num var nodes) = nth Bell number
+
+Candidates which reject the max number of examples:
+{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> {ℓ0 of [_]}, tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> {ℓ0 of [_]}, tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> {ℓ1 of []}, tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> {ℓ1 of []}, tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> {ℓ2 of []}, tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> {ℓ2 of []}, tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}

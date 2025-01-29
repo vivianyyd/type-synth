@@ -21,12 +21,6 @@ class DotWriter {
         sb.append("\t$nodeName [label = \"$label\"];\n")
     }
 
-    fun writeLangNode(fnNames: List<String>) =
-        writeNode(
-            "root",
-            "{ L | { ${fnNames.joinToString(separator = " | ")} } }"
-        )
-
     fun writeTypeNode(nodeName: String, type: String, ports: List<String>) =
         if (ports.isEmpty()) writeNode(nodeName, type)
         else writeNode(

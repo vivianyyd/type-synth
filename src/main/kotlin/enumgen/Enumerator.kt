@@ -5,7 +5,7 @@ typealias Assignment = Map<String, Type>
 class Enumerator(
     private val names: List<String>,
     private val posExamples: Set<Application>,
-    negExamples: Set<Application>,
+    private val negExamples: Set<Application>,
 //    private val MAX_TYPE_PARAMS: Int
 ) {
 //    val DEPTH_BOUND = 4  // TODO remove this safeguard
@@ -191,9 +191,10 @@ class Enumerator(
                 if (!changedFns[i]) {
                     leafParents[n]!!.forEach { parent ->
                         parent.ports.forEach { it.clear() }
-                    }  // TODO this is brittle: Only works because if it didn't change from pruning,
-                    //   we can get rid of the children. Fine with jank fix for now bc this will be improved when
-                    //   we pause enumeration on branch level rather than fn level
+                    }
+                    /* TODO this is brittle: Only works because if it didn't change from pruning,
+                        we can get rid of the children. Fine with jank fix for now bc this will be improved when
+                        we pause enumeration on branch level rather than fn level */
                     leafParents[n] = listOf()  // We won't be enumerating any further
                 } else leafParents[n] = leafParents[n]!!.flatMap { it.ports.flatten() }
             }
@@ -250,9 +251,12 @@ class Enumerator(
         } else false  // Left child isn't primitive
     }
 
+    private fun assignmentPassesPositives(assignment: Assignment): Boolean =
+        posExamples.all { checkApplication(it, assignment) !is Error }
+
     private fun passesPositives(fn: String, t: Type): Boolean {
         val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
-        return posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
+        return assignmentPassesPositives(assignment)
     }
 
     /** Checks whether the function is ever fully applied with the given hypothesis. */
