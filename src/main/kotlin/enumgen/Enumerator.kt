@@ -109,17 +109,17 @@ class Enumerator(
      * Returns true if a change was made.
      */
     private fun fill(tree: SearchNode, depth: Int): Boolean {
-        if (tree.children.any { it.isEmpty() }) {
+        if (tree.ports.any { it.isEmpty() }) {
             if (tree.numPorts > 0) {
                 tree.type.expansions(depth).forEachIndexed { i, port ->
-                    tree.children[i] = port.map { ty -> SearchNode(ty) }.toMutableList()
+                    tree.ports[i] = port.map { ty -> SearchNode(ty) }.toMutableList()
                 }
                 return true
             }
             return false  // TODO think about this
         }
         // Do not change the order of the || with accumulators... Forces avoiding short circuit
-        return tree.children.fold(false) { acc, port ->
+        return tree.ports.fold(false) { acc, port ->
             port.fold(false) { a, option ->
                 fill(option, depth + 1) || a
             } || acc
@@ -151,7 +151,7 @@ class Enumerator(
             val pruned = state.names.associateWith { false }.toMutableMap()
             leafParents.forEach { (fn, parents) ->
                 parents.map { parent ->
-                    parent.children.forEach { options ->
+                    parent.ports.forEach { options ->
                         val prunedSome = options.retainAll { ty ->
                             val passesPosExs = passesPositives(fn, ty.type)
                             // If never fully applied, it's definitely this node that introduced the issue.
@@ -190,12 +190,12 @@ class Enumerator(
             names.forEachIndexed { i, n ->
                 if (!changedFns[i]) {
                     leafParents[n]!!.forEach { parent ->
-                        parent.children.forEach { it.clear() }
+                        parent.ports.forEach { it.clear() }
                     }  // TODO this is brittle: Only works because if it didn't change from pruning,
                     //   we can get rid of the children. Fine with jank fix for now bc this will be improved when
                     //   we pause enumeration on branch level rather than fn level
                     leafParents[n] = listOf()  // We won't be enumerating any further
-                } else leafParents[n] = leafParents[n]!!.flatMap { it.children.flatten() }
+                } else leafParents[n] = leafParents[n]!!.flatMap { it.ports.flatten() }
             }
             // TODO how to decide when done / move onto sibling step?
 
@@ -214,7 +214,7 @@ class Enumerator(
     }
 
     private fun nullaryHasTypeParams(fn: String, t: Type): Boolean {
-        val nullary = state.tree(fn).children[0].none { it.type is Function }
+        val nullary = state.tree(fn).ports[0].none { it.type is Function }
         val hasParams = hasParams(t)
         return nullary && hasParams
     }

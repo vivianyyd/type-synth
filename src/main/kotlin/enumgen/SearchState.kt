@@ -9,9 +9,9 @@ class SearchState(val names: List<String>) {
 typealias PortContents = MutableList<SearchNode>
 
 class SearchNode(val type: Type) {
-    val children: ArrayList<PortContents> =
+    val ports: ArrayList<PortContents> =
         ArrayList(List(type.recursiveNumChildHoles()) { mutableListOf() })
 
     /** gotta be function bc weird init order thing TODO maybe this is ok */
-    val numPorts by lazy { children.size } //= children.size
+    val numPorts by lazy { ports.size } //= children.size
 }

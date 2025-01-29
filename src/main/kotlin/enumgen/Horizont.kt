@@ -1,10 +1,10 @@
 package enumgen
 
 fun SearchNode.types(): Set<Type> {
-    if (this.children.any { it.isEmpty() }) return setOf()
+    if (this.ports.any { it.isEmpty() }) return setOf()
 
     val result = mutableSetOf<Type>()
-    val expandedChildren = this.children.map { port ->
+    val expandedChildren = this.ports.map { port ->
         port.fold(setOf<Type>()) { acc, child ->
             acc.union(child.types())
         }.toList()
@@ -17,8 +17,8 @@ fun SearchNode.types(): Set<Type> {
 
 fun SearchState.contexts(): Set<Map<String, Type>> {
     val possTys = this.names.map{ f->
-        if (this.tree(f).children[0].isEmpty()) throw Exception("Can't find a type!")
-        else this.tree(f).children[0].flatMap{it.types()}
+        if (this.tree(f).ports[0].isEmpty()) throw Exception("Can't find a type!")
+        else this.tree(f).ports[0].flatMap{it.types()}
     }
     return naryCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()
 }

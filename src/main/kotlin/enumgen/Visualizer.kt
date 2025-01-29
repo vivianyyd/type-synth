@@ -34,9 +34,9 @@ object Visualizer {
      * returns the name of the graphviz node representing [this]. */
     private fun SearchNode.display(): String {
         val gNode = "n${ctr++}"
-        val childTags = this.children.map { "c${ctr++}" }
+        val childTags = this.ports.map { "c${ctr++}" }
         dw.writeTypeNode(gNode, display(type), childTags)
-        val children = this.children.map { it.map { n -> n.display() } }
+        val children = this.ports.map { it.map { n -> n.display() } }
         drawArrows(childTags.map { "\"$gNode\":$it" }, children)
         return gNode
     }

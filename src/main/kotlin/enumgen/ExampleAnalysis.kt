@@ -27,11 +27,11 @@ class ExampleAnalysis(
             arguments.associateWith { tree.tree(it) }  // Should be no NPE, just single ChildHole
         return argTyRoots.all { (argName, treeRoot) ->
             val leaves = mutableListOf<SearchNode>()
-            val frontier = (treeRoot.children[0]).toMutableList()
+            val frontier = (treeRoot.ports[0]).toMutableList()
             while (frontier.isNotEmpty()) {
                 val node = frontier.removeFirst()
-                if (node.children.isEmpty() || node.children.all { it.isEmpty() }) leaves.add(node)
-                else frontier.addAll(node.children.flatten())
+                if (node.ports.isEmpty() || node.ports.all { it.isEmpty() }) leaves.add(node)
+                else frontier.addAll(node.ports.flatten())
             }
             leaves.any { leaf ->
                 partialArgParamCompatible(fn, t, argName, leaf.type, tree)
