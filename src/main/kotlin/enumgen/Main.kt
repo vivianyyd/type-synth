@@ -30,6 +30,7 @@ fun testEnumeration(){
     val cons0empty = Application("cons", listOf(zero, emptyIntList))
     val cons00empty = Application("cons", listOf(zero, cons0empty))
     val consTempty = Application("cons", listOf(tr, emptyBoolList))
+    val consTTempty = Application("cons", listOf(tr, consTempty))
     val consListList = Application("cons", listOf(emptyIntList, emptyIntListList))
 
     val consEnumerator = Enumerator(
@@ -42,8 +43,9 @@ fun testEnumeration(){
             emptyBoolList,
             emptyIntListList,
             cons0empty,
-            cons00empty,
+//             cons00empty,
             consTempty,
+            consTTempty,
             consListList
         ),
         negExamples = setOf(

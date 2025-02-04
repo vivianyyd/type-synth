@@ -1,4 +1,4 @@
-package enumgen
+package parsing
 
 sealed class SExpr {
     data class Atm(val value: String) : SExpr() {

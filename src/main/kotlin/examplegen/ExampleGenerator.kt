@@ -1,4 +1,7 @@
-package enumgen
+package examplegen
+
+import enumgen.*
+import enumgen.Function
 
 class ExampleGenerator {
     private var name = 0
