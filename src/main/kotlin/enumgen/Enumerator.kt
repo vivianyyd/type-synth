@@ -211,44 +211,14 @@ class Enumerator(
             }
 //            if (++iter == DEPTH_BOUND) println("HIT THE SAFEGUARD")
         }
-//        state.names.forEach { println("Types for $it: ${state.tree(it).types(root=true)}") }
-//        println("Types for cons:")
-//        state.tree("cons").types(root=true).forEach { println(it) }
 
-        fun tmpCopyExceptChildHoles(t: Type): Type =
-            when (t) {
-                is Variable, is Error, is SiblingHole -> t
-                is Function -> Function(left=tmpCopyExceptChildHoles(t.left),rite=tmpCopyExceptChildHoles(t.rite))
-                is LabelNode -> LabelNode(label=t.label, params=t.params.map { tmpCopyExceptChildHoles(it) })
-                is ChildHole -> Variable("a")
-            }
-        val pcontexts = state.partialContexts()
-        println("Partial contexts: ${pcontexts.size}")
-        val pfiltered = pcontexts.filter{assignmentPassesPositives(it)}
-        println("Filter- passes all positives: ${pfiltered.size}")
 
+        // todo contextswithvariables fn does flatmap populateVariables() over node.types()
         val contexts = state.contexts()
         println("Contexts: ${contexts.size}")
         val filtered = contexts.filter{assignmentPassesPositives(it)}
         println("Filter- passes all positives: ${filtered.size}")
 
-//        println("Some of our favorite candidates:")
-//        for (map in filtered.filter {
-//            it["0"]!! is LabelNode && (it["0"]!! as LabelNode).params.isEmpty() &&
-//            it["tr"]!! is LabelNode && (it["tr"]!! as LabelNode).params.isEmpty() &&
-//                    (it["0"]!! as LabelNode).label !=(it["tr"]!! as LabelNode).label &&
-//                    (it["[]i"]!! as LabelNode).params.isNotEmpty()
-//        }) {
-//            println(map)
-//            println("Rejects ${negExamples.count { ex -> checkApplication(ex, map) is Error }} negexs")
-//
-//            val subbedMap = map.mapValues { (_, ty) -> tmpCopyExceptChildHoles(ty) }
-//            println("new: $subbedMap")
-//            println("Swapping out holes for alpha rejects ${negExamples.count { ex -> checkApplication(ex, subbedMap) is Error }} negexs")
-//            // This doesn't work because the reason our favorite map is failing is that it doesn't identify the link
-//            //  between 0 and []i. Other examples do, since they distinguish them by erroneously giving the int stuff
-//            //  one label and the bool stuff a different one
-//        }
 //        println("Total negexs: ${negExamples.size}")
 //        val negs = filtered.map { negExamples.count { ex -> checkApplication(ex, it) is Error } }
 //        println("Max rejected: ${negs.max()}")

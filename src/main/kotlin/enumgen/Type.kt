@@ -2,6 +2,7 @@ package enumgen
 
 sealed interface Type {
     fun recursiveNumChildHoles(): Int
+    fun recursiveNumVars(): Int
     fun directChildHoles(): Boolean
     /** Number of nodes in the longest path root to leaf */
     val height: Int
@@ -18,6 +19,7 @@ sealed class AbstractType : Type {
 data class Variable(val id: String) : AbstractType() {
     override fun toString(): String = "v($id)"
     override fun recursiveNumChildHoles() = 0
+    override fun recursiveNumVars() = 1
     override fun directChildHoles() = false
     override val children = listOf<Type>()
 }
@@ -25,6 +27,7 @@ data class Variable(val id: String) : AbstractType() {
 data class Function(val left: Type, val rite: Type) : AbstractType() {
     override fun toString(): String = "($left) -> $rite"
     override fun recursiveNumChildHoles() = left.recursiveNumChildHoles() + rite.recursiveNumChildHoles()
+    override fun recursiveNumVars() = left.recursiveNumVars() + rite.recursiveNumVars()
     override fun directChildHoles() = left is ChildHole || rite is ChildHole
     override val children = listOf(left, rite)
 }
@@ -32,6 +35,7 @@ data class Function(val left: Type, val rite: Type) : AbstractType() {
 data class LabelNode(val label: String, val params: List<Type>) : AbstractType() {
     override fun toString(): String = "{$label of $params}"
     override fun recursiveNumChildHoles() = params.fold(0) { acc, type -> acc + type.recursiveNumChildHoles() }
+    override fun recursiveNumVars() = params.fold(0) { acc, type -> acc + type.recursiveNumVars() }
     override fun directChildHoles() = params.any { it is ChildHole }
     override val children = params
 }
@@ -47,6 +51,7 @@ sealed class TypeHole : AbstractType() {
     override fun hashCode(): Int = System.identityHashCode(this)
     override fun toString(): String = "??"
     override val children = listOf<Type>()
+    override fun recursiveNumVars() = 0
 }
 
 /** A hole to be filled by a child node. */
@@ -66,6 +71,7 @@ class SiblingHole(val depth: Int) : TypeHole() {
 /** Unifies with everything, producing itself. Represents a type that can never successfully resolve. */
 data class Error(val t1: Type, val t2: Type, val category: ErrorCategory) : AbstractType() {
     override fun recursiveNumChildHoles() = 0
+    override fun recursiveNumVars() = 0
     override fun directChildHoles() = false
     override val children = listOf<Type>()
 }
