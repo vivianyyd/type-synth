@@ -189,20 +189,20 @@ class Enumerator(
              Since leafParents changes, we always move onto next layer. We can defer propagating up */
             names.forEachIndexed { i, n ->
                 if (!changedFns[i]) {
+                    /* TODO This removes newly enumerated nodes in a layer if we weren't able to prune any of them
+                        This erroneously removes nodes that we want, such as l0(l1()) for []i.
+                        But eliding it gives us out of memory error when we explode into full assignments.
+                        Also this is brittle: Only works because if it didn't change from pruning,
+                        we can get rid of the children.
+                        Fine with jank fix for now bc this will be improved when we pause enumeration on branch level
+                        rather than fn level */
                     leafParents[n]!!.forEach { parent ->
                         parent.ports.forEach { it.clear() }
                     }
-                    /* TODO This removes newly enumerated nodes in a layer if we weren't able to prune any of them
-                        This erroneously removes nodes that we want, such as l0(l1()) for []i.
-                        But eliding it gives us out of memory error.
-                        also this is brittle: Only works because if it didn't change from pruning,
-                        we can get rid of the children. Fine with jank fix for now bc this will be improved when
-                        we pause enumeration on branch level rather than fn level */
-                    leafParents[n] = listOf()  // We won't be enumerating any further
+                    // Don't enumerate here any further
+                    leafParents[n] = listOf()
                 } else leafParents[n] = leafParents[n]!!.flatMap { it.ports.flatten() }
             }
-            // TODO how to decide when done / move onto sibling step?
-
             viz("pruned")
 
             if (changedFns.all { !it }) {
@@ -211,9 +211,49 @@ class Enumerator(
             }
 //            if (++iter == DEPTH_BOUND) println("HIT THE SAFEGUARD")
         }
-        // Some leaves might be unfilled here if we realized we weren't getting any changes from pruning
-        // Fn sibling resolution step
+//        state.names.forEach { println("Types for $it: ${state.tree(it).types(root=true)}") }
+//        println("Types for cons:")
+//        state.tree("cons").types(root=true).forEach { println(it) }
 
+        fun tmpCopyExceptChildHoles(t: Type): Type =
+            when (t) {
+                is Variable, is Error, is SiblingHole -> t
+                is Function -> Function(left=tmpCopyExceptChildHoles(t.left),rite=tmpCopyExceptChildHoles(t.rite))
+                is LabelNode -> LabelNode(label=t.label, params=t.params.map { tmpCopyExceptChildHoles(it) })
+                is ChildHole -> Variable("a")
+            }
+        val pcontexts = state.partialContexts()
+        println("Partial contexts: ${pcontexts.size}")
+        val pfiltered = pcontexts.filter{assignmentPassesPositives(it)}
+        println("Filter- passes all positives: ${pfiltered.size}")
+
+        val contexts = state.contexts()
+        println("Contexts: ${contexts.size}")
+        val filtered = contexts.filter{assignmentPassesPositives(it)}
+        println("Filter- passes all positives: ${filtered.size}")
+
+//        println("Some of our favorite candidates:")
+//        for (map in filtered.filter {
+//            it["0"]!! is LabelNode && (it["0"]!! as LabelNode).params.isEmpty() &&
+//            it["tr"]!! is LabelNode && (it["tr"]!! as LabelNode).params.isEmpty() &&
+//                    (it["0"]!! as LabelNode).label !=(it["tr"]!! as LabelNode).label &&
+//                    (it["[]i"]!! as LabelNode).params.isNotEmpty()
+//        }) {
+//            println(map)
+//            println("Rejects ${negExamples.count { ex -> checkApplication(ex, map) is Error }} negexs")
+//
+//            val subbedMap = map.mapValues { (_, ty) -> tmpCopyExceptChildHoles(ty) }
+//            println("new: $subbedMap")
+//            println("Swapping out holes for alpha rejects ${negExamples.count { ex -> checkApplication(ex, subbedMap) is Error }} negexs")
+//            // This doesn't work because the reason our favorite map is failing is that it doesn't identify the link
+//            //  between 0 and []i. Other examples do, since they distinguish them by erroneously giving the int stuff
+//            //  one label and the bool stuff a different one
+//        }
+//        println("Total negexs: ${negExamples.size}")
+//        val negs = filtered.map { negExamples.count { ex -> checkApplication(ex, it) is Error } }
+//        println("Max rejected: ${negs.max()}")
+//        println("Candidates which reject the max number of examples:")
+//        println("Pass negs???: ${negs.size}")
         return ""
     }
 

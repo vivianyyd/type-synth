@@ -22,6 +22,22 @@ fun SearchNode.types(root: Boolean): Set<Type> {
     return result
 }
 
+fun SearchNode.leaves(): Set<Type> {
+    if (this.ports.isEmpty()) return setOf(this.type)
+    if (this.ports.all {it.isEmpty()}) return setOf(this.type)
+    return this.ports.fold(setOf()) {a, p ->
+        val tmp = p.flatMap{it.leaves()}.toSet()
+        a.union(tmp)}
+}
+
+fun SearchState.partialContexts(): Set<Map<String, Type>> {
+    val possTys = this.names.map { f ->
+        if (this.tree(f).ports[0].isEmpty()) throw Exception("Can't find a type!")
+        else this.tree(f).leaves().toList()
+    }
+    return naryCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()
+}
+
 fun SearchState.contexts(): Set<Map<String, Type>> {
     val possTys = this.names.map { f ->
         if (this.tree(f).ports[0].isEmpty()) throw Exception("Can't find a type!")
