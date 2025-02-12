@@ -5,18 +5,50 @@ package enumgen
  *
  * pure function
  * */
-fun Type.populateVariables(cap: Int): Set<Type> {
-    val spots = this.recursiveNumVars() + this.recursiveNumChildHoles()
+fun Assignment.populateVariablesPartitionBlowup(cap: Int): Set<Assignment> {
+    val spots = this.values.fold(0) { a, t -> a + t.recursiveNumVars() + t.recursiveNumChildHoles() }
     val partitions = partitionList((1..spots).toList(), cap)
     return partitions.map { partition ->
-
-        var ind = 1
-
-        TODO("Iterate through tree, counting current index")
+        // For each partition, produce a copy of [this] with newly assigned variables
+        val (a, i) = this.fillSpots(partitionToMap(partition.toList()))
+        if (i <= spots) throw Exception("Didn't assign all variables new names!")
+        a
     }.toSet()
+}
 
-    // each spot gets an index and based on partition gets assigned a variable
-    // remember each set in a partition corresponds to a variable
+fun Assignment.fillSpots(indexToPartition: Map<Int, Int>): Pair<Assignment, Int> {
+    var i = 1
+    return Pair(this.mapValues { (_, t) ->
+        val (newt, newi) = t.fillSpots(indexToPartition, i)
+        i = newi
+        newt
+    }, i)
+}
+
+/**
+ * @returns Resultant type and next index to fill
+ */
+fun Type.fillSpots(indexToPartition: Map<Int, Int>, startingIndex: Int): Pair<Type, Int> {
+    return when (this) {
+        is Error -> throw Exception("This should never happen")
+        is Function -> {
+            val (left, i1) = this.left.fillSpots(indexToPartition, startingIndex)
+            val (rite, i2) = this.rite.fillSpots(indexToPartition, i1)
+            Pair(Function(left = left, rite = rite), i2)
+        }
+        is LabelNode -> {
+            var i = startingIndex
+            val params = this.params.map {
+                val (t, iNext) = it.fillSpots(indexToPartition, i)
+                i = iNext
+                t
+            }
+            Pair(LabelNode(label = this.label, params = params), i)
+        }
+        is ChildHole -> Pair(Variable("${indexToPartition[startingIndex]!!}"), startingIndex + 1)
+        is TypeHole -> Pair(this, startingIndex)
+        is Variable -> Pair(Variable("${indexToPartition[startingIndex]!!}"), startingIndex + 1)
+    }
 }
 
 fun <T> partitionToMap(partition: List<List<T>>): Map<T, Int> {
@@ -58,8 +90,8 @@ fun <T> generatePartitions(list: List<T>, k: Int): List<Set<List<T>>> {
 }
 
 fun main() {
-    val list = listOf(1, 2, 3, 4)
-    val k = 3
+    val list = listOf(1, 2, 3, 4, 5, 6)
+    val k = 2
     val partitions = partitionList(list, k)
 
     println("Partitions with at most $k subsets:")

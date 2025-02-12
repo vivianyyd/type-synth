@@ -1,5 +1,8 @@
 package enumgen
 
+import examplegen.toType
+import parsing.SExprParser
+
 typealias Assignment = Map<String, Type>
 
 class Enumerator(
@@ -8,7 +11,7 @@ class Enumerator(
     private val negExamples: Set<Application>,
 //    private val MAX_TYPE_PARAMS: Int
 ) {
-//    val DEPTH_BOUND = 4  // TODO remove this safeguard
+    //    val DEPTH_BOUND = 4  // TODO remove this safeguard
     private var vizFileID = 0
 
     // TODO("Assert that [posExamples] and [negExamples] only contain names in [names]")
@@ -33,9 +36,9 @@ class Enumerator(
      * [this] must contain a hole(?)
      */
     private fun Type.expansions(depth: Int): List<List<Type>> {
-        assert(this.recursiveNumChildHoles() > 0)  // TODO maybe we can take this away at some pt
+        assert(this.recursiveNumChildHoles() > 0)
         when (this) {
-            is ChildHole -> return listOf(holeExpansion())  // TODO I think this never needs to get called
+            is ChildHole -> return listOf(holeExpansion())  // I think this never needs to get called
             is Variable -> throw Exception("No expansions. alternative is to return empty list")
             is LabelNode -> {
                 // If all holes, then fill in each param with multiple options and put sibling holes in all others
@@ -130,39 +133,44 @@ class Enumerator(
     private fun unfilledPorts(frontier: Map<String, List<SearchNode>>): Boolean =
         frontier.values.flatten().any { it.type.recursiveNumChildHoles() != 0 }
 
-    fun enumerate(): String /* TODO Set<Assignment>*/ {
-        /** Whether the most recent step affected the search space for a given function */
-        var changedFns = names.map { true }
-
+    fun enumerate(): String {
+        var iter = 1
         val leafParents: MutableMap<String, List<SearchNode>> =
             names.associateWith { listOf(state.tree(it)) }.toMutableMap()
 
         // Deep enumeration/vertical growing step
-//        var iter = 0
         viz("init")
-        while (unfilledPorts(leafParents)) {  // && iter < DEPTH_BOUND
+        while (unfilledPorts(leafParents)) {
+            println(iter)
             // Expand only types that changed in the past
-            changedFns = state.allTrees.zip(changedFns).map { (root, changed) ->
-                if (changed) fill(root, 0) else false
+            val fnsTofill = leafParents.filter { (_, v) -> v.isNotEmpty() }.keys
+            val changed = fnsTofill.map { fill(state.tree(it), 0) }
+            changed.zip(fnsTofill).filter { (c, _) -> !c }.forEach { (_, f) ->
+                leafParents[f] = listOf()
             }
             viz("fill")
-
             // Prune leaf if type is wrong shape regardless of type-siblings
-            val pruned = state.names.associateWith { false }.toMutableMap()
-            leafParents.forEach { (fn, parents) ->
-                parents.map { parent ->
+
+
+            // TODO There is a bug here which causes me to somehow only record when pruning doesn't occur on one of the branches or something.
+            val parentsPruned = leafParents.keys.associateWith { fn ->
+                val parents = leafParents[fn]!!
+                parents.associateWith { parent ->
+                    var p = false
                     parent.ports.forEach { options ->
                         val prunedSome = options.retainAll { ty ->
                             val passesPosExs = passesPositives(fn, ty.type)
                             // If never fully applied, it's definitely this node that introduced the issue.
-                            // We can do something different if we have glass box access to *why* type checking failed
                             val fullyApplied = applied(fn, ty.type)
                             val pruneDueToPrimitiveParam = prunePrimitiveParam(fn, ty.type)
+
+                            if (!(passesPosExs && fullyApplied && !pruneDueToPrimitiveParam) && iter > 2) println("Pruned ${ty.type} for $fn")
+
                             passesPosExs && fullyApplied && !pruneDueToPrimitiveParam
                         }
                         options.retainAll { ty ->
                             !nullaryHasTypeParams(fn, ty.type)
-                            // Check for nullary type params after pruning unapplied functions, so we know they're nullary. TODO this is jank
+                            // Check for nullary type params after pruning unapplied functions, so we know they're nullary.
                         }
                         val prunedMore = options.retainAll { ty ->
                             // After posex validation so we don't have to worry abt non-fn types w application examples
@@ -170,61 +178,152 @@ class Enumerator(
                             //    We probably wouldn't need to do this if we didn't only examine leaves when pruning
                             val argsParamsCompatible =
                                 exampleAnalysis.partialArgsParamsCompatible(fn, ty.type, state)
+
+                            if (!(argsParamsCompatible) && iter > 2) println("Pruned ${ty.type} for $fn")
+
                             argsParamsCompatible
                         }
-                        pruned[fn] = pruned[fn]!! || prunedSome || prunedMore
+                        p = p || prunedSome || prunedMore
                         // If all we pruned was a useless parameter for nullary, do not mark a change; stop enum.
-                        // I think the nice explanation for this is that variable doesn't have any children? TODO think
+                        // Variable doesn't have any children, so pruning it shouldn't affect the course of enum (?)
                     }
+                    p
                 }
             }
-            // Set changed to false for fn if pruning did nothing, even if filling did something
-            changedFns = state.names.zip(changedFns).map { (fn, changed) ->
-                if (!pruned[fn]!!) false else changed
-            }
 
-            // Next round of leaves will be current leaves' children
-            /* We don't need to worry about the following infinite loop:
-             enum l _, enum l 'a, prune l 'a *without immediately propagating pruning up*, enum l _ again.
-             Since leafParents changes, we always move onto next layer. We can defer propagating up */
-            names.forEachIndexed { i, n ->
-                if (!changedFns[i]) {
-                    /* TODO This removes newly enumerated nodes in a layer if we weren't able to prune any of them
-                        This erroneously removes nodes that we want, such as l0(l1()) for []i.
-                        But eliding it gives us out of memory error when we explode into full assignments.
-                        Also this is brittle: Only works because if it didn't change from pruning,
-                        we can get rid of the children.
-                        Fine with jank fix for now bc this will be improved when we pause enumeration on branch level
-                        rather than fn level */
-                    leafParents[n]!!.forEach { parent ->
-                        parent.ports.forEach { it.clear() }
-                    }
-                    // Don't enumerate here any further
-                    leafParents[n] = listOf()
-                } else leafParents[n] = leafParents[n]!!.flatMap { it.ports.flatten() }
-            }
             viz("pruned")
 
-            if (changedFns.all { !it }) {
+
+            val tmp = parentsPruned.mapValues { (k, v) -> v.filter{(n, b) -> !b}.map{(n, b) -> n.type} }
+            println(tmp)
+
+            if (!(parentsPruned.any { (_, nodePruned) -> nodePruned.any { (_, b) -> b } })) {
                 println("No pruning occurred!")
+
+
+                // TODO maybe remove me, trying this out. On the very last iteration, if we didn't prune anything,
+                //   we should do a big prune since we won't go back and enum here anyway
+                names.forEach { name ->
+                    val (nodesThatChanged, noChange) = leafParents[name]!!.partition { parentsPruned[name]!![it]!! }
+                    println(noChange.size)
+                    noChange.forEach { parent ->
+                        println(parent.type)
+                        parent.ports.forEach { p ->
+                            println("deleting ${p.size}")
+                            p.clear()
+                        }
+                    }
+                }
+
                 break
             }
+
+            names.forEach { name ->
+                val (nodesThatChanged, noChange) = leafParents[name]!!.partition { parentsPruned[name]!![it]!! }
+                // Next round of leaves will be current leaves' children. We always move onto next layer, so we can
+                // defer propagating up w/o accidental infinite loop of enuming and pruning the same node repeatedly
+                leafParents[name] = nodesThatChanged.flatMap { it.ports.flatten() }
+            }
 //            if (++iter == DEPTH_BOUND) println("HIT THE SAFEGUARD")
+            iter++
         }
 
+        viz("end")
 
-        // todo contextswithvariables fn does flatmap populateVariables() over node.types()
-        val contexts = state.contexts()
-        println("Contexts: ${contexts.size}")
-        val filtered = contexts.filter{assignmentPassesPositives(it)}
-        println("Filter- passes all positives: ${filtered.size}")
+        // TODO Start with blowup and no variable assignments, keep hole everywhere and everything one variable.
+        //  We'll eliminate a lot of combinations. Then make variable assignments to those! Bc variable blowup is an
+        //  operation on contexts and not types anyways.
 
+
+//        fun t(s: String): Type = SExprParser(s).parse().toType()
+//        val fav = mapOf(
+//            "0" to "(l1)",
+//            "tr" to "(l2)",
+//            "[]i" to "(l0 (l1))",
+//            "[]b" to "(l0 (l2))",
+//            "[[]]i" to "(l0 (l0 (l1)))",
+//            "cons" to "(-> a (-> (l0 a) (l0 a)))"
+//        ).mapValues { (_, v) -> t(v) }
+//        println(fav)
+//        println("DOES THIS THING EVEN WORK ${assignmentPassesPositives(fav)}")
+
+//        val contexts = state.contextsWithVariables(2)
+
+
+//        val contexts = state.contexts()
+//        println("Contexts: ${contexts.size}")
+//        val filtered = contexts.filter { assignmentPassesPositives(it) }
+//        println("Filter- passes all positives: ${filtered.size}")
+//
 //        println("Total negexs: ${negExamples.size}")
 //        val negs = filtered.map { negExamples.count { ex -> checkApplication(ex, it) is Error } }
 //        println("Max rejected: ${negs.max()}")
-//        println("Candidates which reject the max number of examples:")
-//        println("Pass negs???: ${negs.size}")
+
+        /*
+        val bestWithNegs =
+            filtered.filter { negExamples.count { ex -> checkApplication(ex, it) is Error } == negs.max() }
+        println("Candidates which reject the max number of examples: ${bestWithNegs.size}")
+        println(bestWithNegs.joinToString(separator = "\n"))
+
+
+        val desired = contexts.filter {
+            it["0"] is LabelNode && (it["0"] as LabelNode).params.isEmpty() && (it["0"] as LabelNode).label.contains("1") &&
+                    it["tr"] is LabelNode && (it["tr"] as LabelNode).params.isEmpty() && (it["tr"] as LabelNode).label.contains(
+                "2"
+            ) &&
+                    it["[]i"] is LabelNode && (it["[]i"] as LabelNode).params.isNotEmpty() &&
+                    it["[]b"] is LabelNode && (it["[]b"] as LabelNode).params.isNotEmpty() &&
+                    it["cons"] is Function && ((it["cons"] as Function).left is Variable) &&
+                    ((it["cons"] as Function).rite is Function) &&
+                    ((it["cons"] as Function).rite as Function).left !is Variable &&
+                    ((it["cons"] as Function).rite as Function).rite is LabelNode &&
+                    (((it["cons"] as Function).rite as Function).rite as LabelNode).label.contains("0") &&
+                    /*((it["cons"] as Function).left as Variable).id=="0" &&*/
+                    it["[[]]i"] is LabelNode && (it["[[]]i"] as LabelNode).params.isNotEmpty()
+        }.filter { assignmentPassesPositives(it) }
+
+        val explodedDesiredContexts = desired.flatMap { it.populateVariablesPartitionBlowup(2) }
+        println("WHAT WE WANTED")
+        println(explodedDesiredContexts.filter { assignmentPassesPositives(it) }.joinToString(separator = "\n"))
+        println(
+            "most negs rejected by what we wanted: ${
+                explodedDesiredContexts.map {
+                    negExamples.count { ex ->
+                        checkApplication(
+                            ex,
+                            it
+                        ) is Error
+                    }
+                }.max()
+            }"
+        )
+         */
+
         return ""
+    }
+
+    /* The most freshly enumerated node in the type, it is of greatest depth other than sibling holes */
+    fun Type.apex(): Type {
+        if (this.directChildHoles()) return this
+        when (this) {
+            is Error, is TypeHole, is Variable -> return this
+            is Function -> {
+                if (this.left.height == this.rite.height) {
+                    assert((this.left is SiblingHole).xor(this.rite is SiblingHole))
+                    return if (this.left is SiblingHole) this.rite.apex() else this.left.apex()
+                }
+                return if (this.left.height > this.rite.height) this.left.apex() else this.rite.apex()
+            }
+            is LabelNode -> {
+                if (this.params.isEmpty()) return this
+                val heights = this.params.map { it.height }
+                val longest = heights.filter { it == heights.max() }
+                if (longest.size == 1) return this.params.filter { it.height == heights.max() }[0].apex()
+                val nonSiblingHole = this.params.filter { it !is SiblingHole }
+                assert(nonSiblingHole.size == 1)
+                return nonSiblingHole[0].apex()
+            }
+        }
     }
 
     private fun nullaryHasTypeParams(fn: String, t: Type): Boolean {

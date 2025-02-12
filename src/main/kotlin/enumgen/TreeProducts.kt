@@ -24,10 +24,11 @@ fun SearchNode.types(root: Boolean): Set<Type> {
 
 fun SearchNode.leaves(): Set<Type> {
     if (this.ports.isEmpty()) return setOf(this.type)
-    if (this.ports.all {it.isEmpty()}) return setOf(this.type)
-    return this.ports.fold(setOf()) {a, p ->
-        val tmp = p.flatMap{it.leaves()}.toSet()
-        a.union(tmp)}
+    if (this.ports.all { it.isEmpty() }) return setOf(this.type)
+    return this.ports.fold(setOf()) { a, p ->
+        val tmp = p.flatMap { it.leaves() }.toSet()
+        a.union(tmp)
+    }
 }
 
 fun SearchState.partialContexts(): Set<Map<String, Type>> {

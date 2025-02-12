@@ -5,3 +5,185 @@ Filter- passes all positives: 130
 
 Pretty cool how sibling merging helps us...
 Despite more contexts, less pass the filter
+
+
+
+
+Why don't I keep enumerating for the literals?
+
+Pruning unpruned fn apex looks like it works better bc it prunes l[_->_] for []i, which allows us to prune
+l[_->_] from the second parameter for cons. But it's kind of a lie
+
+
+
+The problem is that for 0/tr, we want to stop enumerating early so we don't have extra l of l of l of.
+Our approach is to pause after one stage of no pruning.
+But when we pause after one stage of no pruning, we also pause enumeration for [[]]i, so we never produce
+l of l of int; in fact, it causes us to fail positive examples
+
+
+
+
+Let's try pruning everything after no prune, then var blowup with vars and holes
+
+Why do these all have [[]]i have the same variable as []i? If it was different we'd be a little happier
+
+
+
+
+
+WHAT WE WANTED
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [{ℓ1 of []}]}) -> {ℓ0 of [{ℓ1 of []}]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ1 of []}]}, [[]]i={ℓ0 of [{ℓ1 of []}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ2 of []}]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ2 of []}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [{ℓ2 of []}]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ2 of []}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [{ℓ2 of []}]}) -> {ℓ0 of [{ℓ2 of []}]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ2 of []}]}}
+
+
+
+
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
+	false
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
+	false
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
+	false
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
+	false
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
+	false
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
+	false
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ1 of []}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
+	false
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
+	false
+most negs rejected by what we wanted: 5
+
+Process finished with exit code 0
+
+
+=== Big prune after no prune then variable blowup with variable nodes and holes ==================================
+This has the same problem as blowup with all same variable
+
+Contexts: 34992
+Filter- passes all positives: 225
+Total negexs: 5
+Max rejected: 3
+Candidates which reject the max number of examples: 10
+{0={ℓ0 of [v(0)]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [v(0)]}}
+{0={ℓ0 of [v(0)]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [v(0)]}}
+{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [v(0)]}, []i={ℓ1 of []}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [v(0)]}, []i={ℓ2 of []}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+
+
+
+
+
+
+
+Big prune if no pruning, except keep variables. Then variable blowup on variables only, not holes
+Contexts: 34992
+Filter- passes all positives: 1059
+Total negexs: 5
+Max rejected: 3
+Candidates which reject the max number of examples: 20
+{0={ℓ0 of [_]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+
+
+
+
+WHAT WE WANTED BUT DIDN'T REJECT MAX EXS:
+{0={ℓ2 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ0 of [_]}, [[]]i={ℓ0 of [_]}}
+
+
+
+
+
+
+
+
+
+
+BELOW: Bad to do big prune bc we run into the same problem where labels are used instead of variables
+ABOVE: When doing big prune, let's try removing everything except for the variables
+
+=== Big prune after no prune then variable blowup with only variable nodes =======================================
+Contexts: 16038
+Filter- passes all positives: 788
+Total negexs: 5
+Max rejected: 3
+Candidates which reject the max number of examples: 18
+{0={ℓ0 of [_]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [_]}, tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [_]}, tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+
+
+
+=== Big prune after no prune then NO variable reassignment =======================================
+Contexts: 11664
+Filter- passes all positives: 130
+Total negexs: 5
+Max rejected: 3
+Candidates which reject the max number of examples: 12
+{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> {ℓ0 of [_]}, tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> {ℓ0 of [_]}, tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+
+
+
+
+
+
+==========================================/////////////////////////////////////////////////////
+SCRATCHPAD
+
+
