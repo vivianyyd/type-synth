@@ -1,8 +1,5 @@
 package enumgen
 
-import examplegen.toType
-import parsing.SExprParser
-
 typealias Assignment = Map<String, Type>
 
 class Enumerator(
@@ -194,7 +191,7 @@ class Enumerator(
             viz("pruned")
 
 
-            val tmp = parentsPruned.mapValues { (k, v) -> v.filter{(n, b) -> !b}.map{(n, b) -> n.type} }
+            val tmp = parentsPruned.mapValues { (k, v) -> v.filter { (n, b) -> !b }.map { (n, b) -> n.type } }
             println(tmp)
 
             if (!(parentsPruned.any { (_, nodePruned) -> nodePruned.any { (_, b) -> b } })) {
@@ -207,9 +204,7 @@ class Enumerator(
                     val (nodesThatChanged, noChange) = leafParents[name]!!.partition { parentsPruned[name]!![it]!! }
                     println(noChange.size)
                     noChange.forEach { parent ->
-                        println(parent.type)
                         parent.ports.forEach { p ->
-                            println("deleting ${p.size}")
                             p.clear()
                         }
                     }
@@ -252,51 +247,45 @@ class Enumerator(
 
 //        val contexts = state.contexts()
 //        println("Contexts: ${contexts.size}")
-//        val filtered = contexts.filter { assignmentPassesPositives(it) }
-//        println("Filter- passes all positives: ${filtered.size}")
-//
+//        val passesPos = contexts.filter { assignmentPassesPositives(it) }
+//        println("Filter- passes all positives: ${passesPos.size}")
+
+
+//        val desiredIndices = passesPos.withIndex().filter { (_, it) ->
+//            it["0"] is LabelNode && (it["0"] as LabelNode).params.isEmpty() && (it["0"] as LabelNode).label.contains("1") &&
+//                    it["tr"] is LabelNode && (it["tr"] as LabelNode).params.isEmpty() && (it["tr"] as LabelNode).label.contains(
+//                "2"
+//            ) &&
+//                    it["[]i"] is LabelNode && (it["[]i"] as LabelNode).params.isNotEmpty() &&
+//                    it["[]b"] is LabelNode && (it["[]b"] as LabelNode).params.isNotEmpty() &&
+//                    it["cons"] is Function && ((it["cons"] as Function).left is Variable) &&
+//                    ((it["cons"] as Function).rite is Function) &&
+//                    ((it["cons"] as Function).rite as Function).left !is Variable &&
+//                    ((it["cons"] as Function).rite as Function).rite is LabelNode &&
+//                    (((it["cons"] as Function).rite as Function).rite as LabelNode).label.contains("0") &&
+//                    /*((it["cons"] as Function).left as Variable).id=="0" &&*/
+//                    it["[[]]i"] is LabelNode && (it["[[]]i"] as LabelNode).params.isNotEmpty()
+//        }.map { (i, _) -> i }
+
+//        val exploded = desiredIndices.map{passesPos[it]}.flatMap { it.populateVariablesPartitionBlowup(2) }
+//        println("Exploded examples: ${ exploded.size }")
+
+
 //        println("Total negexs: ${negExamples.size}")
-//        val negs = filtered.map { negExamples.count { ex -> checkApplication(ex, it) is Error } }
-//        println("Max rejected: ${negs.max()}")
-
+//        val negs = exploded.map { negExamples.count { ex -> checkApplication(ex, it) is Error } }
+//        println("Max rejected by exploded desired stuff: ${negs.max()}")
+//        println("Min: ${negs.min()}")
+//
+//
+//        val bestWithNegs = exploded.filterIndexed { i, _ -> negs[i] == negs.max() }
+//        println("Candidates which reject the max number of examples: ${bestWithNegs.size}")
+//        println(bestWithNegs.joinToString(separator = "\n"))
+//
+//
+//        println("WHAT WE WANTED THAT REJECTS MOST NEGS")
+//        println(desiredIndices.filter { negs[it] == maxNegsByDesired  }.map{passesPos[it]}.joinToString(separator = "\n"))
         /*
-        val bestWithNegs =
-            filtered.filter { negExamples.count { ex -> checkApplication(ex, it) is Error } == negs.max() }
-        println("Candidates which reject the max number of examples: ${bestWithNegs.size}")
-        println(bestWithNegs.joinToString(separator = "\n"))
 
-
-        val desired = contexts.filter {
-            it["0"] is LabelNode && (it["0"] as LabelNode).params.isEmpty() && (it["0"] as LabelNode).label.contains("1") &&
-                    it["tr"] is LabelNode && (it["tr"] as LabelNode).params.isEmpty() && (it["tr"] as LabelNode).label.contains(
-                "2"
-            ) &&
-                    it["[]i"] is LabelNode && (it["[]i"] as LabelNode).params.isNotEmpty() &&
-                    it["[]b"] is LabelNode && (it["[]b"] as LabelNode).params.isNotEmpty() &&
-                    it["cons"] is Function && ((it["cons"] as Function).left is Variable) &&
-                    ((it["cons"] as Function).rite is Function) &&
-                    ((it["cons"] as Function).rite as Function).left !is Variable &&
-                    ((it["cons"] as Function).rite as Function).rite is LabelNode &&
-                    (((it["cons"] as Function).rite as Function).rite as LabelNode).label.contains("0") &&
-                    /*((it["cons"] as Function).left as Variable).id=="0" &&*/
-                    it["[[]]i"] is LabelNode && (it["[[]]i"] as LabelNode).params.isNotEmpty()
-        }.filter { assignmentPassesPositives(it) }
-
-        val explodedDesiredContexts = desired.flatMap { it.populateVariablesPartitionBlowup(2) }
-        println("WHAT WE WANTED")
-        println(explodedDesiredContexts.filter { assignmentPassesPositives(it) }.joinToString(separator = "\n"))
-        println(
-            "most negs rejected by what we wanted: ${
-                explodedDesiredContexts.map {
-                    negExamples.count { ex ->
-                        checkApplication(
-                            ex,
-                            it
-                        ) is Error
-                    }
-                }.max()
-            }"
-        )
          */
 
         return ""

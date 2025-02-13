@@ -30,6 +30,84 @@ Why do these all have [[]]i have the same variable as []i? If it was different w
 
 
 
+-==============================what's in this run? 2/13===========================
+big prune
+no variable exploding
+why is this different now
+
+Contexts: 2115072
+Filter- passes all positives: 8592
+Total negexs: 5
+Max rejected: 5
+Candidates which reject the max number of examples: 4
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(a)]}) -> (v(a)) -> v(a), tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(a)]}) -> (v(a)) -> v(a), tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+
+    The above two are in the right direction, but they unwrap the wrong way - instead of 0 being l2, [[]]i is.
+    We don't have infinite nesting in examples, fine
+    also the ones we want dont reject enough exs bc [[]]i not deep enough. only l of l of hole. So then  try variable blowup
+    THEN COMPARE DEP GRAPH STUFF
+
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(a)]}) -> (v(a)) -> {ℓ1 of []}, tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(a)]}) -> (v(a)) -> {ℓ2 of []}, tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+
+
+
+WHAT WE WANTED (all reject exactly one negex)
+{0={ℓ1 of []}, cons=(v(a)) -> ({ℓ0 of [_]}) -> {ℓ0 of [_]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ1 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [_]}]}}
+(there are lots)
+it's actually less good because there are less variables filled. the ones that do better only do better bc they have variables higher up in the tree, so they
+are able to reject more examples earlier in a sense. now let's try doing variable blowup on the filtered ones
+
+Out of memory error, most candidates have 9-11 spots
+9 spots in {0={ℓ0 of [(_) -> _]}, cons=({ℓ0 of [(v(a)) -> {ℓ2 of []}]}) -> (v(a)) -> {ℓ0 of [_]}, tr={ℓ0 of [(_) -> _]}, []i={ℓ0 of [(_) -> _]}, []b={ℓ0 of [{ℓ1 of []}]}, [[]]i={ℓ0 of [{ℓ1 of []}]}}
+
+Now let's just try the dep graph thing
+
+
+
+
+
+
+
+
+
+
+
+======================================================================
+Big prune after no prune
+Cherry pick favorites
+Variable blowup on those
+(latest try i guess)
+
+
+Exploded examples: 2048
+Max rejected by exploded desired stuff: 5
+Min: 1
+Candidates which reject the max number of examples: 716
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(1)]}, tr={ℓ2 of []}, []i={ℓ0 of [(v(0)) -> v(1)]}, []b={ℓ0 of [(v(0)) -> v(1)]}, [[]]i={ℓ0 of [(v(0)) -> v(1)]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [(v(0)) -> v(0)]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(1)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [(v(1)) -> v(0)]}, [[]]i={ℓ0 of [(v(1)) -> v(0)]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ0 of [v(1)]}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [(v(0)) -> v(1)]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [(v(1)) -> v(0)]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [(v(0)) -> v(0)]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [(v(1)) -> v(0)]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [(v(1)) -> v(0)]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [(v(0)) -> v(0)]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [(v(1)) -> v(0)]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+Hey, this one rejects max num exs
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+
+
+
+Process finished with exit code 0
+
+========================================================
+
+
+
 
 
 WHAT WE WANTED
