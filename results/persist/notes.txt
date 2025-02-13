@@ -31,9 +31,8 @@ Why do these all have [[]]i have the same variable as []i? If it was different w
 
 
 -==============================what's in this run? 2/13===========================
-big prune
+BUGGY big prune
 no variable exploding
-why is this different now
 
 Contexts: 2115072
 Filter- passes all positives: 8592

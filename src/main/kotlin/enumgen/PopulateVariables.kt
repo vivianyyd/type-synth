@@ -7,7 +7,6 @@ package enumgen
  * */
 fun Assignment.populateVariablesPartitionBlowup(cap: Int): Set<Assignment> {
     val spots = this.values.fold(0) { a, t -> a + t.recursiveNumVars() + t.recursiveNumChildHoles() }
-    println("$spots spots in $this")
     val partitions = partitionList((1..spots).toList(), cap)
     return partitions.map { partition ->
         // For each partition, produce a copy of [this] with newly assigned variables
