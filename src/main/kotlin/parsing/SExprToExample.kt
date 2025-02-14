@@ -3,15 +3,31 @@ package parsing
 import enumgen.*
 
 /**
- * posexs, negexs, names mentioned
+ * list of (example, sign), names mentioned
  */
-fun examples(sexps: List<SExpr>): Triple<List<Application>, List<Application>, Set<String>> {
+fun examples(sexps: Collection<SExpr>): Pair<List<Pair<Application, Boolean>>, Set<String>> {
     val exs = sexps.map { it.toExample() }
-    val (pos, neg) = exs.partition { (sign, _, _) -> sign }
-    return Triple(
-        pos.map { (_, ex, _) -> ex },
-        neg.map { (_, ex, _) -> ex },
-        exs.map { it.third }.fold(setOf()) { a, b -> a.union(b) })
+    return Pair(exs.map { Pair(it.second, it.first) }, exs.map { it.third }.fold(setOf()) { a, b -> a.union(b) })
+}
+
+/**
+ * Posex, negex, names mentioned
+ */
+fun examplesSplit(sexps: Collection<SExpr>): Triple<List<Application>, List<Application>, Set<String>> {
+    val (exs, names) = examples(sexps)
+    val (pos, neg) = splitExamples(exs)
+    return Triple(pos, neg, names)
+}
+
+/**
+ * Posex, negex, names mentioned
+ */
+fun splitExamples(exs: List<Pair<Application, Boolean>>): Pair<List<Application>, List<Application>> {
+    val (pos, neg) = exs.partition { (_, sign) -> sign }
+    return Pair(
+        pos.map { (ex, _) -> ex },
+        neg.map { (ex, _) -> ex },
+    )
 }
 
 fun SExpr.toExample(): Triple<Boolean, Application, Set<String>> = when (this) {
@@ -42,10 +58,3 @@ fun SExpr.toApplication(): Pair<Application, Set<String>> = when (this) {
             TODO("Not yet implemented: Parsing application where the function is the result of an application")  // Pair(Application(apps[0]))
     }
 }
-
-/*
-(+ (cons a b))
-(+ (cons a (cons b c))))
-(+ []i)
-(+ 0)
- */
