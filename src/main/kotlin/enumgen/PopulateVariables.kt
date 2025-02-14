@@ -5,23 +5,26 @@ package enumgen
  *
  * pure function
  * */
-fun Assignment.populateVariablesPartitionBlowup(cap: Int): Set<Assignment> {
-    val spots = this.values.fold(0) { a, t -> a + t.recursiveNumVars() + t.recursiveNumChildHoles() }
+fun Assignment.populateVariablesPartitionBlowup(nullary: Map<String, Boolean>, cap: Int): Set<Assignment> {
+    val noNullary = this.filterKeys { !nullary[it]!! }
+    val spots = noNullary.values.fold(0) { a, t -> a + t.recursiveNumVars() + t.recursiveNumChildHoles() }
     val partitions = partitionList((1..spots).toList(), cap)
     return partitions.map { partition ->
         // For each partition, produce a copy of [this] with newly assigned variables
-        val (a, i) = this.fillSpots(partitionToMap(partition.toList()))
+        val (a, i) = this.fillSpots(nullary, partitionToMap(partition.toList()))
         if (i <= spots) throw Exception("Didn't assign all variables new names!")
         a
     }.toSet()
 }
 
-fun Assignment.fillSpots(indexToPartition: Map<Int, Int>): Pair<Assignment, Int> {
+fun Assignment.fillSpots(nullary: Map<String, Boolean>, indexToPartition: Map<Int, Int>): Pair<Assignment, Int> {
     var i = 1
-    return Pair(this.mapValues { (_, t) ->
-        val (newt, newi) = t.fillSpots(indexToPartition, i)
-        i = newi
-        newt
+    return Pair(this.mapValues { (n, t) ->
+        if (nullary[n]!!) t else {
+            val (newt, newi) = t.fillSpots(indexToPartition, i)
+            i = newi
+            newt
+        }
     }, i)
 }
 

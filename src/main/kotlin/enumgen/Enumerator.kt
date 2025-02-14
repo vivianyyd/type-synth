@@ -159,13 +159,10 @@ class Enumerator(
                             // If never fully applied, it's definitely this node that introduced the issue.
                             val fullyApplied = applied(fn, ty.type)
                             val pruneDueToPrimitiveParam = prunePrimitiveParam(fn, ty.type)
-
-                            if (!(passesPosExs && fullyApplied && !pruneDueToPrimitiveParam) && iter > 2) println("Pruned ${ty.type} for $fn")
-
                             passesPosExs && fullyApplied && !pruneDueToPrimitiveParam
                         }
                         options.retainAll { ty ->
-                            !nullaryHasTypeParams(fn, ty.type)
+                            !(nullary(fn) && hasParams(ty.type))
                             // Check for nullary type params after pruning unapplied functions, so we know they're nullary.
                         }
                         val prunedMore = options.retainAll { ty ->
@@ -174,9 +171,6 @@ class Enumerator(
                             //    We probably wouldn't need to do this if we didn't only examine leaves when pruning
                             val argsParamsCompatible =
                                 exampleAnalysis.partialArgsParamsCompatible(fn, ty.type, state)
-
-                            if (!(argsParamsCompatible) && iter > 2) println("Pruned ${ty.type} for $fn")
-
                             argsParamsCompatible
                         }
                         pruned = pruned || prunedSome || prunedMore
@@ -184,7 +178,10 @@ class Enumerator(
                         // Variable doesn't have any children, so pruning it shouldn't affect the course of enum (?)
                     }
                     // Big prune
-                    if (!pruned) parent.ports.forEach { it.clear() }
+                    if (!pruned) parent.ports.forEach { children ->
+                        children.removeIf { it.type.apex() is Function }
+//                        children.clear()
+                    }
                     pruned
                 }
             }
@@ -232,45 +229,48 @@ class Enumerator(
         val passesPos = contexts.filter { assignmentPassesPositives(it) }
         println("Filter- passes all positives: ${passesPos.size}")
 
-//        val exploded = passesPos.flatMap { it.populateVariablesPartitionBlowup(2) }
-//        println("Exploded contexts: ${ exploded.size }")
-
-//        println("Total negexs: ${negExamples.size}")
-//        val negs = exploded.map { negExamples.count { ex -> checkApplication(ex, it) is Error } }
-//        println("Max rejected by exploded desired stuff: ${negs.max()}")
-//        println("Min: ${negs.min()}")
-
-//        val bestWithNegs = exploded.filterIndexed { i, _ -> negs[i] == negs.max() }
-//        println("Candidates which reject the max number of examples: ${bestWithNegs.size}")
-//        println(bestWithNegs.joinToString(separator = "\n"))
-
-        val desiredIndices = passesPos.withIndex().filter { (_, it) ->
-            it["0"] is LabelNode && (it["0"] as LabelNode).params.isEmpty() && (it["0"] as LabelNode).label.contains("1") &&
-                    it["tr"] is LabelNode && (it["tr"] as LabelNode).params.isEmpty() && (it["tr"] as LabelNode).label.contains(
-                "2"
-            ) &&
-                    it["[]i"] is LabelNode && (it["[]i"] as LabelNode).params.isNotEmpty() &&
-                    it["[]b"] is LabelNode && (it["[]b"] as LabelNode).params.isNotEmpty() &&
-                    it["cons"] is Function && ((it["cons"] as Function).left is Variable) &&
-                    ((it["cons"] as Function).rite is Function) &&
-                    ((it["cons"] as Function).rite as Function).left !is Variable &&
-                    ((it["cons"] as Function).rite as Function).rite is LabelNode &&
-                    (((it["cons"] as Function).rite as Function).rite as LabelNode).label.contains("0") &&
-                    /*((it["cons"] as Function).left as Variable).id=="0" &&*/
-                    it["[[]]i"] is LabelNode && (it["[[]]i"] as LabelNode).params.isNotEmpty()
-        }.map { (i, _) -> i }
-
-        val explodedDesired = desiredIndices.map { passesPos[it] }.flatMap { it.populateVariablesPartitionBlowup(2) }
-        println("Exploded desired contexts: ${explodedDesired.size}")
+        val exploded = passesPos.flatMap { it.populateVariablesPartitionBlowup(state.names.associateWith { nullary(it) },2) }
+        println("Exploded contexts: ${exploded.size}")
 
         println("Total negexs: ${negExamples.size}")
-        val negs = explodedDesired.map { negExamples.count { ex -> checkApplication(ex, it) is Error } }
+        val negs = exploded.map { negExamples.count { ex -> checkApplication(ex, it) is Error } }
         println("Max rejected by exploded desired stuff: ${negs.max()}")
         println("Min: ${negs.min()}")
 
-        val bestWithNegs = explodedDesired.filterIndexed { i, _ -> negs[i] == negs.max() }
-        println("Candidates cherry picked which also reject the max number of examples: ${bestWithNegs.size}")
-        println(bestWithNegs.joinToString(separator = "\n"))
+        val bestWithNegs = exploded.filterIndexed { i, _ -> negs[i] == negs.max() }
+        println("Candidates which reject the max number of examples: ${bestWithNegs.size}")
+        val cands = (bestWithNegs.joinToString(separator = "\n"))
+        println(cands)
+//        val file = File("example.txt")
+//        file.writeText(cands)
+
+//        val desiredIndices = passesPos.withIndex().filter { (_, it) ->
+//            it["0"] is LabelNode && (it["0"] as LabelNode).params.isEmpty() && (it["0"] as LabelNode).label.contains("1") &&
+//                    it["tr"] is LabelNode && (it["tr"] as LabelNode).params.isEmpty() && (it["tr"] as LabelNode).label.contains(
+//                "2"
+//            ) &&
+//                    it["[]i"] is LabelNode && (it["[]i"] as LabelNode).params.isNotEmpty() &&
+//                    it["[]b"] is LabelNode && (it["[]b"] as LabelNode).params.isNotEmpty() &&
+//                    it["cons"] is Function && ((it["cons"] as Function).left is Variable) &&
+//                    ((it["cons"] as Function).rite is Function) &&
+//                    ((it["cons"] as Function).rite as Function).left !is Variable &&
+//                    ((it["cons"] as Function).rite as Function).rite is LabelNode &&
+//                    (((it["cons"] as Function).rite as Function).rite as LabelNode).label.contains("0") &&
+//                    /*((it["cons"] as Function).left as Variable).id=="0" &&*/
+//                    it["[[]]i"] is LabelNode && (it["[[]]i"] as LabelNode).params.isNotEmpty()
+//        }.map { (i, _) -> i }
+
+//        val explodedDesired = desiredIndices.map { passesPos[it] }.flatMap { it.populateVariablesPartitionBlowup(2) }
+//        println("Exploded desired contexts: ${explodedDesired.size}")
+//
+//        println("Total negexs: ${negExamples.size}")
+//        val negs = explodedDesired.map { negExamples.count { ex -> checkApplication(ex, it) is Error } }
+//        println("Max rejected by exploded desired stuff: ${negs.max()}")
+//        println("Min: ${negs.min()}")
+//
+//        val bestWithNegs = explodedDesired.filterIndexed { i, _ -> negs[i] == negs.max() }
+//        println("Candidates cherry picked which also reject the max number of examples: ${bestWithNegs.size}")
+//        println(bestWithNegs.joinToString(separator = "\n"))
 
         return ""
     }
@@ -299,10 +299,8 @@ class Enumerator(
         }
     }
 
-    private fun nullaryHasTypeParams(fn: String, t: Type): Boolean {
-        val nullary = state.tree(fn).ports[0].none { it.type is Function }
-        val hasParams = hasParams(t)
-        return nullary && hasParams
+    private fun nullary(fn: String): Boolean {
+        return state.tree(fn).ports[0].none { it.type is Function }
     }
 
     private fun hasParams(t: Type): Boolean = when (t) {

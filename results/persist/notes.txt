@@ -1,44 +1,128 @@
-Partial contexts (contexts made from all leaves with no sibling merging): 2916
-Filter- passes all positives: 1512
-Contexts (all contexts from types after sibling merging): 11664
-Filter- passes all positives: 130
-
-Pretty cool how sibling merging helps us...
-Despite more contexts, less pass the filter
-
-
-
-
-Why don't I keep enumerating for the literals?
-
 Pruning unpruned fn apex looks like it works better bc it prunes l[_->_] for []i, which allows us to prune
 l[_->_] from the second parameter for cons. But it's kind of a lie
-
-
 
 The problem is that for 0/tr, we want to stop enumerating early so we don't have extra l of l of l of.
 Our approach is to pause after one stage of no pruning.
 But when we pause after one stage of no pruning, we also pause enumeration for [[]]i, so we never produce
 l of l of int; in fact, it causes us to fail positive examples
 
+BIG PRUNE AFTER NO PRUNE, THEN BLOWUP HOLES AND VARS: ...
+BIG PRUNE AFTER NO PRUNE, THEN BLOWUP VARS: ...
+
+========================================================================================================
+PRUNE WHEN APEX IS FN AFTER NO PRUNE, THEN BLOWUP
+FILL IN HOLES AND VARS WITH PARTITION BLOWUP VARS, **UNLESS THE VALUE IS NULLARY**
+
+Lessons from this one
+    Big pruning just fn apexes when no pruning happened is a hack, it has the same issue as the big prune -
+        for ex if we prune a fn as a parameter, but the input in fact is a parameter, we just haven't enumed far enough
+        to see that so we erroneously prune that param type
+        The big prune is in general I think a bad idea, but the blowup seems too big to try anything without it
+        I guess if we don't big prune, when making contexts we can do something more lazy (generator) to help but still
+    Adding occams razor on num variables will prob give us the best results we can get
+    Fill holes with variable partitions unless known to be nullary helps. We haven't yet implemented avoiding fresh vars
+        on fn output types, although that might do something similar to the razor
+    How to stop things from unwrapping backwards? 
 
 
+Contexts: 3300000
+Filter- passes all positives: 1913
+Exploded contexts: 5392
+Total negexs: 5
+Max rejected by exploded desired stuff: 5
+Min: 0
+Candidates which reject the max number of examples: 10
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [_]}]}}
+{0={ℓ2 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ1 of []}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ0 of [{ℓ1 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [_]}]}}
 
-Let's try pruning everything after no prune, then var blowup with vars and holes
+The below are wrong bc cons output contains a fresh variable, they are otherwise the same as the desired result,
+but there is an extra variable which we don't need (and is also wrong)
+We can get rid of this with occams razor on number of variables
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [_]}]}}
+{0={ℓ2 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ1 of []}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ0 of [{ℓ1 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [_]}]}}
 
-Why do these all have [[]]i have the same variable as []i? If it was different we'd be a little happier
+These unwrap backwards
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(1)]}) -> (v(1)) -> v(0), tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(0)]}) -> (v(0)) -> v(0), tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(1)]}) -> (v(1)) -> v(0), tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(0)]}) -> (v(0)) -> v(0), tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+
+The below are wrong, but adding positive example    cons []i (cons []i [[]]i) removes them! we are pretty sensitive to examples but ig that's ok
+    {0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [{ℓ2 of []}]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [_]}]}}
+    {0={ℓ2 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [{ℓ1 of []}]}, tr={ℓ1 of []}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ0 of [{ℓ1 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [_]}]}}
+
+========================================================================================================
+Same as above, but added negative example cons []b [[]]i
+Our favorite one doesn't reject this bc we haven't gone deep enough in [[]]i to see that it's different from []b
+
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(1)]}) -> (v(1)) -> v(0), tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(0)]}) -> (v(0)) -> v(0), tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(1)]}) -> (v(1)) -> v(0), tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(0)]}) -> (v(0)) -> v(0), tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+
+
+========================================================================================================
+BIG PRUNE AFTER NO PRUNE, THEN BLOWUP
+FILL IN HOLES AND VARS WITH PARTITION BLOWUP VARS, **UNLESS THE VALUE IS NULLARY**
+
+This has the problem where we distinguish group i/[]i and b/[]b by giving them the same label, bc with big prune
+we don't enumerate nested labels for values, so they have holes, but we don't fill the holes with vars since we know it's
+nullary, so we can only distinguish them with labels. Can't just prune when nothing was able to be pruned
+
+Contexts: 11664
+Filter- passes all positives: 130
+Exploded contexts: 448
+Total negexs: 5
+Max rejected by exploded stuff: 3
+Min: 0
+Candidates which reject the max number of examples: 20
+
+{0={ℓ0 of [_]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
+{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
+{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
+{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
+{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+
+
+========================================================================================================
+No pruning occurred!
+Contexts: 11664
+Filter- passes all positives: 130
+Exploded contexts: 6968
+Total negexs: 5
+Max rejected by exploded stuff: 5
+Min: 0
+Candidates which reject the max number of examples: 2896
+TODO these are also bad anyway bc we shouldn't have holes in nullary. Holes should only expand to vars that aren't fresh if the thing isn't nullary. Whatever
+{0={ℓ0 of [v(1)]}, cons=(v(0)) -> (v(1)) -> v(0), tr={ℓ0 of [v(1)]}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(1)]}, [[]]i={ℓ0 of [v(0)]}}
+{0={ℓ0 of [v(1)]}, cons=(v(0)) -> (v(1)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [v(1)]}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(1)]}, [[]]i={ℓ0 of [v(0)]}}
+{0={ℓ0 of [v(1)]}, cons=(v(1)) -> ({ℓ0 of [v(0)]}) -> v(1), tr={ℓ0 of [v(0)]}, []i={ℓ0 of [v(1)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(1)]}}
+{0={ℓ0 of [v(1)]}, cons=({ℓ0 of [v(0)]}) -> (v(1)) -> v(0), tr={ℓ0 of [v(1)]}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(1)]}, [[]]i={ℓ0 of [v(0)]}}
+{0={ℓ0 of [v(1)]}, cons=({ℓ0 of [{ℓ0 of [v(1)]}]}) -> (v(1)) -> v(1), tr={ℓ0 of [v(1)]}, []i={ℓ0 of [v(0)]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [v(1)]}}
 
 
 
 -==============================what's in this run? 2/13===========================
-BUGGY big prune
-no variable exploding
+BUGGY big prune, no variable exploding
 
 Contexts: 2115072
 Filter- passes all positives: 8592
-Total negexs: 5
-Max rejected: 5
-Candidates which reject the max number of examples: 4
+Candidates which reject 5 examples: 4
 {0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(a)]}) -> (v(a)) -> v(a), tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
 {0={ℓ0 of [{ℓ0 of [_]}]}, cons=({ℓ0 of [v(a)]}) -> (v(a)) -> v(a), tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
 
@@ -65,14 +149,6 @@ Now let's just try the dep graph thing
 
 
 
-
-
-
-
-
-
-
-
 ======================================================================
 Big prune after no prune
 Cherry pick favorites
@@ -84,60 +160,12 @@ Exploded examples: 2048
 Max rejected by exploded desired stuff: 5
 Min: 1
 Candidates which reject the max number of examples: 716
-{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(1)]}, tr={ℓ2 of []}, []i={ℓ0 of [(v(0)) -> v(1)]}, []b={ℓ0 of [(v(0)) -> v(1)]}, [[]]i={ℓ0 of [(v(0)) -> v(1)]}}
-{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [(v(0)) -> v(0)]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
-{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(1)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [(v(1)) -> v(0)]}, [[]]i={ℓ0 of [(v(1)) -> v(0)]}}
-{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
 {0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ0 of [v(1)]}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [(v(0)) -> v(1)]}}
 {0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [(v(1)) -> v(0)]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
-{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [(v(0)) -> v(0)]}}
-{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [(v(1)) -> v(0)]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [(v(1)) -> v(0)]}}
 {0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [(v(0)) -> v(0)]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
 {0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [(v(1)) -> v(0)]}}
-{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
-{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
 Hey, this one rejects max num exs
 {0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
-
-
-
-Process finished with exit code 0
-
-========================================================
-
-
-
-
-
-WHAT WE WANTED
-{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [{ℓ1 of []}]}) -> {ℓ0 of [{ℓ1 of []}]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ1 of []}]}, [[]]i={ℓ0 of [{ℓ1 of []}]}}
-{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ2 of []}]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ2 of []}]}}
-{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [{ℓ2 of []}]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ2 of []}]}}
-{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [{ℓ2 of []}]}) -> {ℓ0 of [{ℓ2 of []}]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ2 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ2 of []}]}}
-
-
-
-
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
-	false
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
-	false
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
-	false
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
-	false
-{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
-	false
-{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
-	false
-{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ1 of []}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
-	false
-{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ0 of [v(0)]}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ0 of [v(0)]}}
-	false
-most negs rejected by what we wanted: 5
-
-Process finished with exit code 0
-
 
 === Big prune after no prune then variable blowup with variable nodes and holes ==================================
 This has the same problem as blowup with all same variable
@@ -158,109 +186,108 @@ Candidates which reject the max number of examples: 10
 {0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [v(0)]}, []i={ℓ2 of []}, []b={ℓ0 of [v(0)]}, [[]]i={ℓ2 of []}}
 {0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
 
+=============================================================================================
+PRUNE WHEN APEX IS FN AFTER NO PRUNE, THEN BLOWUP
+
+FILL IN ALL HOLES AND VARS WITH PARTITION BLOWUP VARS.
 
 
-
-
-
-
-Big prune if no pruning, except keep variables. Then variable blowup on variables only, not holes
-Contexts: 34992
-Filter- passes all positives: 1059
+Contexts: 3300000
+Filter- passes all positives: 1913
+Exploded contexts: 74998
 Total negexs: 5
-Max rejected: 3
-Candidates which reject the max number of examples: 20
-{0={ℓ0 of [_]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
-{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
+Max rejected by exploded desired stuff: 5
+Min: 0
+Candidates which reject the max number of examples: 31170
 
 
-
-
-WHAT WE WANTED BUT DIDN'T REJECT MAX EXS:
-{0={ℓ2 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ0 of [_]}, [[]]i={ℓ0 of [_]}}
-
-
-
-
-
-
-
-
-
-
-BELOW: Bad to do big prune bc we run into the same problem where labels are used instead of variables
-ABOVE: When doing big prune, let's try removing everything except for the variables
-
-=== Big prune after no prune then variable blowup with only variable nodes =======================================
-Contexts: 16038
-Filter- passes all positives: 788
-Total negexs: 5
-Max rejected: 3
-Candidates which reject the max number of examples: 18
-{0={ℓ0 of [_]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [_]}, tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(0)) -> (v(0)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
-{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(1)) -> (v(1)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> v(0), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ0 of [_]}, tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(0)) -> (v(0)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
-
-
-
-=== Big prune after no prune then NO variable reassignment =======================================
-Contexts: 11664
-Filter- passes all positives: 130
-Total negexs: 5
-Max rejected: 3
-Candidates which reject the max number of examples: 12
-{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ0 of [_]}, []b={ℓ1 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ0 of [_]}, cons=(v(a)) -> (v(a)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ0 of [_]}, []b={ℓ2 of []}, [[]]i={ℓ0 of [_]}}
-{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> {ℓ0 of [_]}, tr={ℓ0 of [_]}, []i={ℓ1 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ1 of []}}
-{0={ℓ1 of []}, cons=(v(a)) -> (v(a)) -> {ℓ2 of []}, tr={ℓ2 of []}, []i={ℓ1 of []}, []b={ℓ2 of []}, [[]]i={ℓ1 of []}}
-{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> v(a), tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> {ℓ0 of [_]}, tr={ℓ0 of [_]}, []i={ℓ2 of []}, []b={ℓ0 of [_]}, [[]]i={ℓ2 of []}}
-{0={ℓ2 of []}, cons=(v(a)) -> (v(a)) -> {ℓ1 of []}, tr={ℓ1 of []}, []i={ℓ2 of []}, []b={ℓ1 of []}, [[]]i={ℓ2 of []}}
-
-
-
-
-
-
-==========================================/////////////////////////////////////////////////////
-SCRATCHPAD
-
-
+{0={ℓ0 of [{ℓ0 of [v(1)]}]}, cons=(v(0)) -> ({ℓ0 of [{ℓ0 of [v(1)]}]}) -> {ℓ0 of [{ℓ0 of [v(0)]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ0 of [{ℓ0 of [v(1)]}]}, cons=({ℓ0 of [{ℓ0 of [{ℓ0 of [(v(0)) -> v(0)]}]}]}) -> (v(1)) -> {ℓ0 of [v(1)]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ0 of [v(1)]}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ0 of [{ℓ0 of [v(1)]}]}, cons=({ℓ0 of [{ℓ0 of [{ℓ0 of [(v(0)) -> v(0)]}]}]}) -> ({ℓ0 of [{ℓ0 of [{ℓ1 of []}]}]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> v(0), tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> v(0), tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(1)]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(1)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [v(0)]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(0)]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(1)]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(0)]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(1)]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(0)]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(1)]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(0)]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(1)]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(0)]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [{ℓ0 of [v(0)]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(1)]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [{ℓ0 of [v(1)]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(0)]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(1)]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(0)]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(1)]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [v(0)]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [{ℓ0 of [v(0)]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(1)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(1)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(1)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(1)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(1)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(1)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(1)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(1)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}, tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ1 of []}]}]}, tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [{ℓ0 of [{ℓ1 of []}]}]}, tr={ℓ0 of [{ℓ1 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ0 of [{ℓ2 of []}]}]}, tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [{ℓ0 of [{ℓ2 of []}]}]}, tr={ℓ0 of [{ℓ2 of []}]}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [v(1)]}) -> {ℓ0 of [{ℓ2 of []}]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(0)) -> ({ℓ0 of [v(0)]}) -> {ℓ0 of [{ℓ2 of []}]}, tr={ℓ2 of []}, []i={ℓ0 of [{ℓ1 of []}]}, []b={ℓ0 of [{ℓ2 of []}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(1), tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ0 of [v(1)]}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(0), tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(1), tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(0), tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ0 of [v(1)]}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(1), tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(0), tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ0 of [v(1)]}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(1), tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ0 of [v(1)]}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(0), tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(1), tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ0 of [v(1)]}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(0), tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(1), tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(0), tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ0 of [v(1)]}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(1), tr={ℓ0 of [{ℓ0 of [v(0)]}]}, []i={ℓ0 of [{ℓ0 of [v(0)]}]}, []b={ℓ0 of [{ℓ0 of [v(0)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(1)]}]}}
+{0={ℓ1 of []}, cons=(v(1)) -> ({ℓ0 of [{ℓ0 of [{ℓ0 of [v(0)]}]}]}) -> v(0), tr={ℓ0 of [{ℓ0 of [v(1)]}]}, []i={ℓ0 of [{ℓ0 of [v(1)]}]}, []b={ℓ0 of [{ℓ0 of [v(1)]}]}, [[]]i={ℓ0 of [{ℓ0 of [v(0)]}]}}
