@@ -1,2 +1,0 @@
-outputs for posterity: Example(inputs=[[1, 2]], output=[2])
-Initial synthesized property: length(o) <= length(x0);
