@@ -1,4 +1,4 @@
-package enumgen
+package enumgen.visualizations
 
 import java.io.PrintWriter
 

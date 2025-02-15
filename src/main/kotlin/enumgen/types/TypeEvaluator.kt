@@ -1,4 +1,7 @@
-package enumgen
+package enumgen.types
+
+import enumgen.*
+import util.Application
 
 fun checkApplication(app: Application, map: Assignment): Type {
     fun checkAppRec(

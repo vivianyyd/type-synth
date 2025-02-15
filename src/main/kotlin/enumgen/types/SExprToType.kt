@@ -1,7 +1,6 @@
-package examplegen
+package enumgen.types
 
-import enumgen.*
-import parsing.*
+import util.SExpr
 
 fun SExpr.toType(): Type = when (this) {
     is SExpr.Atm -> {

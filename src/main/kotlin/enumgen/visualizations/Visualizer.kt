@@ -1,5 +1,8 @@
-package enumgen
+package enumgen.visualizations
 
+import enumgen.*
+import enumgen.types.*
+import enumgen.types.Function
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintWriter

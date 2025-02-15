@@ -1,7 +1,8 @@
 package examplegen
 
-import enumgen.*
-import enumgen.Function
+import util.Application
+import enumgen.types.*
+import enumgen.types.Function
 
 class ExampleGenerator {
     private var name = 0

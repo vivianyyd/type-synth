@@ -1,5 +1,7 @@
 package enumgen
 
+import enumgen.types.*
+
 class SearchState(val names: List<String>) {
     private val trees: Map<String, SearchNode> = names.associateWith { SearchNode(ChildHole()) }
     val allTrees = names.map { trees[it]!! }

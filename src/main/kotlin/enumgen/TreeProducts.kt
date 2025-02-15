@@ -1,5 +1,8 @@
 package enumgen
 
+import enumgen.types.*
+import enumgen.types.Function
+
 fun SearchNode.types(root: Boolean): Set<Type> {
     if (root) {
         return this.ports.fold(setOf()) { acc, port ->

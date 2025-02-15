@@ -1,6 +1,4 @@
-package parsing
-
-import enumgen.*
+package util
 
 /**
  * list of (example, sign), names mentioned

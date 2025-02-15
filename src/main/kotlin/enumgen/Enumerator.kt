@@ -1,5 +1,10 @@
 package enumgen
 
+import enumgen.visualizations.Visualizer
+import enumgen.types.*
+import enumgen.types.Function
+import util.Application
+
 typealias Assignment = Map<String, Type>
 
 class Enumerator(

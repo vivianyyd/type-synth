@@ -1,5 +1,7 @@
 package enumgen
 
+import util.Application
+
 interface EqualityOracle {
     fun equal(a: Application, b: Application): Boolean
 }
@@ -16,8 +18,6 @@ fun equals(p1: ParameterNode, p2: ParameterNode): Boolean =
 /*
  * TODO:
  *  Inputs are functions and arities (manually write for now, then write analysis for this)
- *  Dependencies only go left to right
- *  Implement equality oracle (manually write for now)
  *  Visualizer for dep graphs
  */
 class DependencyAnalysis(private val oracle: EqualityOracle) {

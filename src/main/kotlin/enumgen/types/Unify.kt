@@ -1,4 +1,4 @@
-package enumgen
+package enumgen.types
 
 typealias Context = MutableMap<Variable, Type>
 

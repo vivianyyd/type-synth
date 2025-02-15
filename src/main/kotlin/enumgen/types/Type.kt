@@ -1,4 +1,10 @@
-package enumgen
+package enumgen.types
+
+/**
+ * TODO Ideally, there should be two type files: One for the notion of type which is shared across all synthesis
+ *  implementations, and one which only refines the TypeHoles into Child and Siblings for enumgen.
+ *  Then we would inherit from the general notion of type, and add [recursiveNumChildHoles] and [directChildHoles].
+ */
 
 sealed interface Type {
     fun recursiveNumChildHoles(): Int
