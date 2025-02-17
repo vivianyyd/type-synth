@@ -1,5 +1,6 @@
 import enumgen.Enumerator
 import enumgen.EqualityOracle
+import enumgen.ExampleAnalysis
 import util.SExprParser
 import util.examplesSplit
 import util.toExample
@@ -50,6 +51,8 @@ fun main() {
     println("Named values:\n$names")
     println("Positive examples:\n${pos.print(true)}")
     println("Negative examples:\n${negs.print(false)}")
+
+    println(ExampleAnalysis(names.toList(), pos.toSet(), negs.toSet()).params)
 }
 
 /**

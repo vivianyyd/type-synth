@@ -18,7 +18,7 @@ class Enumerator(
 
     // TODO("Assert that [posExamples] and [negExamples] only contain names in [names]")
     private val state = SearchState(names)
-    private val exampleAnalysis = ExampleAnalysis(posExamples, negExamples)
+    private val exampleAnalysis = ExampleAnalysis(names, posExamples, negExamples)
 
     //    private var varCounter = 0
     private fun freshVariable() = Variable("a")//Variable(varCounter++) // We decided we should start coarse
@@ -167,7 +167,7 @@ class Enumerator(
                             passesPosExs && fullyApplied && !pruneDueToPrimitiveParam
                         }
                         options.retainAll { ty ->
-                            !(nullary(fn) && hasParams(ty.type))
+                            !(nullary(fn) && hasVariables(ty.type))
                             // Check for nullary type params after pruning unapplied functions, so we know they're nullary.
                         }
                         val prunedMore = options.retainAll { ty ->
@@ -308,12 +308,12 @@ class Enumerator(
         return state.tree(fn).ports[0].none { it.type is Function }
     }
 
-    private fun hasParams(t: Type): Boolean = when (t) {
+    private fun hasVariables(t: Type): Boolean = when (t) {
         is Variable -> true
         is Error -> false
         is TypeHole -> false
-        is Function -> hasParams(t.left) || hasParams(t.rite)
-        is LabelNode -> t.params.any { hasParams(it) }
+        is Function -> hasVariables(t.left) || hasVariables(t.rite)
+        is LabelNode -> t.params.any { hasVariables(it) }
     }
 
     private fun prunePrimitiveParam(fn: String, t: Type): Boolean {
@@ -331,11 +331,11 @@ class Enumerator(
         // Check if left child is a primitive
         return if (curr.left is LabelNode && (curr.left as LabelNode).params.isEmpty()) {
             // Check whether all examples have args in corresponding spot which can be the same type
-            val argumentsUsed = posExamples.filter { it.name == fn }.mapNotNull { it.arguments?.getOrNull(height - 2) }
+            val argumentsUsed = posExamples.filter { it.name == fn }.mapNotNull { it.arguments?.getOrNull(height - 2) }.toSet()
             // TODO More general: Check that they can all simultaneously unify with the proposed type. Then the param
             //   in question need not be a primitive literal to do the check
             //   edit, idk what I meant by this. Think about it again
-            !(exampleAnalysis.canBeEqual(argumentsUsed.toSet()))
+            !(exampleAnalysis.canBeEqual(argumentsUsed))
         } else false  // Left child isn't primitive
     }
 

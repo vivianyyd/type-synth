@@ -5,10 +5,29 @@ import util.Application
 
 
 class ExampleAnalysis(
+    private val names: List<String>,
     private val posExamples: Set<Application>,
     private val negExamples: Set<Application>
 ) {
-    private fun partialArgParamCompatible(fn: String, fnTy: Type, arg: String, argTy: Type, tree: SearchState): Boolean {
+    val params: Map<String, Int> by lazy {
+        val m = names.associateWith { 0 }.toMutableMap()
+        fun help(app: Application) {
+            m[app.name] = maxOf(m[app.name]!!, app.arguments?.size ?: 0)
+            app.arguments?.forEach { help(it) }
+        }
+        posExamples.forEach { help(it) }
+        m
+    }
+
+    fun params(name: String): Int = params[name]!!
+
+    private fun partialArgParamCompatible(
+        fn: String,
+        fnTy: Type,
+        arg: String,
+        argTy: Type,
+        tree: SearchState
+    ): Boolean {
         val assignment =
             tree.names.associateWith { if (it == fn) fnTy else if (it == arg) argTy else SiblingHole(-1) }
         return posExamples.map { checkApplication(it, assignment) }.all { it !is Error }
