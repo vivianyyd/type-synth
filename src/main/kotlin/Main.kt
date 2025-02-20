@@ -64,7 +64,7 @@ class ScrappyOracle(private val secret: Map<Application, String?>) : EqualityOra
 }
 
 class PairwiseCheckOracle() : EqualityOracle {
-    override fun equal(a: Application, b: Application): Boolean = TODO()
+    override fun equal(a: Application, b: Application): Boolean = TODO("memoize results")
 }
 
 fun testEnumeration() {

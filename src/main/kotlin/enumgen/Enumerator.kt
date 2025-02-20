@@ -162,6 +162,7 @@ class Enumerator(
                         val prunedSome = options.retainAll { ty ->
                             val passesPosExs = passesPositives(fn, ty.type)
                             // If never fully applied, it's definitely this node that introduced the issue.
+                            // TODO this might actually be bad
                             val fullyApplied = applied(fn, ty.type)
                             val pruneDueToPrimitiveParam = prunePrimitiveParam(fn, ty.type)
                             passesPosExs && fullyApplied && !pruneDueToPrimitiveParam
