@@ -62,12 +62,15 @@ class DependencyAnalysis(
     var dummyCounter = 0
     val dummyTypes: Map<Application, TypeEquivalenceClassDummy> by lazy {
         val m = mutableMapOf<Application, TypeEquivalenceClassDummy>()
-        val helper = mutableMapOf<TypeEquivalenceClassDummy, Application>()
         posExamples.forEach {ex ->
-            fun help(a: Application) {
-                // for each dummy, check if an app its assoc with is equal to a
+            fun rec(a: Application) {
+                m.forEach { (b, dummy) ->
+                    if (oracle.equal(a, b)) m[a] = dummy
+                    else m[a] = TypeEquivalenceClassDummy(dummyCounter++)
+                }
+                a.arguments?.forEach { rec(it) }
             }
-            help(ex)
+            rec(ex)
         }
         m
     }
@@ -85,15 +88,9 @@ class DependencyAnalysis(
         }
     }
 
-    private fun findLinks(name: String): Set<LinkEdge> = TODO()
+    private fun findLinks(name: String): Set<LinkEdge> = TODO("Think about algo to do deps and links simulataneously")
     private fun findDeps(name: String): Set<DependencyEdge> = TODO()
     /*
-    # Within one function
-
-    How to detect when free params (== just variables)? Nodes with indegree 0.
-        But also consider a, l<a> cycle. Shouldn't make any crazy assumptions bc could just as easily be l<a>, l'<a>
-        Maybe free params only reliably detectable when examining net. How to merge multiple nets?
-
     ## Undirected links:
     Two dual algorithms. Pick one depending on num posexs vs negexs.
         (We'll eventually make tons of negexs? Or generate them as needed. That might work in here nicely)
