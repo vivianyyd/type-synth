@@ -9,7 +9,7 @@ import java.io.PrintWriter
 
 object SearchStateVisualizer {
     private var ctr = 0
-    private val dw = DotWriter()
+    private val dw = TreeDotWriter()
 
     private fun display(type: Type): String = when (type) {
         is Error -> "Error"

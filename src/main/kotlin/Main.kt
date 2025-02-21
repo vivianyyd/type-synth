@@ -1,6 +1,9 @@
+import enumgen.DependencyAnalysis
 import enumgen.Enumerator
 import enumgen.EqualityOracle
 import enumgen.ExampleAnalysis
+import enumgen.visualizations.DependencyGraphVisualizer
+import enumgen.visualizations.SearchStateVisualizer
 import util.SExprParser
 import util.examplesSplit
 import util.toExample
@@ -48,12 +51,15 @@ fun main() {
     val (pos, negs, names) = examplesSplit(exsexps.keys)
     val secretTypes = exsexps.mapKeys { it.key.toExample().second }
     val oracle = ScrappyOracle(secretTypes)
-    println("Named values:\n$names")
-    println("Positive examples:\n${pos.print(true)}")
-    println("Negative examples:\n${negs.print(false)}")
+//    println("Named values:\n$names")
+//    println("Positive examples:\n${pos.print(true)}")
+//    println("Negative examples:\n${negs.print(false)}")
 
-    println(ExampleAnalysis(names.toList(), pos.toSet(), negs.toSet()).params)
+    val da = DependencyAnalysis(names.toList(), pos.toSet(), negs.toSet(), oracle)
+    names.forEach { viz(it, da) }
 }
+
+private fun viz(name: String, da: DependencyAnalysis) = DependencyGraphVisualizer.viz(da.graphs[name]!!, "$name")
 
 /**
  * Requires [secretTypes[app]] is null iff [app] is a negative example
