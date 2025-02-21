@@ -9,17 +9,29 @@ class ExampleAnalysis(
     private val posExamples: Set<Application>,
     private val negExamples: Set<Application>
 ) {
-    val params: Map<String, Int> by lazy {
-        val m = names.associateWith { 0 }.toMutableMap()
-        fun help(app: Application) {
-            m[app.name] = maxOf(m[app.name]!!, app.arguments?.size ?: 0)
-            app.arguments?.forEach { help(it) }
+    private val params: MutableMap<String, Int> = names.associateWith { 0 }.toMutableMap()
+    fun params(name: String): Int = params[name]!!
+    private val posFor: MutableMap<String, MutableSet<Application>> = names.associateWith{mutableSetOf<Application>()}.toMutableMap()
+    fun posFor(name: String): Set<Application> = posFor[name]!!
+    private val negFor: MutableMap<String, MutableSet<Application>> = names.associateWith{mutableSetOf<Application>()}.toMutableMap()
+    fun negFor(name: String): Set<Application> = negFor[name]!!
+
+    init {
+        fun helpPos(app: Application) {
+            params[app.name] = maxOf(params[app.name]!!, app.arguments?.size ?: 0)
+            posFor[app.name]!!.add(app)
+            app.arguments?.forEach { helpPos(it) }
         }
-        posExamples.forEach { help(it) }
-        m
+        posExamples.forEach { helpPos(it) }
+
+        fun helpNeg(app: Application) {
+            negFor[app.name]!!.add(app)
+            app.arguments?.forEach { helpNeg(it) }
+        }
+        negExamples.forEach { helpNeg(it) }
+
     }
 
-    fun params(name: String): Int = params[name]!!
 
     private fun partialArgParamCompatible(
         fn: String,

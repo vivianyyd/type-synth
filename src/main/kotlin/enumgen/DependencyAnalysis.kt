@@ -1,6 +1,8 @@
 package enumgen
 
 import util.Application
+import util.equivalenceClasses
+import java.lang.Integer.max
 
 interface EqualityOracle {
     fun equal(a: Application, b: Application): Boolean
@@ -20,14 +22,23 @@ data class DependencyEdge(val sub: ParameterNode, val sup: ParameterNode) : Edge
 // TODO is it weird that this is a data class but [LinkEdge] isn't?
 
 /** undirected, otherwise nonempty intersection */
-class LinkEdge(val a: ParameterNode, val b: ParameterNode) : Edge
+class LinkEdge(val a: ParameterNode, val b: ParameterNode) : Edge {
+    override fun equals(other: Any?): Boolean {
+        if (other !is LinkEdge) return false
+        return (a == other.a && b == other.b) || (a == other.b && b == other.a)
+    }
+}
+
+/** TODO maybe these should just be a type of dependency */
+class SelfLoop(val a: ParameterNode) : Edge
 
 // TODO decide if nodes/edges should be constructed in init block or by DepAnalysis class and only stored here
 class DependencyGraph(
     val name: String,
     val nodes: Set<ParameterNode>,
     val links: Set<LinkEdge>,
-    val deps: Set<DependencyEdge>
+    val deps: Set<DependencyEdge>,
+    val loops: Set<SelfLoop>
 ) {
     /**
      * Invariants: all [f] fields of contained nodes are the same. All edges only contain those nodes
@@ -59,37 +70,92 @@ class DependencyAnalysis(
     private val negExamples: Set<Application>,
     private val oracle: EqualityOracle
 ) {
-    var dummyCounter = 0
-    val dummyTypes: Map<Application, TypeEquivalenceClassDummy> by lazy {
-        val m = mutableMapOf<Application, TypeEquivalenceClassDummy>()
-        posExamples.forEach {ex ->
-            fun rec(a: Application) {
-                m.forEach { (b, dummy) ->
-                    if (oracle.equal(a, b)) m[a] = dummy
-                    else m[a] = TypeEquivalenceClassDummy(dummyCounter++)
-                }
-                a.arguments?.forEach { rec(it) }
-            }
-            rec(ex)
-        }
-        m
-    }
-
-    val uniqueTypes: Set<TypeEquivalenceClassDummy> = dummyTypes.values.toSet()
+    // TODO maybe the oracle should support this, but then it would have access to all the examples which is not good
+    //  encapsulation compared to taking requests and memoizing them. But this approach is the same thing using 2x space
+//    var dummyCounter = 0
+//    val dummyTypes: Map<Application, TypeEquivalenceClassDummy> by lazy {
+//        val m = mutableMapOf<Application, TypeEquivalenceClassDummy>()
+//        posExamples.forEach { ex ->
+//            fun rec(a: Application) {
+//                m.forEach { (b, dummy) ->
+//                    if (oracle.equal(a, b)) m[a] = dummy
+//                    else m[a] = TypeEquivalenceClassDummy(dummyCounter++)
+//                }
+//                a.arguments?.forEach { rec(it) }
+//            }
+//            rec(ex)
+//        }
+//        m
+//    }
+//
+//    val uniqueTypes: Set<TypeEquivalenceClassDummy> = dummyTypes.values.toSet()
 
     val exampleAnalysis = ExampleAnalysis(names, posExamples, negExamples)  // todo seems like bad modularity
-    val nodes: Set<ParameterNode> = exampleAnalysis.params.entries.fold(setOf()) { acc, (name, numParams) ->
-        acc.union((1..numParams).map { ParameterNode(name, it) }.toSet())
-    }
+    val nodes: Set<ParameterNode> = names.fold(setOf()) { acc, name ->
+            acc.union((1..exampleAnalysis.params(name)).map { ParameterNode(name, it) }.toSet())
+        }
 
     val graphs: Map<String, DependencyGraph> by lazy {
         names.associateWith { name ->
-            DependencyGraph(name, nodes.filter { it.f == name }.toSet(), findLinks(name), findDeps(name))
+            val (links, deps, loops) = findEdges(name)
+            DependencyGraph(name, nodes.filter { it.f == name }.toSet(), links, deps, loops)
         }
     }
 
-    private fun findLinks(name: String): Set<LinkEdge> = TODO("Think about algo to do deps and links simulataneously")
-    private fun findDeps(name: String): Set<DependencyEdge> = TODO()
+    private fun findEdges(name: String): Triple<Set<LinkEdge>, Set<DependencyEdge>, Set<SelfLoop>> {
+        val links = mutableSetOf<LinkEdge>()
+        val deps = mutableSetOf<DependencyEdge>()
+        val loops = mutableSetOf<SelfLoop>()
+
+        val posExs = exampleAnalysis.posFor(name)
+        val negExs = exampleAnalysis.negFor(name)
+        val parameters = nodes.filter { it.f == name }
+        for (pi in parameters) {
+            for (pj in parameters) {
+                val i = pi.i
+                val j = pj.i
+
+                // Skip half the pairs since links are undirected. We'll do both directions of deps at once below
+                if (j < i) continue
+
+                // We wait til now to do this filtering so we can use as many exs as possible, since sometimes it might
+                //  be only partially applied. At the cost of extra work
+                val pos = posExs.filter { it.arguments != null && it.arguments.size + 1 >= max(i, j) }
+                val neg = negExs.filter { it.arguments != null && it.arguments.size + 1 >= max(i, j) }
+
+                if (i == j) {
+                    if (equivalenceClasses(pos) { e1, e2 ->
+                            oracle.equal(e1.arguments!![i], e2.arguments!![i])
+                        }.size == 1) loops.add(SelfLoop(pi))
+                }
+
+                // Do both directions of dependency edges
+                fun depEdge(source: Int, sink: Int): Boolean {
+                    val groupedBySink =
+                        equivalenceClasses(pos) { e1, e2 -> oracle.equal(e1.arguments!![sink], e2.arguments!![sink]) }
+                    val sourceChangesWhileSinkConstant =
+                        groupedBySink.any { eqClass ->
+                            eqClass.any {
+                                !oracle.equal(it.arguments!![source], eqClass.first().arguments!![source])
+                            }
+                        }
+                    return !sourceChangesWhileSinkConstant
+                }
+
+                if (depEdge(i, j)) deps.add(DependencyEdge(pi, pj))
+                if (depEdge(j, i)) deps.add(DependencyEdge(pj, pi))
+
+                neg.forEach { ne ->
+                    val ai = ne.arguments!![i]
+                    val aj = ne.arguments[j]
+
+                    if (pos.any { pe -> oracle.equal(pe.arguments!![i], ai) } &&
+                        pos.any { pe -> oracle.equal(pe.arguments!![j], aj) }) links.add(LinkEdge(pi, pj))
+                }
+            }
+        }
+        return Triple(links, deps, loops)
+    }
     /*
     ## Undirected links:
     Two dual algorithms. Pick one depending on num posexs vs negexs.
@@ -111,8 +177,7 @@ class DependencyAnalysis(
     For xi
         For xj
             Partition examples by arguments passed to xi (maybe type equivalence classes instead of concrete values)
-            Check if for each xi arg part, are all the types passed to xj the same? If they ever vary, remove ij edge
-
+            Check if for each xi arg part, are all the types passed to xj the same? If they ever vary, remove ji edge
 
     # Between different functions
     Should help us learn how many variables actually exist, because we assume no fresh vars on RHS
