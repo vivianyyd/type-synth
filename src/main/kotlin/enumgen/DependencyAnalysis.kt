@@ -1,5 +1,6 @@
 package enumgen
 
+import enumgen.visualizations.SearchStateVisualizer
 import util.Application
 import util.equivalenceClasses
 import java.lang.Integer.max
@@ -27,6 +28,10 @@ class LinkEdge(val a: ParameterNode, val b: ParameterNode) : Edge {
         if (other !is LinkEdge) return false
         return (a == other.a && b == other.b) || (a == other.b && b == other.a)
     }
+
+    override fun hashCode(): Int {
+        return a.hashCode() + b.hashCode()  // TODO aaa
+    }
 }
 
 /** TODO maybe these should just be a type of dependency */
@@ -43,7 +48,7 @@ class DependencyGraph(
     /**
      * Invariants: all [f] fields of contained nodes are the same. All edges only contain those nodes
      */
-    val edges: Set<Edge> by lazy { links + deps }
+    val edges: Set<Edge> by lazy { links + deps + loops }
 }
 
 class ExampleNet {
@@ -57,7 +62,7 @@ fun equals(p1: ParameterNode, p2: ParameterNode): Boolean =
                 "Also, output parameters are weird bc we can't substitute into them."
     )
 
-data class TypeEquivalenceClassDummy(val id: Int)
+//data class TypeEquivalenceClassDummy(val id: Int)
 
 /*
  * TODO:
@@ -92,8 +97,8 @@ class DependencyAnalysis(
 
     val exampleAnalysis = ExampleAnalysis(names, posExamples, negExamples)  // todo seems like bad modularity
     val nodes: Set<ParameterNode> = names.fold(setOf()) { acc, name ->
-            acc.union((1..exampleAnalysis.params(name)).map { ParameterNode(name, it) }.toSet())
-        }
+        acc.union((0 until exampleAnalysis.params(name)).map { ParameterNode(name, it) }.toSet())
+    }
 
     val graphs: Map<String, DependencyGraph> by lazy {
         names.associateWith { name ->
@@ -101,6 +106,14 @@ class DependencyAnalysis(
             DependencyGraph(name, nodes.filter { it.f == name }.toSet(), links, deps, loops)
         }
     }
+
+    /** Precondition: i is in bounds */
+    fun Application.getParam(i: Int) =
+        if (i < this.arguments!!.size) this.arguments[i]
+        else {
+            assert(i == this.arguments.size)
+            this
+        }
 
     private fun findEdges(name: String): Triple<Set<LinkEdge>, Set<DependencyEdge>, Set<SelfLoop>> {
         val links = mutableSetOf<LinkEdge>()
@@ -120,37 +133,50 @@ class DependencyAnalysis(
 
                 // We wait til now to do this filtering so we can use as many exs as possible, since sometimes it might
                 //  be only partially applied. At the cost of extra work
-                val pos = posExs.filter { it.arguments != null && it.arguments.size + 1 >= max(i, j) }
-                val neg = negExs.filter { it.arguments != null && it.arguments.size + 1 >= max(i, j) }
+                val pos = if (exampleAnalysis.params(name) == 1) posExs
+                else posExs.filter { it.arguments != null && it.arguments.size >= max(i, j) }
+                val neg = if (exampleAnalysis.params(name) == 1) negExs
+                else negExs.filter { it.arguments != null && it.arguments.size >= max(i, j) }
 
                 if (i == j) {
                     if (equivalenceClasses(pos) { e1, e2 ->
-                            oracle.equal(e1.arguments!![i], e2.arguments!![i])
+                            oracle.equal(e1.getParam(i), e2.getParam(i))
                         }.size == 1) loops.add(SelfLoop(pi))
-                }
-
-                // Do both directions of dependency edges
-                fun depEdge(source: Int, sink: Int): Boolean {
-                    val groupedBySink =
-                        equivalenceClasses(pos) { e1, e2 -> oracle.equal(e1.arguments!![sink], e2.arguments!![sink]) }
-                    val sourceChangesWhileSinkConstant =
-                        groupedBySink.any { eqClass ->
-                            eqClass.any {
-                                !oracle.equal(it.arguments!![source], eqClass.first().arguments!![source])
+                } else {
+                    // Do both directions of dependency edges
+                    fun depEdge(source: Int, sink: Int): Boolean {
+                        val groupedBySink =
+                            equivalenceClasses(pos) { e1, e2 -> oracle.equal(e1.getParam(sink), e2.getParam(sink)) }
+                        val sourceChangesWhileSinkConstant =
+                            groupedBySink.any { eqClass ->
+                                eqClass.any {
+                                    !oracle.equal(it.getParam(source), eqClass.first().getParam(source))
+                                }
                             }
+                        return !sourceChangesWhileSinkConstant
+                    }
+
+                    var depEdge = false
+                    if (depEdge(i, j)) {
+                        depEdge = true
+                        deps.add(DependencyEdge(pi, pj))
+                    }
+                    if (depEdge(j, i)) {
+                        depEdge = true
+                        deps.add(DependencyEdge(pj, pi))
+                    }
+
+                    // Dependencies are strictly more informative than links, so only add links if we failed before
+                    // TODO nicer way?
+                    if (!depEdge) {
+                        neg.forEach { ne ->
+                            val ai = ne.getParam(i)
+                            val aj = ne.getParam(j)
+
+                            if (pos.any { pe -> oracle.equal(pe.getParam(i), ai) } &&
+                                pos.any { pe -> oracle.equal(pe.getParam(j), aj) }) links.add(LinkEdge(pi, pj))
                         }
-                    return !sourceChangesWhileSinkConstant
-                }
-
-                if (depEdge(i, j)) deps.add(DependencyEdge(pi, pj))
-                if (depEdge(j, i)) deps.add(DependencyEdge(pj, pi))
-
-                neg.forEach { ne ->
-                    val ai = ne.arguments!![i]
-                    val aj = ne.arguments[j]
-
-                    if (pos.any { pe -> oracle.equal(pe.arguments!![i], ai) } &&
-                        pos.any { pe -> oracle.equal(pe.arguments!![j], aj) }) links.add(LinkEdge(pi, pj))
+                    }
                 }
             }
         }

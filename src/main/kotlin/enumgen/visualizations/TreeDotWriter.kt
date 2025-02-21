@@ -2,7 +2,7 @@ package enumgen.visualizations
 
 import java.io.PrintWriter
 
-class DotWriter {
+class TreeDotWriter {
     private val sb = StringBuilder()
 
     fun restart() = sb.delete(0, sb.length)

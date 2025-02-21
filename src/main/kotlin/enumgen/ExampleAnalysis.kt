@@ -10,11 +10,10 @@ class ExampleAnalysis(
     private val negExamples: Set<Application>
 ) {
     private val params: MutableMap<String, Int> = names.associateWith { 0 }.toMutableMap()
-    fun params(name: String): Int = params[name]!!
-    private val posFor: MutableMap<String, MutableSet<Application>> = names.associateWith{mutableSetOf<Application>()}.toMutableMap()
-    fun posFor(name: String): Set<Application> = posFor[name]!!
-    private val negFor: MutableMap<String, MutableSet<Application>> = names.associateWith{mutableSetOf<Application>()}.toMutableMap()
-    fun negFor(name: String): Set<Application> = negFor[name]!!
+    private val posFor: MutableMap<String, MutableSet<Application>> =
+        names.associateWith { mutableSetOf<Application>() }.toMutableMap()
+    private val negFor: MutableMap<String, MutableSet<Application>> =
+        names.associateWith { mutableSetOf<Application>() }.toMutableMap()
 
     init {
         fun helpPos(app: Application) {
@@ -30,8 +29,12 @@ class ExampleAnalysis(
         }
         negExamples.forEach { helpNeg(it) }
 
+        names.forEach { params[it] = params[it]!! + 1 }  // Add output parameter
     }
 
+    fun params(name: String): Int = params[name]!!
+    fun posFor(name: String): Set<Application> = posFor[name]!!
+    fun negFor(name: String): Set<Application> = negFor[name]!!
 
     private fun partialArgParamCompatible(
         fn: String,
