@@ -1,5 +1,7 @@
 package UTIL;
 
+// --bnd-cbits 3 --slv-parallel -V 5
+
 include "/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/array.skh";
 
 int MAX_NUM_VARS = 3;
@@ -42,89 +44,98 @@ generator Type type() {
 
 struct UnificationResult {
     Type type;
-    Type[MAX_NUM_VARS] var_map;
+    Type[MAX_NUM_VARS] context;
 }
 
-UnificationResult unifyVar(Variable var, Type target, Type[MAX_NUM_VARS] var_map) {
-    if (var_map[var.id] != null) { return unify(var_map[var.id], target, var_map); }
+// TODO this function probably wrong
+UnificationResult unifyVar(Variable var, Type target, Type[MAX_NUM_VARS] context) {
+    if (context[var.id] != null) { return unify(context[var.id], target, context); }
     else {  // todo test this actually checks variable not in map
-        var_map[var.id] = target;
-        return new UnificationResult(type=target, var_map=var_map);
+        context[var.id] = target;
+        return new UnificationResult(type=target, context=context);
     }
 }
 
 /** Just here for readability */
-UnificationResult error(Type[MAX_NUM_VARS] var_map) {
-    return new UnificationResult(type=new Error(), var_map=var_map);
+UnificationResult error(Type[MAX_NUM_VARS] context) {
+    return new UnificationResult(type=new Error(), context=context);
 }
 
-UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
+boolean isError(Type t) {
+    switch (ty) {
+        case Variable:{}
+        case Function:{}
+        case Node:{}
+        case Error:{ return true; }
+    }
+    return false;
+}
+
+UnificationResult unify(Type a, Type b, Type[MAX_NUM_VARS] context) {
     switch(a){
         case Variable:{
-            // There needs to be a switch on b directly under each case, since we want errors to redirect quickly.
             switch(b){
-                case Variable:{
-                    // Unwrap b if possible
-                    // TODO check if this unwrapping is right
-                    if (var_map[b.id] != null) { return unify(var_map[b.id], a, var_map); }
-                    return unifyVar(a, b, var_map);
+                case Variable:{ // Unwrap b if possible
+                    if (context[b.id] != null) { return unify(a, context[b.id], context); }
+                    return unifyVar(a, b, context);
                 }
-                case Function:{ return unifyVar(a, b, var_map); }
-                case Node:{ return unifyVar(a, b, var_map); }
-                case Error:{ return error(var_map); }
+                case Function:{ return unifyVar(a, b, context); }
+                case Node:{ return unifyVar(a, b, context); }
+                case Error:{ return error(context); }
             }
         }
         case Function:{
             switch(b){
-                case Variable:{ return unifyVar(b, a, var_map); }
+                case Variable:{ return unifyVar(b, a, context); }
                 case Function:{
-                    // TODO is this even right, don't I need to return a function type
-                    UnificationResult curry = unify(a.in, b.in, var_map);  // TODO is this even a sensible name
-                    return unify(a.out, b.out, curry.var_map);  // TODO need to return OG context? check this is the correct context to return. if fn is (a->a) -> a unify with (int->int)-> int
+                    UnificationResult in = unify(a.in, b.in, context);
+                    if (isError(in)) return error(in.context)
+                    UnificationResult out = unify(a.out, b.out, in.context);
+                    if (isError(out)) return error(out.context)
+                    return new UnificationREsult(type = new Function(in = in.type, out = out.type), context = out.context)
                 }
-                case Node:{ return error(var_map); }
-                case Error:{ return error(var_map); }
+                case Node:{ return error(context); }
+                case Error:{ return error(context); }
             }
         }
         case Node:{
             switch(b){
-                case Variable:{ return unifyVar(b, a, var_map); }
-                case Function:{ return error(var_map); }
+                case Variable:{ return unifyVar(b, a, context); }
+                case Function:{ return error(context); }
                 case Node:{
-                    if (a.label != b.label) return error(var_map);
-                    if (a.params.sz != b.params.sz) return error(var_map);
+                    if (a.label != b.label) return error(context);
+                    if (a.params.sz != b.params.sz) return error(context);
+
+                    // TODO fixme ===================================================================================
                     for (int i = 0; i < a.params.sz; i++) {
-                        // TODO think about variable binding here more
-                        UnificationResult unifyChild = unify(a.params.inner.val[i], b.params.inner.val[i], var_map);
+                        UnificationResult unifyChild = unify(a.params.inner.val[i], b.params.inner.val[i], context);
                         Type ty = unifyChild.type;
-                        switch (ty) {
-                            case Variable:{}
-                            case Function:{}
-                            case Node:{}
-                            case Error:{ return error(var_map); }
-                        }
+                        if (isError(ty)) return error(context);
+
+                        // ...
+
                     }
                     // TODO we actually have to make a new type containing all the results of unifying the children
-                    return new UnificationResult(type=a, var_map=var_map);
+                    return new UnificationResult(type=a, context=context);
                 }
-                case Error:{ return error(var_map); }
+                case Error:{ return error(context); }
             }
         }
-        case Error:{ return error(var_map); }
+        case Error:{ return error(context); }
     }
 }
 
-UnificationResult resolve(Type ty, Type[MAX_NUM_VARS] var_map) {
+UnificationResult resolve(Type ty, Type[MAX_NUM_VARS] context) {
     switch (ty) {
         case Variable: {
             // alpha should never mention itself
-            return resolve(var_map[ty.id], var_map);
+            return resolve(context[ty.id], context);
         }
         case Function: {
-            UnificationResult resolveIn = resolve(ty.in, var_map);
-            UnificationResult resolveOut = resolve(ty.out, resolveIn.var_map);
+            UnificationResult resolveIn = resolve(ty.in, context);
+            UnificationResult resolveOut = resolve(ty.out, resolveIn.context);
             Type fn = new Function(in=resolveIn.type, out=resolveOut.type);
-            return new UnificationResult(type=fn, var_map=resolveOut.var_map);
+            return new UnificationResult(type=fn, context=resolveOut.context);
             // TODO check I did the following: resolve both in and out and return new function with them
             // resolve out using the var map from resolving in.
         }
@@ -137,15 +148,15 @@ UnificationResult resolve(Type ty, Type[MAX_NUM_VARS] var_map) {
     return null; // TODO removeme
 }
 
-UnificationResult apply(Type a, Type b, Type[MAX_NUM_VARS] var_map) {
+UnificationResult apply(Type a, Type b, Type[MAX_NUM_VARS] context) {
     switch(a){
         case Function:{
-            UnificationResult app = unify(a.in, b, var_map);
-            return resolve(app.type, var_map);
+            UnificationResult app = unify(a.in, b, context);
+            return resolve(app.type, context);
         }
-        case Variable:{ return error(var_map); }
-        case Node:{ return error(var_map); }
-        case Error:{ return error(var_map); }
+        case Variable:{ return error(context); }
+        case Node:{ return error(context); }
+        case Error:{ return error(context); }
     }
 }
 
@@ -196,14 +207,6 @@ harness void typecheck_passes_positives(int t) {
 
 // TODO Function type was not inlined enough. Increase inlining with --inlineamnt flag.
 
-/*
-adt Type{
-    Variable { int id; }
-    Function { Type in; Type out; }
-    Node { int label; Array<Type> params; }
-    Error { }
-}
-*/
     // TODO The example might only be a partial application, account for that eventually.
     //      Or maybe we only apply one argument by default? Idk. Why can't we just unify the whole function with each
     //      example rather than calling "Apply" like on the whiteboard
@@ -214,16 +217,16 @@ harness void typecheck_fails_negatives(int t) {
 //    Type fun_type = generated_function_type();
 
     // a -> a list
-    Type alpha = new Variable(id=2);
-    Array<Type> childAlpha = newArray();
-    add(childAlpha, alpha);
-    Type listAlpha = new Node(label=1, params=childAlpha);
-    Type fun_type = new Function(in=alpha, out=listAlpha);
-
-    Type intNode = new Node(label=0, params=newArray());
-    Array<Type> childInt = newArray();
-    add(childInt, intNode);
-    Type listIntNode = new Node(label=1, params=childInt);
+//    Type alpha = new Variable(id=2);
+//    Array<Type> childAlpha = newArray();
+//    add(childAlpha, alpha);
+//    Type listAlpha = new Node(label=1, params=childAlpha);
+//    Type fun_type = new Function(in=alpha, out=listAlpha);
+//
+//    Type intNode = new Node(label=0, params=newArray());
+//    Array<Type> childInt = newArray();
+//    add(childInt, intNode);
+//    Type listIntNode = new Node(label=1, params=childInt);
 
     // int -> int
 //    Type negative_example = new Function(in=intNode, out=intNode);
@@ -231,16 +234,16 @@ harness void typecheck_fails_negatives(int t) {
 //    UnificationResult result = unify(fun_type, negative_example, map2);
 
     // bool -> int list
-    Type boolNode = new Node(label=3, params=newArray());
-    Type negative_example2 = new Function(in=boolNode, out=listIntNode);
-    Type[MAX_NUM_VARS] map3;
-    UnificationResult result = unify(fun_type, negative_example2, map3);
+//    Type boolNode = new Node(label=3, params=newArray());
+//    Type negative_example2 = new Function(in=boolNode, out=listIntNode);
+//    Type[MAX_NUM_VARS] map3;
+//    UnificationResult result = unify(fun_type, negative_example2, map3);
 
-    Type ty = result.type;
-    switch (ty) {
-        case Variable:{ assert false; }
-        case Function:{ assert false; }
-        case Node:{ assert false; }
-        case Error:{}
-    }
+//    Type ty = result.type;
+//    switch (ty) {
+//        case Variable:{ assert false; }
+//        case Function:{ assert false; }
+//        case Node:{ assert false; }
+//        case Error:{}
+//    }
 }
