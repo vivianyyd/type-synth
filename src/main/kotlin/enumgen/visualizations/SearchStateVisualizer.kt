@@ -7,7 +7,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintWriter
 
-object Visualizer {
+object SearchStateVisualizer {
     private var ctr = 0
     private val dw = DotWriter()
 

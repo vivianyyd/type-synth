@@ -1,6 +1,6 @@
 package enumgen
 
-import enumgen.visualizations.Visualizer
+import enumgen.visualizations.SearchStateVisualizer
 import enumgen.types.*
 import enumgen.types.Function
 import util.Application
@@ -355,5 +355,5 @@ class Enumerator(
         return !posExamples.filter { it.name == fn }.map { checkApplication(it, assignment) }.all { it is Function }
     }
 
-    private fun viz(stage: String = "") = Visualizer.viz(state, "${vizFileID++}${if (stage == "") "" else "-"}$stage")
+    private fun viz(stage: String = "") = SearchStateVisualizer.viz(state, "${vizFileID++}${if (stage == "") "" else "-"}$stage")
 }
