@@ -6,7 +6,7 @@ import util.reflexiveNaryProduct
 import enumgen.types.*
 import enumgen.types.Function
 import util.SExprParser
-import util.upToNaryCartesianProduct
+import java.util.*
 
 object ExampleGenerator {
     private var name = 0
@@ -53,39 +53,54 @@ object ExampleGenerator {
         return typesWithDummies.associateBy { freshValue() }
     }
 
-    private fun explode(fns: List<Type>): Pair<List<Application>, Assignment> {
-        if (fns.isEmpty()) return Pair(listOf(), mapOf())
-        val examples = mutableListOf<Application>()
+    fun examples(fns: List<Type>): Triple<List<Application>, List<Application>, Assignment> {
+        if (fns.isEmpty()) return Triple(listOf(), listOf(), mapOf())
 
         val dummies = dummies(observableNonFunctionTypes(fns)).toMutableMap()
-        examples.addAll(dummies.keys.map { Application(it, null) })
+        val posExamples = dummies.keys.map { Application(it, null) }.toMutableList()
+        val negExamples = mutableListOf<Application>()
         // We don't want functions to show up in examples for now TODO no HOF..., but we want to give them names
         val fnDummies = fns.filterIsInstance<Function>().associateBy { freshValue() }
         dummies.putAll(fnDummies)
 
         // BEGIN COMPOSITION LOOP
         for (i in 0..MAX_DEPTH) {
-            val args = upToNaryCartesianProduct(examples, fns.maxOf { it.numParams() })
-            fns.filter { it.numParams() > 0 }.forEach { ty ->
+            for (ty in fns.filter { it.numParams() > 0 }) {
                 val name = dummies.filter { (_, t) -> t == ty }.map { (name, _) -> name }[0]
-                examples.addAll(args[ty.numParams() - 1].map { argChoice -> Application(name, argChoice) })
+                var apps =  // If we make new examples from only positive ones, any errors won't be redundant!
+                    reflexiveNaryProduct(posExamples, ty.numParams()).map { argChoice -> Application(name, argChoice) }
+
+                val negExs: MutableMap<ErrorCategory, MutableList<Application>> =
+                    EnumMap(ErrorCategory.values().associateWith { mutableListOf() })
+                while (apps.any() && negExs.any { (_, v) -> v.size < ERROR_COVERAGE_CAPACITY }) {
+                    val example = apps.first()
+                    apps = apps.drop(1)
+
+                    println(example)
+
+                    val eval = checkApplication(example, dummies)
+                    if (eval is Error) {
+                        if (negExs[eval.category]!!.size < ERROR_COVERAGE_CAPACITY)
+                            negExs[eval.category]!!.add(example)
+                    }
+                    else {
+                        posExamples.add(example)
+                    }
+                }
+                negExamples.addAll(negExs.values.flatten())
                 // TODO we can purposefully add some negative examples where we apply too many arguments, although
                 //  it shouldn't be necessary
             }
         }
-        examples.addAll(fnDummies.keys.map { Application(it, null) })
-        return Pair(examples, dummies)
+        posExamples.addAll(fnDummies.keys.map { Application(it, null) })
+        return Triple(posExamples, negExamples, dummies)
     }
-
-    fun examples(fns: List<Type>): Pair<Pair<List<Application>, List<Application>>, Assignment> {
-        val (exs, context) = explode(fns)
-        return Pair(exs.partition { checkApplication(it, context) !is Error }, context)
         // TODO Very good to have negexs where the first args are ok but latter ones don't bc of var mismatch or something.
         //   Instead of keeping all exs, we could throw away some if we have >5 for that error type for that fn name already!
         //   TODO generator style will work here
-    }
 
     private val MAX_DEPTH = 1  // todo assert this is at least the max depth of any parameter type!
+    private val ERROR_COVERAGE_CAPACITY = 10
 }
 
 fun main() {
@@ -98,10 +113,10 @@ fun main() {
         "(-> a (-> (l a) (l a)))"
     )
 
-    val ex = ExampleGenerator.examples(groundTruth.map { tySexpr -> SExprParser(tySexpr).parse().toType() })
-    println(ex.second.toList().joinToString(separator="\n"))
-    println(ex.first.first.size)
-    println(ex.first.second.size)
+    val (pos, neg, context) = ExampleGenerator.examples(groundTruth.map { tySexpr -> SExprParser(tySexpr).parse().toType() })
+    println(context.toList().joinToString(separator = "\n"))
+    println(pos.size)
+    println(neg.size)
     /*
     Function (-> left rite)
     Variable a

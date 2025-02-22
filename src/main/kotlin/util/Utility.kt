@@ -16,8 +16,68 @@ fun <T> equivalenceClasses(elems: Collection<T>, equals: (T, T) -> Boolean): Set
     return result
 }
 
-fun <T> reflexiveNaryProduct(set: List<T>, n: Int): Set<List<T>> {
-    return naryCartesianProduct((1..n).map { set })
+fun <T> reflexiveNaryProduct(set: List<T>, n: Int): Sequence<List<T>> {
+    TODO()
+//    return naryCartesianProduct((1..n).map { set })
+    /*
+    fun help(currProd: List<T>, setInd: Int): Sequence<List<T>> = sequence {
+        var i = setInd
+        if (++i >= sets.size) {
+
+            yield(currProd)
+        } else {
+            val next = sets[i]
+            for (element in next) {
+                yieldAll(help(currProd + element, i))
+            }
+        }
+    }
+    return help(listOf(), -1)
+     */
+
+
+/*
+function crossProduct(sets) {
+  var n = sets.length, carets = [], args = [];
+
+  function init() {
+    for (var i = 0; i < n; i++) {
+      carets[i] = 0;
+      args[i] = sets[i][0];
+    }
+  }
+
+  function next() {
+    if (!args.length) {
+      init();
+      return true;
+    }
+    var i = n - 1;
+    carets[i]++;
+    if (carets[i] < sets[i].length) {
+      args[i] = sets[i][carets[i]];
+      return true;
+    }
+    while (carets[i] >= sets[i].length) {
+      if (i == 0) {
+        return false;
+      }
+      carets[i] = 0;
+      args[i] = sets[i][0];
+      carets[--i]++;
+    }
+    args[i] = sets[i][carets[i]];
+    return true;
+  }
+
+  return {
+    next: next,
+    do: function (block, _context) {
+      return block.apply(_context, args);
+    }
+  }
+}
+     */
 }
 
 fun <T> naryCartesianProduct(sets: List<List<T>>): Set<List<T>> {
@@ -31,18 +91,9 @@ fun <T> naryCartesianProduct(sets: List<List<T>>): Set<List<T>> {
     return result
 }
 
-/** Output at index i is a set of (i+1)-ary products. */
-fun <T> upToNaryCartesianProduct(sets: Collection<T>, n: Int): List<Set<List<T>>> {
-    if (sets.isEmpty()) return listOf()
-    val products = mutableListOf(sets.map { listOf(it) }.toSet())  // init to unary products
-    for (i in 2..n) {
-        products.add(binaryCartesianProduct(products.lastOrNull()!!, sets))
-    }
-    return products
-}
-
 fun <T> binaryCartesianProduct(a: Set<List<T>>, b: Collection<T>): Set<List<T>> {
     val result = mutableSetOf<List<T>>()
     a.forEach { ita -> b.forEach { itb -> result.add(ita + itb) } }
     return result
+//    return a.flatMap { ita -> b.asSequence().map { itb -> ita + itb } }
 }

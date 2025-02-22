@@ -21,7 +21,7 @@ fun SearchNode.types(root: Boolean): Set<Type> {
         }.toList()
     }
     naryCartesianProduct(expandedPorts).forEach { selection ->
-        result.add(merge(selection))
+        result.add(merge(selection))  // TODO Make me lazy
     }
     return result
 }
@@ -40,7 +40,7 @@ fun SearchState.partialContexts(): Set<Map<String, Type>> {
         if (this.tree(f).ports[0].isEmpty()) throw Exception("Can't find a type!")
         else this.tree(f).leaves().toList()
     }
-    return naryCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()
+    return naryCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()  // TODO Make me lazy
 }
 
 fun SearchState.contexts(): Set<Map<String, Type>> {
@@ -48,19 +48,7 @@ fun SearchState.contexts(): Set<Map<String, Type>> {
         if (this.tree(f).ports[0].isEmpty()) throw Exception("Can't find a type!")
         else this.tree(f).types(root = true).toList()
     }
-    return naryCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()
-}
-
-/*
-[[a, b]] should become [[a], [b]]
-[[a, b], [c, d]] > [[a, c], [a, d], [b, c], [b, d]]
- */
-
-fun main() {
-    val l1 = listOf(Variable("a"), Variable("b"))
-    val l2 = listOf(Variable("c"), Variable("d"))
-    println(naryCartesianProduct(listOf(l1)))
-    println(naryCartesianProduct(listOf(l1, l2)))
+    return naryCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()  // TODO Make me lazy
 }
 
 object MergeException : Exception("Merged mismatched types")
