@@ -2,6 +2,7 @@ package enumgen
 
 import enumgen.types.*
 import enumgen.types.Function
+import util.naryCartesianProduct
 
 fun SearchNode.types(root: Boolean): Set<Type> {
     if (root) {
@@ -60,23 +61,6 @@ fun main() {
     val l2 = listOf(Variable("c"), Variable("d"))
     println(naryCartesianProduct(listOf(l1)))
     println(naryCartesianProduct(listOf(l1, l2)))
-}
-
-fun naryCartesianProduct(tys: List<List<Type>>): Set<List<Type>> {
-    if (tys.isEmpty()) return setOf()
-    var result = tys[0].map { listOf(it) }.toSet()
-    var rest = tys.drop(1)
-    while (rest.isNotEmpty()) {
-        result = binaryCartesianProduct(result, rest[0])
-        rest = rest.drop(1)
-    }
-    return result
-}
-
-fun binaryCartesianProduct(a: Set<List<Type>>, b: List<Type>): Set<List<Type>> {
-    val result = mutableSetOf<List<Type>>()
-    a.forEach { ita -> b.forEach { itb -> result.add(ita + itb) } }
-    return result
 }
 
 object MergeException : Exception("Merged mismatched types")

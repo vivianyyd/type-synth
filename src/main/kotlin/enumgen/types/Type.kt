@@ -6,6 +6,12 @@ package enumgen.types
  *  Then we would inherit from the general notion of type, and add [recursiveNumChildHoles] and [directChildHoles].
  */
 
+fun Type.numParams(): Int = when (this) {
+    is LabelNode, is Variable -> 0
+    is Function -> 1 + this.rite.numParams()
+    is Error, is TypeHole -> throw Exception("What is this")
+}
+
 sealed interface Type {
     fun recursiveNumChildHoles(): Int
     fun recursiveNumVars(): Int
@@ -39,7 +45,7 @@ data class Function(val left: Type, val rite: Type) : AbstractType() {
 }
 
 data class LabelNode(val label: String, val params: List<Type>) : AbstractType() {
-    override fun toString(): String = "{$label of $params}"
+    override fun toString(): String = "$label$params"
     override fun recursiveNumChildHoles() = params.fold(0) { acc, type -> acc + type.recursiveNumChildHoles() }
     override fun recursiveNumVars() = params.fold(0) { acc, type -> acc + type.recursiveNumVars() }
     override fun directChildHoles() = params.any { it is ChildHole }
