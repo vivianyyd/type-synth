@@ -29,7 +29,7 @@ sealed class AbstractType : Type {
 }
 
 data class Variable(val id: String) : AbstractType() {
-    override fun toString(): String = "v($id)"
+    override fun toString(): String = id
     override fun recursiveNumChildHoles() = 0
     override fun recursiveNumVars() = 1
     override fun directChildHoles() = false
