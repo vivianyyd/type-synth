@@ -1,5 +1,7 @@
 package enumgen.types
 
+import enumgen.types.Unify.apply
+
 typealias Context = MutableMap<Variable, Type>
 
 // TODO throughout this file need to make consistent which context gets returned with Errors
@@ -95,13 +97,13 @@ object Unify {
         is TypeHole -> Pair(b, map)
     }
 
-    fun apply(f: Type, arg: Type, map: Context): Pair<Type, Context> {
+    fun apply(f: Type, arg: Type): Type {
         // TODO figure out what to output if f is a hole. alternatively just always enum functions first but sometimes cyclic
-        if (f is TypeHole) return Pair(f, map) // TODO this is not quite right
-        if (f !is Function) return Pair(Error(f, arg, ErrorCategory.APPLIED_NON_FUNCTION), map)
-        val (parameter, fnContext) = unify(f.left, arg, map)
-        if (parameter is Error) return Pair(parameter, fnContext)
-        return resolve(f.rite, fnContext)
+        if (f is TypeHole) return f
+        if (f !is Function) return Error(f, arg, ErrorCategory.APPLIED_NON_FUNCTION)
+        val (parameter, fnContext) = unify(f.left, arg, mutableMapOf())
+        if (parameter is Error) return parameter
+        return resolve(f.rite, fnContext).first
     }
 
     // Notice it's similar to unify
@@ -129,4 +131,18 @@ object Unify {
             }
         }
     }
+}
+
+fun main() {
+    val int = LabelNode("i", listOf())
+    val intList = LabelNode("l", listOf(int))
+    val intListList = LabelNode("l", listOf(LabelNode("l", listOf(int))))
+    val cons = Function(left=Variable("a"), rite=Function(left=LabelNode("l", listOf(Variable("a"))), rite=LabelNode("l", listOf(Variable("a")))))
+    val cons0ty = apply(cons, int)
+    val cons0emptyty = apply(cons0ty, intList)
+    val consemptyty = apply(cons, intList)
+    val consemptyemptyty = apply(consemptyty, intListList)
+    val conscons0empty = apply(cons, cons0emptyty)
+    val conscons0emptyconsemptyemptyty = apply(conscons0empty, consemptyemptyty)
+    println(conscons0emptyconsemptyemptyty)
 }
