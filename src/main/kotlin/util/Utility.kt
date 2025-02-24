@@ -17,31 +17,39 @@ fun <T> equivalenceClasses(elems: Collection<T>, equals: (T, T) -> Boolean): Set
 }
 
 fun main() {
-    val seq = reflexiveNaryProduct(listOf(0, 1, 2, 3), 3)
-        seq.forEach{println(it)}
+    val s = listOf(0, 1, 2, 3)
+    val repetitions = 3
+    val seq = reflexiveNaryProduct(s, repetitions)
+    seq.forEach { println(it.reversed()) }
+    println("Total: ${seq.toList().size}")
     println("Total: ${seq.toSet().size}")
+    val slowGroundTruth = naryCartesianProduct((1..repetitions).map { s }).toSet()
+    println(seq.toSet() == slowGroundTruth)
 }
 
 fun <T> reflexiveNaryProduct(set: List<T>, n: Int): Sequence<List<T>> = sequence {
     val indices = Array(n) { 0 }
-    var toInc = 0
     yield(indices.map { set[it] })
-    while (indices.any { it < set.size - 1 }) {
-        assert(indices.all { it < set.size })
-        if (indices[toInc] < set.size - 1) indices[toInc] = indices[toInc] + 1
-        else {  // carry
-            var ptr = toInc
-            while (ptr < indices.size && indices[ptr] == set.size - 1) {
-                indices[ptr] = 0
-                ptr++
+    for (base in 1..set.size) {
+        for (i in 0 until n) indices[i] = 0
+        while (indices.any { it < base - 1 }) {
+            assert(indices.all { it < base })
+            if (indices[0] < base - 1) indices[0] = indices[0] + 1
+            else {  // carry
+                var ptr = 0
+                while (indices[ptr] == base - 1) {
+                    indices[ptr] = 0
+                    ptr++
+                }
+                indices[ptr] = indices[ptr] + 1
             }
-            if (ptr >= indices.size) throw Exception("This shouldn't happen")
-            else indices[ptr] = indices[ptr] + 1
-            toInc = 0
+            if (!indices.contains(base - 1)) {
+                assert(indices[0] == 0)
+                indices[0] = base - 1
+            }
+            yield(indices.map { set[it] })
         }
-        yield(indices.map { set[it] })
     }
-//    return naryCartesianProduct((1..n).map { set })
 }
 
 fun <T> naryCartesianProduct(sets: List<List<T>>): Set<List<T>> {
