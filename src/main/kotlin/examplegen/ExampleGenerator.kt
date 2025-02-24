@@ -42,7 +42,7 @@ object ExampleGenerator {
         val (primitives, parameterized) = ts.filterIsInstance<LabelNode>().partition { it.params.isEmpty() }
         val typesWithDummies = primitives.toMutableSet()
         // Explode label nodes
-        for (d in 1..MAX_DEPTH) {
+        for (d in 1..LOG2_MAX_TYPE_DEPTH) {
             for (label in parameterized) {
                 val paramAssignments = reflexiveNaryProduct(typesWithDummies.toList(), label.params.size)
                 for (args in paramAssignments) {
@@ -53,30 +53,30 @@ object ExampleGenerator {
         return typesWithDummies.associateBy { freshValue() }
     }
 
-    fun examples(fns: List<Type>): Triple<List<Application>, List<Application>, Assignment> {
-        if (fns.isEmpty()) return Triple(listOf(), listOf(), mapOf())
+    fun examples(fns: List<Type>): Triple<Set<Application>, Set<Application>, Assignment> {
+        if (fns.isEmpty()) return Triple(setOf(), setOf(), mapOf())
 
         val dummies = dummies(observableNonFunctionTypes(fns)).toMutableMap()
-        val posExamples = dummies.keys.map { Application(it, null) }.toMutableList()
-        val negExamples = mutableListOf<Application>()
+        val posExamples = dummies.keys.map { Application(it, null) }.toMutableSet()
+        val negExs: MutableMap<ErrorCategory, MutableSet<Application>> =
+            EnumMap(ErrorCategory.values().associateWith { mutableSetOf() })
         // We don't want functions to show up in examples for now TODO no HOF..., but we want to give them names
         val fnDummies = fns.filterIsInstance<Function>().associateBy { freshValue() }
         dummies.putAll(fnDummies)
 
         // BEGIN COMPOSITION LOOP
-        for (i in 0..MAX_DEPTH) {
+        for (i in 1..MAX_DEPTH) {
             for (ty in fns.filter { it.numParams() > 0 }) {
                 val name = dummies.filter { (_, t) -> t == ty }.map { (name, _) -> name }[0]
+                // TODO Bug: We generate many of the smaller examples multiple times. Instead of calling product in a loop,
+                //   we should be doing bottom up enumeration if that makes sense idk
                 var apps =  // If we make new examples from only positive ones, any errors won't be redundant!
-                    reflexiveNaryProduct(posExamples, ty.numParams()).map { argChoice -> Application(name, argChoice) }
-
-                val negExs: MutableMap<ErrorCategory, MutableList<Application>> =
-                    EnumMap(ErrorCategory.values().associateWith { mutableListOf() })
-                while (apps.any() && negExs.any { (_, v) -> v.size < ERROR_COVERAGE_CAPACITY }) {
+                    reflexiveNaryProduct(posExamples.toList(), ty.numParams()).map { argChoice -> Application(name, argChoice) }
+                // Don't modify posExamples in the loop, since we loop over apps which is generated from posExamples
+                val posExsTmp = mutableSetOf<Application>()
+                while (apps.any() /*&& negExs.any { (_, v) -> v.size < ERROR_COVERAGE_CAPACITY } we want exhaustive list of posexs*/) {
                     val example = apps.first()
                     apps = apps.drop(1)
-
-                    println(example)
 
                     val eval = checkApplication(example, dummies)
                     if (eval is Error) {
@@ -84,38 +84,38 @@ object ExampleGenerator {
                             negExs[eval.category]!!.add(example)
                     }
                     else {
-                        posExamples.add(example)
+                        posExsTmp.add(example)
                     }
                 }
-                negExamples.addAll(negExs.values.flatten())
+                posExamples.addAll(posExsTmp)
                 // TODO we can purposefully add some negative examples where we apply too many arguments, although
                 //  it shouldn't be necessary
             }
         }
         posExamples.addAll(fnDummies.keys.map { Application(it, null) })
-        return Triple(posExamples, negExamples, dummies)
+        return Triple(posExamples, negExs.values.flatten().toSet(), dummies)
     }
         // TODO Very good to have negexs where the first args are ok but latter ones don't bc of var mismatch or something.
         //   Instead of keeping all exs, we could throw away some if we have >5 for that error type for that fn name already!
         //   TODO generator style will work here
 
-    private val MAX_DEPTH = 1  // todo assert this is at least the max depth of any parameter type!
-    private val ERROR_COVERAGE_CAPACITY = 10
+    private val LOG2_MAX_TYPE_DEPTH = 2
+    private val MAX_DEPTH = 3  // todo assert this is at least the max depth of any parameter type!
+    private val ERROR_COVERAGE_CAPACITY = 30
 }
 
 fun main() {
     val groundTruth = listOf(
-        "(int)",
-        "(bool)",
-        "(l (int))",
-        "(l (bool))",
-//        "(l (l (int)))",  // TODO no idea why, but adding this also causes us to add longer bool list too not just int
+        "(i)",
+        "(b)",
         "(-> a (-> (l a) (l a)))"
     )
 
     val (pos, neg, context) = ExampleGenerator.examples(groundTruth.map { tySexpr -> SExprParser(tySexpr).parse().toType() })
     println(context.toList().joinToString(separator = "\n"))
+    println("Positive examples:")
     println(pos.size)
+    println(printInvertDummies(pos, context))
     println(neg.size)
     /*
     Function (-> left rite)
@@ -123,4 +123,11 @@ fun main() {
     Label (l a b c), primitive (l)
      */
 
+}
+
+private fun printInvertDummies(exs: Collection<Application>, context: Assignment): String {
+    fun replaceDummiesWithTypeString(app: Application): Application = Application(
+        if (app.arguments != null) "(${context[app.name]}). " else context[app.name].toString(),
+        app.arguments?.map { replaceDummiesWithTypeString(it) })
+    return exs.map { replaceDummiesWithTypeString(it) }.joinToString(separator = "\n")
 }
