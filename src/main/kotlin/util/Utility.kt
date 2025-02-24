@@ -16,71 +16,36 @@ fun <T> equivalenceClasses(elems: Collection<T>, equals: (T, T) -> Boolean): Set
     return result
 }
 
-fun <T> reflexiveNaryProduct(set: List<T>, n: Int): Sequence<List<T>> {
-    TODO()
-//    return naryCartesianProduct((1..n).map { set })
-    /*
-    fun help(currProd: List<T>, setInd: Int): Sequence<List<T>> = sequence {
-        var i = setInd
-        if (++i >= sets.size) {
-
-            yield(currProd)
-        } else {
-            val next = sets[i]
-            for (element in next) {
-                yieldAll(help(currProd + element, i))
-            }
-        }
-    }
-    return help(listOf(), -1)
-     */
-
-
-/*
-function crossProduct(sets) {
-  var n = sets.length, carets = [], args = [];
-
-  function init() {
-    for (var i = 0; i < n; i++) {
-      carets[i] = 0;
-      args[i] = sets[i][0];
-    }
-  }
-
-  function next() {
-    if (!args.length) {
-      init();
-      return true;
-    }
-    var i = n - 1;
-    carets[i]++;
-    if (carets[i] < sets[i].length) {
-      args[i] = sets[i][carets[i]];
-      return true;
-    }
-    while (carets[i] >= sets[i].length) {
-      if (i == 0) {
-        return false;
-      }
-      carets[i] = 0;
-      args[i] = sets[i][0];
-      carets[--i]++;
-    }
-    args[i] = sets[i][carets[i]];
-    return true;
-  }
-
-  return {
-    next: next,
-    do: function (block, _context) {
-      return block.apply(_context, args);
-    }
-  }
+fun main() {
+    val seq = reflexiveNaryProduct(listOf(0, 1, 2, 3), 3)
+        seq.forEach{println(it)}
+    println("Total: ${seq.toSet().size}")
 }
-     */
+
+fun <T> reflexiveNaryProduct(set: List<T>, n: Int): Sequence<List<T>> = sequence {
+    val indices = Array(n) { 0 }
+    var toInc = 0
+    yield(indices.map { set[it] })
+    while (indices.any { it < set.size - 1 }) {
+        assert(indices.all { it < set.size })
+        if (indices[toInc] < set.size - 1) indices[toInc] = indices[toInc] + 1
+        else {  // carry
+            var ptr = toInc
+            while (ptr < indices.size && indices[ptr] == set.size - 1) {
+                indices[ptr] = 0
+                ptr++
+            }
+            if (ptr >= indices.size) throw Exception("This shouldn't happen")
+            else indices[ptr] = indices[ptr] + 1
+            toInc = 0
+        }
+        yield(indices.map { set[it] })
+    }
+//    return naryCartesianProduct((1..n).map { set })
 }
 
 fun <T> naryCartesianProduct(sets: List<List<T>>): Set<List<T>> {
+    // TODO Make me lazy
     if (sets.isEmpty()) return setOf()
     var result = sets[0].map { listOf(it) }.toSet()
     var rest = sets.drop(1)
