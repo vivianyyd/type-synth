@@ -2,7 +2,8 @@ package util
 
 data class Application(val name: String, val arguments: List<Application> = listOf()) {
     override fun toString(): String {
-        return "($name${(arguments.joinToString(prefix=" ", separator = " "))})"
+        return if (arguments.isEmpty()) name else
+            "($name ${(arguments.joinToString(separator = " "))})"
     }
 }
 

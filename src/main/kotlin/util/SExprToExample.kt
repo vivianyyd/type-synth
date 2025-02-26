@@ -56,3 +56,5 @@ fun SExpr.toApplication(): Pair<Application, Set<String>> = when (this) {
             TODO("Not yet implemented: Parsing application where the function is the result of an application")  // Pair(Application(apps[0]))
     }
 }
+
+fun parseApp(s: String) = SExprParser(s).parse().toApplication().first

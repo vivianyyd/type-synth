@@ -1,6 +1,7 @@
 package enumgen.types
 
 import util.SExpr
+import util.SExprParser
 
 fun SExpr.toType(): Type = when (this) {
     is SExpr.Atm -> {
@@ -20,6 +21,8 @@ fun SExpr.toType(): Type = when (this) {
         }
     }
 }
+
+fun parseType(s: String) = SExprParser(s).parse().toType()
 
     /*
     Function (-> left rite)

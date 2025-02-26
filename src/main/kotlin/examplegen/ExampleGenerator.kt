@@ -99,9 +99,9 @@ object ExampleGenerator {
         //   Instead of keeping all exs, we could throw away some if we have >5 for that error type for that fn name already!
         //   TODO generator style will work here
 
-    private val LOG2_MAX_TYPE_DEPTH = 2
-    private val MAX_DEPTH = 3  // todo assert this is at least the max depth of any parameter type!
-    private val ERROR_COVERAGE_CAPACITY = 30
+    private const val LOG2_MAX_TYPE_DEPTH = 2
+    private const val MAX_DEPTH = 3  // todo assert this is at least the max depth of any parameter type!
+    private const val ERROR_COVERAGE_CAPACITY = 30
 }
 
 fun main() {

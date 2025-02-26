@@ -37,7 +37,7 @@ data class Variable(val id: String) : AbstractType() {
 }
 
 data class Function(val left: Type, val rite: Type) : AbstractType() {
-    override fun toString(): String = "($left) -> $rite"
+    override fun toString(): String = "${if (left is Function) "($left)" else "$left"} -> $rite"
     override fun recursiveNumChildHoles() = left.recursiveNumChildHoles() + rite.recursiveNumChildHoles()
     override fun recursiveNumVars() = left.recursiveNumVars() + rite.recursiveNumVars()
     override fun directChildHoles() = left is ChildHole || rite is ChildHole
