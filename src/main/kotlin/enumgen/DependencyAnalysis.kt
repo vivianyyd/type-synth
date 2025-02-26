@@ -1,6 +1,5 @@
 package enumgen
 
-import enumgen.visualizations.SearchStateVisualizer
 import util.Application
 import util.equivalenceClasses
 import java.lang.Integer.max
@@ -109,7 +108,7 @@ class DependencyAnalysis(
 
     /** Precondition: i is in bounds */
     fun Application.getParam(i: Int) =
-        if (i < this.arguments!!.size) this.arguments[i]
+        if (i < this.arguments.size) this.arguments[i]
         else {
             assert(i == this.arguments.size)
             this
@@ -134,9 +133,9 @@ class DependencyAnalysis(
                 // We wait til now to do this filtering so we can use as many exs as possible, since sometimes it might
                 //  be only partially applied. At the cost of extra work
                 val pos = if (exampleAnalysis.params(name) == 1) posExs
-                else posExs.filter { it.arguments != null && it.arguments.size >= max(i, j) }
+                else posExs.filter { it.arguments.size >= max(i, j) }
                 val neg = if (exampleAnalysis.params(name) == 1) negExs
-                else negExs.filter { it.arguments != null && it.arguments.size >= max(i, j) }
+                else negExs.filter { it.arguments.size >= max(i, j) }
 
                 if (i == j) {
                     if (equivalenceClasses(pos) { e1, e2 ->

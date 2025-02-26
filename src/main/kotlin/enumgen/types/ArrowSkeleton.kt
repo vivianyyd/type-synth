@@ -1,8 +1,6 @@
 package enumgen.types
 
-import examplegen.ExampleGenerator
 import util.Application
-import util.SExprParser
 
 sealed interface Skeleton
 
@@ -11,13 +9,13 @@ data class TypeVar(val app: Application) : Skeleton {
 }
 
 data class Arrow(val left: Skeleton, val rite: Skeleton) : Skeleton {
-    override fun toString(): String = "($left -> $rite)"
+    override fun toString(): String = "($left) -> $rite"
 }
 
 class ArrowSkeleton(val posExamples: List<Application>, val names: List<String>) {
     private fun allSubexprs(): List<Application> {
         fun subexprs(app: Application): List<Application> =
-            if (app.arguments == null || app.arguments.isEmpty()) listOf(app)
+            if (app.arguments.isEmpty()) listOf(app)
             else subexprs(  // partial application
                 Application(
                     app.name,
@@ -39,7 +37,7 @@ class ArrowSkeleton(val posExamples: List<Application>, val names: List<String>)
         val vars = allTypeVars(subexprs)
         val constraints = mutableListOf<Pair<Skeleton, Skeleton>>()
         subexprs.forEach { app ->
-            if (app.arguments != null && app.arguments.isNotEmpty()) {
+            if (app.arguments.isNotEmpty()) {
                 constraints.add(
                     Pair(
                         vars.at(Application(app.name, app.arguments.dropLast(1))),
@@ -143,10 +141,10 @@ fun main() {
 //    println(pos.size)
 //    val names = context.keys
 
-    val a = Application("a", null)
-    val f = Application("f", null)
-    val g = Application("g", null)
-    val h = Application("h", null)
+    val a = Application("a")
+    val f = Application("f")
+    val g = Application("g")
+    val h = Application("h")
 
     val pos = listOf(
         a, f, g, h,

@@ -332,7 +332,7 @@ class Enumerator(
         // Check if left child is a primitive
         return if (curr.left is LabelNode && (curr.left as LabelNode).params.isEmpty()) {
             // Check whether all examples have args in corresponding spot which can be the same type
-            val argumentsUsed = posExamples.filter { it.name == fn }.mapNotNull { it.arguments?.getOrNull(height - 2) }.toSet()
+            val argumentsUsed = posExamples.filter { it.name == fn }.mapNotNull { it.arguments.getOrNull(height - 2) }.toSet()
             // TODO More general: Check that they can all simultaneously unify with the proposed type. Then the param
             //   in question need not be a primitive literal to do the check
             //   edit, idk what I meant by this. Think about it again

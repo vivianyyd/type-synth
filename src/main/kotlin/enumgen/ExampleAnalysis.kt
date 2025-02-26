@@ -17,15 +17,15 @@ class ExampleAnalysis(
 
     init {
         fun helpPos(app: Application) {
-            params[app.name] = maxOf(params[app.name]!!, app.arguments?.size ?: 0)
+            params[app.name] = maxOf(params[app.name]!!, app.arguments.size)
             posFor[app.name]!!.add(app)
-            app.arguments?.forEach { helpPos(it) }
+            app.arguments.forEach { helpPos(it) }
         }
         posExamples.forEach { helpPos(it) }
 
         fun helpNeg(app: Application) {
             negFor[app.name]!!.add(app)
-            app.arguments?.forEach { helpNeg(it) }
+            app.arguments.forEach { helpNeg(it) }
         }
         negExamples.forEach { helpNeg(it) }
 
@@ -50,7 +50,7 @@ class ExampleAnalysis(
 
     fun partialArgsParamsCompatible(fn: String, t: Type, tree: SearchState): Boolean {
         val exs = posExamples.filter { it.name == fn }
-        val arguments = exs.flatMap { it.arguments ?: listOf() }.map { it.name }.toSet()
+        val arguments = exs.flatMap { it.arguments }.map { it.name }.toSet()
         val argTyRoots =
             arguments.associateWith { tree.tree(it) }  // Should be no NPE, just single ChildHole
         return argTyRoots.all { (argName, treeRoot) ->
@@ -77,7 +77,7 @@ class ExampleAnalysis(
     }
 
     private fun replace(a: Application, e: Application, ePrime: Application): Application =
-        if (a == e) ePrime else Application(a.name, a.arguments?.map { replace(it, e, ePrime) })
+        if (a == e) ePrime else Application(a.name, a.arguments.map { replace(it, e, ePrime) })
 
     private fun works(a: Application): Boolean = a in posExamples  // TODO replace with call to black box type checker
 }

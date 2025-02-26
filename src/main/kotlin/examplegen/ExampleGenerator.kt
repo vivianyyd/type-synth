@@ -57,7 +57,7 @@ object ExampleGenerator {
         if (fns.isEmpty()) return Triple(setOf(), setOf(), mapOf())
 
         val dummies = dummies(observableNonFunctionTypes(fns)).toMutableMap()
-        val posExamples = dummies.keys.map { Application(it, null) }.toMutableSet()
+        val posExamples = dummies.keys.map { Application(it) }.toMutableSet()
         val negExs: MutableMap<ErrorCategory, MutableSet<Application>> =
             EnumMap(ErrorCategory.values().associateWith { mutableSetOf() })
         // We don't want functions to show up in examples for now TODO no HOF..., but we want to give them names
@@ -92,7 +92,7 @@ object ExampleGenerator {
                 //  it shouldn't be necessary
             }
         }
-        posExamples.addAll(fnDummies.keys.map { Application(it, null) })
+        posExamples.addAll(fnDummies.keys.map { Application(it) })
         return Triple(posExamples, negExs.values.flatten().toSet(), dummies)
     }
         // TODO Very good to have negexs where the first args are ok but latter ones don't bc of var mismatch or something.
@@ -126,8 +126,7 @@ fun main() {
 }
 
 private fun printInvertDummies(exs: Collection<Application>, context: Assignment): String {
-    fun replaceDummiesWithTypeString(app: Application): Application = Application(
-        if (app.arguments != null) "(${context[app.name]}). " else context[app.name].toString(),
-        app.arguments?.map { replaceDummiesWithTypeString(it) })
+    fun replaceDummiesWithTypeString(app: Application): Application =
+        Application("(${context[app.name]}). ", app.arguments.map { replaceDummiesWithTypeString(it) })
     return exs.map { replaceDummiesWithTypeString(it) }.joinToString(separator = "\n")
 }

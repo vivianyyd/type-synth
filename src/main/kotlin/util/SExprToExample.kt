@@ -44,7 +44,7 @@ fun SExpr.toExample(): Triple<Boolean, Application, Set<String>> = when (this) {
 
 fun SExpr.toApplication(): Pair<Application, Set<String>> = when (this) {
     is SExpr.Atm -> {
-        Pair(Application(this.value, null), setOf(this.value))
+        Pair(Application(this.value), setOf(this.value))
     }
     is SExpr.Lst -> {
         assert(this.elements.isNotEmpty())
