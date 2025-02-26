@@ -3,22 +3,19 @@ package enumgen
 import enumgen.visualizations.SearchStateVisualizer
 import enumgen.types.*
 import enumgen.types.Function
-import util.Application
+import util.Query
 
 typealias Assignment = Map<String, Type>
 
 class Enumerator(
-    private val names: List<String>,
-    private val posExamples: Set<Application>,
-    private val negExamples: Set<Application>,
+    val query: Query
 //    private val MAX_TYPE_PARAMS: Int
 ) {
     //    val DEPTH_BOUND = 4  // TODO remove this safeguard
     private var vizFileID = 0
 
-    // TODO("Assert that [posExamples] and [negExamples] only contain names in [names]")
-    private val state = SearchState(names)
-    private val exampleAnalysis = ExampleAnalysis(names, posExamples, negExamples)
+    private val state = SearchState(query.names)
+    private val exampleAnalysis = ExampleAnalysis(query)
 
     //    private var varCounter = 0
     private fun freshVariable() = Variable("a")//Variable(varCounter++) // We decided we should start coarse
@@ -138,7 +135,7 @@ class Enumerator(
     fun enumerate(): String {
         var iter = 1
         val leafParents: MutableMap<String, List<SearchNode>> =
-            names.associateWith { listOf(state.tree(it)) }.toMutableMap()
+            query.names.associateWith { listOf(state.tree(it)) }.toMutableMap()
 
         // Deep enumeration/vertical growing step
         viz("init")
@@ -199,7 +196,7 @@ class Enumerator(
                 break
             }
 
-            names.forEach { name ->
+            query.names.forEach { name ->
                 val (nodesThatChanged, noChange) = leafParents[name]!!.partition { parentsPruned[name]!![it]!! }
                 // Next round of leaves will be current leaves' children. We always move onto next layer, so we can
                 // defer propagating up w/o accidental infinite loop of enuming and pruning the same node repeatedly
@@ -238,8 +235,8 @@ class Enumerator(
         val exploded = passesPos.flatMap { it.populateVariablesPartitionBlowup(state.names.associateWith { nullary(it) },2) }
         println("Exploded contexts: ${exploded.size}")
 
-        println("Total negexs: ${negExamples.size}")
-        val negs = exploded.map { negExamples.count { ex -> checkApplication(ex, it) is Error } }
+        println("Total negexs: ${query.negExamples.size}")
+        val negs = exploded.map { query.negExamples.count { ex -> checkApplication(ex, it) is Error } }
         println("Max rejected by exploded desired stuff: ${negs.max()}")
         println("Min: ${negs.min()}")
 
@@ -332,7 +329,8 @@ class Enumerator(
         // Check if left child is a primitive
         return if (curr.left is LabelNode && (curr.left as LabelNode).params.isEmpty()) {
             // Check whether all examples have args in corresponding spot which can be the same type
-            val argumentsUsed = posExamples.filter { it.name == fn }.mapNotNull { it.arguments.getOrNull(height - 2) }.toSet()
+            val argumentsUsed =
+                query.posExamples.filter { it.name == fn }.mapNotNull { it.arguments.getOrNull(height - 2) }.toSet()
             // TODO More general: Check that they can all simultaneously unify with the proposed type. Then the param
             //   in question need not be a primitive literal to do the check
             //   edit, idk what I meant by this. Think about it again
@@ -341,18 +339,19 @@ class Enumerator(
     }
 
     private fun assignmentPassesPositives(assignment: Assignment): Boolean =
-        posExamples.all { checkApplication(it, assignment) !is Error }
+        query.posExamples.all { checkApplication(it, assignment) !is Error }
 
     private fun passesPositives(fn: String, t: Type): Boolean {
-        val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
+        val assignment = query.names.associateWith { if (it == fn) t else SiblingHole(-1) }
         return assignmentPassesPositives(assignment)
     }
 
     /** Checks whether the function is ever fully applied with the given hypothesis. */
     private fun applied(fn: String, t: Type): Boolean {
-        val assignment = names.associateWith { if (it == fn) t else SiblingHole(-1) }
+        val assignment = query.names.associateWith { if (it == fn) t else SiblingHole(-1) }
         // TODO memoize, this is obviously duplicated with [passesChecks]
-        return !posExamples.filter { it.name == fn }.map { checkApplication(it, assignment) }.all { it is Function }
+        return !query.posExamples.filter { it.name == fn }.map { checkApplication(it, assignment) }
+            .all { it is Function }
     }
 
     private fun viz(stage: String = "") = SearchStateVisualizer.viz(state, "${vizFileID++}${if (stage == "") "" else "-"}$stage")

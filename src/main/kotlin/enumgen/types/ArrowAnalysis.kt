@@ -156,7 +156,8 @@ object ArrowAnalysis {
 
 fun main() {
     val types = listOf("(i)", "(b)", "(-> a (-> (l a) (l a)))")
-    val (pos, _, context) = ExampleGenerator.examples(types.map { parseType(it) })
+    val (query, context) = ExampleGenerator.examples(types.map { parseType(it) })
+    val pos = query.posExamples
     println(context.toList().joinToString(separator = "\n"))
 
 //    val pos = listOf("a", "f", "g", "(g a)", "(f g)", "(f (f g))").map { parseApp(it) }
@@ -170,7 +171,6 @@ fun main() {
     println()
     val result = ArrowAnalysis.unifyToTypes(pos.toList(), names, propagateEqualities = true)
     println(result.toList().joinToString(separator = "\n") { (a, b) -> "$a := $b" })
-    // TODO Query object containing posexs with default value emptylist and names with default value filter all apps by ones with no arguments. and also if user inputs names, inserts names applied with no args into posexs
 }
 
 // TODO Change to a Map? Does it break substitutions due to ordering or something

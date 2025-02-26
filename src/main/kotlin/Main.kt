@@ -1,14 +1,8 @@
 import enumgen.DependencyAnalysis
 import enumgen.Enumerator
 import enumgen.EqualityOracle
-import enumgen.ExampleAnalysis
 import enumgen.visualizations.DependencyGraphVisualizer
-import enumgen.visualizations.SearchStateVisualizer
-import util.SExprParser
-import util.examplesSplit
-import util.toExample
-import util.Application
-import util.print
+import util.*
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -47,16 +41,10 @@ fun main() {
 
 //    testEnumeration()
 
-    val exsexps = exsWithSecretType.mapKeys { SExprParser(it.key).parse() }
-    val (pos, negs, names) = examplesSplit(exsexps.keys)
-    val secretTypes = exsexps.mapKeys { it.key.toExample().second }
-    val oracle = ScrappyOracle(secretTypes)
-//    println("Named values:\n$names")
-//    println("Positive examples:\n${pos.print(true)}")
-//    println("Negative examples:\n${negs.print(false)}")
-
-    val da = DependencyAnalysis(names.toList(), pos.toSet(), negs.toSet(), oracle)
-    names.forEach { viz(it, da) }
+    val query = examples(exsWithSecretType.keys)
+    val oracle = ScrappyOracle(exsWithSecretType.mapKeys { parseApp(it.key) })
+    val da = DependencyAnalysis(query, oracle)
+    query.names.forEach { viz(it, da) }
 }
 
 private fun viz(name: String, da: DependencyAnalysis) = DependencyGraphVisualizer.viz(da.graphs[name]!!, "$name")
@@ -74,16 +62,12 @@ class PairwiseCheckOracle() : EqualityOracle {
 }
 
 fun testEnumeration() {
-    val (pos, negs, names) = examplesSplit(exsWithSecretType.keys.map { SExprParser(it).parse() })
+    val query = examples(exsWithSecretType.keys)
 
-    println("Posexs: \n${pos.print(true)}")
-    println("Negexs: \n${negs.print(false)}")
+    println("Posexs: \n${query.posExamples.print(true)}")
+    println("Negexs: \n${query.negExamples.print(false)}")
 
-    val consEnumerator = Enumerator(
-        names = names.toList(),
-        posExamples = pos.toSet(),
-        negExamples = negs.toSet()
-    )
+    val consEnumerator = Enumerator(query)
 
 //    val one = Application("1", null)
 //    val emptyDict = Application("\\{\\}", null)

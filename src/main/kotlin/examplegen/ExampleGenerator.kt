@@ -5,6 +5,7 @@ import util.Application
 import util.reflexiveNaryProduct
 import enumgen.types.*
 import enumgen.types.Function
+import util.Query
 import util.SExprParser
 import java.util.*
 
@@ -53,8 +54,8 @@ object ExampleGenerator {
         return typesWithDummies.associateBy { freshValue() }
     }
 
-    fun examples(fns: List<Type>): Triple<Set<Application>, Set<Application>, Assignment> {
-        if (fns.isEmpty()) return Triple(setOf(), setOf(), mapOf())
+    fun examples(fns: List<Type>): Pair<Query, Assignment> {
+        if (fns.isEmpty()) return Pair(Query(), mapOf())
 
         val dummies = dummies(observableNonFunctionTypes(fns)).toMutableMap()
         val posExamples = dummies.keys.map { Application(it) }.toMutableSet()
@@ -93,7 +94,7 @@ object ExampleGenerator {
             }
         }
         posExamples.addAll(fnDummies.keys.map { Application(it) })
-        return Triple(posExamples, negExs.values.flatten().toSet(), dummies)
+        return Pair(Query(posExamples, negExs.values.flatten().toSet()), dummies)
     }
         // TODO Very good to have negexs where the first args are ok but latter ones don't bc of var mismatch or something.
         //   Instead of keeping all exs, we could throw away some if we have >5 for that error type for that fn name already!
@@ -111,12 +112,12 @@ fun main() {
         "(-> a (-> (l a) (l a)))"
     )
 
-    val (pos, neg, context) = ExampleGenerator.examples(groundTruth.map { tySexpr -> SExprParser(tySexpr).parse().toType() })
+    val (query, context) = ExampleGenerator.examples(groundTruth.map { tySexpr -> SExprParser(tySexpr).parse().toType() })
     println(context.toList().joinToString(separator = "\n"))
     println("Positive examples:")
-    println(pos.size)
-    println(printInvertDummies(pos, context))
-    println(neg.size)
+    println(query.posExamples.size)
+    println(printInvertDummies(query.posExamples, context))
+    println(query.negExamples.size)
     /*
     Function (-> left rite)
     Variable a

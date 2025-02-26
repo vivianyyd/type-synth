@@ -1,26 +1,19 @@
 package util
 
-/**
- * list of (example, sign), names mentioned
- */
-fun examples(sexps: Collection<SExpr>): Pair<List<Pair<Application, Boolean>>, Set<String>> {
-    val exs = sexps.map { it.toExample() }
-    return Pair(exs.map { Pair(it.second, it.first) }, exs.map { it.third }.fold(setOf()) { a, b -> a.union(b) })
-}
+fun examples(sexps: Collection<String>): Query = examplesFromSexps(sexps.map{SExprParser(it).parse()})
 
-/**
- * Posex, negex, names mentioned
- */
-fun examplesSplit(sexps: Collection<SExpr>): Triple<List<Application>, List<Application>, Set<String>> {
-    val (exs, names) = examples(sexps)
+private fun examplesFromSexps(sexps: Collection<SExpr>): Query {
+    val exsWithNames = sexps.map { it.toExample() }
+    val exs = exsWithNames.map { Pair(it.second, it.first) }
+    val names = exsWithNames.map { it.third }.fold(setOf<String>()) { a, b -> a.union(b) }
     val (pos, neg) = splitExamples(exs)
-    return Triple(pos, neg, names)
+    return Query(pos, neg, names.toList())
 }
 
 /**
  * Posex, negex, names mentioned
  */
-fun splitExamples(exs: List<Pair<Application, Boolean>>): Pair<List<Application>, List<Application>> {
+private fun splitExamples(exs: List<Pair<Application, Boolean>>): Pair<List<Application>, List<Application>> {
     val (pos, neg) = exs.partition { (_, sign) -> sign }
     return Pair(
         pos.map { (ex, _) -> ex },
@@ -28,7 +21,7 @@ fun splitExamples(exs: List<Pair<Application, Boolean>>): Pair<List<Application>
     )
 }
 
-fun SExpr.toExample(): Triple<Boolean, Application, Set<String>> = when (this) {
+private fun SExpr.toExample(): Triple<Boolean, Application, Set<String>> = when (this) {
     is SExpr.Atm -> {
         throw Exception("Not an example")
     }
@@ -42,7 +35,7 @@ fun SExpr.toExample(): Triple<Boolean, Application, Set<String>> = when (this) {
     }
 }
 
-fun SExpr.toApplication(): Pair<Application, Set<String>> = when (this) {
+private fun SExpr.toApplication(): Pair<Application, Set<String>> = when (this) {
     is SExpr.Atm -> {
         Pair(Application(this.value), setOf(this.value))
     }

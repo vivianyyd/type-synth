@@ -1,6 +1,7 @@
 package enumgen
 
 import util.Application
+import util.Query
 import util.equivalenceClasses
 import java.lang.Integer.max
 
@@ -69,9 +70,7 @@ fun equals(p1: ParameterNode, p2: ParameterNode): Boolean =
  *  Visualizer for dep graphs
  */
 class DependencyAnalysis(
-    private val names: List<String>,
-    private val posExamples: Set<Application>,
-    private val negExamples: Set<Application>,
+    private val query: Query,
     private val oracle: EqualityOracle
 ) {
     // TODO maybe the oracle should support this, but then it would have access to all the examples which is not good
@@ -94,13 +93,13 @@ class DependencyAnalysis(
 //
 //    val uniqueTypes: Set<TypeEquivalenceClassDummy> = dummyTypes.values.toSet()
 
-    val exampleAnalysis = ExampleAnalysis(names, posExamples, negExamples)  // todo seems like bad modularity
-    val nodes: Set<ParameterNode> = names.fold(setOf()) { acc, name ->
+    val exampleAnalysis = ExampleAnalysis(query)  // todo seems like bad modularity
+    val nodes: Set<ParameterNode> = query.names.fold(setOf()) { acc, name ->
         acc.union((0 until exampleAnalysis.params(name)).map { ParameterNode(name, it) }.toSet())
     }
 
     val graphs: Map<String, DependencyGraph> by lazy {
-        names.associateWith { name ->
+        query.names.associateWith { name ->
             val (links, deps, loops) = findEdges(name)
             DependencyGraph(name, nodes.filter { it.f == name }.toSet(), links, deps, loops)
         }
