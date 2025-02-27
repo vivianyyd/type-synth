@@ -100,17 +100,13 @@ object ExampleGenerator {
         //   Instead of keeping all exs, we could throw away some if we have >5 for that error type for that fn name already!
         //   TODO generator style will work here
 
-    private const val LOG2_MAX_TYPE_DEPTH = 2
-    private const val MAX_DEPTH = 3  // todo assert this is at least the max depth of any parameter type!
+    private const val LOG2_MAX_TYPE_DEPTH = 1
+    private const val MAX_DEPTH = 1  // todo assert this is at least the max depth of any parameter type!
     private const val ERROR_COVERAGE_CAPACITY = 30
 }
 
 fun main() {
-    val groundTruth = listOf(
-        "(i)",
-        "(b)",
-        "(-> a (-> (l a) (l a)))"
-    )
+    val groundTruth = listOf("(i)", "(b)", "(-> a (-> (l a) (l a)))")
 
     val (query, context) = ExampleGenerator.examples(groundTruth.map { tySexpr -> SExprParser(tySexpr).parse().toType() })
     println(context.toList().joinToString(separator = "\n"))
@@ -118,12 +114,6 @@ fun main() {
     println(query.posExamples.size)
     println(printInvertDummies(query.posExamples, context))
     println(query.negExamples.size)
-    /*
-    Function (-> left rite)
-    Variable a
-    Label (l a b c), primitive (l)
-     */
-
 }
 
 private fun printInvertDummies(exs: Collection<Application>, context: Assignment): String {

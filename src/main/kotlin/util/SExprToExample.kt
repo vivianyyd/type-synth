@@ -1,6 +1,6 @@
 package util
 
-fun examples(sexps: Collection<String>): Query = examplesFromSexps(sexps.map{SExprParser(it).parse()})
+fun parseExamples(sexps: Collection<String>): Query = examplesFromSexps(sexps.map{SExprParser(it).parse()})
 
 private fun examplesFromSexps(sexps: Collection<SExpr>): Query {
     val exsWithNames = sexps.map { it.toExample() }

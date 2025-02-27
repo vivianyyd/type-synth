@@ -51,9 +51,9 @@ fun Type.fillSpots(indexToPartition: Map<Int, Int>, startingIndex: Int): Pair<Ty
             }
             Pair(LabelNode(label = this.label, params = params), i)
         }
-        is ChildHole -> Pair(Variable("${indexToPartition[startingIndex]!!}"), startingIndex + 1)
+        is ChildHole -> Pair(Variable("v${indexToPartition[startingIndex]!!}"), startingIndex + 1)
         is TypeHole -> Pair(this, startingIndex)
-        is Variable -> Pair(Variable("${indexToPartition[startingIndex]!!}"), startingIndex + 1)
+        is Variable -> Pair(Variable("v${indexToPartition[startingIndex]!!}"), startingIndex + 1)
     }
 }
 

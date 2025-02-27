@@ -1,16 +1,18 @@
 import enumgen.DependencyAnalysis
 import enumgen.Enumerator
 import enumgen.EqualityOracle
-import enumgen.NonArrowEnumerator
-import enumgen.types.ArrowAnalysis
+import enumgen.types.Type
+import enumgen.types.checkApplication
+import enumgen.types.toType
 import enumgen.visualizations.DependencyGraphVisualizer
+import examplegen.ExampleGenerator
 import util.*
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 
-val exsWithSecretType = mapOf(
+val consExamples = mapOf(
     "(+ 0)" to "int",
     "(+ tr)" to "bool",
     "(+ []i)" to "lint",
@@ -32,32 +34,39 @@ val exsWithSecretType = mapOf(
 
 
 fun main() {
-//    val t = "(->  a (-> (l a) (l a)) )"
-//    val p = "(int)"
-//    val lp = "(l (int))"
-//    // make a test for list map
-//    listOf(t, p, lp).map{
-//        println(SExprParser(it).parse())
-//        println(SExprParser(it).parse().toType())
-//    }
+//    // TODO make a test for list map
+    val query = parseExamples(consExamples.keys)
+    val oracle = ScrappyOracle(consExamples.mapKeys { parseApp(it.key) })
+    val da = DependencyAnalysis(query, oracle)
+    query.names.forEach { viz(it, da) }
+    val consEnumerator = /*NonArrow*/Enumerator(
+        query,
+//        ArrowAnalysis.unifyToTypes(query.posExamples.toList(), query.names, propagateEqualities = true)
+    )
+    consEnumerator.enumerate()
 
-//    val query = examples(exsWithSecretType.keys)
-//    val oracle = ScrappyOracle(exsWithSecretType.mapKeys { parseApp(it.key) })
+//    val types = listOf("(i)", "(b)", "(-> a (-> (l a) (l a)))")
+//    val types = listOf("(i)", "(b)", "(-> a (-> (l b c) (-> (l a b) (l c))))")
+//    val (query, context) = ExampleGenerator.examples(types.map { tySexpr -> SExprParser(tySexpr).parse().toType() })
+//    val oracle = CheckingOracle(context)
 //    val da = DependencyAnalysis(query, oracle)
 //    query.names.forEach { viz(it, da) }
 
-    val query = examples(exsWithSecretType.keys)
-    val consEnumerator = NonArrowEnumerator(
-        query,
-        ArrowAnalysis.unifyToTypes(query.posExamples.toList(), query.names, propagateEqualities = true)
-    )
-    consEnumerator.enumerate()
 }
 
 private fun viz(name: String, da: DependencyAnalysis) = DependencyGraphVisualizer.viz(da.graphs[name]!!, "$name")
 
 /**
+ * Computes types of applications based on types of named values, given as [secret]
+ */
+class CheckingOracle(private val secret: Map<String, Type>) : EqualityOracle {
+    override fun equal(a: Application, b: Application): Boolean =
+        checkApplication(a, secret) == checkApplication(b, secret)
+}
+
+/**
  * Requires [secretTypes[app]] is null iff [app] is a negative example
+ * Requires a mapping of *all* applications (including all subexpressions) to their dummy types
  */
 class ScrappyOracle(private val secret: Map<Application, String?>) : EqualityOracle {
     override fun equal(a: Application, b: Application): Boolean =
