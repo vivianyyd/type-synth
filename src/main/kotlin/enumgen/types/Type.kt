@@ -12,10 +12,27 @@ fun Type.numParams(): Int = when (this) {
     is Error, is TypeHole -> throw Exception("What is this")
 }
 
+fun Type.recursiveNumChildHoles(): Int = when (this) {
+    is ChildHole -> 1
+    is Function -> left.recursiveNumChildHoles() + rite.recursiveNumChildHoles()
+    is LabelNode -> params.fold(0) { acc, type -> acc + type.recursiveNumChildHoles() }
+    is SiblingHole, is Variable, is Error -> 0
+}
+
+fun Type.recursiveNumVars(): Int = when (this) {
+    is Variable -> 1
+    is Function -> left.recursiveNumVars() + rite.recursiveNumVars()
+    is LabelNode -> params.fold(0) { acc, type -> acc + type.recursiveNumVars() }
+    is TypeHole, is Error -> 0
+}
+
+fun Type.directChildHoles(): Boolean = when (this) {
+    is Function -> left is ChildHole || rite is ChildHole
+    is LabelNode -> params.any { it is ChildHole }
+    is TypeHole, is Variable, is Error -> false
+}
+
 sealed interface Type {
-    fun recursiveNumChildHoles(): Int
-    fun recursiveNumVars(): Int
-    fun directChildHoles(): Boolean
     /** Number of nodes in the longest path root to leaf */
     val height: Int
 }
@@ -30,25 +47,16 @@ sealed class AbstractType : Type {
 
 data class Variable(val id: String) : AbstractType() {
     override fun toString(): String = id
-    override fun recursiveNumChildHoles() = 0
-    override fun recursiveNumVars() = 1
-    override fun directChildHoles() = false
     override val children = listOf<Type>()
 }
 
 data class Function(val left: Type, val rite: Type) : AbstractType() {
     override fun toString(): String = "${if (left is Function) "($left)" else "$left"} -> $rite"
-    override fun recursiveNumChildHoles() = left.recursiveNumChildHoles() + rite.recursiveNumChildHoles()
-    override fun recursiveNumVars() = left.recursiveNumVars() + rite.recursiveNumVars()
-    override fun directChildHoles() = left is ChildHole || rite is ChildHole
     override val children = listOf(left, rite)
 }
 
 data class LabelNode(val label: String, val params: List<Type>) : AbstractType() {
     override fun toString(): String = "$label$params"
-    override fun recursiveNumChildHoles() = params.fold(0) { acc, type -> acc + type.recursiveNumChildHoles() }
-    override fun recursiveNumVars() = params.fold(0) { acc, type -> acc + type.recursiveNumVars() }
-    override fun directChildHoles() = params.any { it is ChildHole }
     override val children = params
 }
 
@@ -63,28 +71,20 @@ sealed class TypeHole : AbstractType() {
     override fun hashCode(): Int = System.identityHashCode(this)
     override fun toString(): String = "??"
     override val children = listOf<Type>()
-    override fun recursiveNumVars() = 0
 }
 
 /** A hole to be filled by a child node. */
 class ChildHole : TypeHole() {
     override fun toString(): String = "_"
-    override fun recursiveNumChildHoles() = 1
-    override fun directChildHoles() = false
 }
 
 /** A hole to be filled by a sibling node. */
 class SiblingHole(val depth: Int) : TypeHole() {
     override fun toString(): String = ".${depth}"
-    override fun recursiveNumChildHoles() = 0
-    override fun directChildHoles() = false
 }
 
 /** Unifies with everything, producing itself. Represents a type that can never successfully resolve. */
 data class Error(val t1: Type, val t2: Type, val category: ErrorCategory) : AbstractType() {
-    override fun recursiveNumChildHoles() = 0
-    override fun recursiveNumVars() = 0
-    override fun directChildHoles() = false
     override val children = listOf<Type>()
 }
 
