@@ -97,6 +97,11 @@ object Unify {
         is TypeHole -> Pair(b, map)
     }
 
+    fun unifies(a: Type, b: Type): Boolean {
+        val tmp = unify(a, b, mutableMapOf()).first
+        return tmp !is Error
+    }
+
     fun apply(f: Type, arg: Type): Type {
         // TODO figure out what to output if f is a hole. alternatively just always enum functions first but sometimes cyclic
         if (f is TypeHole) return f

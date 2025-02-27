@@ -3,7 +3,6 @@ package enumgen
 import enumgen.visualizations.SearchStateVisualizer
 import enumgen.types.*
 import enumgen.types.Function
-import enumgen.types.Unify.unifies
 import util.Query
 
 class NonArrowEnumerator(
@@ -12,14 +11,14 @@ class NonArrowEnumerator(
 ) {
     private var vizFileID = 0
 
-    private val state = SearchState(query.names)
+    private val state = SearchState(skeletons)
     private val exampleAnalysis = ExampleAnalysis(query)
 
     private fun freshVariable() = Variable("a")
     private fun holeExpansion(): List<Type> =
         (listOf(
             freshVariable(),
-            Function(ChildHole(), ChildHole()),
+//            Function(ChildHole(), ChildHole()),
 //            LabelNode("d", List(2) { ChildHole() }),
             LabelNode("ℓ0", List(1) { ChildHole() }),
             LabelNode("ℓ1", List(0) { ChildHole() }),
@@ -75,6 +74,13 @@ class NonArrowEnumerator(
             is Error -> throw Exception("wth the heck error")
             is Function -> {
                 if (this.directChildHoles()) {
+                    fun childHolesToSibs(t: Type, depth: Int): Type = when (t) {
+                        is Error, is SiblingHole, is Variable -> t
+                        is Function -> Function(childHolesToSibs(t.left, depth), childHolesToSibs(t.rite, depth))
+                        is LabelNode -> LabelNode(t.label, t.params.map { childHolesToSibs(it, depth) })
+                        is ChildHole -> SiblingHole(depth)
+                    }
+
                     if (this.left is ChildHole && this.rite is ChildHole) {
                         return listOf(
                             holeExpansion().map { exp ->
@@ -84,7 +90,24 @@ class NonArrowEnumerator(
                                 Function(left = SiblingHole(depth), rite = exp)
                             }
                         )
-                    }
+                    } else if (this.left is ChildHole) {
+                        return listOf(holeExpansion().map { exp ->
+                            Function(left = exp, rite = childHolesToSibs(this.rite, depth))
+                        }) + this.rite.expansions(depth).map{ port ->
+                            port.map {exp ->
+                                Function(left = SiblingHole(depth), rite=exp)
+                            }
+                        }
+                    } else if (this.rite is ChildHole) {
+                        return this.left.expansions(depth).map{ port ->
+                            port.map {exp ->
+                                Function(left=exp, rite = SiblingHole(depth))
+                            }
+                        } + listOf(
+                            holeExpansion().map { exp ->
+                                Function(left = childHolesToSibs(this.rite, depth), rite = exp)
+                            })
+                    } else throw Exception("Can't happen")
                 } else {
                     val leftHasHole = this.left.recursiveNumChildHoles() != 0
                     assert(leftHasHole xor (this.rite.recursiveNumChildHoles() != 0))
@@ -133,15 +156,17 @@ class NonArrowEnumerator(
         var iter = 1
         val leafParents: MutableMap<String, List<SearchNode>> =
             query.names.associateWith { listOf(state.tree(it)) }.toMutableMap()
-
+        var depth = -1
         // Deep enumeration/vertical growing step
         viz("init")
         while (unfilledPorts(leafParents)) {
-            // Expand only types that changed in the past
-            val fnsTofill = leafParents.filter { (_, v) -> v.isNotEmpty() }.keys
-            val changed = fnsTofill.map { fill(state.tree(it), 0) }
-            changed.zip(fnsTofill).filter { (c, _) -> !c }.forEach { (_, f) ->
-                leafParents[f] = listOf()
+            depth++
+            val nodesTofill = leafParents.filter { (_, v) -> v.isNotEmpty() }
+            val changed = nodesTofill.mapValues { (_, nodes) -> nodes.map { fill(it, depth) } }
+            changed.forEach { (name, changes) ->
+                val keep = changes.zip(nodesTofill[name]!!).filter { (change, _) -> change }.map { it.second }
+                if (name == "cons") println("keeping ${keep.map{it.type}}")
+                leafParents[name] = keep
             }
             viz("fill")
             // Prune leaf if type is wrong shape regardless of type-siblings
@@ -171,7 +196,7 @@ class NonArrowEnumerator(
                             //    We probably wouldn't need to do this if we didn't only examine leaves when pruning
                             val argsParamsCompatible =
                                 exampleAnalysis.partialArgsParamsCompatible(fn, ty.type, state)
-                            argsParamsCompatible && unifies(ty.type, skeletons[fn]!!)
+                            argsParamsCompatible// && unifies(ty.type, skeletons[fn]!!)
                         }
                         pruned = pruned || prunedSome || prunedMore
                         // If all we pruned was a useless parameter for nullary, do not mark a change; stop enum.
@@ -194,10 +219,14 @@ class NonArrowEnumerator(
             }
 
             query.names.forEach { name ->
+                // TODO this should be port specific? we pause/continue enum on port level
                 val (nodesThatChanged, noChange) = leafParents[name]!!.partition { parentsPruned[name]!![it]!! }
                 // Next round of leaves will be current leaves' children. We always move onto next layer, so we can
                 // defer propagating up w/o accidental infinite loop of enuming and pruning the same node repeatedly
-                leafParents[name] = nodesThatChanged.flatMap { it.ports.flatten() }
+//                leafParents[name] = nodesThatChanged.flatMap { it.ports.flatten() }
+
+                // Always grow regardless of prune
+                leafParents[name] = leafParents[name]!!.flatMap { it.ports.flatten() }
             }
 //            if (++iter == DEPTH_BOUND) println("HIT THE SAFEGUARD")
             iter++
@@ -229,14 +258,15 @@ class NonArrowEnumerator(
         val passesPos = contexts.filter { assignmentPassesPositives(it) }
         println("Filter- passes all positives: ${passesPos.size}")
 
-        val exploded = passesPos.flatMap { it.populateVariablesPartitionBlowup(state.names.associateWith { nullary(it) },2) }
+        val exploded =
+            passesPos.flatMap { it.populateVariablesPartitionBlowup(state.names.associateWith { nullary(it) }, 2) }
         println("Exploded contexts: ${exploded.size}")
 
         println("Total negexs: ${query.negExamples.size}")
         val negs = exploded.map { query.negExamples.count { ex -> checkApplication(ex, it) is Error } }
         println("Max rejected by exploded desired stuff: ${negs.max()}")
-        println("Min: ${negs.min()}")
-
+//        println("Min: ${negs.min()}")
+//
         val bestWithNegs = exploded.filterIndexed { i, _ -> negs[i] == negs.max() }
         println("Candidates which reject the max number of examples: ${bestWithNegs.size}")
         val cands = (bestWithNegs.joinToString(separator = "\n"))
@@ -290,25 +320,30 @@ class NonArrowEnumerator(
     private fun prunePrimitiveParam(fn: String, t: Type): Boolean {
         if (t !is Function) return false
         var height = 2
+        // TODO wanna check for alllll parameters, so do the labelnode/height whatever check in a loop
         // Iterate to bottom-rightmost arrow node
         var curr: Function = t
         var next = curr.rite
+        var prune = false
+        // TODO clean up hella
+        if (curr.left is LabelNode && (curr.left as LabelNode).params.isEmpty()) {
+            // Check whether all examples have args in corresponding spot which can be the same type
+            val argumentsUsed =
+                query.posExamples.filter { it.name == fn }.mapNotNull { it.arguments.getOrNull(height - 2) }.toSet()
+            prune = prune || !(exampleAnalysis.canBeEqual(argumentsUsed))
+        }
         while (next is Function) {
             curr = next
             next = curr.rite
             height++
+            if (curr.left is LabelNode && (curr.left as LabelNode).params.isEmpty()) {
+                // Check whether all examples have args in corresponding spot which can be the same type
+                val argumentsUsed =
+                    query.posExamples.filter { it.name == fn }.mapNotNull { it.arguments.getOrNull(height - 2) }.toSet()
+                prune = prune || !(exampleAnalysis.canBeEqual(argumentsUsed))
+            }
         }
-        if (height != t.height) return false  // We didn't fill this fn recently, so no need to prune against examples
-        // Check if left child is a primitive
-        return if (curr.left is LabelNode && (curr.left as LabelNode).params.isEmpty()) {
-            // Check whether all examples have args in corresponding spot which can be the same type
-            val argumentsUsed =
-                query.posExamples.filter { it.name == fn }.mapNotNull { it.arguments.getOrNull(height - 2) }.toSet()
-            // TODO More general: Check that they can all simultaneously unify with the proposed type. Then the param
-            //   in question need not be a primitive literal to do the check
-            //   edit, idk what I meant by this. Think about it again
-            !(exampleAnalysis.canBeEqual(argumentsUsed))
-        } else false  // Left child isn't primitive
+        return prune
     }
 
     private fun assignmentPassesPositives(assignment: Assignment): Boolean =
@@ -327,5 +362,6 @@ class NonArrowEnumerator(
             .all { it is Function }
     }
 
-    private fun viz(stage: String = "") = SearchStateVisualizer.viz(state, "${vizFileID++}${if (stage == "") "" else "-"}$stage")
+    private fun viz(stage: String = "") =
+        SearchStateVisualizer.viz(state, "${vizFileID++}${if (stage == "") "" else "-"}$stage")
 }

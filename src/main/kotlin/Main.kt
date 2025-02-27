@@ -1,6 +1,8 @@
 import enumgen.DependencyAnalysis
 import enumgen.Enumerator
 import enumgen.EqualityOracle
+import enumgen.NonArrowEnumerator
+import enumgen.types.ArrowAnalysis
 import enumgen.visualizations.DependencyGraphVisualizer
 import util.*
 import java.io.File
@@ -39,12 +41,17 @@ fun main() {
 //        println(SExprParser(it).parse().toType())
 //    }
 
-//    testEnumeration()
+//    val query = examples(exsWithSecretType.keys)
+//    val oracle = ScrappyOracle(exsWithSecretType.mapKeys { parseApp(it.key) })
+//    val da = DependencyAnalysis(query, oracle)
+//    query.names.forEach { viz(it, da) }
 
     val query = examples(exsWithSecretType.keys)
-    val oracle = ScrappyOracle(exsWithSecretType.mapKeys { parseApp(it.key) })
-    val da = DependencyAnalysis(query, oracle)
-    query.names.forEach { viz(it, da) }
+    val consEnumerator = NonArrowEnumerator(
+        query,
+        ArrowAnalysis.unifyToTypes(query.posExamples.toList(), query.names, propagateEqualities = true)
+    )
+    consEnumerator.enumerate()
 }
 
 private fun viz(name: String, da: DependencyAnalysis) = DependencyGraphVisualizer.viz(da.graphs[name]!!, "$name")
@@ -62,13 +69,6 @@ class PairwiseCheckOracle() : EqualityOracle {
 }
 
 fun testEnumeration() {
-    val query = examples(exsWithSecretType.keys)
-
-    println("Posexs: \n${query.posExamples.print(true)}")
-    println("Negexs: \n${query.negExamples.print(false)}")
-
-    val consEnumerator = Enumerator(query)
-
 //    val one = Application("1", null)
 //    val emptyDict = Application("\\{\\}", null)
 //    val putZero = Application("put", listOf(emptyDict, zero, tr))
@@ -92,9 +92,6 @@ fun testEnumeration() {
 //            Application("put", listOf(zero, zero, emptyDict))
 //        )
 //    )   // TODO Why does it think second argument can't be a literal?
-
-
-    consEnumerator.enumerate()
 //    dictEnumerator.enumerate()
 
 }

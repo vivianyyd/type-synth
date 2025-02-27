@@ -5,6 +5,7 @@ import enumgen.types.Function
 import util.naryCartesianProduct
 
 fun SearchNode.types(root: Boolean): Set<Type> {
+    // TODO if there are leaves along the way down the tree, they need to be added
     if (root) {
         return this.ports.fold(setOf()) { acc, port ->
             acc.union(port.fold(setOf()) { a, c -> a.union(c.types(root = false)) })
@@ -14,6 +15,8 @@ fun SearchNode.types(root: Boolean): Set<Type> {
         return setOf(this.type)  // concrete type or unfinished leaf
     }
 
+    println("GENERATING TYPES FOR ${this.type}")
+    // TODO fix me to deal with merging children of nary parameter fns _->_->_
     val result = mutableSetOf<Type>()
     val expandedPorts = this.ports.map { port ->
         port.fold(setOf<Type>()) { acc, portOption ->
@@ -21,8 +24,10 @@ fun SearchNode.types(root: Boolean): Set<Type> {
         }.toList()
     }
     naryCartesianProduct(expandedPorts).forEach { selection ->
+        println("merging: $selection")
         result.add(merge(selection))  // TODO Make me lazy
     }
+    println("merged types: $result")
     return result
 }
 
