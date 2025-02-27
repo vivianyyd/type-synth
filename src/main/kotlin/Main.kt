@@ -1,6 +1,8 @@
 import enumgen.DependencyAnalysis
 import enumgen.Enumerator
 import enumgen.EqualityOracle
+import enumgen.NonArrowEnumerator
+import enumgen.types.ArrowAnalysis
 import enumgen.types.Type
 import enumgen.types.checkApplication
 import enumgen.types.toType
@@ -39,10 +41,12 @@ fun main() {
     val oracle = ScrappyOracle(consExamples.mapKeys { parseApp(it.key) })
     val da = DependencyAnalysis(query, oracle)
     query.names.forEach { viz(it, da) }
-    val consEnumerator = /*NonArrow*/Enumerator(
-        query,
-//        ArrowAnalysis.unifyToTypes(query.posExamples.toList(), query.names, propagateEqualities = true)
-    )
+    val consEnumerator =
+        NonArrowEnumerator(
+//        Enumerator(
+            query,
+        ArrowAnalysis.unifyToTypes(query.posExamples.toList(), query.names, propagateEqualities = true)
+        )
     consEnumerator.enumerate()
 
 //    val types = listOf("(i)", "(b)", "(-> a (-> (l a) (l a)))")

@@ -1,3 +1,44 @@
+/usr/lib/jvm/java-11-oracle/bin/java -ea -javaagent:/home/vivianyyd/applications/idea-IU-221.5921.22/lib/idea_rt.jar=33745:/home/vivianyyd/applications/idea-IU-221.5921.22/bin -Dfile.encoding=UTF-8 -classpath /home/vivianyyd/type-synth/build/classes/kotlin/main:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.8.0/ed04f49e186a116753ad70d34f0ac2925d1d8020/kotlin-stdlib-jdk8-1.8.0.jar:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/1.8.0/1f1a6dba1301ab0985fbb8a47a77777af3386e08/kotlin-reflect-1.8.0.jar:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.8.0/3c91271347f678c239607abb676d4032a7898427/kotlin-stdlib-jdk7-1.8.0.jar:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.8.0/1796921c7a3e2e2665a83e6c8d33399336cd39bc/kotlin-stdlib-1.8.0.jar:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.8.0/f7197e7cc76453ac59f8b0f8d5137cc600becd36/kotlin-stdlib-common-1.8.0.jar:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar MainKt
+[0:[_], tr:[_], []i:[_], []b:[_], [[]]i:[_], cons:[_ -> _ -> _]]
+[0:[ℓ0[_]], tr:[ℓ0[_]], []i:[ℓ0[_]], []b:[ℓ0[_]], [[]]i:[ℓ0[_]], cons:[ℓ0[_] -> .0 -> .0, .0 -> ℓ0[_] -> .0, .0 -> .0 -> ℓ0[_]]]
+No pruning occurred!
+Contexts: 546875
+Filter- passes all positives: 901
+Exploded contexts: 2010
+Total negexs: 6
+Max rejected by exploded desired stuff: 6
+Candidates which reject the max number of examples: 4
+{0=ℓ0[ℓ0[_]], tr=ℓ0[ℓ1[]], []i=ℓ0[ℓ2[]], []b=ℓ1[], [[]]i=ℓ2[], cons=ℓ0[v0] -> v0 -> v0}
+{0=ℓ0[ℓ0[_]], tr=ℓ0[ℓ2[]], []i=ℓ0[ℓ1[]], []b=ℓ2[], [[]]i=ℓ1[], cons=ℓ0[v0] -> v0 -> v0}
+{0=ℓ1[], tr=ℓ2[], []i=ℓ0[ℓ1[]], []b=ℓ0[ℓ2[]], [[]]i=ℓ0[ℓ0[_]], cons=v0 -> ℓ0[v0] -> ℓ0[v0]}
+{0=ℓ2[], tr=ℓ1[], []i=ℓ0[ℓ2[]], []b=ℓ0[ℓ1[]], [[]]i=ℓ0[ℓ0[_]], cons=v0 -> ℓ0[v0] -> ℓ0[v0]}
+
+Process finished with exit code 0
+
+
+
+/usr/lib/jvm/java-11-oracle/bin/java -ea -javaagent:/home/vivianyyd/applications/idea-IU-221.5921.22/lib/idea_rt.jar=35783:/home/vivianyyd/applications/idea-IU-221.5921.22/bin -Dfile.encoding=UTF-8 -classpath /home/vivianyyd/type-synth/build/classes/kotlin/main:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.8.0/ed04f49e186a116753ad70d34f0ac2925d1d8020/kotlin-stdlib-jdk8-1.8.0.jar:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/1.8.0/1f1a6dba1301ab0985fbb8a47a77777af3386e08/kotlin-reflect-1.8.0.jar:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.8.0/3c91271347f678c239607abb676d4032a7898427/kotlin-stdlib-jdk7-1.8.0.jar:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.8.0/1796921c7a3e2e2665a83e6c8d33399336cd39bc/kotlin-stdlib-1.8.0.jar:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.8.0/f7197e7cc76453ac59f8b0f8d5137cc600becd36/kotlin-stdlib-common-1.8.0.jar:/home/vivianyyd/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar MainKt
+No pruning occurred!
+Contexts: 3300000
+Filter- passes all positives: 4039
+Exploded contexts: 10804
+Total negexs: 6
+Max rejected by exploded desired stuff: 6
+Min: 0
+Candidates which reject the max number of examples: 4
+{0=ℓ0[ℓ0[_]], tr=ℓ0[ℓ1[]], []i=ℓ0[ℓ2[]], []b=ℓ1[], [[]]i=ℓ2[], cons=ℓ0[v0] -> v0 -> v0}
+{0=ℓ0[ℓ0[_]], tr=ℓ0[ℓ2[]], []i=ℓ0[ℓ1[]], []b=ℓ2[], [[]]i=ℓ1[], cons=ℓ0[v0] -> v0 -> v0}
+{0=ℓ1[], tr=ℓ2[], []i=ℓ0[ℓ1[]], []b=ℓ0[ℓ2[]], [[]]i=ℓ0[ℓ0[_]], cons=v0 -> ℓ0[v0] -> ℓ0[v0]}
+{0=ℓ2[], tr=ℓ1[], []i=ℓ0[ℓ2[]], []b=ℓ0[ℓ1[]], [[]]i=ℓ0[ℓ0[_]], cons=v0 -> ℓ0[v0] -> ℓ0[v0]}
+
+Process finished with exit code 0
+
+
+
+
+
+
+
 Pruning unpruned fn apex looks like it works better bc it prunes l[_->_] for []i, which allows us to prune
 l[_->_] from the second parameter for cons. But it's kind of a lie
 

@@ -10,22 +10,15 @@ class SearchState(
 ) {
     constructor(skeletons: Map<String, Type>) : this(
         skeletons.keys.toList(),
-        skeletons.mapValues { (_, t) -> nodeFor(t) })
+        skeletons.mapValues { (_, t) ->
+            assert(t is Function || t is ChildHole)
+            // Artificially create a root node if we initialize to an arrow skeleton
+            if (t is Function) SearchNode(ChildHole(), arrayListOf(mutableListOf(SearchNode(t))))
+            else SearchNode(t)
+        })
 
     val allTrees = names.map { trees[it]!! }
     fun tree(fn: String) = if (fn in trees) trees[fn]!! else throw Exception("Surprising")
-
-    companion object {
-        fun nodeFor(t: Type): SearchNode = SearchNode(t)
-//            when (t) {
-//            is Error, is TypeHole, is Variable, is LabelNode -> SearchNode(t)
-//            is Function -> {
-//                if (t.left is ChildHole && t.rite is ChildHole) SearchNode(t)
-//                else if (t.left is ChildHole) SearchNode(t, (0 until t.recursiveNumChildHoles()).map{})
-//            }
-//        }
-
-    }
 }
 
 typealias PortContents = MutableList<SearchNode>

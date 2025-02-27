@@ -5,8 +5,7 @@ import enumgen.types.Function
 import util.naryCartesianProduct
 
 fun SearchNode.types(root: Boolean): Set<Type> {
-    // TODO if there are leaves along the way down the tree, they need to be added
-    if (root) {  // TODO instead of this check, check recursively for sibling holes. visitor pattern for child/sibling hole counters
+    if (root) {
         return this.ports.fold(setOf()) { acc, port ->
             acc.union(port.fold(setOf()) { a, c -> a.union(c.types(root = false)) })
         }
@@ -15,8 +14,6 @@ fun SearchNode.types(root: Boolean): Set<Type> {
         return setOf(this.type)  // concrete type or unfinished leaf
     }
 
-    println("GENERATING TYPES FOR ${this.type}")
-    // TODO fix me to deal with merging children of nary parameter fns _->_->_
     val result = mutableSetOf<Type>()
     val expandedPorts = this.ports.map { port ->
         port.fold(setOf<Type>()) { acc, portOption ->
@@ -24,10 +21,8 @@ fun SearchNode.types(root: Boolean): Set<Type> {
         }.toList()
     }
     naryCartesianProduct(expandedPorts).forEach { selection ->
-        println("merging: $selection")
         result.add(merge(selection))  // TODO Make me lazy
     }
-    println("merged types: $result")
     return result
 }
 
@@ -62,11 +57,12 @@ fun merge(tys: List<Type>): Type {
     assert(tys.isNotEmpty())
 
     val (siblingHoles, noSiblings) = tys.partition { it is SiblingHole }
-    return if (siblingHoles.size <= 1 && noSiblings.isNotEmpty()) {
+    return if (noSiblings.isNotEmpty()) {
+        if (siblingHoles.isNotEmpty()) checkEqMerge(siblingHoles)  // Make sure sibling holes are same depth, throw away result
         checkEqMerge(noSiblings)
-    } else if (noSiblings.isEmpty()) {
+    } else {
         checkEqMerge(siblingHoles)
-    } else throw MergeException
+    }
 }
 
 private fun checkEqMerge(tys: List<Type>): Type {

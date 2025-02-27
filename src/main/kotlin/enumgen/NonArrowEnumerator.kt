@@ -7,7 +7,7 @@ import util.Query
 
 class NonArrowEnumerator(
     private val query: Query,
-    private val skeletons: Map<String, Type>
+    skeletons: Map<String, Type>
 ) {
     private var vizFileID = 0
 
@@ -93,15 +93,15 @@ class NonArrowEnumerator(
                     } else if (this.left is ChildHole) {
                         return listOf(holeExpansion().map { exp ->
                             Function(left = exp, rite = childHolesToSibs(this.rite, depth))
-                        }) + this.rite.expansions(depth).map{ port ->
-                            port.map {exp ->
-                                Function(left = SiblingHole(depth), rite=exp)
+                        }) + this.rite.expansions(depth).map { port ->
+                            port.map { exp ->
+                                Function(left = SiblingHole(depth), rite = exp)
                             }
                         }
                     } else if (this.rite is ChildHole) {
-                        return this.left.expansions(depth).map{ port ->
-                            port.map {exp ->
-                                Function(left=exp, rite = SiblingHole(depth))
+                        return this.left.expansions(depth).map { port ->
+                            port.map { exp ->
+                                Function(left = exp, rite = SiblingHole(depth))
                             }
                         } + listOf(
                             holeExpansion().map { exp ->
@@ -155,7 +155,12 @@ class NonArrowEnumerator(
     fun enumerate(): String {
         var iter = 1
         val leafParents: MutableMap<String, List<SearchNode>> =
-            query.names.associateWith { listOf(state.tree(it)) }.toMutableMap()
+            query.names.associateWith {
+                val tree = state.tree(it)
+                // We might have initialized the search state to contain an arrow skeleton
+                if (tree.ports.any { it.isNotEmpty() }) tree.ports.flatten() else listOf(tree)
+            }.toMutableMap()
+
         var depth = -1
         // Deep enumeration/vertical growing step
         viz("init")
@@ -165,7 +170,6 @@ class NonArrowEnumerator(
             val changed = nodesTofill.mapValues { (_, nodes) -> nodes.map { fill(it, depth) } }
             changed.forEach { (name, changes) ->
                 val keep = changes.zip(nodesTofill[name]!!).filter { (change, _) -> change }.map { it.second }
-                if (name == "cons") println("keeping ${keep.map{it.type}}")
                 leafParents[name] = keep
             }
             viz("fill")
