@@ -6,7 +6,7 @@ import util.naryCartesianProduct
 
 fun SearchNode.types(root: Boolean): Set<Type> {
     // TODO if there are leaves along the way down the tree, they need to be added
-    if (root) {
+    if (root) {  // TODO instead of this check, check recursively for sibling holes. visitor pattern for child/sibling hole counters
         return this.ports.fold(setOf()) { acc, port ->
             acc.union(port.fold(setOf()) { a, c -> a.union(c.types(root = false)) })
         }
