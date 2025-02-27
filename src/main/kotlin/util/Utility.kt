@@ -20,32 +20,40 @@ fun main() {
     val s = listOf(0, 1, 2, 3)
     val repetitions = 3
     val seq = reflexiveNaryProduct(s, repetitions)
-    seq.forEach { println(it.reversed()) }
     println("Total: ${seq.toList().size}")
     println("Total: ${seq.toSet().size}")
     val slowGroundTruth = naryCartesianProduct((1..repetitions).map { s }).toSet()
-    println(seq.toSet() == slowGroundTruth)
+    assert(seq.toSet() == slowGroundTruth)
+    println(seq.toSet().size)
+    println(seq.toList().map{it.reversed()})
 }
 
 fun <T> reflexiveNaryProduct(set: List<T>, n: Int): Sequence<List<T>> = sequence {
     val indices = Array(n) { 0 }
+    val set = set.toSet().toList()
     yield(indices.map { set[it] })
-    for (base in 1..set.size) {
+    for (base in 2..set.size) {
         for (i in 0 until n) indices[i] = 0
         while (indices.any { it < base - 1 }) {
             assert(indices.all { it < base })
-            if (indices[0] < base - 1) indices[0] = indices[0] + 1
-            else {  // carry
-                var ptr = 0
-                while (indices[ptr] == base - 1) {
-                    indices[ptr] = 0
-                    ptr++
-                }
-                indices[ptr] = indices[ptr] + 1
-            }
+            // TODO ACTUALLY CLEAN THIS UP THERE'S DUPLICATED CODE WHY
             if (!indices.contains(base - 1)) {
                 assert(indices[0] == 0)
                 indices[0] = base - 1
+            } else {
+                if (indices[0] < base - 1) indices[0] = indices[0] + 1
+                else {  // carry
+                    var ptr = 0
+                    while (indices[ptr] == base - 1) {
+                        indices[ptr] = 0
+                        ptr++
+                    }
+                    indices[ptr] = indices[ptr] + 1
+                }
+                if (!indices.contains(base - 1)) {
+                    assert(indices[0] == 0)
+                    indices[0] = base - 1
+                }
             }
             yield(indices.map { set[it] })
         }
