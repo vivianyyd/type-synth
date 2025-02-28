@@ -37,24 +37,31 @@ val consExamples = mapOf(
 
 fun main() {
 //    // TODO make a test for list map
-    val query = parseExamples(consExamples.keys)
-    val oracle = ScrappyOracle(consExamples.mapKeys { parseApp(it.key) })
-    val da = DependencyAnalysis(query, oracle)
-    query.names.forEach { viz(it, da) }
-    val consEnumerator =
-        NonArrowEnumerator(
-//        Enumerator(
-            query,
-        ArrowAnalysis.unifyToTypes(query.posExamples.toList(), query.names, propagateEqualities = true)
-        )
-    consEnumerator.enumerate()
-
-//    val types = listOf("(i)", "(b)", "(-> a (-> (l a) (l a)))")
-//    val types = listOf("(i)", "(b)", "(-> a (-> (l b c) (-> (l a b) (l c))))")
-//    val (query, context) = ExampleGenerator.examples(types.map { tySexpr -> SExprParser(tySexpr).parse().toType() })
-//    val oracle = CheckingOracle(context)
+//    val query = parseExamples(consExamples.keys)
+//    val oracle = ScrappyOracle(consExamples.mapKeys { parseApp(it.key) })
 //    val da = DependencyAnalysis(query, oracle)
 //    query.names.forEach { viz(it, da) }
+//    val consEnumerator =
+//        NonArrowEnumerator(
+////        Enumerator(
+//            query,
+//        ArrowAnalysis.unifyToTypes(query.posExamples.toList(), query.names, propagateEqualities = true)
+//        )
+//    consEnumerator.enumerate()
+
+//    val types = listOf("(i)", "(b)", "(-> a (-> (l a) (l a)))")
+    val types = listOf("(i)", "(b)", "(-> a (-> (l b c) (-> (l a b) (l c))))")
+    val (query, context) = ExampleGenerator(
+        1,
+        2,
+        30,
+        types.map { tySexpr -> SExprParser(tySexpr).parse().toType() },
+    ).examples()
+    val oracle = CheckingOracle(context)
+    println(context)
+    println(query.posExamples)
+    val da = DependencyAnalysis(query, oracle)
+    query.names.forEach { viz(it, da) }
 
 }
 

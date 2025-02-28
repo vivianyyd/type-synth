@@ -156,7 +156,7 @@ object ArrowAnalysis {
 
 fun main() {
     val types = listOf("(i)", "(b)", "(-> a (-> (l a) (l a)))")
-    val (query, context) = ExampleGenerator.examples(types.map { parseType(it) })
+    val (query, context) = ExampleGenerator(2, 2, 30, types.map { parseType(it) }).examples()
     val pos = query.posExamples
     println(context.toList().joinToString(separator = "\n"))
 

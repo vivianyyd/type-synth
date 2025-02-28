@@ -9,7 +9,12 @@ import util.Query
 import util.SExprParser
 import java.util.*
 
-object ExampleGenerator {
+class ExampleGenerator(
+    private val MAX_TYPE_DEPTH: Int,
+    private val MAX_DEPTH: Int,  // todo assert this is at least the max depth of any parameter type!
+    private val ERROR_COVERAGE_CAPACITY: Int,
+    private val fns: List<Type>
+) {
     private var name = 0
     private fun freshValue() = "${name++}"
 
@@ -18,9 +23,9 @@ object ExampleGenerator {
      * it is *not* only ever seen as the output of a function.
      * For now, we unwrap functions to get arguments, but we don't include results of partial application to avoid blowup.
      */
-    private fun observableNonFunctionTypes(ts: Collection<Type>): List<Type> {
+    private fun observableNonFunctionTypes(): List<Type> {
         val obs = mutableListOf<Type>()
-        ts.forEach {
+        fns.forEach {
             when (it) {
                 is Function -> {
                     fun args(f: Function): List<Type> =
@@ -41,23 +46,27 @@ object ExampleGenerator {
     // todo abstract isn't the right word to describe the above but whatever
     private fun dummies(ts: List<Type>): Map<String, Type> {
         val (primitives, parameterized) = ts.filterIsInstance<LabelNode>().partition { it.params.isEmpty() }
-        val typesWithDummies = primitives.toMutableSet()
+        val typesWithDummies = primitives.associateWith { 0 }.toMutableMap()
         // Explode label nodes
-        for (d in 1..LOG2_MAX_TYPE_DEPTH) {
+        for (d in 1..MAX_TYPE_DEPTH) {
             for (label in parameterized) {
-                val paramAssignments = reflexiveNaryProduct(typesWithDummies.toList(), label.params.size)
+                val paramAssignments = reflexiveNaryProduct(
+                    typesWithDummies.filter { (_, v) -> v + 1 <= d }.keys.toList(),
+                    label.params.size
+                )
                 for (args in paramAssignments) {
-                    typesWithDummies.add(LabelNode(label.label, args))
+                    val ty = LabelNode(label.label, args)
+                    if (ty !in typesWithDummies) typesWithDummies.put(ty, d)
                 }
             }
         }
-        return typesWithDummies.associateBy { freshValue() }
+        return typesWithDummies.keys.associateBy { freshValue() }
     }
 
-    fun examples(fns: List<Type>): Pair<Query, Assignment> {
+    fun examples(): Pair<Query, Assignment> {
         if (fns.isEmpty()) return Pair(Query(), mapOf())
 
-        val dummies = dummies(observableNonFunctionTypes(fns)).toMutableMap()
+        val dummies = dummies(observableNonFunctionTypes()).toMutableMap()
         val posExamples = dummies.keys.map { Application(it) }.toMutableSet()
         val negExs: MutableMap<ErrorCategory, MutableSet<Application>> =
             EnumMap(ErrorCategory.values().associateWith { mutableSetOf() })
@@ -72,7 +81,12 @@ object ExampleGenerator {
                 // TODO Bug: We generate many of the smaller examples multiple times. Instead of calling product in a loop,
                 //   we should be doing bottom up enumeration if that makes sense idk
                 var apps =  // If we make new examples from only positive ones, any errors won't be redundant!
-                    reflexiveNaryProduct(posExamples.toList(), ty.numParams()).map { argChoice -> Application(name, argChoice) }
+                    reflexiveNaryProduct(posExamples.toList(), ty.numParams()).map { argChoice ->
+                        Application(
+                            name,
+                            argChoice
+                        )
+                    }
                 // Don't modify posExamples in the loop, since we loop over apps which is generated from posExamples
                 val posExsTmp = mutableSetOf<Application>()
                 while (apps.any() /*&& negExs.any { (_, v) -> v.size < ERROR_COVERAGE_CAPACITY } we want exhaustive list of posexs*/) {
@@ -83,8 +97,7 @@ object ExampleGenerator {
                     if (eval is Error) {
                         if (negExs[eval.category]!!.size < ERROR_COVERAGE_CAPACITY)
                             negExs[eval.category]!!.add(example)
-                    }
-                    else {
+                    } else {
                         posExsTmp.add(example)
                     }
                 }
@@ -96,19 +109,19 @@ object ExampleGenerator {
         posExamples.addAll(fnDummies.keys.map { Application(it) })
         return Pair(Query(posExamples, negExs.values.flatten().toSet()), dummies)
     }
-        // TODO Very good to have negexs where the first args are ok but latter ones don't bc of var mismatch or something.
-        //   Instead of keeping all exs, we could throw away some if we have >5 for that error type for that fn name already!
-        //   TODO generator style will work here
-
-    private const val LOG2_MAX_TYPE_DEPTH = 1
-    private const val MAX_DEPTH = 1  // todo assert this is at least the max depth of any parameter type!
-    private const val ERROR_COVERAGE_CAPACITY = 30
+    // TODO Very good to have negexs where the first args are ok but latter ones don't bc of var mismatch or something.
+    //   Instead of keeping all exs, we could throw away some if we have >5 for that error type for that fn name already!
+    //   TODO generator style will work here
 }
 
 fun main() {
     val groundTruth = listOf("(i)", "(b)", "(-> a (-> (l a) (l a)))")
 
-    val (query, context) = ExampleGenerator.examples(groundTruth.map { tySexpr -> SExprParser(tySexpr).parse().toType() })
+    val (query, context) = ExampleGenerator(
+        2,
+        2,
+        30,
+        groundTruth.map { tySexpr -> SExprParser(tySexpr).parse().toType() }).examples()
     println(context.toList().joinToString(separator = "\n"))
     println("Positive examples:")
     println(query.posExamples.size)
