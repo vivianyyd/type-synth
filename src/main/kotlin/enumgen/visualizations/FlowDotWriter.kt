@@ -11,7 +11,7 @@ class FlowDotWriter {
         sb.append("digraph g {")
         sb.appendLine()
         listOf(
-            "splines=false;",
+            "splines=true;",
             "rankdir=LR; ordering=out;",
             "node [shape = record, height=.1];"
         ).forEach { sb.append("\t$it\n") }
