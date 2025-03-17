@@ -21,7 +21,7 @@ object Unify {
                     Pair(v, map)
                 }
             } else {
-                if (containsVar(v, target, map)) Pair(Error(v, target, ErrorCategory.VAR_REFERENCES_SELF), map)
+                if (containsVar(v, target, map)) Pair(Error(v, target, ErrorCategory.VAR_REFERENCES_SELF), map)  // TODO think about examples that get us here
                 else {
                     map[v] = target
                     Pair(target, map)
@@ -82,7 +82,7 @@ object Unify {
                     var error: Pair<Type, Context>? = null
                     val params = a.params.indices.map {
                         val (param, newMap) = unify(a.params[it], b.params[it], currMap)
-                        if (param is Error) error = Pair(param, currMap)
+                        if (param is Error && error == null) error = Pair(param, currMap)
                         currMap = newMap
                         param
                     }
@@ -118,10 +118,12 @@ object Unify {
             is Error -> Pair(t, map)
             is TypeHole -> Pair(t, map)
             is Variable -> map[t]?.let { resolve(it, map) } ?: Pair(t, map)
-            // I think we want to keep variables not in the Context, instead of throwing an error
+            // TODO ^ I think we want to keep variables not in the Context, instead of throwing an error
+            //  but actually maybe it's ok bc the very rhs should never be a plain fresh var?
             is Function -> {
                 val (inT, inMap) = resolve(t.left, map)
                 val (outT, outMap) = resolve(t.rite, inMap)
+                // TODO check for error in inT, outT
                 Pair(Function(inT, outT), outMap)
             }
             is LabelNode -> {
@@ -131,7 +133,7 @@ object Unify {
                     currMap = newMap
                     param
                 }
-                assert(params.indexOfFirst { it is Error } == -1)  // TODO I think this is right..
+                assert(params.none { it is Error })
                 Pair(LabelNode(t.label, params), currMap)
             }
         }

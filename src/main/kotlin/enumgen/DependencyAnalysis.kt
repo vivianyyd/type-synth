@@ -170,7 +170,7 @@ class DependencyAnalysis(
                         neg.forEach { ne ->
                             val ai = ne.getParam(i)
                             val aj = ne.getParam(j)
-
+                            // TODO This is wrong
                             if (pos.any { pe -> oracle.equal(pe.getParam(i), ai) } &&
                                 pos.any { pe -> oracle.equal(pe.getParam(j), aj) }) links.add(LinkEdge(pi, pj))
                         }
