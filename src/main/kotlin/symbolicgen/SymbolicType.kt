@@ -1,45 +1,76 @@
 package symbolicgen
 
-sealed interface SymbolicType
+sealed interface SymbolicType {
+    var parent: Port?
+}
 
-sealed class AbstractType : SymbolicType
+/** The symbolic type if we decide to use this node. Kills all port siblings along the path to this node */
+fun SymbolicType.determinedTypeSoFar(): SymbolicType {
+    if (this is Error) return this
+    if (this.parent == null) return this
+    val p = this.parent as Port
+    val newParent =
+        if (p.index == 0) Function(listOf(this), p.node.rite, p.node.parent)
+        else Function(p.node.left, listOf(this), p.node.parent)
+    return newParent.determinedTypeSoFar()
+}
 
-object Variable : AbstractType() {
+data class Port(val node: Function, val index: Int)
+
+sealed class AbstractType(override var parent: Port?) : SymbolicType
+
+class Variable(override var parent: Port? = null) : AbstractType(parent) {
     override fun toString(): String = "V"
 }
 
-class Function(val left: SymbolicType, val rite: SymbolicType) : AbstractType() {
-    override fun toString(): String = "${if (left is Function) "($left)" else "$left"} -> $rite"
+class Function(val left: List<SymbolicType>, val rite: List<SymbolicType>, override var parent: Port? = null) :
+    AbstractType(parent) {
+    init {
+        left.forEach {it.parent = Port(this, 0)}
+        rite.forEach {it.parent = Port(this, 1)}
+    }
+    override fun toString(): String = "$left -> $rite"  //"${if (left is Function) "($left)" else "$left"} -> $rite"
+//    fun List<SymbolicType>.print() = if (this.size == 1) "$this[0]" else "$this"
+//    return "${left.print()} -> ${rite.print()}"
 }
 
-object Label: AbstractType() {
+class Label(override var parent: Port? = null) : AbstractType(parent) {
     override fun toString(): String = "L"
 }
 
-/**
- * Unifies with everything, producing the other type. Represents a hole/tree not yet completely enumerated.
- *
- * Needs to be a class rather than Object since we want to have pointers to distinct holes
- */
-sealed class TypeHole : AbstractType() {
-    // We want physical equals and for some reason the compiler complains if we don't do this
-    override fun equals(other: Any?): Boolean = this === other
-    override fun hashCode(): Int = System.identityHashCode(this)
-    override fun toString(): String = "??"
+fun main() {
+    val special = Label()
+    val t = Function(
+        listOf(
+            Variable(),
+            Label()
+        ),
+        listOf(
+            Variable(),
+            Function(
+                listOf(
+                    Variable(),
+                    Label()
+                ),
+                listOf(
+                    special,
+                    Hole()
+                )
+            )
+        )
+    )
+    println(t)
+    println(special.determinedTypeSoFar())
 }
 
 /** A hole to be filled by a child node. */
-class ChildHole : TypeHole() {
-    override fun toString(): String = "_"
+class Hole(override var parent: Port? = null) : AbstractType(parent) {
+    override fun toString(): String = "??"
 }
 
-/** A hole to be filled by a sibling node. */
-class SiblingHole(val depth: Int) : TypeHole() {
-    override fun toString(): String = ".${depth}"
-}
-
+// TODO This shouldn't be a type, just a result of SymbolicChecker. But Kotlin doesn't rly let us ad-hoc make SymbolicType a subclass of result
 /** Unifies with everything, producing itself. Represents a type that can never successfully resolve. */
-data class Error(val category: ErrorCategory, val t1: SymbolicType, val t2: SymbolicType? = null) : AbstractType()
+data class Error(val category: ErrorCategory, val t1: SymbolicType, val t2: SymbolicType? = null) : AbstractType(null)
 
 enum class ErrorCategory {
     LABEL_FUNCTION,
