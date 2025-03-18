@@ -1,5 +1,15 @@
 package util
 
+// TODO Make all Applications == Example
+sealed interface Example
+data class Name(val name: String) : Example {
+    override fun toString() = name
+}
+
+data class App(val fn: Example, val arg: Example) : Example {
+    override fun toString(): String = "$fn ${if (arg is App) "($arg)" else "$arg"}"
+}
+
 data class Application(val name: String, val arguments: List<Application> = listOf()) {
     override fun toString(): String {
         return if (arguments.isEmpty()) name else
