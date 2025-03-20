@@ -11,6 +11,7 @@ TODO What kind of information do we need to over/underapproximate when all varia
  */
 
 // TODO Takes in a symbolic type, and returns path conditions / combinations in the subtree which allow it to pass
+//   Think: How should we represent path conditions/combinations?
 fun check(ex: Example, solution: Assignment): SymbolicType {
     return when (ex) {
         is Name -> solution[ex.name] ?: throw Exception("Function ${ex.name} not found")
