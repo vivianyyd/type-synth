@@ -28,4 +28,9 @@ class NewQuery(
 
 /** Produce all subexpressions of [this] and [this], except values.
  * All subexprs appear in the list before any expression that contains them. */
-fun App.subexprs(): List<App> = LinkedHashSet(TODO()).toList()
+fun Example.subexprs(): List<App> = LinkedHashSet(
+    when (this) {
+        is Name -> listOf()
+        is App -> fn.subexprs() + arg.subexprs() + this
+    }
+).toList()
