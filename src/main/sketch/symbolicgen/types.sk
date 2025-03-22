@@ -1,0 +1,104 @@
+adt Type {
+    Var { }
+    Label { }
+    Function { Type left; Type rite; }
+}
+
+boolean leq(Type small, Type big) {
+    // TODO add some reasoning about bindings
+    switch(big) {
+        case Var:{ return true; }
+        case Label:{
+            switch(small) {
+                case Var:{ return true; }
+                case Label:{ return true; }
+                case Function:{ return false; }
+            }
+        }
+        case Function:{
+            switch(small) {
+                case Var:{ return true; }
+                case Label:{ return false; }
+                case Function:{ return true; }
+            }
+        }
+    }
+}
+
+boolean isFunction(Type t) {
+    switch(t) {
+        case Var:{ return false; }
+        case Label:{ return false; }
+        case Function:{ return true; }
+    }
+}
+
+// TODO If we don't have any constraints on this which eliminate L, we can't have any information about F's children
+generator Type VLF() {
+    int t = ??;
+    if (t == 0) return new Var();
+    if (t == 1) return new Label();
+    if (t == 2) return new Function(left=new Var(), rite=new Var());
+    assert false;
+}
+
+generator Type VL() {
+    int t = ??;
+    if (t == 0) return new Var();
+    if (t == 1) return new Label();
+    assert false;
+}
+
+generator Type V() { return new Var(); }
+generator Type L() { return new Label(); }
+generator Type F(Type left, Type rite) { return new Function(left=left, rite=rite); }
+// TODO this is not right bc we don't know what args left/rite take when we call them
+
+////////////////////////////// GENERATED CODE //////////////////////////////
+
+
+// Generators for all names
+generator Type _consGen() {
+    Type t;
+    int t1 = ??;
+    assert (t1 < 1 && t1 >=0);
+    if (t1 == 0) {  // Function
+        Type l1; Type r1;
+        int tl1 = ??;
+        assert (tl1 < 2 && tl1 >=0);
+        if (tl1 == 0) l1 = new Var();
+        if (tl1 == 1) l1 = new Label();
+
+        int tr1 = ??;
+        assert (tr1 < 2 && tr1 >=0);
+        if (tr1 == 0) r1 = new Var();
+        if (tr1 == 1) {  // Function
+            Type l5; Type r5;
+            int tl5 = ??;
+            assert (tl5 < 2 && tl5 >=0);
+            if (tl5 == 0) l5 = new Var();
+            if (tl5 == 1) l5 = new Label();
+
+            int tr5 = ??;
+            assert (tr5 < 3 && tr5 >=0);
+            if (tr5 == 0) r5 = new Var();
+            if (tr5 == 1) r5 = new Label();
+            if (tr5 == 2) r5 = new Function(left=new Var(), rite=new Var());
+
+            r1 = new Function(left=l5, rite=r5);
+        }
+        t = new Function(left=l1, rite=r1);
+    }
+    return t;
+}
+generator Type _zeroGen() { return new Label(); }
+
+// Examples that are Name
+harness Type _cons() { return _consGen(); }
+harness Type _zero() { return _zeroGen(); }
+// Examples that are App
+harness Type _conszero() {
+    assert (isFunction(_cons()));
+    assert (leq(_zero(), ((Function)_cons()).left));
+    return ((Function)_cons()).rite;
+}
