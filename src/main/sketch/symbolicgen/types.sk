@@ -100,5 +100,6 @@ harness Type _zero() { return _zeroGen(); }
 harness Type _conszero() {
     assert (isFunction(_cons()));
     assert (leq(_zero(), ((Function)_cons()).left));
+    // TODO Here we compute possible variable bindings performed by zero. A Var must store things it could be bound by. Then in leq we can reason about possible binders
     return ((Function)_cons()).rite;
 }
