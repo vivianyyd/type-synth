@@ -2,16 +2,10 @@ package symbolicgen
 
 import util.*
 import java.io.File
+import java.io.FileOutputStream
+import java.io.PrintWriter
 
 fun main() {
-    val sketchPath = listOf("src", "main", "sketch", "symbolicgen", "generated").joinToString(
-        separator = File.separator,
-        postfix = File.separator
-    )
-//    val out = PrintWriter(FileOutputStream(sketchPath + "scratchpad.sk"))
-//    out.println("hello")
-//    out.close()
-
     val consExamples = mapOf(
         "(+ 0)" to "int",
         "(+ tr)" to "bool",
@@ -35,8 +29,15 @@ fun main() {
     val query = parseNewExamples(consExamples.keys)
     val b = SymbolicTypeBuilder(query)
     b.readAllExamples()
-    b.s.printState()
-    EncodeUnrolledUnif(query, b.s).make()
+    val encoding = EncodeUnrolledUnif(query, b.s)
+
+    val sketchPath = listOf("src", "main", "sketch", "symbolicgen", "generated").joinToString(
+        separator = File.separator,
+        postfix = File.separator
+    )
+    val out = PrintWriter(FileOutputStream(sketchPath + "scratchpad.sk"))
+    out.println(encoding.make())
+    out.close()
 }
 
 class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
@@ -57,11 +58,11 @@ class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
     private fun sk(name: String) = sketchNames[name]!!
     private fun gen(name: String) = "${sk(name)}_gen"
 
-    fun make() {
+    fun make(): String {
         header()
         query.names.forEach { generator(it) }
         query.posExamples.forEach { posExample(it) }
-        println(w.s()) // TODO
+        return w.s()
     }
 
     private fun header() {
@@ -158,51 +159,20 @@ class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
             )
         }
     }
-    // TODO First just do the whole tree and see how it goes. Probably bad.
-    //      Then do variable bindings. Hope it just works, and constraints I do explicitly are implicit in Sketch.
-    //      If not, then see if we need to explicitly help it number the nodes and make constraints for itself
-    //      For variable binding reasoning, could give each V/L an id field so we can refer to them
-    //        Or since we construct them nestedly, each V field can just store pointers or inds
-    //        of nodes that could've bound them
-    //       ^^^^THIS OK BUT EACH TYPE MUST STORE A ID, SINCE == ON ADT IS STRUCTURAL NOT PHYSICAL.
-    //       STRUCTS ARE TOO EXPENSIVE EVEN THO THEY USE PHYSICAL EQUALS.
 
-    // TODO use canBeFresh and canBeBoundInLabel. If either is true, make list of possBindings empty
-    //      then when checking individual examples, if the list is NULL (vs empty?) it passes like a freshVar
-    //      if the list is not empty then the type of the thingy must be equal to one of the possBindings
-    //      need to keep context when checking examples. Could iterate down type/thru list of bindings and keep a map
-    //      could also map params in example to vars they're bound to and iterate thru that list instead
-    //      typeeq oracle should be put in with dummies for values, like how I handled len in s4s
-
-    // TODO maintain a list of vars chosen so far. Vars can store what they could be
-    //   when checking individual examples, we can see if it's satisfiable that the thing passed
-    //   in one place is equal to any of the things that the var says it could be (when checking examples,
-    //   as we read args we need to bind variables to them to refer to later when we check possible var equality)
-    //   how to deal with labels? In particular, if none of the var bindings work, the prev choice must be label
-    //   it should fall out from just the var selection being UNSAT!
-    /*
-    generator calls for each name (microopt that might be unnecessary: if only one choice, short circuit to directly produce it)
-
-    for each example, hard-code how to unify it:
-    order all examples by subexpressions
-    TODO what's the most efficient way to memoize computations in sketch?
-
-    type-expr-dummy-name... type-expr-dummy-name
-        they are functions that call the generator dummies
-    and they call each other for subexpr references
-
-    TODO how to deal with variable bindings?
-
-    CHECK cons 0 []i
-        CHECK cons 0
-            CHECK cons
-            ASSERT cons is ->
-            CHECK 0
-            ASSERT 0 < cons param type
-        ASSERT cons 0 is ->
-        CHECK []i
-        ASSERT []i < cons 0 param type
-     */
+    // TODO check if canBeBoundInLabel flag is set properly... I'm not convinced
+    // TODO Each V can store IDs of binders. Each type must store its own ID! Since ADT == is not physical
+    //      (structs are too expensive)
+    //      Checking an example:
+    //          If possbinders is NULL (vs empty?) it passes like a freshVar
+    //          Check if SAT that arg passed to V is equal to any of V's possible binders
+    //          (as we read args, bind vars to them to refer to later when we check possible var equality.
+    //          Could iterate down type/thru list of bindings and keep a map)
+    //          Not trivial - Need to know what a is bound to in (a->b)->a
+    //      No need to explicitly write choice => Label if Var always UNSAT!
+    //      Add typeEq oracle with dummies for values, like how I handled len in s4s
+    //      Try: encode variable bindings/equality => are constraints I do explicitly implicit in Sketch?
+    //      If doesn't work, see if can explicitly make constraints
 }
 
 class Writer {
