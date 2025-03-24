@@ -1,0 +1,86 @@
+include "/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/list.skh";
+
+// Generators for all names
+generator Type _consGen() {
+    Type root;
+    boolean canBeFresh = false;
+    boolean canBeBoundInLabel = false;
+    List<Var> vars = empty();
+
+    int flag_root = ??;
+    assert (flag_root == 0);
+    if (flag_root == 0) {  // 1 Function
+        Type l1; Type r1;
+        canBeFresh = true;
+        int flag_l1 = ??;
+        assert (flag_l1 == 0 || flag_l1 == 1);
+        if (flag_l1 == 0) {  // 3 Variable
+            List<Var> bindings;
+            if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
+            l1 = new Var(possBindings=bindings);
+            vars = add(vars, (Var)l1);
+        }
+        if (flag_l1 == 1) {  // 2 Label
+            l1 = new Label();
+            canBeBoundInLabel = true;
+        }
+
+        canBeFresh = false;
+        int flag_r1 = ??;
+        assert (flag_r1 == 0 || flag_r1 == 1);
+        if (flag_r1 == 0) {  // 4 Variable
+            List<Var> bindings;
+            if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
+            r1 = new Var(possBindings=bindings);
+            vars = add(vars, (Var)r1);
+        }
+
+        if (flag_r1 == 1) {  // 5 Function
+            Type l5; Type r5;
+            canBeFresh = true;
+            int flag_l5 = ??;
+            assert (flag_l5 == 0 || flag_l5 == 1);
+            if (flag_l5 == 0) {  // 6 Variable
+                List<Var> bindings;
+                if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
+                l5 = new Var(possBindings=bindings);
+                vars = add(vars, (Var)l5);
+            }
+            if (flag_l5 == 1) {  // 7 Label
+                l5 = new Label();
+                canBeBoundInLabel = true;
+            }
+
+            canBeFresh = false;
+            int flag_r5 = ??;
+            assert (flag_r5 == 0 || flag_r5 == 1);
+            if (flag_r5 == 0) {  // 8 Variable
+                List<Var> bindings;
+                if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
+                r5 = new Var(possBindings=bindings);
+                vars = add(vars, (Var)r5);
+            }
+            if (flag_r5 == 1) {  // 9 Label
+                r5 = new Label();
+                canBeBoundInLabel = true;
+            }
+
+            r1 = new Function(left=l5, rite=r5);
+        }
+        root = new Function(left=l1, rite=r1);
+    }
+    return root;
+}
+
+generator Type _zeroGen() { return new Label(); }
+
+// Examples that are Name
+harness Type _cons() { return _consGen(); }
+harness Type _zero() { return _zeroGen(); }
+// Examples that are App (all subexprs)
+harness Type _conszero() {
+    assert (isFunction(_cons()));
+    assert (leq(_zero(), ((Function)_cons()).left));
+    // TODO Here we compute possible variable bindings performed by zero. A Var must store things it could be bound by. Then in leq we can reason about possible binders
+    return ((Function)_cons()).rite;
+}

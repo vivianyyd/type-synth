@@ -78,6 +78,8 @@ class State(query: NewQuery) {
     }
 
     fun printState() = println(state)
+
+    fun read(): Map<String, List<SymbolicType>> = state
 }
 
 class SymbolicTypeBuilder(val query: NewQuery) {
