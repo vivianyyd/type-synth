@@ -1,5 +1,5 @@
 adt Type {
-    Var { List<Var> possBindings; }
+    Var { int id; List<int> possBindings; }
     Label { }
     Function { Type left; Type rite; }
 }

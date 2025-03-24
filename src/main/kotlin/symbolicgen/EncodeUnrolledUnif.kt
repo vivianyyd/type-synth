@@ -99,22 +99,21 @@ class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
         )
         is Variable -> w.lines(
             listOf(
-                "List<Var> bindings",
+                "List<int> bindings",
                 "if (!(canBeFresh || canBeBoundInLabel)) bindings = vars",
-                "$portSketchName = new Var(possBindings=bindings)",
-                "vars = add(vars, (Var)$portSketchName)",
+                "$portSketchName = new Var(id=varId, possBindings=bindings)",
+                "vars = add(vars, varId)",
+                "varId++",
             )
         )
         is Function -> {
             val leftName = "${portSketchName}l"
             val riteName = "${portSketchName}r"
-            w.lines(
-                listOf(
-                    "Type $leftName; Type $riteName",
-                    "canBeFresh = true"
-                )
-            )
+            w.line("Type $leftName; Type $riteName")
+            w.lineComment("input type")
+            w.line("canBeFresh = true")
             choose(leftName, t.left)
+            w.lineComment("output type")
             w.line("canBeFresh = false")
             choose(riteName, t.rite)
             w.line("$portSketchName = new Function(left=$leftName, rite=$riteName)")
@@ -132,9 +131,11 @@ class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
                         "Type root",
                         "boolean canBeFresh = false",
                         "boolean canBeBoundInLabel = false",
-                        "List<Var> vars = empty()"
+                        "int varId = 0",
+                        "List<int> vars = empty()"
                     )
                 )
+                w.newLine()
                 choose("root", options)
                 w.line("return root")
             }
@@ -160,9 +161,9 @@ class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
         }
     }
 
-    // TODO check if canBeBoundInLabel flag is set properly... I'm not convinced
-    // TODO Each V can store IDs of binders. Each type must store its own ID! Since ADT == is not physical
-    //      (structs are too expensive)
+    // TODO Then we can have an Array<Type> of dynamic size = whatever the counter ended at after picking types
+    //  which stores what the mappings are
+    //  what about variable capture or something in (cons 0) (cons 0) when we say a == b or c.. should we make varIds fresh over all types
     //      Checking an example:
     //          If possbinders is NULL (vs empty?) it passes like a freshVar
     //          Check if SAT that arg passed to V is equal to any of V's possible binders
@@ -182,6 +183,8 @@ class Writer {
     fun indent() = indentLevel++
     fun dedent() = indentLevel--
 
+    fun newLine() = sb.appendLine()
+
     fun line(l: String) = lineNoSemi("$l;")
 
     private fun lineNoSemi(l: String) {
@@ -194,6 +197,8 @@ class Writer {
     fun include(l: String) {
         line("include \"$l\"")
     }
+
+    fun lineComment(l: String) = lineNoSemi("// $l")
 
     fun comment(l: List<String>) {
         lineNoSemi("/*")
