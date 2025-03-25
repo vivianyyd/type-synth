@@ -23,7 +23,7 @@ Type applyBinding(Type t, int varId, Type sub) {
     }
 }
 
-Type applyBindings(Type t, List<|Binding|> bindings) {
+Type applyBindings(Type t, List<Binding> bindings) {
     switch (bindings) {
         case Cons:{ return applyBindings(applyBinding(t, bindings.val.id, bindings.val.t), bindings.next); }
         case Nil:{ return t; }
@@ -41,7 +41,8 @@ List<Binding> unify(Type param, Type arg) {
             // TODO avoid variable capture!!!
             // numVarsNextId in generator needs to be a global variable varCount. Then need numVars
             // a separate variable inside each generator to count vars inside. varnames are local + global
-            return single(Binding(id=param.id, t=arg));
+            Binding b = new Binding(id=param.id, t=arg);
+            return single(b);
         }
         case VarLabelBound:{ return empty(); }
         case Label:{
@@ -59,10 +60,10 @@ List<Binding> unify(Type param, Type arg) {
                 case VarLabelBound:{ return empty(); }
                 case Label:{ return null; }
                 case Function:{
-                    List<|Binding|> leftBindings = unify(param.left, arg.left);
+                    List<Binding> leftBindings = unify(param.left, arg.left);
                     if (leftBindings == null) return null;
                     Type newParamRight = applyBindings(param.rite, leftBindings);
-                    List<|Binding|> riteBindings = unify(newParamRight, arg.rite);
+                    List<Binding> riteBindings = unify(newParamRight, arg.rite);
                     if (riteBindings == null) return null;
                     return plus(leftBindings, riteBindings);
                 }
