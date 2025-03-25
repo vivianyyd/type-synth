@@ -5,9 +5,8 @@ generator Type _cons_gen() {
 	Type root;
 	boolean canBeFresh = false;
 	boolean canBeBoundInLabel = false;
-	int varId = 0;
-	List<int> vars = empty();
-	//TODO canBeFresh doesn't need to be in Sketch, this is a property of the tree shape not choices
+	int numVarsNextId = 0;
+	//TODO canBeFresh need not be in Sketch, it is a property of the tree shape not choices
 
 	Type rootl; Type rootr;
 	// input type
@@ -15,11 +14,21 @@ generator Type _cons_gen() {
 	int flag_rootl = ??;
 	assert (flag_rootl == 0 || flag_rootl == 1);
 	if (flag_rootl == 0) {
-		List<int> bindings;
-		if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
-		rootl = new Var(id=varId, possBindings=bindings);
-		vars = add(vars, varId);
-		varId++;
+	    int v = ??;
+	    assert (v >= 0 && v < numVarsNextId + 2);
+	    if (!canBeFresh) assert (v != numVarsNextId)
+	    if (!canBeBoundInLabel) assert (v != numVarsNextId + 1);
+        if (v < numVarsNextId) {
+	        rootl = new VarRef(id=get(vars, i));
+	    }
+	    else if (v == numVarsNextId) {
+	        rootl = new VarBind(id=numVarsNextId);
+            numVarsNextId++;
+	    }
+        else if (v == numVarsNextId + 1) {
+            rootl = new VarLabelBound();
+        }
+		else assert false;
 	}
 	if (flag_rootl == 1) {
 		rootl = new Label();
@@ -32,9 +41,8 @@ generator Type _cons_gen() {
 	if (flag_rootr == 0) {
 		List<int> bindings;
 		if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
-		rootr = new Var(id=varId, possBindings=bindings);
-		vars = add(vars, varId);
-		varId++;
+		rootr = new Var(id=numVarsNextId, possBindings=bindings);
+		numVarsNextId++;
 	}
 	if (flag_rootr == 1) {
 		Type rootrl; Type rootrr;
@@ -45,9 +53,8 @@ generator Type _cons_gen() {
 		if (flag_rootrl == 0) {
 			List<int> bindings;
 			if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
-			rootrl = new Var(id=varId, possBindings=bindings);
-			vars = add(vars, varId);
-			varId++;
+			rootrl = new Var(id=numVarsNextId, possBindings=bindings);
+			numVarsNextId++;
 		}
 		if (flag_rootrl == 1) {
 			rootrl = new Label();
@@ -60,9 +67,8 @@ generator Type _cons_gen() {
 		if (flag_rootrr == 0) {
 			List<int> bindings;
 			if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
-			rootrr = new Var(id=varId, possBindings=bindings);
-			vars = add(vars, varId);
-			varId++;
+			rootrr = new Var(id=numVarsNextId, possBindings=bindings);
+			numVarsNextId++;
 		}
 		if (flag_rootrr == 1) {
 			rootrr = new Label();
@@ -90,17 +96,17 @@ harness Type _i_0() {
 }
 harness Type oo_consco_0cc() {
 	assert (isFunction(_cons()));
-	assert (leq(_0(), ((Function)_cons()).left));
+	assert (apply(_0(), ((Function)_cons()).left));
 	return ((Function)_cons()).rite;
 }
 harness Type oooo_consco_0ccco_icc() {
 	assert (isFunction(oo_consco_0cc()));
-	assert (leq(_i(), ((Function)oo_consco_0cc()).left));
+	assert (apply(_i(), ((Function)oo_consco_0cc()).left));
 	return ((Function)oo_consco_0cc()).rite;
 }
 harness Type oooo_consco_0cccooooo_consco_0ccco_icccc() {
 	assert (isFunction(oo_consco_0cc()));
-	assert (leq(oooo_consco_0ccco_icc(), ((Function)oo_consco_0cc()).left));
+	assert (apply(oooo_consco_0ccco_icc(), ((Function)oo_consco_0cc()).left));
 	return ((Function)oo_consco_0cc()).rite;
 }
 harness Type _cons() {

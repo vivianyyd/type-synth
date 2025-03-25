@@ -1,23 +1,39 @@
 adt Type {
-    Var { int id; List<int> possBindings; }
+    VarBind { int id; }
+    VarRef { int id; }
+    VarLabelBound { }
     Label { }
     Function { Type left; Type rite; }
 }
 
-boolean leq(Type small, Type big) {
+/** Returns the output type of [fn] on input [arg] with no free variables */
+Type apply(Function fn, Type arg) {
     // TODO add some reasoning about bindings
-    switch(big) {
-        case Var:{ return true; }
+    //   param should never be a VarRef! resolve all types upon application
+    //   arg should never be a VarBind! I think
+    //   I think arg can't be VarRef either
+    Type param = fn.left;
+    switch(param) {
+        case VarBind:{
+            // TODO resolve fn.rite substituting [arg] for all instances of VarRef(same id)
+            return true;
+        }
+        case VarRef:{ assert false; }
+        case VarLabelBound:{ return fn.rite; }
         case Label:{
-            switch(small) {
-                case Var:{ return true; }
+            switch(arg) {
+                case VarBind:{ assert false; }  // todo should assert invariants at top level bc some short circuiting
+                case VarRef:{ assert false; }
+                case VarLabelBound:{ return true; }
                 case Label:{ return true; }
                 case Function:{ return false; }
             }
         }
         case Function:{
-            switch(small) {
-                case Var:{ return true; }
+            switch(arg) {
+                case VarBind:{ assert false; }
+                case VarRef:{ assert false; }
+                case VarLabelBound:{ return true; }
                 case Label:{ return false; }
                 case Function:{ return true; }
             }
@@ -27,7 +43,9 @@ boolean leq(Type small, Type big) {
 
 boolean isFunction(Type t) {
     switch(t) {
-        case Var:{ return false; }
+        case VarBind:{ return false; }
+        case VarRef:{ return false; }
+        case VarLabelBound:{ return false; }
         case Label:{ return false; }
         case Function:{ return true; }
     }
@@ -37,5 +55,16 @@ int len <T> (List<T> l) {
     switch(l){
         case Cons:{ return 1 + len(l.next); }
         case Nil:{ return 0; }
+    }
+}
+
+/** ith element, or null if [i >= len(l)] */
+T get <T> (List<T> l, int i) {
+    switch(l){
+        case Cons:{
+            if (i == 0) return l.val;
+            else return get(l.next, i - 1);
+        }
+        case Nil:{ return null; }
     }
 }

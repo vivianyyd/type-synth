@@ -97,15 +97,28 @@ class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
                 "canBeBoundInLabel = true"
             )
         )
-        is Variable -> w.lines(
-            listOf(
-                "List<int> bindings",
-                "if (!(canBeFresh || canBeBoundInLabel)) bindings = vars",
-                "$portSketchName = new Var(id=varId, possBindings=bindings)",
-                "vars = add(vars, varId)",
-                "varId++",
+        is Variable -> {
+            val vFlag = "v_$portSketchName"
+            w.lines(
+                listOf(
+                    "int $vFlag = ??",
+                    "assert ($vFlag >= 0 && $vFlag < numVarsNextId + 2)",
+                    "if (!canBeFresh) assert ($vFlag != numVarsNextId)",
+                    "if (!canBeBoundInLabel) assert ($vFlag != numVarsNextId + 1)"
+                )
             )
-        )
+            w.block("if ($vFlag < numVarsNextId)") { w.line("$portSketchName = new VarRef(id=$vFlag)") }
+            w.block("else if ($vFlag == numVarsNextId)") {
+                w.lines(
+                    listOf(
+                        "$portSketchName = new VarBind(id=numVarsNextId)",
+                        "numVarsNextId++"
+                    )
+                )
+            }
+            w.block("else if ($vFlag == numVarsNextId + 1)") { w.line("$portSketchName = new VarLabelBound()") }
+            w.line("else assert false")
+        }
         is Function -> {
             val leftName = "${portSketchName}l"
             val riteName = "${portSketchName}r"
@@ -129,10 +142,10 @@ class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
                 w.lines(
                     listOf(
                         "Type root",
+                        // TODO canBeFresh need not be in Sketch, it is a property of the tree shape not choices
                         "boolean canBeFresh = false",
                         "boolean canBeBoundInLabel = false",
-                        "int varId = 0",
-                        "List<int> vars = empty()"
+                        "int numVarsNextId = 0"
                     )
                 )
                 w.newLine()
@@ -152,10 +165,9 @@ class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
             w.lines(
                 listOf(
                     "assert (isFunction(${exToSketch(ex.fn)}()))",
-                    "assert (leq(${exToSketch(ex.arg)}(), ((Function)${exToSketch(ex.fn)}()).left))",
-                    // TODO Here we compute possible variable bindings performed by zero.
-                    //  A Var must store things it could be bound by. Then in leq we can reason about possible binders
-                    "return ((Function)${exToSketch(ex.fn)}()).rite"
+                    "Type result = apply((Function)${exToSketch(ex.fn)}(), ${exToSketch(ex.arg)}())",
+                    "assert (result != null)",
+                    "return result"
                 )
             )
         }
