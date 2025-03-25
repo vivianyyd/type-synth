@@ -1,86 +1,109 @@
+include "/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/types.sk";
 include "/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/list.skh";
 
-// Generators for all names
-generator Type _consGen() {
-    Type root;
-    boolean canBeFresh = false;
-    boolean canBeBoundInLabel = false;
-    List<Var> vars = empty();
+generator Type _cons_gen() {
+	Type root;
+	boolean canBeFresh = false;
+	boolean canBeBoundInLabel = false;
+	int varId = 0;
+	List<int> vars = empty();
+	//TODO canBeFresh doesn't need to be in Sketch, this is a property of the tree shape not choices
 
-    int flag_root = ??;
-    assert (flag_root == 0);
-    if (flag_root == 0) {  // 1 Function
-        Type l1; Type r1;
-        canBeFresh = true;
-        int flag_l1 = ??;
-        assert (flag_l1 == 0 || flag_l1 == 1);
-        if (flag_l1 == 0) {  // 3 Variable
-            List<Var> bindings;
-            if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
-            l1 = new Var(possBindings=bindings);
-            vars = add(vars, (Var)l1);
-        }
-        if (flag_l1 == 1) {  // 2 Label
-            l1 = new Label();
-            canBeBoundInLabel = true;
-        }
-
-        canBeFresh = false;
-        int flag_r1 = ??;
-        assert (flag_r1 == 0 || flag_r1 == 1);
-        if (flag_r1 == 0) {  // 4 Variable
-            List<Var> bindings;
-            if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
-            r1 = new Var(possBindings=bindings);
-            vars = add(vars, (Var)r1);
-        }
-
-        if (flag_r1 == 1) {  // 5 Function
-            Type l5; Type r5;
-            canBeFresh = true;
-            int flag_l5 = ??;
-            assert (flag_l5 == 0 || flag_l5 == 1);
-            if (flag_l5 == 0) {  // 6 Variable
-                List<Var> bindings;
-                if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
-                l5 = new Var(possBindings=bindings);
-                vars = add(vars, (Var)l5);
-            }
-            if (flag_l5 == 1) {  // 7 Label
-                l5 = new Label();
-                canBeBoundInLabel = true;
-            }
-
-            canBeFresh = false;
-            int flag_r5 = ??;
-            assert (flag_r5 == 0 || flag_r5 == 1);
-            if (flag_r5 == 0) {  // 8 Variable
-                List<Var> bindings;
-                if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
-                r5 = new Var(possBindings=bindings);
-                vars = add(vars, (Var)r5);
-            }
-            if (flag_r5 == 1) {  // 9 Label
-                r5 = new Label();
-                canBeBoundInLabel = true;
-            }
-
-            r1 = new Function(left=l5, rite=r5);
-        }
-        root = new Function(left=l1, rite=r1);
-    }
-    return root;
+	Type rootl; Type rootr;
+	// input type
+	canBeFresh = true;
+	int flag_rootl = ??;
+	assert (flag_rootl == 0 || flag_rootl == 1);
+	if (flag_rootl == 0) {
+		List<int> bindings;
+		if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
+		rootl = new Var(id=varId, possBindings=bindings);
+		vars = add(vars, varId);
+		varId++;
+	}
+	if (flag_rootl == 1) {
+		rootl = new Label();
+		canBeBoundInLabel = true;
+	}
+	// output type
+	canBeFresh = false;
+	int flag_rootr = ??;
+	assert (flag_rootr == 0 || flag_rootr == 1);
+	if (flag_rootr == 0) {
+		List<int> bindings;
+		if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
+		rootr = new Var(id=varId, possBindings=bindings);
+		vars = add(vars, varId);
+		varId++;
+	}
+	if (flag_rootr == 1) {
+		Type rootrl; Type rootrr;
+		// input type
+		canBeFresh = true;
+		int flag_rootrl = ??;
+		assert (flag_rootrl == 0 || flag_rootrl == 1);
+		if (flag_rootrl == 0) {
+			List<int> bindings;
+			if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
+			rootrl = new Var(id=varId, possBindings=bindings);
+			vars = add(vars, varId);
+			varId++;
+		}
+		if (flag_rootrl == 1) {
+			rootrl = new Label();
+			canBeBoundInLabel = true;
+		}
+		// output type
+		canBeFresh = false;
+		int flag_rootrr = ??;
+		assert (flag_rootrr == 0 || flag_rootrr == 1);
+		if (flag_rootrr == 0) {
+			List<int> bindings;
+			if (!(canBeFresh || canBeBoundInLabel)) bindings = vars;
+			rootrr = new Var(id=varId, possBindings=bindings);
+			vars = add(vars, varId);
+			varId++;
+		}
+		if (flag_rootrr == 1) {
+			rootrr = new Label();
+			canBeBoundInLabel = true;
+		}
+		rootr = new Function(left=rootrl, rite=rootrr);
+	}
+	root = new Function(left=rootl, rite=rootr);
+	return root;
+}
+harness Type _0() {
+	return _0_gen();
+}
+harness Type _tr() {
+	return _tr_gen();
+}
+harness Type _i() {
+	return _i_gen();
+}
+harness Type _b() {
+	return _b_gen();
+}
+harness Type _i_0() {
+	return _i_0_gen();
+}
+harness Type oo_consco_0cc() {
+	assert (isFunction(_cons()));
+	assert (leq(_0(), ((Function)_cons()).left));
+	return ((Function)_cons()).rite;
+}
+harness Type oooo_consco_0ccco_icc() {
+	assert (isFunction(oo_consco_0cc()));
+	assert (leq(_i(), ((Function)oo_consco_0cc()).left));
+	return ((Function)oo_consco_0cc()).rite;
+}
+harness Type oooo_consco_0cccooooo_consco_0ccco_icccc() {
+	assert (isFunction(oo_consco_0cc()));
+	assert (leq(oooo_consco_0ccco_icc(), ((Function)oo_consco_0cc()).left));
+	return ((Function)oo_consco_0cc()).rite;
+}
+harness Type _cons() {
+	return _cons_gen();
 }
 
-generator Type _zeroGen() { return new Label(); }
-
-// Examples that are Name
-harness Type _cons() { return _consGen(); }
-harness Type _zero() { return _zeroGen(); }
-// Examples that are App (all subexprs)
-harness Type _conszero() {
-    assert (isFunction(_cons()));
-    assert (leq(_zero(), ((Function)_cons()).left));
-    // TODO Here we compute possible variable bindings performed by zero. A Var must store things it could be bound by. Then in leq we can reason about possible binders
-    return ((Function)_cons()).rite;
-}
