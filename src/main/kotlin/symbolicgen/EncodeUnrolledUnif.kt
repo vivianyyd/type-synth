@@ -27,9 +27,10 @@ fun main() {
 //        "(- (cons tr (cons 0 []i)))" to null,
     )
     val query = parseNewExamples(consExamples.keys)
+    val oracle = ScrappyNewOracle(consExamples.mapKeys { parseNewApp(it.key) })
     val b = SymbolicTypeBuilder(query)
     b.readAllExamples()
-    val encoding = EncodeUnrolledUnif(query, b.s)
+    val encoding = EncodeUnrolledUnif(query, b.s, oracle)
 
     val sketchPath = listOf("src", "main", "sketch", "symbolicgen", "generated").joinToString(
         separator = File.separator,
@@ -40,7 +41,7 @@ fun main() {
     out.close()
 }
 
-class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
+class EncodeUnrolledUnif(val query: NewQuery, private val state: State, private val oracle: EqualityNewOracle) {
     private val w = Writer()
 
     private var fresh = 0
@@ -68,7 +69,11 @@ class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
     private fun header() {
         w.include("/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/types.sk")
         w.include("/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/list.skh")
-        w.comment(listOf("NAME\t\tDUMMY") + sketchNames.map { (k, v) -> "$k\t\t\t$v" })
+        w.comment(listOf("NAME\t\tSKETCHNAME\t\tDUMMY") + sketchNames.map { (k, v) ->
+            "$k\t\t\t$v\t\t\t${
+                if (nullary(k)) oracle.dummy(Name(k)) else ""
+            }"
+        })
     }
 
     private fun choose(portSketchName: String, options: List<SymbolicType>) {
@@ -134,11 +139,18 @@ class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
         is Error, is Hole -> throw Exception("nah")
     }
 
+    private fun nullary(name: String): Boolean {
+        val options = state.read()[name]!!
+        return options.size == 1 && options[0] is Label
+    }
+
     private fun generator(name: String) =
         w.block("generator Type ${gen(name)}()") {
             val options = state.read()[name]!!
-            if (options.size == 1 && options[0] is Label) w.line("return new Label()")  // Makes code shorter
-            else {
+            if (nullary(name)) {
+//                w.line("return new Label()")  // Makes code shorter
+                w.line("return new ConcreteLabel(dummy=${oracle.dummy(Name(name))})")
+            } else {
                 w.lines(
                     listOf(
                         "Type root",
@@ -172,20 +184,6 @@ class EncodeUnrolledUnif(val query: NewQuery, val state: State) {
             )
         }
     }
-
-    // TODO Then we can have an Array<Type> of dynamic size = whatever the counter ended at after picking types
-    //  which stores what the mappings are
-    //  what about variable capture or something in (cons 0) (cons 0) when we say a == b or c.. should we make varIds fresh over all types
-    //      Checking an example:
-    //          If possbinders is NULL (vs empty?) it passes like a freshVar
-    //          Check if SAT that arg passed to V is equal to any of V's possible binders
-    //          (as we read args, bind vars to them to refer to later when we check possible var equality.
-    //          Could iterate down type/thru list of bindings and keep a map)
-    //          Not trivial - Need to know what a is bound to in (a->b)->a
-    //      No need to explicitly write choice => Label if Var always UNSAT!
-    //      Add typeEq oracle with dummies for values, like how I handled len in s4s
-    //      Try: encode variable bindings/equality => are constraints I do explicitly implicit in Sketch?
-    //      If doesn't work, see if can explicitly make constraints
 }
 
 class Writer {
