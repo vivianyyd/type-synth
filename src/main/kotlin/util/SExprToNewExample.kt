@@ -52,4 +52,4 @@ private fun SExpr.toExpression(): Pair<Example, Set<String>> = when (this) {
     }
 }
 
-fun parseNewApp(s: String) = SExprParser(s).parse().toExpression().first
+fun parseNewApp(s: String) = SExprParser(s).parse().toSignedExample().second
