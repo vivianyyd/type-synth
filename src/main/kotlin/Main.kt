@@ -1,6 +1,5 @@
 import enumgen.DependencyAnalysis
 import enumgen.Enumerator
-import enumgen.EqualityOracle
 import enumgen.NonArrowEnumerator
 import enumgen.types.ArrowAnalysis
 import enumgen.types.Type
@@ -66,27 +65,6 @@ fun main() {
 }
 
 private fun viz(name: String, da: DependencyAnalysis) = DependencyGraphVisualizer.viz(da.graphs[name]!!, "$name")
-
-/**
- * Computes types of applications based on types of named values, given as [secret]
- */
-class CheckingOracle(private val secret: Map<String, Type>) : EqualityOracle {
-    override fun equal(a: Application, b: Application): Boolean =
-        checkApplication(a, secret) == checkApplication(b, secret)
-}
-
-/**
- * Requires [secretTypes[app]] is null iff [app] is a negative example
- * Requires a mapping of *all* applications (including all subexpressions) to their dummy types
- */
-class ScrappyOracle(private val secret: Map<Application, String?>) : EqualityOracle {
-    override fun equal(a: Application, b: Application): Boolean =
-        if (secret[a] == null || secret[b] == null) false else secret[a] == secret[b]
-}
-
-class PairwiseCheckOracle() : EqualityOracle {
-    override fun equal(a: Application, b: Application): Boolean = TODO("memoize results")
-}
 
 fun testEnumeration() {
 //    val one = Application("1", null)

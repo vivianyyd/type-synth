@@ -1,13 +1,10 @@
 package enumgen
 
 import util.Application
+import util.EqualityOracle
 import util.Query
 import util.equivalenceClasses
 import java.lang.Integer.max
-
-interface EqualityOracle {
-    fun equal(a: Application, b: Application): Boolean
-}
 
 data class ParameterNode(val f: String, val i: Int) {
     private var ctr = 0
