@@ -1,3 +1,5 @@
+include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
+
 adt Type {
     ConcreteLabel { int dummy; }
     VarBind { int id; }
@@ -32,22 +34,10 @@ Type applyBindings(Type t, List<Binding> bindings) {
     }
 }
 
-// TODO good test: V -> V doesn't work for cons after binding logic (did it before?)
-
-// TODO I think we can just replace all the return nulls with assert falses
-
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
 List<Binding> unify(Type param, Type arg) {
-    // TODO for non-nullary (and nullary), can also add harnesses for subexpr type eq/neq (or unify?? table this..)
-    //      it's not always explicitly the type of a subexpression that gets bound to a type variable (idk where I was going w this)
-
-    // TODO new test file which tests that (a -> a) applied with (L -> L) is a function
-    //   and Not trivial - Need to know what a is bound to in (a->b)->a
     switch(param) {
         case VarBind:{
-            // TODO avoid variable capture!!! minor bug in encoding rn:
-            //   numVarsNextId in generator needs to be a global variable varCount. Then need numVars
-            //   a separate variable inside each generator to count vars inside. varnames are local + global
             Binding b = new Binding(id=param.id, t=arg);
             return single(b);
         }
@@ -123,7 +113,6 @@ Type apply(Function fn, Type arg) {
     if (b == null) return null;
     return applyBindings(fn.rite, b);
     // Invariant: returned type never contains VarRef!!!! think about this..
-
 }
 
 boolean isFunction(Type t) {
@@ -134,32 +123,5 @@ boolean isFunction(Type t) {
         case Label:{ return false; }
         case ConcreteLabel:{ return false; }
         case Function:{ return true; }
-    }
-}
-
-int len <T> (List<T> l) {
-    switch(l){
-        case Cons:{ return 1 + len(l.next); }
-        case Nil:{ return 0; }
-    }
-}
-
-/** ith element, or null if [i >= len(l)] */
-T get <T> (List<T> l, int i) {
-    switch(l){
-        case Cons:{
-            if (i == 0) return l.val;
-            else return get(l.next, i - 1);
-        }
-        case Nil:{ return null; }
-    }
-}
-
-List<T> plus <T> (List<T> l, List<T> elems) {
-    switch (elems) {
-        case Cons:{
-            return plus(add(l, elems.val), elems.next);
-        }
-        case Nil:{ return l; }
     }
 }

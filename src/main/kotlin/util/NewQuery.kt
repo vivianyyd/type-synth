@@ -30,11 +30,11 @@ class NewQuery(
     }).toList()
 }
 
-/** Produce all subexpressions of [this] and [this], except values.
+/** Produce all subexpressions of [this] and [this] TODO for some reason before, I didn't want to include Names? why
  * All subexprs appear in the list before any expression that contains them. */
-private fun Example.subexprs(): List<App> = LinkedHashSet(
+private fun Example.subexprs(): List<Example> = LinkedHashSet(
     when (this) {
-        is Name -> listOf()
+        is Name -> listOf(this)
         is App -> fn.subexprs() + arg.subexprs() + this
     }
 ).toList()

@@ -1,9 +1,8 @@
 package symbolicgen
 
+import runCommand
 import util.*
 import java.io.File
-import java.io.FileOutputStream
-import java.io.PrintWriter
 
 fun main() {
     val consExamples = mapOf(
@@ -36,9 +35,25 @@ fun main() {
         separator = File.separator,
         postfix = File.separator
     )
-    val out = PrintWriter(FileOutputStream(sketchPath + "out.sk"))
-    out.println(encoding.make())
-    out.close()
+    val sketch = sketchPath + "sketch.sk"
+    val sketchOut = sketchPath + "sketchOut.txt"
+    File(sketch).printWriter().use { out -> out.println(encoding.make()) }
+
+    fun callSketch(): String {
+        return ("sketch $sketch -V 5 --slv-parallel --slv-nativeints --bnd-inline-amnt 5".runCommand())
+            ?: throw Exception("I'm sad")
+    }
+
+    fun blockOfSignature(sig: String, skOut: String): List<String> {
+        var txt = skOut.substringAfterLast("$sig (")
+        txt = txt.substringAfter('{')
+        txt = txt.substringBefore('}')
+        return txt.split(';').map { it.trim() }
+    }
+
+    val out = callSketch()
+    File(sketchOut).printWriter().use { it.println(out) }
+    println(blockOfSignature("void _cons", out).joinToString(separator = "\n"))
 }
 
 class EncodeUnrolledUnif(val query: NewQuery, private val state: State, private val oracle: EqualityNewOracle) {
@@ -58,6 +73,8 @@ class EncodeUnrolledUnif(val query: NewQuery, private val state: State, private 
     /** Use me wisely */
     private fun sk(name: String) = sketchNames[name]!!
     private fun gen(name: String) = "${sk(name)}_gen"
+    private val localNumVars = "lVars"
+    private val globalNumVars = "gVars"
 
     fun make(): String {
         header()
@@ -68,12 +85,12 @@ class EncodeUnrolledUnif(val query: NewQuery, private val state: State, private 
 
     private fun header() {
         w.include("/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/types.sk")
-        w.include("/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/list.skh")
         w.comment(listOf("NAME\t\tSKETCHNAME\t\tDUMMY") + sketchNames.map { (k, v) ->
             "$k\t\t\t$v\t\t\t${
                 if (nullary(k)) oracle.dummy(Name(k)) else ""
             }"
         })
+        w.line("int $globalNumVars = 0")
     }
 
     private fun choose(portSketchName: String, options: List<SymbolicType>) {
@@ -107,21 +124,23 @@ class EncodeUnrolledUnif(val query: NewQuery, private val state: State, private 
             w.lines(
                 listOf(
                     "int $vFlag = ??",
-                    "assert ($vFlag >= 0 && $vFlag < numVarsNextId + 2)",
-                    "if (!canBeFresh) assert ($vFlag != numVarsNextId)",
-                    "if (!canBeBoundInLabel) assert ($vFlag != numVarsNextId + 1)"
+                    "assert ($vFlag >= 0 && $vFlag < $localNumVars + 2)",
+                    "if (!canBeFresh) assert ($vFlag != $localNumVars)",
+                    "if (!canBeBoundInLabel) assert ($vFlag != $localNumVars + 1)"
                 )
             )
-            w.block("if ($vFlag < numVarsNextId)") { w.line("$portSketchName = new VarRef(id=$vFlag)") }
-            w.block("else if ($vFlag == numVarsNextId)") {
+            w.block("if ($vFlag < $localNumVars)") {
+                w.line("$portSketchName = new VarRef(id=$vFlag + $globalNumVars)")
+            }
+            w.block("else if ($vFlag == $localNumVars)") {
                 w.lines(
                     listOf(
-                        "$portSketchName = new VarBind(id=numVarsNextId)",
-                        "numVarsNextId++"
+                        "$portSketchName = new VarBind(id=$localNumVars + $globalNumVars)",
+                        "$localNumVars++"
                     )
                 )
             }
-            w.block("else if ($vFlag == numVarsNextId + 1)") { w.line("$portSketchName = new VarLabelBound()") }
+            w.block("else if ($vFlag == $localNumVars + 1)") { w.line("$portSketchName = new VarLabelBound()") }
             w.line("else assert false")
         }
         is Function -> {
@@ -144,39 +163,40 @@ class EncodeUnrolledUnif(val query: NewQuery, private val state: State, private 
         return options.size == 1 && options[0] is Label
     }
 
-    private fun generator(name: String) =
-        w.block("generator Type ${gen(name)}()") {
-            val options = state.read()[name]!!
-            if (nullary(name)) {
-                w.line("return new ConcreteLabel(dummy=${oracle.dummy(Name(name))})")
-            } else {
+    private fun generator(name: String) {
+        val header = "generator Type ${gen(name)}()"
+        if (nullary(name)) w.singleLineBlock(header, "return new ConcreteLabel(dummy=${oracle.dummy(Name(name))})")
+        else
+            w.block(header) {
+                val options = state.read()[name]!!
                 w.lines(
                     listOf(
                         "Type root",
                         // TODO canBeFresh need not be in Sketch, it is a property of the tree shape not choices
                         "boolean canBeFresh = false",
                         "boolean canBeBoundInLabel = false",
-                        "int numVarsNextId = 0"
+                        "int $localNumVars = 0"
                     )
                 )
                 w.newLine()
                 choose("root", options)
+                w.line("$globalNumVars += $localNumVars")
                 w.line("return root")
             }
-        }
+    }
 
-    private fun exToSketch(ex: Example): String = when (ex) {
+    private fun sk(ex: Example): String = when (ex) {
         is Name -> sk(ex.name)
-        is App -> "oo${exToSketch(ex.fn)}co${exToSketch(ex.arg)}cc"
+        is App -> "oo${sk(ex.fn)}co${sk(ex.arg)}cc"
     }
 
     private fun posExample(ex: Example) = when (ex) {
-        is Name -> w.block("harness Type ${exToSketch(ex)}()") { w.line("return ${gen(ex.name)}()") }
-        is App -> w.block("harness Type ${exToSketch(ex)}()") {
+        is Name -> w.singleLineBlock("harness Type ${sk(ex)}()", "return ${gen(ex.name)}()")
+        is App -> w.block("harness Type ${sk(ex)}()") {
             w.lines(
                 listOf(
-                    "assert (isFunction(${exToSketch(ex.fn)}()))",
-                    "Type result = apply((Function)${exToSketch(ex.fn)}(), ${exToSketch(ex.arg)}())",
+                    "assert (isFunction(${sk(ex.fn)}()))",
+                    "Type result = apply((Function)${sk(ex.fn)}(), ${sk(ex.arg)}())",
                     "assert (result != null)",
                     "return result"
                 )
@@ -222,6 +242,8 @@ class Writer {
         dedent()
         lineNoSemi("}")
     }
+
+    fun singleLineBlock(header: String, l: String) = lineNoSemi("$header { $l; }")
 
     fun s() = sb.toString()
 }
