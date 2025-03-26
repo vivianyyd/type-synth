@@ -36,7 +36,7 @@ fun main() {
         separator = File.separator,
         postfix = File.separator
     )
-    val out = PrintWriter(FileOutputStream(sketchPath + "scratchpad.sk"))
+    val out = PrintWriter(FileOutputStream(sketchPath + "out.sk"))
     out.println(encoding.make())
     out.close()
 }
@@ -148,7 +148,6 @@ class EncodeUnrolledUnif(val query: NewQuery, private val state: State, private 
         w.block("generator Type ${gen(name)}()") {
             val options = state.read()[name]!!
             if (nullary(name)) {
-//                w.line("return new Label()")  // Makes code shorter
                 w.line("return new ConcreteLabel(dummy=${oracle.dummy(Name(name))})")
             } else {
                 w.lines(

@@ -121,7 +121,7 @@ class SymbolicTypeBuilder(val query: NewQuery) {
     }
 
     fun readAllExamples() {
-        val expandedApps = query.posExamples.filterIsInstance<App>().flatMap { it.subexprs() }
+        val expandedApps = query.posExamples.filterIsInstance<App>()
         // TODO check if the nullary pass is good, refactor to make it nicer
         query.names.filter {
             expandedApps.none { app -> app.fn is Name && app.fn.name == it }

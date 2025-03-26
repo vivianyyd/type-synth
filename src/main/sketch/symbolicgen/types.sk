@@ -45,9 +45,9 @@ List<Binding> unify(Type param, Type arg) {
     //   and Not trivial - Need to know what a is bound to in (a->b)->a
     switch(param) {
         case VarBind:{
-            // TODO avoid variable capture!!!
-            // numVarsNextId in generator needs to be a global variable varCount. Then need numVars
-            // a separate variable inside each generator to count vars inside. varnames are local + global
+            // TODO avoid variable capture!!! minor bug in encoding rn:
+            //   numVarsNextId in generator needs to be a global variable varCount. Then need numVars
+            //   a separate variable inside each generator to count vars inside. varnames are local + global
             Binding b = new Binding(id=param.id, t=arg);
             return single(b);
         }
