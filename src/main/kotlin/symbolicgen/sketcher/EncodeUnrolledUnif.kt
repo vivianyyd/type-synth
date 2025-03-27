@@ -42,7 +42,7 @@ fun main() {
     }
 
     val out: String
-    val runSketch = false
+    val runSketch = true
     if (runSketch) {
         File(sketch).printWriter().use { it.println(encoding.make) }
         out = callSketch()
@@ -53,9 +53,8 @@ fun main() {
 
     val firstCandidate = Parser.typeAfterSub(Parser.parse(encoding.sk("cons"), out)).constructSketch()
 
-    val nextQuery = encoding.make + "\n" + "harness void neq() { assert (_cons() != $firstCandidate) }"
-    // TODO actually use the next query!!
-    File(sketch).printWriter().use { it.println(encoding.make) }
+    val nextQuery = encoding.make + "\n" + "harness void neq() { assert (_cons() != $firstCandidate); }"
+    File(sketch).printWriter().use { it.println(nextQuery) }
     val newOut = callSketch()
     File(sketchOut).printWriter().use { it.println(newOut) }
     println(Parser.typeAfterSub(Parser.parse(encoding.sk("cons"), newOut)))
