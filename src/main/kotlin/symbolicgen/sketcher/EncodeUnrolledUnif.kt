@@ -1,6 +1,8 @@
-package symbolicgen
+package symbolicgen.sketcher
 
 import runCommand
+import symbolicgen.*
+import symbolicgen.Function
 import util.*
 import java.io.File
 
@@ -60,49 +62,11 @@ fun main() {
     println(Parser.typeAfterSub(Parser.parse(encoding.sk("cons"), newOut)))
 }
 
-sealed interface SketchedType {
-    fun constructSketch(): String
-}
-
-data class N(val name: String) : SketchedType {
-    override fun constructSketch(): String = throw UnsupportedOperationException("Bad code style, fixme later")
-}
-
-object L : SketchedType {
-    override fun toString(): String = "L"
-    override fun constructSketch(): String = "new Label()"
-}
-
-data class F(val left: SketchedType, val rite: SketchedType) : SketchedType {
-    override fun toString(): String = "${if (left is F) "($left)" else "$left"} -> $rite"
-    override fun constructSketch(): String =
-        "new Function(left=${left.constructSketch()}, rite=${rite.constructSketch()})"
-}
-
-data class VB(val vId: Int, val tId: Int) : SketchedType {
-    override fun toString(): String = "${tId}_$vId"
-    override fun constructSketch(): String = "new VarBind(vId=$vId, tId=$tId)"
-}
-
-data class VR(val vId: Int, val tId: Int) : SketchedType {
-    override fun toString(): String = "${tId}_$vId"
-    override fun constructSketch(): String = "new VarRef(vId=$vId, tId=$tId)"
-}
-
-object VL : SketchedType {
-    override fun toString(): String = "VL"
-    override fun constructSketch(): String = "new VarLabelBound()"
-}
-
-data class CL(val dummy: Int) : SketchedType {
-    override fun toString(): String = "CL"
-    override fun constructSketch(): String = "new ConcreteLabel(dummy=$dummy)"
-}
 
 // TODO make me a class and move me into a separate file
 object Parser {
     fun parse(sketchName: String, skOut: String) =
-        blockOfSignature("void $sketchName", skOut).filter { it.contains("=") && !it.contains("_out = root") }
+        Parser.blockOfSignature("void $sketchName", skOut).filter { it.contains("=") && !it.contains("_out = root") }
             .associate {
                 it.replace("Type@ANONYMOUS ", "").replace("new ", "").split(" = ").let { (lhs, rhs) ->
                     val (t, a) = rhs.split("(")
@@ -129,12 +93,12 @@ object Parser {
                 }
             }
 
-    fun typeAfterSub(l: Map<String, SketchedType>): SketchedType = sub(l["root"]!!, l)
+    fun typeAfterSub(l: Map<String, SketchedType>): SketchedType = Parser.sub(l["root"]!!, l)
 
     private fun sub(t: SketchedType, l: Map<String, SketchedType>): SketchedType = when (t) {
-        is N -> sub(l[t.name]!!, l)
+        is N -> Parser.sub(l[t.name]!!, l)
         is L, is VL, is VB, is VR, is CL -> t
-        is F -> F(sub(t.left, l), sub(t.rite, l))
+        is F -> F(Parser.sub(t.left, l), Parser.sub(t.rite, l))
     }
 
     private fun blockOfSignature(sig: String, skOut: String): List<String> {
