@@ -54,7 +54,7 @@ class State(query: NewQuery) {
      * If options for [choice] are empty/not yet enumerated, populates them. */
     fun ensureSubset(choice: Choice, predicate: Predicate<SymbolicType>) {
         if (empty(choice)) addAll(choice)
-        prune(choice, predicate)
+        prune(choice, predicate.negate())
     }
 
     private fun prune(choice: Choice, predicate: Predicate<SymbolicType>) {
@@ -87,7 +87,7 @@ class SymbolicTypeBuilder(val query: NewQuery) {
 
     private fun mustBeFn(fn: Example) {
         val choice = s.exprToChoice(fn) ?: return
-        s.ensureSubset(choice) { t: SymbolicType -> !(t is Function || t is Variable) }
+        s.ensureSubset(choice) { t: SymbolicType -> t is Function || t is Variable }
     }
 
     private fun validArg(fn: Example, arg: Example) {
@@ -97,11 +97,11 @@ class SymbolicTypeBuilder(val query: NewQuery) {
         val lhsSingle = s.singleton(lhs)
         val rhsSingle = s.singleton(rhs)
 
-        if (lhsSingle is Label) s.ensureSubset(rhs) { t: SymbolicType -> !(t is Label || t is Variable) }
-        if (lhsSingle is Function) s.ensureSubset(rhs) { t: SymbolicType -> !(t is Function || t is Variable) }
+        if (lhsSingle is Label) s.ensureSubset(rhs) { t: SymbolicType -> t is Label || t is Variable }
+        if (lhsSingle is Function) s.ensureSubset(rhs) { t: SymbolicType -> t is Function || t is Variable }
         // TODO IS IT TRUE THAT IF RHS IS LABEL, LHS CAN'T BE VAR?
-        if (rhsSingle is Label) s.ensureSubset(lhs) { t: SymbolicType -> t !is Label }
-        if (rhsSingle is Function) s.ensureSubset(lhs) { t: SymbolicType -> t !is Function }
+        if (rhsSingle is Label) s.ensureSubset(lhs) { t: SymbolicType -> t is Label }
+        if (rhsSingle is Function) s.ensureSubset(lhs) { t: SymbolicType -> t is Function }
         // TODO any other interesting inferences?
 
         /*

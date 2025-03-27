@@ -2,26 +2,26 @@ include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
 
 adt Type {
     ConcreteLabel { int dummy; }
-    VarBind { int id; }
-    VarRef { int id; }
+    VarBind { int vId; int tId; }
+    VarRef { int vId; int tId; }
     VarLabelBound { }
     Label { }
     Function { Type left; Type rite; }
 }
 
-struct Binding { int id; Type t; }
+struct Binding { int vId; int tId; Type t; }
 
-Type applyBinding(Type t, int varId, Type sub) {
+Type applyBinding(Type t, int varId, int tId, Type sub) {
     switch (t) {
         case ConcreteLabel:{ return t; }
         case VarLabelBound:{ return t; }
         case Label:{ return t; }
         case Function:{
-            return new Function(left=applyBinding(t.left, varId, sub), rite=applyBinding(t.rite, varId, sub));
+            return new Function(left=applyBinding(t.left, varId, tId, sub), rite=applyBinding(t.rite, varId, tId, sub));
         }
         case VarBind:{ return t; }
         case VarRef:{
-            if (t.id == varId) return sub;
+            if (t.vId == varId && t.tId == tId) return sub;
             else return t;
         }
     }
@@ -29,7 +29,7 @@ Type applyBinding(Type t, int varId, Type sub) {
 
 Type applyBindings(Type t, List<Binding> bindings) {
     switch (bindings) {
-        case Cons:{ return applyBindings(applyBinding(t, bindings.val.id, bindings.val.t), bindings.next); }
+        case Cons:{ return applyBindings(applyBinding(t, bindings.val.vId, bindings.val.tId, bindings.val.t), bindings.next); }
         case Nil:{ return t; }
     }
 }
@@ -38,7 +38,7 @@ Type applyBindings(Type t, List<Binding> bindings) {
 List<Binding> unify(Type param, Type arg) {
     switch(param) {
         case VarBind:{
-            Binding b = new Binding(id=param.id, t=arg);
+            Binding b = new Binding(vId=param.vId, tId=param.tId, t=arg);
             return single(b);
         }
         case VarLabelBound:{ return empty(); }
@@ -58,9 +58,9 @@ List<Binding> unify(Type param, Type arg) {
         }
         case Label:{
             switch(arg) {
-                case ConcreteLabel:{ return empty(); }
-                case VarLabelBound:{ return empty(); }
                 case Label:{ return empty(); }
+                case ConcreteLabel:{ return empty(); }
+                case VarLabelBound:{ return null; }
                 case Function:{ return null; }
                 // Invariants
                 case VarBind:{ assert false; }
