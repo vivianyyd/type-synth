@@ -8,22 +8,11 @@ tr			_tr			1
 [[]]i			_i_0			4
 cons			_cons
 */
-int gVars = 0;
-generator Type _0_gen() {
-	return new ConcreteLabel(dummy=0);
-}
-generator Type _tr_gen() {
-	return new ConcreteLabel(dummy=1);
-}
-generator Type _i_gen() {
-	return new ConcreteLabel(dummy=2);
-}
-generator Type _b_gen() {
-	return new ConcreteLabel(dummy=3);
-}
-generator Type _i_0_gen() {
-	return new ConcreteLabel(dummy=4);
-}
+generator Type _0_gen() { return new ConcreteLabel(dummy=0); }
+generator Type _tr_gen() { return new ConcreteLabel(dummy=1); }
+generator Type _i_gen() { return new ConcreteLabel(dummy=2); }
+generator Type _b_gen() { return new ConcreteLabel(dummy=3); }
+generator Type _i_0_gen() { return new ConcreteLabel(dummy=4); }
 generator Type _cons_gen() {
 	Type root;
 	boolean canBeFresh = false;
@@ -40,16 +29,12 @@ generator Type _cons_gen() {
 		assert (v_rootl >= 0 && v_rootl < lVars + 2);
 		if (!canBeFresh) assert (v_rootl != lVars);
 		if (!canBeBoundInLabel) assert (v_rootl != lVars + 1);
-		if (v_rootl < lVars) {
-			rootl = new VarRef(id=v_rootl + gVars);
-		}
+		if (v_rootl < lVars) { rootl = new VarRef(vId=v_rootl, tId=0); }
 		else if (v_rootl == lVars) {
-			rootl = new VarBind(id=lVars + gVars);
+			rootl = new VarBind(vId=lVars, tId=0);
 			lVars++;
 		}
-		else if (v_rootl == lVars + 1) {
-			rootl = new VarLabelBound();
-		}
+		else if (v_rootl == lVars + 1) { rootl = new VarLabelBound(); }
 		else assert false;
 	}
 	if (flag_rootl == 1) {
@@ -65,16 +50,12 @@ generator Type _cons_gen() {
 		assert (v_rootr >= 0 && v_rootr < lVars + 2);
 		if (!canBeFresh) assert (v_rootr != lVars);
 		if (!canBeBoundInLabel) assert (v_rootr != lVars + 1);
-		if (v_rootr < lVars) {
-			rootr = new VarRef(id=v_rootr + gVars);
-		}
+		if (v_rootr < lVars) { rootr = new VarRef(vId=v_rootr, tId=0); }
 		else if (v_rootr == lVars) {
-			rootr = new VarBind(id=lVars + gVars);
+			rootr = new VarBind(vId=lVars, tId=0);
 			lVars++;
 		}
-		else if (v_rootr == lVars + 1) {
-			rootr = new VarLabelBound();
-		}
+		else if (v_rootr == lVars + 1) { rootr = new VarLabelBound(); }
 		else assert false;
 	}
 	if (flag_rootr == 1) {
@@ -88,16 +69,12 @@ generator Type _cons_gen() {
 			assert (v_rootrl >= 0 && v_rootrl < lVars + 2);
 			if (!canBeFresh) assert (v_rootrl != lVars);
 			if (!canBeBoundInLabel) assert (v_rootrl != lVars + 1);
-			if (v_rootrl < lVars) {
-				rootrl = new VarRef(id=v_rootrl + gVars);
-			}
+			if (v_rootrl < lVars) { rootrl = new VarRef(vId=v_rootrl, tId=0); }
 			else if (v_rootrl == lVars) {
-				rootrl = new VarBind(id=lVars + gVars);
+				rootrl = new VarBind(vId=lVars, tId=0);
 				lVars++;
 			}
-			else if (v_rootrl == lVars + 1) {
-				rootrl = new VarLabelBound();
-			}
+			else if (v_rootrl == lVars + 1) { rootrl = new VarLabelBound(); }
 			else assert false;
 		}
 		if (flag_rootrl == 1) {
@@ -113,16 +90,12 @@ generator Type _cons_gen() {
 			assert (v_rootrr >= 0 && v_rootrr < lVars + 2);
 			if (!canBeFresh) assert (v_rootrr != lVars);
 			if (!canBeBoundInLabel) assert (v_rootrr != lVars + 1);
-			if (v_rootrr < lVars) {
-				rootrr = new VarRef(id=v_rootrr + gVars);
-			}
+			if (v_rootrr < lVars) { rootrr = new VarRef(vId=v_rootrr, tId=0); }
 			else if (v_rootrr == lVars) {
-				rootrr = new VarBind(id=lVars + gVars);
+				rootrr = new VarBind(vId=lVars, tId=0);
 				lVars++;
 			}
-			else if (v_rootrr == lVars + 1) {
-				rootrr = new VarLabelBound();
-			}
+			else if (v_rootrr == lVars + 1) { rootrr = new VarLabelBound(); }
 			else assert false;
 		}
 		if (flag_rootrr == 1) {
@@ -132,27 +105,14 @@ generator Type _cons_gen() {
 		rootr = new Function(left=rootrl, rite=rootrr);
 	}
 	root = new Function(left=rootl, rite=rootr);
-	gVars += lVars;
 	return root;
 }
-harness Type _0() {
-	return _0_gen();
-}
-harness Type _tr() {
-	return _tr_gen();
-}
-harness Type _i() {
-	return _i_gen();
-}
-harness Type _b() {
-	return _b_gen();
-}
-harness Type _i_0() {
-	return _i_0_gen();
-}
-harness Type _cons() {
-	return _cons_gen();
-}
+harness Type _0() { return _0_gen(); }
+harness Type _tr() { return _tr_gen(); }
+harness Type _i() { return _i_gen(); }
+harness Type _b() { return _b_gen(); }
+harness Type _i_0() { return _i_0_gen(); }
+harness Type _cons() { return _cons_gen(); }
 harness Type oo_consco_0cc() {
 	assert (isFunction(_cons()));
 	Type result = apply((Function)_cons(), _0());
@@ -171,4 +131,41 @@ harness Type oooo_consco_0cccooooo_consco_0ccco_icccc() {
 	assert (result != null);
 	return result;
 }
+harness Type oo_consco_trcc() {
+	assert (isFunction(_cons()));
+	Type result = apply((Function)_cons(), _tr());
+	assert (result != null);
+	return result;
+}
+harness Type oooo_consco_trccco_bcc() {
+	assert (isFunction(oo_consco_trcc()));
+	Type result = apply((Function)oo_consco_trcc(), _b());
+	assert (result != null);
+	return result;
+}
+harness Type oooo_consco_trcccooooo_consco_trccco_bcccc() {
+	assert (isFunction(oo_consco_trcc()));
+	Type result = apply((Function)oo_consco_trcc(), oooo_consco_trccco_bcc());
+	assert (result != null);
+	return result;
+}
+harness Type oo_consco_icc() {
+	assert (isFunction(_cons()));
+	Type result = apply((Function)_cons(), _i());
+	assert (result != null);
+	return result;
+}
+harness Type oooo_consco_iccco_i_0cc() {
+	assert (isFunction(oo_consco_icc()));
+	Type result = apply((Function)oo_consco_icc(), _i_0());
+	assert (result != null);
+	return result;
+}
+harness Type oooo_consco_icccooooo_consco_iccco_i_0cccc() {
+	assert (isFunction(oo_consco_icc()));
+	Type result = apply((Function)oo_consco_icc(), oooo_consco_iccco_i_0cc());
+	assert (result != null);
+	return result;
+}
 
+harness void neq() { assert (_cons() != new Function(left=new VarBind(vId=0, tId=0), rite=new Function(left=new Label(), rite=new Label()))); }
