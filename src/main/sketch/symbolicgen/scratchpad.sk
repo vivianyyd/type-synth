@@ -107,65 +107,46 @@ generator Type _cons_gen() {
 	root = new Function(left=rootl, rite=rootr);
 	return root;
 }
-harness Type _0() { return _0_gen(); }
-harness Type _tr() { return _tr_gen(); }
-harness Type _i() { return _i_gen(); }
-harness Type _b() { return _b_gen(); }
-harness Type _i_0() { return _i_0_gen(); }
-harness Type _cons() { return _cons_gen(); }
-harness Type oo_consco_0cc() {
-	assert (isFunction(_cons()));
-	Type result = apply((Function)_cons(), _0());
-	assert (result != null);
-	return result;
+Type _0_1() fixes _0_1 { return _0_gen(); }
+Type _tr_1() fixes _tr_1 { return _tr_gen(); }
+Type _i_1() fixes _i_1 { return _i_gen(); }
+Type _b_1() fixes _b_1 { return _b_gen(); }
+Type _i_0_1() fixes _i_0_1 { return _i_0_gen(); }
+Type _cons_1() fixes _cons_1 {
+    return _cons_gen();
 }
-harness Type oooo_consco_0ccco_icc() {
-	assert (isFunction(oo_consco_0cc()));
-	Type result = apply((Function)oo_consco_0cc(), _i());
-	assert (result != null);
-	return result;
-}
-harness Type oooo_consco_0cccooooo_consco_0ccco_icccc() {
-	assert (isFunction(oo_consco_0cc()));
-	Type result = apply((Function)oo_consco_0cc(), oooo_consco_0ccco_icc());
-	assert (result != null);
-	return result;
-}
-harness Type oo_consco_trcc() {
-	assert (isFunction(_cons()));
-	Type result = apply((Function)_cons(), _tr());
-	assert (result != null);
-	return result;
-}
-harness Type oooo_consco_trccco_bcc() {
-	assert (isFunction(oo_consco_trcc()));
-	Type result = apply((Function)oo_consco_trcc(), _b());
-	assert (result != null);
-	return result;
-}
-harness Type oooo_consco_trcccooooo_consco_trccco_bcccc() {
-	assert (isFunction(oo_consco_trcc()));
-	Type result = apply((Function)oo_consco_trcc(), oooo_consco_trccco_bcc());
-	assert (result != null);
-	return result;
-}
-harness Type oo_consco_icc() {
-	assert (isFunction(_cons()));
-	Type result = apply((Function)_cons(), _i());
-	assert (result != null);
-	return result;
-}
-harness Type oooo_consco_iccco_i_0cc() {
-	assert (isFunction(oo_consco_icc()));
-	Type result = apply((Function)oo_consco_icc(), _i_0());
-	assert (result != null);
-	return result;
-}
-harness Type oooo_consco_icccooooo_consco_iccco_i_0cccc() {
-	assert (isFunction(oo_consco_icc()));
-	Type result = apply((Function)oo_consco_icc(), oooo_consco_iccco_i_0cc());
-	assert (result != null);
-	return result;
+// TODO don't make named values be harnesses
+
+// However many til we hit the upper bound on num options?? Pretty big number
+Type _0_2() fixes _0_2 { return _0_gen(); }
+Type _tr_2() fixes _tr_2 { return _tr_gen(); }
+Type _i_2() fixes _i_2 { return _i_gen(); }
+Type _b_2() fixes _b_2 { return _b_gen(); }
+Type _i_0_2() fixes _i_0_2 { return _i_0_gen(); }
+Type _cons_2() fixes _cons_2 {
+    Type result = _cons_gen();
+    assert (result != _cons_1());
+    return result;
 }
 
-harness void neq() { assert (_cons() != new Function(left=new VarBind(vId=0, tId=0), rite=new Function(left=new Label(), rite=new Label()))); }
+Type cons_toggle(int testNum) {
+    if (testNum == 1) return _cons_1();
+    if (testNum == 2) return _cons_2();
+    //...
+    assert false;
+}
+
+int numTests() {
+    int n = ??;
+    minimize(2-n); // TODO number here is the max number of tests we can have
+    return n;
+}
+
+harness Type oo_consco_0cc(int testNum) {
+    assume (testNum < numTests());
+    Type _cons_impl = cons_toggle(testNum);
+	assert (isFunction(_cons_impl));
+	Type result = apply((Function)_cons_impl, _0_1());
+	assert (result != null);
+	return result;
+}
