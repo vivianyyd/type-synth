@@ -10,7 +10,7 @@ interface EqualityNewOracle {
 
 /**
  * Requires [secret[app]] is null iff [app] is a negative example
- * Requires a mapping of *all* applications (including all subexpressions) to their dummy types
+ * Requires a mapping of *all* positive applications (including all subexpressions) to their dummy types
  */
 class ScrappyNewOracle(private val secret: Map<Example, String?>) : EqualityNewOracle {
     private var fresh = 0

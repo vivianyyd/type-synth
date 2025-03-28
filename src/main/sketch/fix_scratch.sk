@@ -49,7 +49,25 @@ harness void f(int testNum) {
 
 
 
+/*
+This has no infinite loop, the *fixed* fns don't call each other
 
+int x() { return ??; }
+int y() { return ??; }
+
+harness void a() fixes x {
+	assert (x() + y() == 3);
+	assert (x() <= 2 && y() <= 2 && x() >= 0 && y() >= 0);
+	minimize(x());
+}
+
+harness void b() fixes y {
+	assert (x() + y() == 3);
+	assert (x() <= 2 && y() <= 2 && x() >= 0 && y() >= 0);
+	minimize(y());
+}
+
+*/
 
 /*
 
