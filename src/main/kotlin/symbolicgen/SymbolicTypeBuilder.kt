@@ -83,7 +83,12 @@ class State(query: NewQuery) {
 }
 
 class SymbolicTypeBuilder(val query: NewQuery) {
-    val s = State(query)
+    private val s = State(query)
+
+    val make: State by lazy {
+        readAllExamples()
+        s
+    }
 
     private fun mustBeFn(fn: Example) {
         val choice = s.exprToChoice(fn) ?: return
@@ -120,7 +125,7 @@ class SymbolicTypeBuilder(val query: NewQuery) {
         validArg(ex.fn, ex.arg)
     }
 
-    fun readAllExamples() {
+    private fun readAllExamples() {
         val expandedApps = query.posExamples.filterIsInstance<App>()
         // TODO check if the nullary pass is good, refactor to make it nicer
         query.names.filter {
@@ -157,8 +162,6 @@ fun main() {
 
     val query = parseNewExamples(consExamples.keys)
 
-    val b = SymbolicTypeBuilder(query)
-    b.readAllExamples()
-    b.s.printState()
+    SymbolicTypeBuilder(query).make.printState()
 }
 /* {cons=[[V, L] -> [V, [V, L] -> []]], 0=[L], []i=[L]} */
