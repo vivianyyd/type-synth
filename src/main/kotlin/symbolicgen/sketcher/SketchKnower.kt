@@ -11,8 +11,10 @@ fun main() {
     val b = SymbolicTypeBuilder(query).make
     val sketcher = SketchKnower(query, b, oracle)
 
-    val runSketch = true
+    val runSketch = false
     val out = if (runSketch) callSketch(sketcher.sketchInput(), "test") else readOutput("test")
+
+    sketcher.parseFunctions(out).forEach { println(it) }
 
     println(sketcher.parse("_cons", out))
 //    val nextQuery = sketcher.sketchInput() + "\n" + "harness void neq() { assert (_cons() != $firstCandidate); }"
@@ -24,6 +26,7 @@ fun main() {
 
 class SketchKnower(val query: NewQuery, private val state: State, private val oracle: EqualityNewOracle) {
     fun parse(sketchName: String, skOut: String) = SketchParser().parseToType(sketchName, skOut)
+    fun parseFunctions(s: String) = SketchParser().functions(s)
     fun sketchInput() = SketchWriter().make
 
     private val sketchNames = mutableMapOf<String, String>()
@@ -252,11 +255,36 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
             is F -> F(sub(t.left, l), sub(t.rite, l))
         }
 
-        private fun blockOfSignature(sig: String, skOut: String): List<String> {
-            var txt = skOut.substringAfterLast("$sig (")
+        private fun blockOfSignature(sig: String, sketch: String): List<String> {
+            var txt = sketch.substringAfterLast("$sig (")
             txt = txt.substringAfter('{')
             txt = txt.substringBefore('}')
             return txt.split(';').map { it.trim() }
+        }
+
+        fun functions(sketch: String) =
+            functionsWithWrappers(sketch).filterKeys { !it.contains("Wrapper") }.mapKeys { (k, _) -> k.split(" ")[1] }
+
+        fun functionsWithWrappers(sketch: String): Map<String, List<String>> {
+            val lines = sketch.split("\n").map { it.trim().replace(";", "") }.filter { it.isNotEmpty() }
+            val fns = mutableMapOf<String, MutableList<String>>()
+            var fn = false
+            var header: String? = null
+            lines.forEach {
+                if (it == "// FUNCTION START") {
+                    fn = true
+                    header = null
+                } else if (it == "// FUNCTION END") {
+                    fn = false
+                    header = null
+                } else if (fn && header == null) {
+                    header = it
+                    fns[it] = mutableListOf()
+                } else if (fn) {
+                    fns[header]!!.add(it)
+                }
+            }
+            return fns.mapValues { (_, v) -> v.filter { it.length > 1 } }
         }
     }
 }

@@ -1,0 +1,6 @@
+SKETCH_PATH="../applications/sketch-1.7.6/sketch-frontend/"
+cp src/main/sketch/symbolicgen/SCP.java "${SKETCH_PATH}/customcodegen/"
+cd $SKETCH_PATH
+javac -cp sketch-1.7.6-noarch.jar customcodegen/SCP.java 
+jar -cvf customcodegen.jar customcodegen/
+
