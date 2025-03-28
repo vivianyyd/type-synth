@@ -5,8 +5,13 @@ import java.io.File
 
 private fun join(vararg dirs: String) = dirs.joinToString(separator = File.separator)
 private fun profilingResultPath(testName: String) = join("results", "$testName.csv")
-private val sharedPath = join("src", "main", "sketch", "symbolicgen", "generated")
-private fun path(dir: String, testName: String) = join(sharedPath, dir, "$testName.sk")
+
+// TODO can pass this in main function
+private val customCodeGenerator = join("../applications/sketch-1.7.6/sketch-frontend/customcodegen.jar")
+private val generationPath = join("src", "main", "sketch", "symbolicgen", "generated")
+
+// TODO use --fe-inc so include statements don't have absolute paths
+private fun path(dir: String, testName: String) = join(generationPath, dir, "$testName.sk")
 private fun inputPath(testName: String) = path("input", testName)
 private fun outputPath(testName: String) = path("output", testName)
 
@@ -14,7 +19,14 @@ private fun write(path: String, contents: String) = File(path).printWriter().use
 
 fun callSketch(input: String, testName: String): String {
     write(inputPath(testName), input)
-    val out = "sketch ${inputPath(testName)} --slv-parallel --slv-nativeints --bnd-inline-amnt 5".runCommand()
+    val flags = listOf(
+        "--fe-custom-codegen $customCodeGenerator",
+        "--slv-parallel",
+        "-V 0",
+        "--slv-nativeints",
+        "--bnd-inline-amnt 5"
+    ).joinToString(separator = " ")
+    val out = "sketch ${inputPath(testName)} $flags".runCommand()
         ?: throw Exception("I'm sad")
     write(outputPath(testName), out)
     return out
