@@ -112,12 +112,11 @@ Type _tr_1() fixes _tr_1 { return _tr_gen(); }
 Type _i_1() fixes _i_1 { return _i_gen(); }
 Type _b_1() fixes _b_1 { return _b_gen(); }
 Type _i_0_1() fixes _i_0_1 { return _i_0_gen(); }
-Type _cons_1() fixes _cons_1 {
-    return _cons_gen();
-}
+Type _cons_1() fixes _cons_1 { return _cons_gen(); }
 // TODO don't make named values be harnesses
 
 // However many til we hit the upper bound on num options?? Pretty big number
+// TODO all of these should assert being different from their _1 versions
 Type _0_2() fixes _0_2 { return _0_gen(); }
 Type _tr_2() fixes _tr_2 { return _tr_gen(); }
 Type _i_2() fixes _i_2 { return _i_gen(); }
@@ -129,24 +128,28 @@ Type _cons_2() fixes _cons_2 {
     return result;
 }
 
-Type cons_toggle(int testNum) {
-    if (testNum == 1) return _cons_1();
-    if (testNum == 2) return _cons_2();
-    //...
-    assert false;
+generator bit i() {
+    bit i = ??;
+    minimize (1-i);
+    return i;
 }
 
-int numTests() {
-    int n = ??;
-    minimize(2-n); // TODO number here is the max number of tests we can have
-    return n;
-}
-
-harness Type oo_consco_0cc(int testNum) {
-    assume (testNum < numTests());
-    Type _cons_impl = cons_toggle(testNum);
-	assert (isFunction(_cons_impl));
-	Type result = apply((Function)_cons_impl, _0_1());
+Type oo_consco_0cc(Type cons, Type z) {
+    assert (isFunction(cons));
+	Type result = apply((Function)cons, z);
 	assert (result != null);
 	return result;
+}
+
+bit flag_1() { return i(); }
+bit flag_2() { return i(); }
+
+// All application examples will include if(flag_#())
+harness Type oo_consco_0cc_1() {
+    if (flag_1()) return oo_consco_0cc(_cons_1(), _0_1());
+}
+
+harness Type oo_consco_0cc_2() {
+    if (flag_2()) return oo_consco_0cc(_cons_2(), _0_2());
+    // TODO does it return null otherwise
 }
