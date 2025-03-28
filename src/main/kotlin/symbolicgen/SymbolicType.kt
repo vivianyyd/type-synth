@@ -37,9 +37,7 @@ class Function(
         rite.forEach { it.parent = Parent(this, 1) }
     }
 
-    override fun toString(): String = "$left -> $rite"  //"${if (left is Function) "($left)" else "$left"} -> $rite"
-//    fun List<SymbolicType>.print() = if (this.size == 1) "$this[0]" else "$this"
-//    return "${left.print()} -> ${rite.print()}"
+    override fun toString(): String = "$left -> $rite"
 }
 
 class Label(override var parent: Parent? = null) : AbstractType(parent) {
@@ -62,25 +60,11 @@ fun main() {
                 ),
                 mutableListOf(
                     special,
-                    Hole()
+                    Variable()
                 )
             )
         )
     )
     println(t)
     println(special.determinedTypeSoFar())
-}
-
-/** A hole to be filled by a child node. */
-class Hole(override var parent: Parent? = null) : AbstractType(parent) {
-    override fun toString(): String = "??"
-}
-
-// TODO This shouldn't be a type, just a result of SymbolicChecker. But Kotlin doesn't rly let us ad-hoc make SymbolicType a subclass of result
-/** Unifies with everything, producing itself. Represents a type that can never successfully resolve. */
-data class Error(val category: ErrorCategory, val t1: SymbolicType, val t2: SymbolicType? = null) : AbstractType(null)
-
-enum class ErrorCategory {
-    LABEL_FUNCTION,
-    APPLIED_NON_FUNCTION
 }

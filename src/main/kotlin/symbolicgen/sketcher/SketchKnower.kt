@@ -128,7 +128,6 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
                 chooseFromOptions(riteName, t.rite, typeId)
                 w.line("$portSketchName = new Function(left=$leftName, rite=$riteName)")
             }
-            is Error, is Hole -> throw Exception("nah")
         }
 
         private var typeId = 0
