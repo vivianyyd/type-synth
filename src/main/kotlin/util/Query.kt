@@ -10,6 +10,7 @@ data class Application(val name: String, val arguments: List<Application> = list
 fun Iterable<Application>.print(positive: Boolean): String =
     this.joinToString("\n") { "(${if (positive) "+" else "-"} $it)" }
 
+/** TODO deprecated, convert all usages of Query/Application to NewQuery/Example */
 class Query(
     posExamples: Collection<Application> = listOf(),
     val negExamples: Collection<Application> = listOf(),

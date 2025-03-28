@@ -1,0 +1,28 @@
+include "/home/vivianyyd/applications/sketch-1.7.6/sketch-frontend/sketchlib/list.skh";
+
+int len <T> (List<T> l) {
+    switch(l){
+        case Cons:{ return 1 + len(l.next); }
+        case Nil:{ return 0; }
+    }
+}
+
+/** ith element, or null if [i >= len(l)] */
+T get <T> (List<T> l, int i) {
+    switch(l){
+        case Cons:{
+            if (i == 0) return l.val;
+            else return get(l.next, i - 1);
+        }
+        case Nil:{ return null; }
+    }
+}
+
+List<T> plus <T> (List<T> l, List<T> elems) {
+    switch (elems) {
+        case Cons:{
+            return plus(add(l, elems.val), elems.next);
+        }
+        case Nil:{ return l; }
+    }
+}

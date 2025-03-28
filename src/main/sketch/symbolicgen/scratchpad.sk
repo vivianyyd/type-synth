@@ -1,0 +1,153 @@
+include "/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/types.sk";
+/*
+NAME		SKETCHNAME		DUMMY
+0			_0			0
+tr			_tr			1
+[]i			_i			2
+[]b			_b			3
+[[]]i			_i_0			4
+cons			_cons
+*/
+generator Type _0_gen() { return new ConcreteLabel(dummy=0); }
+generator Type _tr_gen() { return new ConcreteLabel(dummy=1); }
+generator Type _i_gen() { return new ConcreteLabel(dummy=2); }
+generator Type _b_gen() { return new ConcreteLabel(dummy=3); }
+generator Type _i_0_gen() { return new ConcreteLabel(dummy=4); }
+generator Type _cons_gen() {
+	Type root;
+	boolean canBeFresh = false;
+	boolean canBeBoundInLabel = false;
+	int lVars = 0;
+
+	Type rootl; Type rootr;
+	// input type
+	canBeFresh = true;
+	int flag_rootl = ??;
+	assert (flag_rootl == 0 || flag_rootl == 1);
+	if (flag_rootl == 0) {
+		int v_rootl = ??;
+		assert (v_rootl >= 0 && v_rootl < lVars + 2);
+		if (!canBeFresh) assert (v_rootl != lVars);
+		if (!canBeBoundInLabel) assert (v_rootl != lVars + 1);
+		if (v_rootl < lVars) { rootl = new VarRef(vId=v_rootl, tId=0); }
+		else if (v_rootl == lVars) {
+			rootl = new VarBind(vId=lVars, tId=0);
+			lVars++;
+		}
+		else if (v_rootl == lVars + 1) { rootl = new VarLabelBound(); }
+		else assert false;
+	}
+	if (flag_rootl == 1) {
+		rootl = new Label();
+		canBeBoundInLabel = true;
+	}
+	// output type
+	canBeFresh = false;
+	int flag_rootr = ??;
+	assert (flag_rootr == 0 || flag_rootr == 1);
+	if (flag_rootr == 0) {
+		int v_rootr = ??;
+		assert (v_rootr >= 0 && v_rootr < lVars + 2);
+		if (!canBeFresh) assert (v_rootr != lVars);
+		if (!canBeBoundInLabel) assert (v_rootr != lVars + 1);
+		if (v_rootr < lVars) { rootr = new VarRef(vId=v_rootr, tId=0); }
+		else if (v_rootr == lVars) {
+			rootr = new VarBind(vId=lVars, tId=0);
+			lVars++;
+		}
+		else if (v_rootr == lVars + 1) { rootr = new VarLabelBound(); }
+		else assert false;
+	}
+	if (flag_rootr == 1) {
+		Type rootrl; Type rootrr;
+		// input type
+		canBeFresh = true;
+		int flag_rootrl = ??;
+		assert (flag_rootrl == 0 || flag_rootrl == 1);
+		if (flag_rootrl == 0) {
+			int v_rootrl = ??;
+			assert (v_rootrl >= 0 && v_rootrl < lVars + 2);
+			if (!canBeFresh) assert (v_rootrl != lVars);
+			if (!canBeBoundInLabel) assert (v_rootrl != lVars + 1);
+			if (v_rootrl < lVars) { rootrl = new VarRef(vId=v_rootrl, tId=0); }
+			else if (v_rootrl == lVars) {
+				rootrl = new VarBind(vId=lVars, tId=0);
+				lVars++;
+			}
+			else if (v_rootrl == lVars + 1) { rootrl = new VarLabelBound(); }
+			else assert false;
+		}
+		if (flag_rootrl == 1) {
+			rootrl = new Label();
+			canBeBoundInLabel = true;
+		}
+		// output type
+		canBeFresh = false;
+		int flag_rootrr = ??;
+		assert (flag_rootrr == 0 || flag_rootrr == 1);
+		if (flag_rootrr == 0) {
+			int v_rootrr = ??;
+			assert (v_rootrr >= 0 && v_rootrr < lVars + 2);
+			if (!canBeFresh) assert (v_rootrr != lVars);
+			if (!canBeBoundInLabel) assert (v_rootrr != lVars + 1);
+			if (v_rootrr < lVars) { rootrr = new VarRef(vId=v_rootrr, tId=0); }
+			else if (v_rootrr == lVars) {
+				rootrr = new VarBind(vId=lVars, tId=0);
+				lVars++;
+			}
+			else if (v_rootrr == lVars + 1) { rootrr = new VarLabelBound(); }
+			else assert false;
+		}
+		if (flag_rootrr == 1) {
+			rootrr = new Label();
+			canBeBoundInLabel = true;
+		}
+		rootr = new Function(left=rootrl, rite=rootrr);
+	}
+	root = new Function(left=rootl, rite=rootr);
+	return root;
+}
+Type _0_1() fixes _0_1 { return _0_gen(); }
+Type _tr_1() fixes _tr_1 { return _tr_gen(); }
+Type _i_1() fixes _i_1 { return _i_gen(); }
+Type _b_1() fixes _b_1 { return _b_gen(); }
+Type _i_0_1() fixes _i_0_1 { return _i_0_gen(); }
+Type _cons_1() fixes _cons_1 { return _cons_gen(); }
+// TODO don't make named values be harnesses
+// All application examples will include if(flag_#())
+harness Type oo_consco_0cc_1() { if (flag_1()) return oo_consco_0cc(_cons_1(), _0_1()); }
+
+Type oo_consco_0cc(Type cons, Type z) {
+    assert (isFunction(cons));
+	Type result = apply((Function)cons, z);
+	assert (result != null);
+	return result;
+}
+
+// However many til we hit the upper bound on num options?? Pretty big number
+// TODO all of these should assert being different from their _1 versions
+Type _0_2() fixes _0_2 { return _0_gen(); }
+Type _tr_2() fixes _tr_2 { return _tr_gen(); }
+Type _i_2() fixes _i_2 { return _i_gen(); }
+Type _b_2() fixes _b_2 { return _b_gen(); }
+Type _i_0_2() fixes _i_0_2 { return _i_0_gen(); }
+Type _cons_2() fixes _cons_2 {
+    Type result = _cons_gen();
+    assert (result != _cons_1());
+    return result;
+}
+
+harness Type oo_consco_0cc_2() {
+    if (flag_2()) return oo_consco_0cc(_cons_2(), _0_2());
+    // TODO does it return null otherwise
+}
+
+generator bit i() {
+    bit i = ??;
+    minimize (1-i);
+    return i;
+}
+
+bit flag_1() { return i(); }
+bit flag_2() { return i(); }
+
