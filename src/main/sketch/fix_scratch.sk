@@ -1,0 +1,157 @@
+include "/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/types.sk";
+
+/*
+generator int gen() { 
+    int i = ??;
+    assert (i >= 0 && i<= 2);
+    return i; 
+}
+
+int x_1() fixes x_1 { return gen(); }
+int x_2() fixes x_2 { return gen(); }
+int y_1() fixes y_1 { return gen(); }
+int y_2() fixes y_2 { return gen(); }
+
+int x_toggle(int testNum) {
+    assume (testNum > 0 && testNum < 3);
+    if (testNum == 1) return x_1();
+    if (testNum == 2) {
+        assert (x_2() != x_1());
+        return x_2();
+    }
+    assert false;
+}
+int y_toggle(int testNum) {
+    assume (testNum > 0 && testNum < 3);
+    if (testNum == 1) return y_1();
+    if (testNum == 2) {
+        assert (y_2() != y_1());
+        return y_2();
+    }
+    assert false;
+}
+
+int numTests() {
+    int n = ??;
+    assert (n > 0 && n < 3);
+    minimize(2-n); // TODO number here is the max number of tests we can have
+    return n;
+}
+
+harness void f(int testNum) {
+    assume (testNum < numTests());
+    assert (numTests() == 2);
+    int x_impl = x_toggle(testNum);
+    int y_impl = y_toggle(testNum);
+    assert (x_impl + y_impl == 3);
+}
+*/
+
+
+
+
+
+/*
+
+include "/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/types.sk";
+
+generator int gen() { 
+    int i = ??;
+    assert (i >= 0 && i<= 2);
+    return i; 
+}
+
+// lol I think this causes infinite loop
+int x_1() fixes x_1 { 
+    int x = gen();
+    assert (x != x_2());
+    return x; 
+}
+int x_2() fixes x_2 { 
+    int x = gen();
+    assert (x != x_1());
+    return x;
+}
+int y_1() fixes y_1 { 
+    int y = gen();
+    assert (y != y_2());
+    return y;
+}
+int y_2() fixes y_2 { 
+    int y = gen();
+    assert (y != y_1());
+    return y;
+}
+
+harness void f_1() {
+//    bit i = ??;
+//    if (i) {
+        assert (x_1() + y_1() == 3);
+//    }
+//    assert (i == 1);
+//    minimize(1-i);
+}
+
+harness void f_2() {
+    bit i = ??;
+    if (i) {
+        assert (x_2() + y_2() == 3);
+    }
+    minimize(1-i);
+}
+*/
+
+
+
+include "/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/types.sk";
+
+generator int gen() { 
+    int i = ??;
+    assert (i >= 0 && i<= 2);
+    return i; 
+}
+
+int x_1() fixes x_1 { 
+    int x = gen();
+    return x; 
+}
+int x_2() fixes x_2 { 
+    int x = gen();
+    assert (x != x_1());
+    return x;
+}
+int x_3() fixes x_3 { 
+    int x = gen();
+    assert (x != x_1() && x != x_2());
+    return x;
+}
+int y_1() fixes y_1 { 
+    int y = gen();
+    return y;
+}
+int y_2() fixes y_2 { 
+    int y = gen();
+    assert (y != y_1());
+    return y;
+}
+int y_3() fixes y_3 { 
+    int y = gen();
+    assert (y != y_1() && y != y_2());
+    return y;
+}
+
+generator bit flag() { 
+    bit i = ??;
+    minimize(1-i);
+    return i;
+}
+
+harness void f_1() {
+    if (flag()) assert (x_1() + y_1() == 3);
+}
+harness void f_2() {
+    if (flag()) assert (x_2() + y_2() == 3);
+}
+harness void f_3() {
+    if (flag()) assert (x_3() + y_3() == 3);
+}
