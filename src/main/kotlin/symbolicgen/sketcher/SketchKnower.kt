@@ -14,7 +14,8 @@ fun main() {
     val runSketch = true
     val out = if (runSketch) callSketch(sketcher.sketchInput(), "test") else readOutput("test")
 
-    println(sketcher.parse("_cons", out))
+    println(listOf("_cons_0", "_cons_1", "_cons_2").map { sketcher.parse(it, out) }.joinToString(separator = "\n"))
+
 //    val nextQuery = sketcher.sketchInput() + "\n" + "harness void neq() { assert (_cons() != $firstCandidate); }"
 //    File(sketch).printWriter().use { it.println(nextQuery) }
 //    val newOut = callSketch()
@@ -43,20 +44,37 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
     private inner class SketchWriter {
         private val w = Writer()
 
+        private fun gen(name: String) = if (nullary(name)) "${sk(name)}_final" else "${sk(name)}_gen"
+        private val localNumVars = "lVars"
+
         val make: String by lazy {
             header()
             query.names.forEach { generator(it) }
-            query.posExamples.forEach { posExample(it) }
+            query.posExamples.filterIsInstance<App>().forEach { posExampleAssertions(it) }
+            flags()
+            harnesses()
             w.s()
+        }
+
+        /** An upper bound on the number of candidate contexts for this query. */
+        private val rounds: Int by lazy {
+            fun <T> List<T>.mapSum(f: (T) -> Int) = this.map(f).fold(0) { a, b -> a + b }
+
+            // TODO we can do something more clever later
+            // TODO since we fill in empty lists after tree bulding done, this is not right. empty lists expand to 2
+            fun bound(t: SymbolicType): Int = when (t) {
+                is Error, is Hole -> throw Exception("shouldn't happen also we'll get rid of this later anyway")
+                is Function -> t.left.mapSum(::bound) * t.rite.mapSum(::bound)
+                is Label -> 1
+                is Variable -> 3
+            }
+            query.names.map { state.read()[it]!!.mapSum(::bound) }.fold(1) { a, b -> a * b }
         }
 
         private fun nullary(name: String): Boolean {
             val options = state.read()[name]!!
             return options.size == 1 && options[0] is Label
         }
-
-        private fun gen(name: String) = "${sk(name)}_gen"
-        private val localNumVars = "lVars"
 
         private fun header() {
             w.include("/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/types.sk")
@@ -65,6 +83,28 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
                     if (nullary(k)) oracle.dummy(Name(k)) else ""
                 }"
             })
+        }
+
+        // GENERATORS
+        private var typeId = 0
+        private fun generator(name: String) {
+            if (nullary(name)) {
+                w.singleLineBlock("Type ${gen(name)}()", "return new ConcreteLabel(dummy=${oracle.dummy(Name(name))})")
+                return
+            }
+            w.block("generator Type ${gen(name)}()") {
+                val options = state.read()[name]!!
+                w.lines(
+                    listOf(
+                        "Type root",
+                        // TODO canBeFresh need not be in Sketch, it is a property of the tree shape not choices
+                        "boolean canBeFresh = false", "boolean canBeBoundInLabel = false", "int $localNumVars = 0"
+                    )
+                )
+                w.newLine()
+                chooseFromOptions("root", options, typeId++)
+                w.line("return root")
+            }
         }
 
         /** typeId is used to distinguish variables - avoids capture by making their id include which type they're part of */
@@ -128,45 +168,65 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
                 chooseFromOptions(riteName, t.rite, typeId)
                 w.line("$portSketchName = new Function(left=$leftName, rite=$riteName)")
             }
+            is Error, is Hole -> throw Exception("nah")
         }
 
-        private var typeId = 0
-        private fun generator(name: String) {
-            val header = "generator Type ${gen(name)}()"
-            if (nullary(name)) w.singleLineBlock(header, "return new ConcreteLabel(dummy=${oracle.dummy(Name(name))})")
-            else w.block(header) {
-                val options = state.read()[name]!!
+        // EXAMPLES
+        private fun posExampleAssertions(ex: App) =
+            w.block("Type ${assertions(ex)}(Type ${sk(ex.fn)}_t, Type ${sk(ex.arg)}_t)") {
                 w.lines(
                     listOf(
-                        "Type root",
-                        // TODO canBeFresh need not be in Sketch, it is a property of the tree shape not choices
-                        "boolean canBeFresh = false", "boolean canBeBoundInLabel = false", "int $localNumVars = 0"
+                        "assert (isFunction(${sk(ex.fn)}_t))",
+                        "Type result = apply((Function)${sk(ex.fn)}_t, ${sk(ex.arg)}_t)",
+                        "assert (result != null)",
+                        "return result"
                     )
                 )
-                w.newLine()
-                chooseFromOptions("root", options, typeId++)
-                w.line("return root")
+            }
+
+        private fun flags() {
+            w.block("generator bit i()") { w.lines(listOf("bit i = ??", "minimize (1 - i)", "return i")) }
+            repeat(rounds) { w.singleLineBlock("bit ${flag(it)}", "return i()") }
+        }
+
+        private fun harnesses() =
+            repeat(rounds) { r -> query.posExamples.forEach { posExample(it, r) } }
+
+        private fun posExample(ex: Example, round: Int) {
+            val exRound = exWithRound(ex, round)
+            when (ex) {
+                is Name -> {
+                    if (!nullary(ex.name))
+                        w.block("Type $exRound() fixes $exRound") {
+                            w.line("Type t = ${gen(ex.name)}()")
+                            w.lines((0 until round).map { "assert (t != ${exWithRound(ex, it)}())" })
+                            w.line("return t")
+                        }
+                }
+                is App -> w.singleLineBlock(
+                    "harness Type $exRound()",
+                    "if (${flag(round)}) return ${assertions(ex)}(${
+                        exWithRound(ex.fn, round)
+                    }(), ${
+                        exWithRound(ex.arg, round)
+                    }())"
+                )
             }
         }
+
 
         private fun sk(ex: Example): String = when (ex) {
             is Name -> sk(ex.name)
             is App -> "oo${sk(ex.fn)}co${sk(ex.arg)}cc"
         }
 
-        private fun posExample(ex: Example) = when (ex) {
-            is Name -> w.singleLineBlock("harness Type ${sk(ex)}()", "return ${gen(ex.name)}()")
-            is App -> w.block("harness Type ${sk(ex)}()") {
-                w.lines(
-                    listOf(
-                        "assert (isFunction(${sk(ex.fn)}()))",
-                        "Type result = apply((Function)${sk(ex.fn)}(), ${sk(ex.arg)}())",
-                        "assert (result != null)",
-                        "return result"
-                    )
-                )
-            }
-        }
+        private fun assertions(ex: App) = sk(ex)
+
+        private fun exWithRound(ex: Example, round: Int) =
+            if (ex is Name && nullary(ex.name)) gen(ex.name) else "${sk(ex)}_$round"
+
+        /** Note that this one includes the parens */
+        private fun flag(round: Int) = "flag_$round()"
 
         private inner class Writer {
             private val sb = StringBuilder()
