@@ -14,9 +14,7 @@ fun main() {
     val runSketch = false
     val out = if (runSketch) callSketch(sketcher.sketchInput(), "test") else readOutput("test")
 
-    sketcher.parseFunctions(out).forEach { println(it) }
-
-    println(sketcher.parse("_cons", out))
+    query.names.forEach { println("$it: ${sketcher.parse(it, out)}") }
 //    val nextQuery = sketcher.sketchInput() + "\n" + "harness void neq() { assert (_cons() != $firstCandidate); }"
 //    File(sketch).printWriter().use { it.println(nextQuery) }
 //    val newOut = callSketch()
@@ -25,8 +23,7 @@ fun main() {
 }
 
 class SketchKnower(val query: NewQuery, private val state: State, private val oracle: EqualityNewOracle) {
-    fun parse(sketchName: String, skOut: String) = SketchParser().parseToType(sketchName, skOut)
-    fun parseFunctions(s: String) = SketchParser().functions(s)
+    fun parse(name: String, skOut: String) = SketchParser(skOut).parseToType(name)
     fun sketchInput() = SketchWriter().make
 
     private val sketchNames = mutableMapOf<String, String>()
@@ -215,37 +212,37 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
         }
     }
 
-    private inner class SketchParser {
-        fun parseToType(sketchName: String, skOut: String) = typeAfterSubs(parseToAssignments(sketchName, skOut))
+    private inner class SketchParser(private val sketch: String) {
+        fun parseToType(name: String) = typeAfterSubs(parseToAssignments(sk(name)))
 
         // TODO only parse if the output is length more than 3. Then if there's any errors we can just abort
-        private fun parseToAssignments(sketchName: String, skOut: String) =
-            blockOfSignature("void $sketchName", skOut).filter { it.contains("=") && !it.contains("_out = root") }
-                .associate {
-                    it.replace("Type@ANONYMOUS ", "").replace("new ", "").split(" = ").let { (lhs, rhs) ->
-                        val (t, a) = rhs.split("(")
-                        val args = a.replace(")", "")
-                        val skTy = when (t) {
-                            "Label" -> L
-                            "Function" -> {
-                                val (l, r) = args.replace("left=", "").replace("rite=", "").split(", ")
-                                F(left = N(l), rite = N(r))
-                            }
-                            "VarBind" -> {
-                                val (v, tId) = args.replace("vId=", "").replace("tId=", "").split(", ")
-                                VB(vId = v.toInt(), tId = tId.toInt())
-                            }
-                            "VarRef" -> {
-                                val (v, tId) = args.replace("vId=", "").replace("tId=", "").split(", ")
-                                VR(vId = v.toInt(), tId = tId.toInt())
-                            }
-                            "VarLabelBound" -> VL
-                            "ConcreteLabel" -> throw Exception("Shouldn't generate types with concrete labels rn")
-                            else -> throw Exception("Parsing error")
+        private fun parseToAssignments(sketchName: String) =
+            functions[sketchName]!!.filter { it.contains("=") && it.contains("(") }.associate {
+                it.replace("new ", "").split(" = ").let { (lhs, rhs) ->
+                    // TODO make a function that parses args more prettily
+                    val (t, a) = rhs.split("(")
+                    val args = a.replace(")", "")
+                    val skTy = when (t) {
+                        "Label" -> L
+                        "Function" -> {
+                            val (l, r) = args.replace("left=", "").replace("rite=", "").split(", ")
+                            F(left = N(l), rite = N(r))
                         }
-                        lhs to skTy
+                        "VarBind" -> {
+                            val (v, tId) = args.replace("vId=", "").replace("tId=", "").split(", ")
+                            VB(vId = v.toInt(), tId = tId.toInt())
+                        }
+                        "VarRef" -> {
+                            val (v, tId) = args.replace("vId=", "").replace("tId=", "").split(", ")
+                            VR(vId = v.toInt(), tId = tId.toInt())
+                        }
+                        "VarLabelBound" -> VL
+                        "ConcreteLabel" -> CL(dummy = args.replace("dummy=", "").toInt())
+                        else -> throw Exception("Parsing error")
                     }
+                    (if (skTy is CL) "root" else lhs) to skTy
                 }
+            }
 
         private fun typeAfterSubs(l: Map<String, SketchedType>): SketchedType = sub(l["root"]!!, l)
 
@@ -255,18 +252,21 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
             is F -> F(sub(t.left, l), sub(t.rite, l))
         }
 
-        private fun blockOfSignature(sig: String, sketch: String): List<String> {
+        private fun blockOfSignature(sig: String): List<String> {
             var txt = sketch.substringAfterLast("$sig (")
             txt = txt.substringAfter('{')
             txt = txt.substringBefore('}')
             return txt.split(';').map { it.trim() }
         }
 
-        fun functions(sketch: String) =
-            functionsWithWrappers(sketch).filterKeys { !it.contains("Wrapper") }.mapKeys { (k, _) -> k.split(" ")[1] }
+        private val functions: Map<String, List<String>> by lazy {
+            functionsWithWrappers.mapKeys { (k, _) -> k.split(" ")[1] }.filterKeys { it in sketchNames.values }
+                .mapValues { (_, v) -> v.filter { it.contains("=") } }
+        }
 
-        fun functionsWithWrappers(sketch: String): Map<String, List<String>> {
-            val lines = sketch.split("\n").map { it.trim().replace(";", "") }.filter { it.isNotEmpty() }
+        private val functionsWithWrappers: Map<String, List<String>> by lazy {
+            val lines = sketch.split("\n").map { it.replace(";", "").replace("Type@ANONYMOUS", "").trim() }
+                .filter { it.isNotEmpty() }
             val fns = mutableMapOf<String, MutableList<String>>()
             var fn = false
             var header: String? = null
@@ -281,10 +281,10 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
                     header = it
                     fns[it] = mutableListOf()
                 } else if (fn) {
-                    fns[header]!!.add(it)
+                    fns[header]!!.add(it.split("//").first().trim())
                 }
             }
-            return fns.mapValues { (_, v) -> v.filter { it.length > 1 } }
+            fns.mapValues { (_, v) -> v.filter { it.length > 1 } }
         }
     }
 }
