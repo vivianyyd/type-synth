@@ -4,6 +4,7 @@ import runCommand
 import java.io.File
 
 private fun join(vararg dirs: String) = dirs.joinToString(separator = File.separator)
+private fun profilingResultPath(testName: String) = join("results", "$testName.csv")
 private val sharedPath = join("src", "main", "sketch", "symbolicgen", "generated")
 private fun path(dir: String, testName: String) = join(sharedPath, dir, "$testName.sk")
 private fun inputPath(testName: String) = path("input", testName)
@@ -20,3 +21,5 @@ fun callSketch(input: String, testName: String): String {
 }
 
 fun readOutput(testName: String) = File(outputPath(testName)).readText()
+
+fun writeProfiling(output: String, testName: String) = write(profilingResultPath(testName), output)
