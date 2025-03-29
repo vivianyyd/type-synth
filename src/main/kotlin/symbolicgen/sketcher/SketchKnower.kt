@@ -13,20 +13,25 @@ fun main() {
     val sketcher = SketchKnower(query, b, oracle)
 
     var sketch = sketcher.initialSketch()
+    // TODO fix upper bound calculation, make that the loop bound. Print to a csv file
     for (i in 0..8) {
         val out = callSketch(sketch, "test")
         println(sketcher.readableOutput(out))
         sketch = sketcher.nextQuery(out, i)
     }
-
 }
 
 class SketchKnower(val query: NewQuery, private val state: State, private val oracle: EqualityNewOracle) {
     private val sw = SketchWriter()
     fun nextQuery(sketch: String, round: Int) = sw.addBanned(SketchParser(sketch).parseAll.first, round)
-    fun readableOutput(sketch: String): String {
+    fun output(sketch: String): Pair<Int, String> {
         val (types, time) = SketchParser(sketch).parseAll
-        return "${time}s\t${types.mapValues { (_, v) -> v.toString() }}"
+        return time to "${types.mapValues { (_, v) -> v.toString() }}"
+    }
+
+    fun readableOutput(sketch: String): String {
+        val (time, typesString) = output(sketch)
+        return "${time}s\t$typesString"
     }
 
     fun initialSketch() = sw.make()
