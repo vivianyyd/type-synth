@@ -12,19 +12,26 @@ fun main() {
     val sketcher = SketchKnower(query, b, oracle)
 
     val runSketch = false
-    val out = if (runSketch) callSketch(sketcher.sketchInput(), "test") else readOutput("test")
+    val init = sketcher.initialSketch()
+    val out = if (runSketch) callSketch(init, "test") else readOutput("test")
+    println(sketcher.readableOutput(out))
+//    val nextQuery = sketcher.nextQuery(out, 1)
+//    val out2 = callSketch(nextQuery, "testnext")
+    val out2 = readOutput("testnext")
+    println(sketcher.readableOutput(out2))
 
-    query.names.forEach { println("$it: ${sketcher.parse(it, out)}") }
-//    val nextQuery = sketcher.sketchInput() + "\n" + "harness void neq() { assert (_cons() != $firstCandidate); }"
-//    File(sketch).printWriter().use { it.println(nextQuery) }
-//    val newOut = callSketch()
-//    File(sketchOut).printWriter().use { it.println(newOut) }
-//    println(sketcher.parse(/*TODO sketcher.sk("cons")*/"_cons", newOut))
+    val nextQuery = sketcher.nextQuery(out2, 2)
+//    val out3 = callSketch(nextQuery, "testnextnext")
+    val out3 = readOutput("testnextnext")
+    println(sketcher.readableOutput(out3))
+
 }
 
 class SketchKnower(val query: NewQuery, private val state: State, private val oracle: EqualityNewOracle) {
-    fun parse(name: String, skOut: String) = SketchParser(skOut).parseToType(name)
-    fun sketchInput() = SketchWriter().make
+    private val sw = SketchWriter()
+    fun nextQuery(sketch: String, round: Int) = sw.addBanned(SketchParser(sketch).parseAll, round)
+    fun readableOutput(sketch: String) = SketchParser(sketch).parseAll.mapValues { (_, v) -> v.toString() }
+    fun initialSketch() = sw.make()
 
     private val sketchNames = mutableMapOf<String, String>()
 
@@ -43,11 +50,24 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
     private inner class SketchWriter {
         private val w = Writer()
 
-        val make: String by lazy {
+        fun make(): String {
             header()
             query.names.forEach { generator(it) }
             query.posExamples.forEach { posExample(it) }
-            w.s()
+            return w.s()
+        }
+
+        fun addBanned(banned: Map<String, SketchedType>, round: Int): String {
+            w.block("harness void banned$round()") {
+                w.line(
+                    "assert (${
+                        banned.map { (n, ty) ->
+                            "(${sk(n)}() != ${ty.constructSketch()})"
+                        }.joinToString(" || ")
+                    })"
+                )
+            }
+            return w.s()
         }
 
         private fun nullary(name: String): Boolean {
@@ -213,7 +233,9 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
     }
 
     private inner class SketchParser(private val sketch: String) {
-        fun parseToType(name: String) = typeAfterSubs(parseToAssignments(sk(name)))
+        val parseAll by lazy {
+            query.names.associateWith { typeAfterSubs(parseToAssignments(sk(it))) }
+        }
 
         // TODO only parse if the output is length more than 3. Then if there's any errors we can just abort
         private fun parseToAssignments(sketchName: String) =
@@ -266,7 +288,7 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
 
         private val functionsWithWrappers: Map<String, List<String>> by lazy {
             val lines = sketch.split("\n").map { it.replace(";", "").replace("Type@ANONYMOUS", "").trim() }
-                .filter { it.isNotEmpty() }
+                .filter { it.isNotEmpty() && it.first() != '@' }
             val fns = mutableMapOf<String, MutableList<String>>()
             var fn = false
             var header: String? = null
