@@ -4,6 +4,7 @@ import symbolicgen.*
 import symbolicgen.Function
 import test.ConsTest
 import util.*
+import kotlin.math.roundToInt
 
 fun main() {
     val query = ConsTest.query
@@ -11,26 +12,23 @@ fun main() {
     val b = SymbolicTypeBuilder(query).make
     val sketcher = SketchKnower(query, b, oracle)
 
-    val runSketch = false
-    val init = sketcher.initialSketch()
-    val out = if (runSketch) callSketch(init, "test") else readOutput("test")
-    println(sketcher.readableOutput(out))
-//    val nextQuery = sketcher.nextQuery(out, 1)
-//    val out2 = callSketch(nextQuery, "testnext")
-    val out2 = readOutput("testnext")
-    println(sketcher.readableOutput(out2))
-
-    val nextQuery = sketcher.nextQuery(out2, 2)
-//    val out3 = callSketch(nextQuery, "testnextnext")
-    val out3 = readOutput("testnextnext")
-    println(sketcher.readableOutput(out3))
+    var sketch = sketcher.initialSketch()
+    for (i in 0..8) {
+        val out = callSketch(sketch, "test")
+        println(sketcher.readableOutput(out))
+        sketch = sketcher.nextQuery(out, i)
+    }
 
 }
 
 class SketchKnower(val query: NewQuery, private val state: State, private val oracle: EqualityNewOracle) {
     private val sw = SketchWriter()
-    fun nextQuery(sketch: String, round: Int) = sw.addBanned(SketchParser(sketch).parseAll, round)
-    fun readableOutput(sketch: String) = SketchParser(sketch).parseAll.mapValues { (_, v) -> v.toString() }
+    fun nextQuery(sketch: String, round: Int) = sw.addBanned(SketchParser(sketch).parseAll.first, round)
+    fun readableOutput(sketch: String): String {
+        val (types, time) = SketchParser(sketch).parseAll
+        return "${time}s\t${types.mapValues { (_, v) -> v.toString() }}"
+    }
+
     fun initialSketch() = sw.make()
 
     private val sketchNames = mutableMapOf<String, String>()
@@ -234,8 +232,13 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
 
     private inner class SketchParser(private val sketch: String) {
         val parseAll by lazy {
-            query.names.associateWith { typeAfterSubs(parseToAssignments(sk(it))) }
+            query.names.associateWith { typeAfterSubs(parseToAssignments(sk(it))) } to
+                    (lines.first { "Total time = " in it }
+                        .substringAfter("Total time = ").toInt() / 1000.0).roundToInt()
         }
+
+        val lines = sketch.lines().map { it.replace(";", "").replace("Type@ANONYMOUS", "").trim() }
+            .filter { it.isNotEmpty() && it.first() != '@' }
 
         // TODO only parse if the output is length more than 3. Then if there's any errors we can just abort
         private fun parseToAssignments(sketchName: String) =
@@ -287,8 +290,6 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
         }
 
         private val functionsWithWrappers: Map<String, List<String>> by lazy {
-            val lines = sketch.split("\n").map { it.replace(";", "").replace("Type@ANONYMOUS", "").trim() }
-                .filter { it.isNotEmpty() && it.first() != '@' }
             val fns = mutableMapOf<String, MutableList<String>>()
             var fn = false
             var header: String? = null
