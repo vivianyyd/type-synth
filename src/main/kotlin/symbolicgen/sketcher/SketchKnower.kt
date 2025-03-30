@@ -14,14 +14,10 @@ fun main() {
 
     val runSketch = true
     val out = if (runSketch) callSketch(sketcher.sketchInput(), "test") else readSketchOutput("test")
+    val (types, time) = (sketcher.parse(out))
+    println("${types.size} types in $time seconds")
+    println(types.size == types.values.toSet().size)
 
-    println(sketcher.parse(out))
-
-//    val nextQuery = sketcher.sketchInput() + "\n" + "harness void neq() { assert (_cons() != $firstCandidate); }"
-//    File(sketch).printWriter().use { it.println(nextQuery) }
-//    val newOut = callSketch()
-//    File(sketchOut).printWriter().use { it.println(newOut) }
-//    println(sketcher.parse(/*TODO sketcher.sk("cons")*/"_cons", newOut))
 }
 
 class SketchKnower(val query: NewQuery, private val state: State, private val oracle: EqualityNewOracle) {
@@ -49,6 +45,8 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
         private val localNumVars = "lVars"
 
         val make: String by lazy {
+            println("$rounds ROUNDS")
+
             header()
             query.names.forEach { generator(it) }
             query.posExamples.filterIsInstance<App>().forEach { posExampleAssertions(it) }
@@ -60,9 +58,6 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
         /** An upper bound on the number of candidate contexts for this query. */
         private val rounds: Int by lazy {
             fun <T> List<T>.mapSum(f: (T) -> Int) = this.map(f).fold(0) { a, b -> a + b }
-
-            // TODO we can do something more clever later
-            // TODO since we fill in empty lists after tree bulding done, this is not right. empty lists expand to 2
             fun bound(t: SymbolicType): Int = when (t) {
                 is Function -> t.left.mapSum(::bound) * t.rite.mapSum(::bound)
                 is Label -> 1
@@ -89,7 +84,10 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
         private var typeId = 0
         private fun generator(name: String) {
             if (nullary(name)) {
-                w.singleLineBlock("Type ${gen(name)}()", "return new ConcreteLabel(dummy=${oracle.dummy(Name(name))})")
+                w.singleLineBlock(
+                    "Type ${gen(name)}() fixes ${gen(name)}",
+                    "return new ConcreteLabel(dummy=${oracle.dummy(Name(name))})"
+                )
                 return
             }
             w.block("generator Type ${gen(name)}()") {
@@ -110,19 +108,17 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
         /** typeId is used to distinguish variables - avoids capture by making their id include which type they're part of */
         private fun chooseFromOptions(portSketchName: String, options: List<SymbolicType>, typeId: Int) {
             val flag = "flag_$portSketchName"
-            // TODO not sure if this is right. we didn't see anything that forced us to make this a function so anything but arrow is ok
-            // TODO at the very least this should happen in a pass at the end of Tree building, not here
-            val opts = options.ifEmpty { listOf(Variable(), Label()) }
-            if (opts.size == 1) {
-                pickOption(portSketchName, opts[0], typeId)  // Makes code shorter
+            if (options.size == 1) {
+                pickOption(portSketchName, options[0], typeId)  // Makes code shorter
                 return
             }
             w.lines(
                 listOf(
-                    "int $flag = ??", "assert (${(opts.indices).joinToString(separator = " || ") { "$flag == $it" }})"
+                    "int $flag = ??",
+                    "assert (${(options.indices).joinToString(separator = " || ") { "$flag == $it" }})"
                 )
             )
-            opts.forEachIndexed { i, t ->
+            options.forEachIndexed { i, t ->
                 w.block("if ($flag == $i)") { pickOption(portSketchName, t, typeId) }
             }
         }
@@ -188,23 +184,20 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
             repeat(rounds) { w.singleLineBlock("bit ${flag(it)}", "return i()") }
         }
 
-        private fun harnesses() =
-            repeat(rounds) { r -> query.posExamples.forEach { posExample(it, r) } }
+        private fun harnesses() = repeat(rounds) { r -> query.posExamples.forEach { posExample(it, r) } }
 
         private fun posExample(ex: Example, round: Int) {
             val exRound = exWithRound(ex, round)
             when (ex) {
                 is Name -> {
-                    if (!nullary(ex.name))
-                        w.block("Type $exRound() fixes $exRound") {
-                            w.line("Type t = ${gen(ex.name)}()")
-                            w.lines((0 until round).map { "assert (t != ${exWithRound(ex, it)}())" })
-                            w.line("return t")
-                        }
+                    if (!nullary(ex.name)) w.block("Type $exRound() fixes $exRound") {
+                        w.line("Type t = ${gen(ex.name)}()")
+                        w.lines((0 until round).map { "assert (t != ${exWithRound(ex, it)}())" })
+                        w.line("return t")
+                    }
                 }
                 is App -> w.singleLineBlock(
-                    "harness Type $exRound()",
-                    "if (${flag(round)}) return ${assertions(ex)}(${
+                    "harness Type $exRound()", "if (${flag(round)}) return ${assertions(ex)}(${
                         exWithRound(ex.fn, round)
                     }(), ${
                         exWithRound(ex.arg, round)
@@ -222,7 +215,7 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
         private fun assertions(ex: App) = sk(ex)
 
         private fun exWithRound(ex: Example, round: Int) =
-            if (ex is Name && nullary(ex.name)) gen(ex.name) else "${sk(ex)}_$round"
+            if (ex is Name && nullary(ex.name)) gen(ex.name) else "${sk(ex)}_ROUND$round"
 
         /** Note that this one includes the parens */
         private fun flag(round: Int) = "flag_$round()"
@@ -273,7 +266,7 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
 
     private inner class SketchParser(private val sketch: String) {
         val parseAll by lazy {
-            query.names.associateWith { typeAfterSubs(parseToAssignments(sk(it))) } to
+            functions.keys.associateWith { typeAfterSubs(parseToAssignments(it)) } to
                     (lines.first { "Total time = " in it }
                         .substringAfter("Total time = ").toInt() / 1000.0).roundToInt()
         }
@@ -326,24 +319,23 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
         }
 
         private val functions: Map<String, List<String>> by lazy {
-            functionsWithWrappers.mapKeys { (k, _) -> k.split(" ")[1] }.filterKeys { it in sketchNames.values }
+            functionsFirstPass
+                .mapKeys { (k, _) -> k.split(" ")[1] }
                 .mapValues { (_, v) -> v.filter { it.contains("=") } }
         }
 
-        private val functionsWithWrappers: Map<String, List<String>> by lazy {
+        private val functionsFirstPass: Map<String, List<String>> by lazy {
             val fns = mutableMapOf<String, MutableList<String>>()
             var fn = false
             var header: String? = null
             lines.forEach {
-                if (it == "// FUNCTION START") {
+                if (it.contains("  fixes  ")) {
                     fn = true
-                    header = null
+                    header = it
+                    fns[it] = mutableListOf()
                 } else if (it == "// FUNCTION END") {
                     fn = false
                     header = null
-                } else if (fn && header == null) {
-                    header = it
-                    fns[it] = mutableListOf()
                 } else if (fn) {
                     fns[header]!!.add(it.split("//").first().trim())
                 }
