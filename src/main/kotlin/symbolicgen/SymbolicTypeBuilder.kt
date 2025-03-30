@@ -87,7 +87,28 @@ class SymbolicTypeBuilder(val query: NewQuery) {
 
     val make: State by lazy {
         readAllExamples()
+        patchEmptyLists()
         s
+    }
+
+    private fun patchEmptyLists() {
+        val defaultOptions = listOf(Variable(), Label())
+        fun patch(t: SymbolicType) {
+            when (t) {
+                is Function -> {
+                    if (t.left.isEmpty()) t.left.addAll(defaultOptions)
+                    else t.left.map { patch(it) }
+                    if (t.rite.isEmpty()) t.rite.addAll(defaultOptions)
+                    else t.rite.map { patch(it) }
+                }
+                is Label, is Variable -> return
+            }
+        }
+        query.names.forEach { n ->
+            val options = s.read()[n]!!
+            if (options.isEmpty()) s.plant(n, defaultOptions)
+            options.forEach { patch(it) }
+        }
     }
 
     private fun mustBeFn(fn: Example) {
