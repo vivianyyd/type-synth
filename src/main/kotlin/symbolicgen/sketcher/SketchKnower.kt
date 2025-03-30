@@ -182,6 +182,15 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
         private fun flags() {
             w.block("generator bit i()") { w.lines(listOf("bit i = ??", "minimize (1 - i)", "return i")) }
             repeat(rounds) { w.singleLineBlock("bit ${flag(it)}", "return i()") }
+            // This doesn't seem to actually make generation any faster. So TODO removeme?
+            w.block("harness void dontEvenTry()") {
+                (0 until rounds - 1).forEach { f ->
+                    w.singleLineBlock(
+                        "if (!${flag(f)})",
+                        "assert (${(f + 1 until rounds).joinToString(separator = " && ") { "!${flag(it)}" }})"
+                    )
+                }
+            }
         }
 
         private fun harnesses() = repeat(rounds) { r -> query.posExamples.forEach { posExample(it, r) } }
@@ -266,9 +275,8 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
 
     private inner class SketchParser(private val sketch: String) {
         val parseAll by lazy {
-            functions.keys.associateWith { typeAfterSubs(parseToAssignments(it)) } to
-                    (lines.first { "Total time = " in it }
-                        .substringAfter("Total time = ").toInt() / 1000.0).roundToInt()
+            functions.keys.associateWith { typeAfterSubs(parseToAssignments(it)) } to (lines.first { "Total time = " in it }
+                .substringAfter("Total time = ").toInt() / 1000.0).roundToInt()
         }
 
         val lines = sketch.lines().map { it.replace(";", "").replace("Type@ANONYMOUS", "").trim() }
@@ -319,8 +327,7 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
         }
 
         private val functions: Map<String, List<String>> by lazy {
-            functionsFirstPass
-                .mapKeys { (k, _) -> k.split(" ")[1] }
+            functionsFirstPass.mapKeys { (k, _) -> k.split(" ")[1] }
                 .mapValues { (_, v) -> v.filter { it.contains("=") } }
         }
 
