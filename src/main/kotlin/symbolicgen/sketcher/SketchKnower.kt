@@ -2,6 +2,7 @@ package symbolicgen.sketcher
 
 import symbolicgen.*
 import symbolicgen.Function
+import symbolicgen.enumerator.SymbolicEnumerator
 import test.ConsTest
 import util.*
 import kotlin.math.roundToInt
@@ -14,6 +15,11 @@ fun main() {
     val oracle = ConsTest.oracle
     val b = SymbolicTypeBuilder(query).make
     val sketcher = SketchKnower(query, b, oracle, ROUNDS)
+
+    // TODO This seems wrong, where is the L->V case?
+    val enum = SymbolicEnumerator(query, b).enumerateAll()
+    println(enum.joinToString(separator = "\n\n"))
+    println(enum.size)
 
     val out = if (RUN_SKETCH) callSketch(sketcher.sketchInput(), "test") else readSketchOutput("test")
     val (types, time) = (sketcher.parse(out))
