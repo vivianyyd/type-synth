@@ -57,6 +57,13 @@ fun applyBinding(t: SketchedType, varId: Int, tId: Int, sub: SketchedType): Sket
 fun applyBindings(t: SketchedType, bindings: List<Binding>): SketchedType =
     bindings.fold(t) { acc, (vId, tId, sub) -> applyBinding(acc, vId, tId, sub) }
 
+
+/*
+TODO {f=0_0 -> 0_0, g=1_0 -> 1_0, h=(2_0 -> 2_0) -> 2_0, a=L} with example (h f)
+ Under current impl, the second 2_0 gets bound to VB(0_0), although we want it to be a reference.
+ Do we need VB/VR separation at all?
+ Once we fix this, make sure to copy to the sketch version of unify
+ */
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
 fun unify(param: SketchedType, arg: SketchedType): List<Binding>? = when (param) {
     is VB -> listOf(Binding(param.vId, param.tId, arg))
@@ -67,19 +74,19 @@ fun unify(param: SketchedType, arg: SketchedType): List<Binding>? = when (param)
         is VB, is VR, is N -> throw Exception("Invariant broken")
     }
     L -> when (arg) {
-        is CL, L -> listOf()
-        is F, VL -> null
-        is VB, is VR, is N -> throw Exception("Invariant broken")
+        is CL, L, VL, is VB, is VR -> listOf() // TODO hack
+        is F -> null
+        is N -> throw Exception("Invariant broken")
     }
     is F -> when (arg) {
         is CL, L -> null
-        VL -> listOf()
+        VL, is VB, is VR -> listOf() // TODO hack and might be wrong
         is F -> {
             val leftBindings = unify(param.left, arg.left)
             val riteBindings = leftBindings?.let { applyBindings(param.rite, it) }?.let { unify(it, arg.rite) }
             riteBindings?.let { leftBindings + riteBindings }
         }
-        is VB, is VR, is N -> throw Exception("Invariant broken")
+        is N -> throw Exception("Invariant broken")
     }
     VL -> listOf()
     is VR, is N -> throw Exception("Invariant broken")

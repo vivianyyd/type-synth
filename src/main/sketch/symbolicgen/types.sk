@@ -119,7 +119,8 @@ List<Binding> unify(Type param, Type arg) {
             switch(arg) {
                 case Label:{ return empty(); }
                 case ConcreteLabel:{ return empty(); }
-                case VarLabelBound:{ return null; }
+                case VarLabelBound:{ return empty(); }
+//                case VarLabelBound:{ return null; }
                 case Function:{ return null; }
                 // Invariants
                 case VarBind:{ assert false; }
@@ -178,7 +179,7 @@ boolean isFunction(Type t) {
     switch(t) {
         case VarBind:{ return false; }
         case VarRef:{ return false; }
-        case VarLabelBound:{ return false; }
+        case VarLabelBound:{ return true; }
         case Label:{ return false; }
         case ConcreteLabel:{ return false; }
         case Function:{ return true; }
