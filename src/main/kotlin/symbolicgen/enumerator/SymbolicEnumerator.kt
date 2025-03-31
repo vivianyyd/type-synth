@@ -28,8 +28,7 @@ class SymbolicEnumerator(
             is Name -> context[ex.name]!!
             is App -> {
                 val f = check(ex.fn)
-                if (f !is F) null
-                else check(ex.arg)?.let { apply(f, it) }
+                if (f is VL) VL else if (f !is F) null else check(ex.arg)?.let { apply(f, it) }
             }
         }
         return query.posExamples.all { check(it) != null }
@@ -38,22 +37,23 @@ class SymbolicEnumerator(
     private fun enumerate(
         t: SymbolicType,
         vars: Int,
+        pickedLabel: Boolean,
         name: String,
         canBeFresh: Boolean
-    ): List<Pair<SketchedType, Int>> =
+    ): List<Triple<SketchedType, Int, Boolean>> =
         when (t) {
             is Function -> {
-                val lefts = t.left.flatMap { enumerate(it, vars, name, true) }
-                lefts.flatMap { (left, lvs) ->
-                    val rites = t.rite.flatMap { enumerate(it, lvs, name, false) }
-                    rites.map { (rite, rvs) -> F(left, rite) to rvs }
+                val lefts = t.left.flatMap { enumerate(it, vars, pickedLabel, name, true) }
+                lefts.flatMap { (left, lvs, lab) ->
+                    val rites = t.rite.flatMap { enumerate(it, lvs, lab, name, false) }
+                    rites.map { (rite, rvs, lab) -> Triple(F(left, rite), rvs, lab) }
                 }
             }
-            is Label -> listOf(L to vars)
+            is Label -> listOf(Triple(L, vars, true))
             is Variable -> {
-                // TODO no VL here. Fix: We can always add one if there has been a label chosen, even if !canBeFresh
-                (0 until vars).map { VR(it, tId(name)) to vars } +
-                        (if (canBeFresh) listOf(VB(vars, tId(name)) to vars + 1) else listOf())
+                (0 until vars).map { Triple(VR(it, tId(name)), vars, pickedLabel) } +
+                        (if (canBeFresh) listOf(Triple(VB(vars, tId(name)), vars + 1, pickedLabel)) else listOf()) +
+                        (if (pickedLabel) listOf(Triple(VL, vars, pickedLabel)) else listOf())
             }
         }
 
