@@ -6,23 +6,31 @@ import test.ConsTest
 import util.*
 import kotlin.math.roundToInt
 
+const val ROUNDS = 9
+const val RUN_SKETCH = false
+
 fun main() {
     val query = ConsTest.query
     val oracle = ConsTest.oracle
     val b = SymbolicTypeBuilder(query).make
-    val sketcher = SketchKnower(query, b, oracle)
+    val sketcher = SketchKnower(query, b, oracle, ROUNDS)
 
-    val runSketch = true
-    val out = if (runSketch) callSketch(sketcher.sketchInput(), "test") else readSketchOutput("test")
+    val out = if (RUN_SKETCH) callSketch(sketcher.sketchInput(), "test") else readSketchOutput("test")
     val (types, time) = (sketcher.parse(out))
     println("${types.size} types in $time seconds")
+    types.forEach { println(it) }
     println(types.size == types.values.toSet().size)
 
 }
 
-class SketchKnower(val query: NewQuery, private val state: State, private val oracle: EqualityNewOracle) {
+class SketchKnower(
+    val query: NewQuery,
+    private val state: State,
+    private val oracle: EqualityNewOracle,
+    private val rounds: Int? = null
+) {
     fun parse(skOut: String) = SketchParser(skOut).parseAll
-    fun sketchInput() = SketchWriter().make
+    fun sketchInput() = SketchWriter(rounds).make
 
     private val sketchNames = mutableMapOf<String, String>()
 
@@ -38,11 +46,24 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
         }
     }
 
-    private inner class SketchWriter {
+    private inner class SketchWriter(rounds: Int? = null) {
         private val w = Writer()
 
         private fun gen(name: String) = if (nullary(name)) "${sk(name)}_final" else "${sk(name)}_gen"
         private val localNumVars = "lVars"
+
+        /** An upper bound on the number of candidate contexts for this query. */
+        private val rounds: Int by lazy {
+            if (rounds != null) rounds else {
+                fun <T> List<T>.mapSum(f: (T) -> Int) = this.map(f).fold(0) { a, b -> a + b }
+                fun bound(t: SymbolicType): Int = when (t) {
+                    is Function -> t.left.mapSum(::bound) * t.rite.mapSum(::bound)
+                    is Label -> 1
+                    is Variable -> 3
+                }
+                query.names.map { state.read()[it]!!.mapSum(::bound) }.fold(1) { a, b -> a * b }
+            }
+        }
 
         val make: String by lazy {
             println("$rounds ROUNDS")
@@ -53,17 +74,6 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
             flags()
             harnesses()
             w.s()
-        }
-
-        /** An upper bound on the number of candidate contexts for this query. */
-        private val rounds: Int by lazy {
-            fun <T> List<T>.mapSum(f: (T) -> Int) = this.map(f).fold(0) { a, b -> a + b }
-            fun bound(t: SymbolicType): Int = when (t) {
-                is Function -> t.left.mapSum(::bound) * t.rite.mapSum(::bound)
-                is Label -> 1
-                is Variable -> 3
-            }
-            query.names.map { state.read()[it]!!.mapSum(::bound) }.fold(1) { a, b -> a * b }
         }
 
         private fun nullary(name: String): Boolean {
@@ -201,7 +211,9 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
                 is Name -> {
                     if (!nullary(ex.name)) w.block("Type $exRound() fixes $exRound") {
                         w.line("Type t = ${gen(ex.name)}()")
-                        w.lines((0 until round).map { "assert (t != ${exWithRound(ex, it)}())" })
+                        w.lines((0 until round).map {
+                            "assert (!eq(t, ${exWithRound(ex, it)}()))"
+                        })  //{ "assert (t != ${exWithRound(ex, it)}())" })
                         w.line("return t")
                     }
                 }
@@ -275,8 +287,12 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
 
     private inner class SketchParser(private val sketch: String) {
         val parseAll by lazy {
-            functions.keys.associateWith { typeAfterSubs(parseToAssignments(it)) } to (lines.first { "Total time = " in it }
-                .substringAfter("Total time = ").toInt() / 1000.0).roundToInt()
+            functions.keys.associateWith { parseToAssignments(it) }
+                .filter { (_, v) -> v.isNotEmpty() }
+                .mapValues { (_, v) -> typeAfterSubs(v) } to
+                    (lines.first { "Total time = " in it }
+                        .substringAfter("Total time = ")
+                        .toInt() / 1000.0).roundToInt()
         }
 
         val lines = sketch.lines().map { it.replace(";", "").replace("Type@ANONYMOUS", "").trim() }
