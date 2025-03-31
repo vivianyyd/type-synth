@@ -16,12 +16,9 @@ class SymbolicEnumerator(
     private val varTypeIds = query.names.withIndex().associate { (i, n) -> n to i }
     private fun tId(name: String) = varTypeIds[name]!!
 
-    fun enumerateAll(): List<Map<String, SketchedType>> {
-        val aa =
-            state.mapValues { (n, options) -> options.flatMap { enumerate(it, 0, n, false).unzip().first } }.contexts()
-        println(aa.minus(aa.filter(::checkPosExamples))) // TODO removeme after debugging
-        return aa.filter(::checkPosExamples)
-    }
+    fun enumerateAll(): List<Map<String, SketchedType>> =
+        state.mapValues { (n, options) -> options.flatMap { enumerate(it, 0, false, n, false).map { it.first } } }
+            .contexts().filter(::checkPosExamples)
 
     private fun checkPosExamples(context: Map<String, SketchedType>): Boolean {
         fun check(ex: Example): SketchedType? = when (ex) {
