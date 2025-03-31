@@ -25,6 +25,8 @@ fun main() {
     val (types, time) = (sketcher.parse(out))
     println("${types.size} types in $time seconds")
     types.forEach { println(it) }
+
+    // TODO style: can inline tests into the harness that wraps all the tests
     println(types.size == types.values.toSet().size)
 
 }
@@ -209,22 +211,36 @@ class SketchKnower(
             }
         }
 
-        private fun harnesses() = repeat(rounds) { r -> query.posExamples.forEach { posExample(it, r) } }
+        private fun harnesses() {
+            repeat(rounds) { r ->
+                query.posExamples.forEach { posExample(it, r) }
+                w.block("harness void EXAMPLE_WRAPPER_$r()") {
+                    w.block("if (${flag(r)})") {
+                        w.lines((0 until r).map {
+                            "assert (${flag(it)})"
+                        })
+                        w.lines(query.posExamples.flatMap { ex ->
+                            if (ex is Name && !nullary(ex.name)) {
+                                (0 until r).map {
+                                    "assert (!eq(${exWithRound(ex, r)}(), ${exWithRound(ex, it)}()))"
+                                }
+                            } else listOf("${exWithRound(ex, r)}()")
+                        })
+                    }
+                }
+            }
+        }
 
         private fun posExample(ex: Example, round: Int) {
             val exRound = exWithRound(ex, round)
             when (ex) {
                 is Name -> {
                     if (!nullary(ex.name)) w.block("Type $exRound() fixes $exRound") {
-                        w.line("Type t = ${gen(ex.name)}()")
-                        w.lines((0 until round).map {
-                            "assert (!eq(t, ${exWithRound(ex, it)}()))"
-                        })  //{ "assert (t != ${exWithRound(ex, it)}())" })
-                        w.line("return t")
+                        w.line("return ${gen(ex.name)}()")
                     }
                 }
                 is App -> w.singleLineBlock(
-                    "harness Type $exRound()", "if (${flag(round)}) return ${assertions(ex)}(${
+                    "Type $exRound()", "return ${assertions(ex)}(${
                         exWithRound(ex.fn, round)
                     }(), ${
                         exWithRound(ex.arg, round)
@@ -232,7 +248,6 @@ class SketchKnower(
                 )
             }
         }
-
 
         private fun sk(ex: Example): String = when (ex) {
             is Name -> sk(ex.name)
