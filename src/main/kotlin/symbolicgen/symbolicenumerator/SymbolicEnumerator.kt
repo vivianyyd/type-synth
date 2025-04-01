@@ -1,8 +1,8 @@
-package symbolicgen.enumerator
+package symbolicgen.symbolicenumerator
 
 import symbolicgen.*
 import symbolicgen.Function
-import symbolicgen.sketcher.*
+import symbolicgen.symbolicsketcher.*
 import util.*
 
 class SymbolicEnumerator(
@@ -16,18 +16,19 @@ class SymbolicEnumerator(
     private val varTypeIds = query.names.withIndex().associate { (i, n) -> n to i }
     private fun tId(name: String) = varTypeIds[name]!!
 
-    fun enumerateAll(): List<Map<String, SketchedType>> =
+    fun enumerateAll(): List<Map<String, SpecializedSymbolicType>> =
         state.mapValues { (n, options) -> options.flatMap { enumerate(it, 0, false, n, false).map { it.first } } }
             .contexts().filter(::checkPosExamples)
 
-    private fun checkPosExamples(context: Map<String, SketchedType>): Boolean {
-        fun check(ex: Example): SketchedType? = when (ex) {
+    private fun checkPosExamples(context: Map<String, SpecializedSymbolicType>): Boolean {
+        fun check(ex: Example): SpecializedSymbolicType? = when (ex) {
             is Name -> context[ex.name]!!
             is App -> {
                 val f = check(ex.fn)
                 if (f is VL) VL else if (f !is F) null else check(ex.arg)?.let { apply(f, it) }
             }
         }
+        if (!query.posExamples.all { check(it) != null }) println("prune!")
         return query.posExamples.all { check(it) != null }
     }
 
@@ -37,7 +38,7 @@ class SymbolicEnumerator(
         pickedLabel: Boolean,
         name: String,
         canBeFresh: Boolean
-    ): List<Triple<SketchedType, Int, Boolean>> =
+    ): List<Triple<SpecializedSymbolicType, Int, Boolean>> =
         when (t) {
             is Hole -> listOf(Variable(), Label()).flatMap { enumerate(it, vars, pickedLabel, name, canBeFresh) }
             is Function -> {
@@ -55,7 +56,7 @@ class SymbolicEnumerator(
             }
         }
 
-    private fun Map<String, List<SketchedType>>.contexts(): List<Map<String, SketchedType>> {
+    private fun Map<String, List<SpecializedSymbolicType>>.contexts(): List<Map<String, SpecializedSymbolicType>> {
         val m = LinkedHashMap(this)
         return naryCartesianProduct(m.values.toList()).map { this.keys.zip(it).toMap() }
     }
