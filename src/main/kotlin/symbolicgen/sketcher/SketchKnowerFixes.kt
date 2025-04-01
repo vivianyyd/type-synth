@@ -43,6 +43,7 @@ class SketchKnowerFixes(
                     is Function -> t.left.mapSum(::bound) * t.rite.mapSum(::bound)
                     is Label -> 1
                     is Variable -> 3
+                    is Hole -> 4
                 }
                 query.names.map { state.read()[it]!!.mapSum(::bound) }.fold(1) { a, b -> a * b }
             }
@@ -116,7 +117,16 @@ class SketchKnowerFixes(
             }
         }
 
-        private fun pickOption(portSketchName: String, t: SymbolicType, typeId: Int) = when (t) {
+        private fun pickOption(portSketchName: String, t: SymbolicType, typeId: Int): Unit = when (t) {
+            is Hole -> {
+                val hole = "${portSketchName}_hole"
+                w.line("Type $hole")
+                w.line("bit ${hole}_flag = ??")
+                w.block("if (${hole}_flag)") { pickOption(hole, Label(), typeId) }
+                w.block("else") { pickOption(hole, Variable(), typeId) }
+                w.line("$portSketchName = $hole")
+                // TODO test me!
+            }
             is Label -> w.lines(
                 listOf(
                     "$portSketchName = new Label()", "canBeBoundInLabel = true"

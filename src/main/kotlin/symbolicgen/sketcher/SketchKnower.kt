@@ -110,7 +110,16 @@ class SketchKnower(val query: NewQuery, private val state: State, private val or
             }
         }
 
-        private fun pickOption(portSketchName: String, t: SymbolicType, typeId: Int) = when (t) {
+        private fun pickOption(portSketchName: String, t: SymbolicType, typeId: Int): Unit = when (t) {
+            is Hole -> {
+                val hole = "${portSketchName}_hole"
+                w.line("Type $hole")
+                w.line("bit ${hole}_flag = ??")
+                w.block("if (${hole}_flag)") { pickOption(hole, Label(), typeId) }
+                w.block("else") { pickOption(hole, Variable(), typeId) }
+                w.line("$portSketchName = $hole")
+                // TODO test me!
+            }
             is Label -> w.lines(
                 listOf(
                     "$portSketchName = new Label()", "canBeBoundInLabel = true"

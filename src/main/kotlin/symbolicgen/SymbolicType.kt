@@ -44,6 +44,10 @@ class Label(override var parent: Parent? = null) : AbstractType(parent) {
     override fun toString(): String = "L"
 }
 
+class Hole(override var parent: Parent? = null) : AbstractType(parent) {
+    override fun toString(): String = "_"
+}
+
 fun main() {
     val special = Label()
     val t = Function(

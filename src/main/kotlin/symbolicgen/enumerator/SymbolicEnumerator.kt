@@ -39,6 +39,7 @@ class SymbolicEnumerator(
         canBeFresh: Boolean
     ): List<Triple<SketchedType, Int, Boolean>> =
         when (t) {
+            is Hole -> listOf(Variable(), Label()).flatMap { enumerate(it, vars, pickedLabel, name, canBeFresh) }
             is Function -> {
                 val lefts = t.left.flatMap { enumerate(it, vars, pickedLabel, name, true) }
                 lefts.flatMap { (left, lvs, lab) ->
