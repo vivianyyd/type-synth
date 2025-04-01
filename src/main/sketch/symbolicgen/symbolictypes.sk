@@ -1,0 +1,187 @@
+include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
+
+adt Type {
+    ConcreteLabel { int dummy; }
+    VarBind { int vId; int tId; }
+    VarRef { int vId; int tId; }
+    VarLabelBound { }
+    Label { }
+    Function { Type left; Type rite; }
+}
+
+boolean eq(Type a, Type  b) {
+    switch (a) {
+        case ConcreteLabel:{
+            switch (b) {
+                 case ConcreteLabel:{ return true; }
+                 case VarLabelBound:{ return false; }
+                 case Label:{ return true; }
+                 case Function:{ return false; }
+                 case VarBind:{ return false; }
+                 case VarRef:{ return false; }
+            }}
+        case VarLabelBound:{
+            switch (b) {
+                 case ConcreteLabel:{ return false; }
+                 case VarLabelBound:{ return true; }
+                 case Label:{ return false; }
+                 case Function:{ return false; }
+                 case VarBind:{ return true; }
+                 case VarRef:{ return true; }
+            }}
+        case Label:{
+            switch (b) {
+                 case ConcreteLabel:{ return true; }
+                 case VarLabelBound:{ return false; }
+                 case Label:{ return true; }
+                 case Function:{ return false; }
+                 case VarBind:{ return false; }
+                 case VarRef:{ return false; }
+            }}
+        case Function:{
+            switch (b) {
+                case ConcreteLabel:{ return false; }
+                case VarLabelBound:{ return false; }
+                case Label:{ return false; }
+                case Function:{ return eq(a.left, b.left) && eq(a.rite, b.rite); }
+                case VarBind:{ return false; }
+                case VarRef:{ return false; }
+           }}
+        case VarBind:{
+            switch (b) {
+                case ConcreteLabel:{ return false; }
+                case VarLabelBound:{ return true; }
+                case Label:{ return false; }
+                case Function:{ return false; }
+                case VarBind:{ return true; }
+                case VarRef:{ return true; }
+           }}
+        case VarRef:{
+            switch (b) {
+                case ConcreteLabel:{ return false; }
+                case VarLabelBound:{ return true; }
+                case Label:{ return false; }
+                case Function:{ return false; }
+                case VarBind:{ return true; }
+                case VarRef:{ return true; }
+           }}
+    }
+}
+
+struct Binding { int vId; int tId; Type t; }
+
+Type applyBinding(Type t, int varId, int tId, Type sub) {
+    switch (t) {
+        case ConcreteLabel:{ return t; }
+        case VarLabelBound:{ return t; }
+        case Label:{ return t; }
+        case Function:{
+            return new Function(left=applyBinding(t.left, varId, tId, sub), rite=applyBinding(t.rite, varId, tId, sub));
+        }
+        case VarBind:{ return t; }
+        case VarRef:{
+            if (t.vId == varId && t.tId == tId) return sub;
+            else return t;
+        }
+    }
+}
+
+Type applyBindings(Type t, List<Binding> bindings) {
+    switch (bindings) {
+        case Cons:{ return applyBindings(applyBinding(t, bindings.val.vId, bindings.val.tId, bindings.val.t), bindings.next); }
+        case Nil:{ return t; }
+    }
+}
+
+/** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
+List<Binding> unify(Type param, Type arg) {
+    switch(param) {
+        case VarBind:{
+            Binding b = new Binding(vId=param.vId, tId=param.tId, t=arg);
+            return single(b);
+        }
+        case VarLabelBound:{ return empty(); }
+        case ConcreteLabel:{
+            switch(arg) {
+                case ConcreteLabel:{
+                    if (param.dummy == arg.dummy) return empty();
+                    return null;
+                }
+                case VarLabelBound:{ return empty(); }
+                case Label:{ return empty(); }
+                case Function:{ return null; }
+                // Invariants
+                case VarBind:{ assert false; }
+                case VarRef:{ assert false; }
+            }
+        }
+        case Label:{
+            switch(arg) {
+                case Label:{ return empty(); }
+                case ConcreteLabel:{ return empty(); }
+                case VarLabelBound:{ return empty(); }
+//                case VarLabelBound:{ return null; }
+                case Function:{ return null; }
+                // Invariants
+                case VarBind:{ assert false; }
+                case VarRef:{ assert false; }
+            }
+        }
+        case Function:{
+            switch(arg) {
+                case VarLabelBound:{ return empty(); }
+                case Label:{ return null; }
+                case ConcreteLabel:{ return null; }
+                case Function:{
+                    List<Binding> leftBindings = unify(param.left, arg.left);
+                    if (leftBindings == null) return null;
+                    Type newParamRight = applyBindings(param.rite, leftBindings);
+                    List<Binding> riteBindings = unify(newParamRight, arg.rite);
+                    if (riteBindings == null) return null;
+                    return plus(leftBindings, riteBindings);
+                }
+                // Invariants
+                case VarBind:{ assert false; }
+                case VarRef:{ assert false; }
+            }
+        }
+        case VarRef:{ assert false; }  // Invariant
+    }
+}
+
+/**
+ Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
+ */
+Type apply(Function fn, Type arg) {
+    //   TODO These invariants could be enforced in the grammar but whatever for now
+    //   types should never be a VarRef here! resolve all types upon application
+    //   types should never be a VarBind at the top level! can only be under left side of fns
+    //   I think arg can't be VarRef either
+    Type param = fn.left;
+
+    // Assert invariants before short circuiting logic
+    switch(arg) {
+        case VarBind:{ assert false; }
+        case VarRef:{ assert false; }
+        case VarLabelBound:{ }
+        case Label:{ }
+        case ConcreteLabel:{ }
+        case Function:{ }
+    }
+
+    List<Binding> b = unify(param, arg);
+    if (b == null) return null;
+    return applyBindings(fn.rite, b);
+    // Invariant: returned type never contains VarRef!!!! think about this..
+}
+
+boolean isFunction(Type t) {
+    switch(t) {
+        case VarBind:{ return false; }
+        case VarRef:{ return false; }
+        case VarLabelBound:{ return true; }
+        case Label:{ return false; }
+        case ConcreteLabel:{ return false; }
+        case Function:{ return true; }
+    }
+}

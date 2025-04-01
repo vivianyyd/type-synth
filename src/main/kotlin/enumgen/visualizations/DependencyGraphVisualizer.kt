@@ -1,9 +1,13 @@
 package enumgen.visualizations
 
-import enumgen.*
+import enumgen.DependencyAnalysis
+import enumgen.DependencyGraph
+import enumgen.ParameterNode
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintWriter
+
+fun viz(name: String, da: DependencyAnalysis) = DependencyGraphVisualizer.viz(da.graphs[name]!!, name)
 
 object DependencyGraphVisualizer {
     private var ctr = 0
@@ -21,9 +25,9 @@ object DependencyGraphVisualizer {
     private fun visualize(graph: DependencyGraph): String {
         dw.startGraph()
         val nodeLabels = graph.nodes.associateWith { it.display() }
-        dw.writeEdges(graph.deps.map{Pair(nodeLabels[it.sub]!!, nodeLabels[it.sup]!!)}, true, "deps")
-        dw.writeEdges(graph.loops.map{Pair(nodeLabels[it.a]!!, nodeLabels[it.a]!!)}, true, "loops")
-        dw.writeEdges(graph.links.map{Pair(nodeLabels[it.a]!!, nodeLabels[it.b]!!)}, false, "links")
+        dw.writeEdges(graph.deps.map { Pair(nodeLabels[it.sub]!!, nodeLabels[it.sup]!!) }, true, "deps")
+        dw.writeEdges(graph.loops.map { Pair(nodeLabels[it.a]!!, nodeLabels[it.a]!!) }, true, "loops")
+        dw.writeEdges(graph.links.map { Pair(nodeLabels[it.a]!!, nodeLabels[it.b]!!) }, false, "links")
         dw.finishGraph()
         val out = dw.output()
         dw.restart()

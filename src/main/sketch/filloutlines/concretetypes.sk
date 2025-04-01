@@ -9,6 +9,65 @@ adt Type {
     Function { Type left; Type rite; }
 }
 
+boolean eq(Type a, Type  b) {
+    switch (a) {
+        case ConcreteLabel:{
+            switch (b) {
+                 case ConcreteLabel:{ return true; }
+                 case VarLabelBound:{ return false; }
+                 case Label:{ return true; }
+                 case Function:{ return false; }
+                 case VarBind:{ return false; }
+                 case VarRef:{ return false; }
+            }}
+        case VarLabelBound:{
+            switch (b) {
+                 case ConcreteLabel:{ return false; }
+                 case VarLabelBound:{ return true; }
+                 case Label:{ return false; }
+                 case Function:{ return false; }
+                 case VarBind:{ return true; }
+                 case VarRef:{ return true; }
+            }}
+        case Label:{
+            switch (b) {
+                 case ConcreteLabel:{ return true; }
+                 case VarLabelBound:{ return false; }
+                 case Label:{ return true; }
+                 case Function:{ return false; }
+                 case VarBind:{ return false; }
+                 case VarRef:{ return false; }
+            }}
+        case Function:{
+            switch (b) {
+                case ConcreteLabel:{ return false; }
+                case VarLabelBound:{ return false; }
+                case Label:{ return false; }
+                case Function:{ return eq(a.left, b.left) && eq(a.rite, b.rite); }
+                case VarBind:{ return false; }
+                case VarRef:{ return false; }
+           }}
+        case VarBind:{
+            switch (b) {
+                case ConcreteLabel:{ return false; }
+                case VarLabelBound:{ return true; }
+                case Label:{ return false; }
+                case Function:{ return false; }
+                case VarBind:{ return true; }
+                case VarRef:{ return true; }
+           }}
+        case VarRef:{
+            switch (b) {
+                case ConcreteLabel:{ return false; }
+                case VarLabelBound:{ return true; }
+                case Label:{ return false; }
+                case Function:{ return false; }
+                case VarBind:{ return true; }
+                case VarRef:{ return true; }
+           }}
+    }
+}
+
 struct Binding { int vId; int tId; Type t; }
 
 Type applyBinding(Type t, int varId, int tId, Type sub) {
@@ -60,7 +119,8 @@ List<Binding> unify(Type param, Type arg) {
             switch(arg) {
                 case Label:{ return empty(); }
                 case ConcreteLabel:{ return empty(); }
-                case VarLabelBound:{ return null; }
+                case VarLabelBound:{ return empty(); }
+//                case VarLabelBound:{ return null; }
                 case Function:{ return null; }
                 // Invariants
                 case VarBind:{ assert false; }
@@ -119,7 +179,7 @@ boolean isFunction(Type t) {
     switch(t) {
         case VarBind:{ return false; }
         case VarRef:{ return false; }
-        case VarLabelBound:{ return false; }
+        case VarLabelBound:{ return true; }
         case Label:{ return false; }
         case ConcreteLabel:{ return false; }
         case Function:{ return true; }

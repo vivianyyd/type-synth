@@ -87,7 +87,32 @@ class SymbolicTypeBuilder(val query: NewQuery) {
 
     val make: State by lazy {
         readAllExamples()
+        patchEmptyLists()
         s
+    }
+
+    private fun patchEmptyLists() {
+        val vl: MutableList<SymbolicType> = mutableListOf(Variable(), Label())
+        // TODO maybe patched functions can contain just V or other angel, since vl makes 4x blowup
+        val vlf = listOf(Variable(), Label(), Function(vl, vl))
+        fun patch(t: SymbolicType, rightmost: Boolean) {
+            when (t) {
+                is Function -> {
+                    if (t.left.isEmpty()) t.left.addAll(vlf)
+                    else t.left.map { patch(it, false) }
+                    if (t.rite.isEmpty()) {
+                        if (rightmost) t.rite.addAll(vl)
+                        else t.rite.addAll(vlf)
+                    } else t.rite.map { patch(it, rightmost) }
+                }
+                is Label, is Variable -> return
+            }
+        }
+        query.names.forEach { n ->
+            val options = s.read()[n]!!
+            if (options.isEmpty()) s.plant(n, vl)
+            options.forEach { patch(it, true) }
+        }
     }
 
     private fun mustBeFn(fn: Example) {
