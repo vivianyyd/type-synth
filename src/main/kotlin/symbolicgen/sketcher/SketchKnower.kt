@@ -2,35 +2,10 @@ package symbolicgen.sketcher
 
 import symbolicgen.*
 import symbolicgen.Function
-import symbolicgen.enumerator.SymbolicEnumerator
-import test.ConsTest
 import util.*
 import kotlin.math.roundToInt
 
-const val ROUNDS = 9
-const val RUN_SKETCH = false
-
-fun main() {
-    val query = ConsTest.query
-    val oracle = ConsTest.oracle
-    val b = SymbolicTypeBuilder(query).make
-    val sketcher = SketchKnower(query, b, oracle, ROUNDS)
-
-    // TODO This seems wrong, where is the L->V case?
-    val enum = SymbolicEnumerator(query, b).enumerateAll()
-    println(enum.joinToString(separator = "\n\n"))
-    println(enum.size)
-
-    val out = if (RUN_SKETCH) callSketch(sketcher.sketchInput(), "test") else readSketchOutput("test")
-    val (types, time) = (sketcher.parse(out))
-    println("${types.size} types in $time seconds")
-    types.forEach { println(it) }
-
-    // TODO style: can inline tests into the harness that wraps all the tests
-    println(types.size == types.values.toSet().size)
-
-}
-
+// TODO style: can inline tests into the harness that wraps all the tests
 class SketchKnower(
     val query: NewQuery,
     private val state: State,
@@ -90,7 +65,7 @@ class SketchKnower(
         }
 
         private fun header() {
-            w.include("/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/types.sk")
+            w.include("/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/symbolictypes.sk")
             w.comment(listOf("NAME\t\tSKETCHNAME\t\tDUMMY") + sketchNames.map { (k, v) ->
                 "$k\t\t\t$v\t\t\t${
                     if (nullary(k)) oracle.dummy(Name(k)) else ""

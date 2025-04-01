@@ -1,7 +1,8 @@
 package util
 
-import runCommand
 import java.io.File
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 private fun join(vararg dirs: String) = dirs.joinToString(separator = File.separator)
 private fun profilingResultPath(testName: String) = join("results", "$testName.csv")
@@ -34,3 +35,22 @@ fun callSketch(input: String, testName: String): String {
 fun readSketchOutput(testName: String) = File(sketchOutputPath(testName)).readText()
 
 fun writeProfiling(output: String, testName: String) = write(profilingResultPath(testName), output)
+
+fun String.runCommand(
+    workingDir: File = File(System.getProperty("user.dir"))
+): String? {
+    return try {
+        val parts = this.split("\\s".toRegex())
+        val proc = ProcessBuilder(*parts.toTypedArray())
+            .directory(workingDir)
+            .redirectOutput(ProcessBuilder.Redirect.PIPE)
+            .redirectError(ProcessBuilder.Redirect.PIPE)
+            .start()
+
+        proc.waitFor(60, TimeUnit.MINUTES)
+        proc.inputStream.bufferedReader().readText()
+    } catch (e: IOException) {
+        e.printStackTrace()
+        null
+    }
+}
