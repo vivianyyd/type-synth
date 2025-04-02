@@ -26,3 +26,10 @@ List<T> plus <T> (List<T> l, List<T> elems) {
         case Nil:{ return l; }
     }
 }
+
+boolean in <T> (List<T> l, T elem) {
+    switch (l) {
+        case Cons:{ return elem == l.val || in(l.next, elem); }
+        case Nil:{ return false; }
+    }
+}

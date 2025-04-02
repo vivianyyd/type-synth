@@ -81,7 +81,7 @@ class SymbolicSketcher(val query: NewQuery, private val state: State, private va
         private val localNumVars = "lVars"
 
         private fun header() {
-            w.include("/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/types.sk")
+            w.include("/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/symbolictypes.sk")
             w.comment(listOf("NAME\t\tSKETCHNAME\t\tDUMMY") + sketchNames.map { (k, v) ->
                 "$k\t\t\t$v\t\t\t${
                     if (nullary(k)) oracle.dummy(Name(k)) else ""

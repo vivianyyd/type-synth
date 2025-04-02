@@ -39,7 +39,7 @@ class ConcreteSketcher(
         private val localNumVars = "lVars"
 
         private fun header() {
-            w.include("/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/types.sk")
+            w.include("/home/vivianyyd/type-synth/src/main/sketch/concretize/concretetypes.sk")
             w.comment(listOf("NAME\t\tSKETCHNAME\t\tDUMMY") + sketchNames.map { (k, v) ->
                 "$k\t\t\t$v\t\t\t${
                     if (nullary(k)) oracle.dummy(Name(k)) else ""
@@ -47,7 +47,13 @@ class ConcreteSketcher(
             })
         }
 
-        private fun generator(name: String): Unit = TODO("Think about how to handle VLs")
+        private fun generator(name: String): Unit {
+            /*
+            Variables can be fresh or existing
+            Make all types, then min(len(register))
+            */
+            TODO("Think about how to handle VLs")
+        }
 
         private fun obeysOracle(): Unit = TODO("Must match oracle on all pairwise eq/neq")
 

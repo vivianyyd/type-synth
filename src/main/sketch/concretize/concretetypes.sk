@@ -27,7 +27,7 @@ List<Type> applyBindingToAll(List<Type> types, int tid, int vid, Type sub) {
     List<Type> result = empty();
     switch (types) {
         case Cons:{ add(result, applyBinding(types.val, tid, vid, sub)); }
-        case Nil:{ return result; 
+        case Nil:{ return result; }
     }
 }
 
@@ -120,4 +120,29 @@ boolean isFunction(Type t) {
         case Label:{ return false; }
         case Function:{ return true; }
     }
+}
+
+struct LabelKind { int l; int numParams; }
+
+List<LabelKind> registerLabel(List<LabelKind> register, Label label) {
+    if (in(register, label)) return;
+    else return add(register, label);
+}
+
+generator Type type(List<LabelKind> register) {
+    int t = ??;
+    if (t == 0) {
+        return variable();
+    }
+    if (t == 1) {
+        Label o = label();
+        registerLabel(register, o);
+        return o;
+    }
+    if (t == 2) {
+        Type a = type(register);
+        Type b = type(register);
+        return new Function(left=a, rite=b);
+    }
+    assert false;
 }
