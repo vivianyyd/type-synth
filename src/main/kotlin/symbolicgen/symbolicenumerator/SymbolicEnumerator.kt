@@ -8,7 +8,7 @@ import util.*
 class SymbolicEnumerator(
     val query: NewQuery,
     state: State,
-//    private val oracle: EqualityNewOracle,
+    private val oracle: EqualityNewOracle,
 //    val rounds: Int? = null
 ) {
     private val state = state.read()
@@ -17,8 +17,10 @@ class SymbolicEnumerator(
     private fun tId(name: String) = varTypeIds[name]!!
 
     fun enumerateAll(): List<Map<String, SpecializedSymbolicType>> =
-        state.mapValues { (n, options) -> options.flatMap { enumerate(it, 0, false, n, false).map { it.first } } }
-            .contexts().filter(::checkPosExamples)
+        state.mapValues { (n, options) ->
+            if (options.size == 1 && options[0] is Label) listOf(CL(oracle.dummy(Name(n))))
+            else options.flatMap { enumerate(it, 0, false, n, false).map { it.first } }
+        }.contexts().filter(::checkPosExamples)
 
     private fun checkPosExamples(context: Map<String, SpecializedSymbolicType>): Boolean {
         fun check(ex: Example): SpecializedSymbolicType? = when (ex) {

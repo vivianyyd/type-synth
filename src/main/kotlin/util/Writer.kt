@@ -16,7 +16,7 @@ class Writer {
         sb.appendLine(l)
     }
 
-    fun lines(l: List<String>) = l.forEach { line(it) }
+    fun lines(l: Collection<String>) = l.forEach { line(it) }
 
     fun include(l: String) {
         line("include \"$l\"")
