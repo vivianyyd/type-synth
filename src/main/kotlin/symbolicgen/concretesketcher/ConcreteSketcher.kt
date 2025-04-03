@@ -54,7 +54,14 @@ class ConcreteSketcher(
 
         private fun codeFor(t: SpecializedSymbolicType, tid: Int, groundVars: Int, destination: String): Unit =
             when (t) {
-                is CL, L -> w.lines(
+                is CL -> w.lines(
+                    listOf(
+                        "$destination = clabel(register, $tid, vars, tmpRegister, tmpVars)",
+                        "register = tmpRegister",
+                        "vars = tmpVars"
+                    )
+                )
+                L -> w.lines(
                     listOf(
                         "$destination = label(register, $tid, vars, tmpRegister, tmpVars)",
                         "register = tmpRegister",
@@ -70,7 +77,7 @@ class ConcreteSketcher(
                 }
                 is VB -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
                 is VR -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
-                VL -> w.line("$destination = variableInRange(t=${tid}, $groundVars, vars)")
+                VL -> w.line("$destination = variableInRange(${tid}, $groundVars, vars)")
                 is N -> throw Exception("rly should fix this")  // TODO
             }
 
@@ -120,22 +127,19 @@ class ConcreteSketcher(
                     "Type ${sk(it)} = ${sk(it)}(register, tmpRegister)", "register = tmpRegister"
                 )
             } + "minimize(len(register))")
-            query.posExamples.filterIsInstance<App>().forEach { posExample(it) }
-            // TODO TODO
-//            query.negExamples.filterIsInstance<App>().forEach { negExample(it) }
+            w.lines(LinkedHashSet(query.posExamples.filterIsInstance<App>().flatMap { posExample(it) }))
+            query.negExamples.filterIsInstance<App>().forEach { negExample(it) }
             obeysOracle()
         }
 
-        private fun posExample(ex: App) = w.lines(
-            listOf(
-                "assert (isFunction(${sk(ex.fn)}))",
-                "Type ${sk(ex)} = apply((Function)${sk(ex.fn)}, ${sk(ex.arg)})",
-                "assert (${sk(ex)} != null)",
-            )
+        private fun posExample(ex: App) = listOf(
+            "assert (isFunction(${sk(ex.fn)}))",
+            "Type ${sk(ex)} = apply((Function)${sk(ex.fn)}, ${sk(ex.arg)})",
+            "assert (${sk(ex)} != null)",
         )
 
         private fun negExample(ex: App) = w.line(
-            "assert (!isFunction(${sk(ex.fn)}) || apply((Function)${sk(ex.fn)}, ${sk(ex.arg)}) == null)" + TODO("Subexprs of negexs might not be applied yet")
+            "assert (!isFunction(${sk(ex.fn)}) || apply((Function)${sk(ex.fn)}, ${sk(ex.arg)}) == null)"
         )
     }
 

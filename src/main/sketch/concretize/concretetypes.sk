@@ -174,6 +174,38 @@ generator Label label(List@list<LabelKind> register, int tid, int vars, ref List
     return o;
 }
 
+generator Label clabel(List@list<LabelKind> register, int tid, int vars, ref List@list<LabelKind> outRegister, ref int outVars) {
+    int nParams = ??;
+    minimize(nParams);  // want weaker min than min(len(register))
+    List@list<Type> params = empty();
+    List@list<LabelKind> currRegister = register;
+    int currVars = vars;
+    for (int i = 0; i < nParams; i++) {
+        List@list<LabelKind> nextRegister;
+        int nextVars;
+        params = add(params, ctype(currRegister, tid, currVars, nextRegister, nextVars));
+        currRegister = nextRegister;
+        currVars = nextVars;
+    }
+    Label o = new Label(l=??, params=params);
+    outRegister = registerLabel(currRegister, o);
+    outVars = currVars;
+    return o;
+}
+generator Type ctype(List@list<LabelKind> register, int tid, int vars, ref List@list<LabelKind> outRegister, ref int outVars) {
+    int t = ??;
+    if (t == 1) {
+        return clabel(register, tid, vars, outRegister, outVars);
+    }
+    if (t == 2) {
+        List@list<LabelKind> tmpRegister;
+        int tmpVars;
+        Type a = type(register, tid, vars, tmpRegister, tmpVars);
+        Type b = type(tmpRegister, tid, tmpVars, outRegister, outVars);
+        return new Function(left=a, rite=b);
+    }
+    assert false;
+}
 generator Variable variable(int tid, int vars, ref int outVars) {
     bit b = ??;
     if (b) {
