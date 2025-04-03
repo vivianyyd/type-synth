@@ -13,7 +13,7 @@ class SymbolicEnumerator(
 ) {
     private val state = state.read()
 
-    private val varTypeIds = query.names.withIndex().associate { (i, n) -> n to i }
+    val varTypeIds = query.names.withIndex().associate { (i, n) -> n to i }
     private fun tId(name: String) = varTypeIds[name]!!
 
     fun enumerateAll(): List<Map<String, SpecializedSymbolicType>> =

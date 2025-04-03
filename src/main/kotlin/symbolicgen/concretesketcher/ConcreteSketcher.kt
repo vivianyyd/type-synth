@@ -1,14 +1,15 @@
 package symbolicgen.concretesketcher
 
-import symbolicgen.symbolicsketcher.L
-import symbolicgen.symbolicsketcher.SpecializedSymbolicType
+import symbolicgen.symbolicsketcher.*
 import util.*
+import java.lang.Integer.max
 
 typealias ContextOutline = Map<String, SpecializedSymbolicType>
 
 class ConcreteSketcher(
     val query: NewQuery,
     private val contextOutline: ContextOutline,
+    private val varTypeIds: Map<String, Int>,
     private val oracle: EqualityNewOracle
 ) {
     private val sw = ConcreteSketchWriter()
@@ -23,13 +24,15 @@ class ConcreteSketcher(
         }
     }
 
+    fun query() = sw.make()
+
     private inner class ConcreteSketchWriter {
         private val w = Writer()
 
         fun make(): String {
             header()
             query.names.forEach { generator(it) }
-            query.posExamples.forEach { posExample(it) }
+            makeAndTest()
             return w.s()
         }
 
@@ -40,41 +43,100 @@ class ConcreteSketcher(
 
         private fun header() {
             w.include("/home/vivianyyd/type-synth/src/main/sketch/concretize/concretetypes.sk")
-            w.comment(listOf("NAME\t\tSKETCHNAME\t\tDUMMY") + sketchNames.map { (k, v) ->
+            w.comment(listOf(
+                contextOutline.entries.joinToString(separator = "\n", postfix = "\n"), "NAME\t\tSKETCHNAME\t\tDUMMY"
+            ) + sketchNames.map { (k, v) ->
                 "$k\t\t\t$v\t\t\t${
                     if (nullary(k)) oracle.dummy(Name(k)) else ""
                 }"
             })
         }
 
-        private fun generator(name: String): Unit {
-            /*
-            Variables can be fresh or existing
-            Make all types, then min(len(register))
-            */
-            TODO("Think about how to handle VLs")
+        private fun codeFor(t: SpecializedSymbolicType, tid: Int, groundVars: Int, destination: String): Unit =
+            when (t) {
+                is CL, L -> w.lines(
+                    listOf(
+                        "$destination = label(register, $tid, vars, tmpRegister, tmpVars)",
+                        "register = tmpRegister",
+                        "vars = tmpVars"
+                    )
+                )
+                is F -> {
+                    val (left, rite) = "${destination}l" to "${destination}r"
+                    w.line("Type $left; Type $rite")
+                    codeFor(t.left, tid, groundVars, left)
+                    codeFor(t.rite, tid, groundVars, rite)
+                    w.line("$destination = new Function(left=$left, rite=$rite)")
+                }
+                is VB -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
+                is VR -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
+                VL -> w.line("$destination = variableInRange(t=${tid}, $groundVars, vars)")
+                is N -> throw Exception("rly should fix this")  // TODO
+            }
+
+        private fun generator(name: String) {
+            val tid = tId(name)
+            val outline = outline(name)
+            fun lastVar(t: SpecializedSymbolicType): Int = when (t) {
+                is F -> max(lastVar(t.left), lastVar(t.rite))
+                is CL, L, VL -> 0
+                is VB -> t.vId
+                is VR -> t.vId
+                is N -> throw Exception("rly should fix this")  // TODO
+            }
+
+            val groundVars = lastVar(outline) + 1
+            w.block("Type ${sk(name)}(List<LabelKind> register, ref List<LabelKind> outRegister)") {
+                w.lines(listOf("List<LabelKind> tmpRegister; int tmpVars", "int vars = $groundVars", "Type root"))
+                codeFor(outline, tid, groundVars, "root")
+                w.lines(listOf("outRegister = register", "return root"))
+            }
         }
 
-        private fun obeysOracle(): Unit = TODO("Must match oracle on all pairwise eq/neq")
+        private fun obeysOracle() {
+            query.posExamples.forEachIndexed { i, a ->
+                query.posExamples.forEachIndexed { j, b ->
+                    if (i < j) {
+                        if (oracle.equal(a, b)) {
+                            w.line("assert(${sk(a)} == ${sk(b)})")
+                        } else {
+                            w.line("assert(${sk(a)} != ${sk(b)})")
+                        }
+                    }
+                }
+            }
+        }
 
         private fun sk(ex: Example): String = when (ex) {
             is Name -> sk(ex.name)
             is App -> "oo${sk(ex.fn)}co${sk(ex.arg)}cc"
         }
 
-        private fun posExample(ex: Example) = when (ex) {
-            is Name -> w.singleLineBlock("harness Type ${sk(ex)}()", "return ${gen(ex.name)}()")
-            is App -> w.block("harness Type ${sk(ex)}()") {
-                w.lines(
-                    listOf(
-                        "assert (isFunction(${sk(ex.fn)}()))",
-                        "Type result = apply((Function)${sk(ex.fn)}(), ${sk(ex.arg)}())",
-                        "assert (result != null)",
-                        "return result"
-                    )
+        private fun makeAndTest() = w.block("harness void main()") {
+            w.lines(listOf(
+                "List<LabelKind> register = empty()", "List<LabelKind> tmpRegister = empty()"
+            ) + query.names.flatMap {
+                listOf(
+                    "Type ${sk(it)} = ${sk(it)}(register, tmpRegister)", "register = tmpRegister"
                 )
-            }
+            } + "minimize(len(register))")
+            query.posExamples.filterIsInstance<App>().forEach { posExample(it) }
+            // TODO TODO
+//            query.negExamples.filterIsInstance<App>().forEach { negExample(it) }
+            obeysOracle()
         }
+
+        private fun posExample(ex: App) = w.lines(
+            listOf(
+                "assert (isFunction(${sk(ex.fn)}))",
+                "Type ${sk(ex)} = apply((Function)${sk(ex.fn)}, ${sk(ex.arg)})",
+                "assert (${sk(ex)} != null)",
+            )
+        )
+
+        private fun negExample(ex: App) = w.line(
+            "assert (!isFunction(${sk(ex.fn)}) || apply((Function)${sk(ex.fn)}, ${sk(ex.arg)}) == null)" + TODO("Subexprs of negexs might not be applied yet")
+        )
     }
 
     private inner class ConcreteSketchParser(private val sketch: String) {
@@ -174,5 +236,6 @@ class ConcreteSketcher(
 
     /** Use me wisely */
     private fun sk(name: String) = sketchNames[name]!!
-
+    private fun outline(name: String) = contextOutline[name]!!
+    private fun tId(name: String) = varTypeIds[name]!!
 }

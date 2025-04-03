@@ -2,7 +2,7 @@ include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
 
 adt Type {
     Variable { int tid; int vid; }
-    Label { int l; List<Type> params; }
+    Label { int l; List@list<Type> params; }
     Function { Type left; Type rite; }
 }
 
@@ -23,39 +23,42 @@ Type applyBinding(Type t, int tid, int vid, Type sub) {
     }
 }
 
-List<Type> applyBindingToAll(List<Type> types, int tid, int vid, Type sub) {
-    List<Type> result = empty();
+List@list<Type> applyBindingToAll(List@list<Type> types, int tid, int vid, Type sub) {
+    List@list<Type> result = empty();
     switch (types) {
-        case Cons:{ add(result, applyBinding(types.val, tid, vid, sub)); }
+        case Cons:{
+            List@list<Type> tmp = add(result, applyBinding(types.val, tid, vid, sub));
+            return tmp;
+        }
         case Nil:{ return result; }
     }
 }
 
-Type applyBindings(Type t, List<Binding> bindings) {
+Type applyBindings(Type t, List@list<Binding> bindings) {
     switch (bindings) {
         case Cons:{ return applyBindings(applyBinding(t, bindings.val.tid, bindings.val.vid, bindings.val.t), bindings.next); }
         case Nil:{ return t; }
     }
 }
 
-List<Type> applyBindingsToAll(List<Type> types, List<Binding> bindings) {
-    List<Type> result = empty();
+List@list<Type> applyBindingsToAll(List@list<Type> types, List@list<Binding> bindings) {
+    List@list<Type> result = empty();
     switch (types) {
-        case Cons:{ add(result, applyBindings(types.val, bindings)); }
+        case Cons:{ return add(result, applyBindings(types.val, bindings)); }
         case Nil:{ return result; }
     }
 }
 
-List<Binding> unifyAll(List<Type> params, List<Type> args) {
+List@list<Binding> unifyAll(List@list<Type> params, List@list<Type> args) {
     assert(len(params) == len(args));
     switch (params) {
         case Cons:{
             switch (args) {
                 case Cons:{
-                    List<Binding> bindings = unify(params.val, args.val);
+                    List@list<Binding> bindings = unify(params.val, args.val);
                     if (bindings == null) return null;
-                    List<Type> newParams = applyBindingsToAll(params.next, bindings);
-                    List<Binding> remainingBindings = unifyAll(newParams, args.next);
+                    List@list<Type> newParams = applyBindingsToAll(params.next, bindings);
+                    List@list<Binding> remainingBindings = unifyAll(newParams, args.next);
                     if (remainingBindings == null) return null;
                     return plus(bindings, remainingBindings);
                 }
@@ -72,7 +75,7 @@ List<Binding> unifyAll(List<Type> params, List<Type> args) {
 }
 
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
-List<Binding> unify(Type param, Type arg) {
+List@list<Binding> unify(Type param, Type arg) {
     switch(param) {
         case Variable:{
             Binding b = new Binding(tid=param.tid, vid=param.vid, t=arg);
@@ -93,10 +96,10 @@ List<Binding> unify(Type param, Type arg) {
                 case Variable:{ assert false; }  // TODO I think invariant
                 case Label:{ return null; }
                 case Function:{
-                    List<Binding> leftBindings = unify(param.left, arg.left);
+                    List@list<Binding> leftBindings = unify(param.left, arg.left);
                     if (leftBindings == null) return null;
                     Type newParamRight = applyBindings(param.rite, leftBindings);
-                    List<Binding> riteBindings = unify(newParamRight, arg.rite);
+                    List@list<Binding> riteBindings = unify(newParamRight, arg.rite);
                     if (riteBindings == null) return null;
                     return plus(leftBindings, riteBindings);
                 }
@@ -109,7 +112,7 @@ List<Binding> unify(Type param, Type arg) {
  Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
  */
 Type apply(Function fn, Type arg) {
-    List<Binding> b = unify(fn.left, arg);
+    List@list<Binding> b = unify(fn.left, arg);
     if (b == null) return null;
     return applyBindings(fn.rite, b);
 }
@@ -124,25 +127,70 @@ boolean isFunction(Type t) {
 
 struct LabelKind { int l; int numParams; }
 
-List<LabelKind> registerLabel(List<LabelKind> register, Label label) {
-    if (in(register, label)) return;
-    else return add(register, label);
+LabelKind kind(Label l) {
+    return new LabelKind(l=l.l, numParams=len(l.params));
 }
 
-generator Type type(List<LabelKind> register) {
+List@list<LabelKind> registerLabel(List@list<LabelKind> register, Label label) {
+    if (in(register, kind(label))) return register;
+    else return add(register, kind(label));
+}
+
+generator Type type(List@list<LabelKind> register, int tid, int vars, ref List@list<LabelKind> outRegister, ref int outVars) {
     int t = ??;
     if (t == 0) {
-        return variable();
+        outRegister = register;
+        return variable(tid, vars, outVars);
     }
     if (t == 1) {
-        Label o = label();
-        registerLabel(register, o);
-        return o;
+        return label(register, tid, vars, outRegister, outVars);
     }
     if (t == 2) {
-        Type a = type(register);
-        Type b = type(register);
+        List@list<LabelKind> tmpRegister;
+        int tmpVars;
+        Type a = type(register, tid, vars, tmpRegister, tmpVars);
+        Type b = type(tmpRegister, tid, tmpVars, outRegister, outVars);
         return new Function(left=a, rite=b);
     }
     assert false;
+}
+
+generator Label label(List@list<LabelKind> register, int tid, int vars, ref List@list<LabelKind> outRegister, ref int outVars) {
+    int nParams = ??;
+    minimize(nParams);  // want weaker min than min(len(register))
+    List@list<Type> params = empty();
+    List@list<LabelKind> currRegister = register;
+    int currVars = vars;
+    for (int i = 0; i < nParams; i++) {
+        List@list<LabelKind> nextRegister;
+        int nextVars;
+        params = add(params, type(currRegister, tid, currVars, nextRegister, nextVars));
+        currRegister = nextRegister;
+        currVars = nextVars;
+    }
+    Label o = new Label(l=??, params=params);
+    outRegister = registerLabel(currRegister, o);
+    outVars = currVars;
+    return o;
+}
+
+generator Variable variable(int tid, int vars, ref int outVars) {
+    bit b = ??;
+    if (b) {
+        outVars = vars + 1;
+        return new Variable(tid=tid, vid=vars);
+    }
+    else {
+        int v = ??;
+        assert (v < vars);
+        outVars = vars;
+        return new Variable(tid=tid, vid=v);
+    }
+    minimize(b);
+}
+
+generator Variable variableInRange(int tid, int minV, int maxV) {
+    int v = ??;
+    assert (minV <= v  && v < maxV);
+    return new Variable(tid=tid, vid=v);
 }
