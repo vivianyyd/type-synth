@@ -38,9 +38,6 @@ class ConcreteSketcher(
 
         private fun nullary(name: String) = contextOutline[name]!! is L
 
-        private fun gen(name: String) = "${sk(name)}_gen"
-        private val localNumVars = "lVars"
-
         private fun header() {
             w.include("/home/vivianyyd/type-synth/src/main/sketch/concretize/concretetypes.sk")
             w.comment(listOf(
@@ -54,20 +51,8 @@ class ConcreteSketcher(
 
         private fun codeFor(t: SpecializedSymbolicType, tid: Int, groundVars: Int, destination: String): Unit =
             when (t) {
-                is CL -> w.lines(
-                    listOf(
-                        "$destination = clabel(register, $tid, vars, tmpRegister, tmpVars)",
-                        "register = tmpRegister",
-                        "vars = tmpVars"
-                    )
-                )
-                L -> w.lines(
-                    listOf(
-                        "$destination = label(register, $tid, vars, tmpRegister, tmpVars)",
-                        "register = tmpRegister",
-                        "vars = tmpVars"
-                    )
-                )
+                is CL -> w.line("$destination = clabel(register, numLKs, $tid, $groundVars, labelVars)")
+                L -> w.line("$destination = label(register, numLKs, $tid, $groundVars, labelVars)")
                 is F -> {
                     val (left, rite) = "${destination}l" to "${destination}r"
                     w.line("Type $left; Type $rite")
@@ -77,7 +62,7 @@ class ConcreteSketcher(
                 }
                 is VB -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
                 is VR -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
-                VL -> w.line("$destination = variableInRange(${tid}, $groundVars, vars)")
+                VL -> w.line("$destination = variableInLabel(${tid}, $groundVars, labelVars)")
                 is N -> throw Exception("rly should fix this")  // TODO
             }
 
@@ -86,17 +71,18 @@ class ConcreteSketcher(
             val outline = outline(name)
             fun lastVar(t: SpecializedSymbolicType): Int = when (t) {
                 is F -> max(lastVar(t.left), lastVar(t.rite))
-                is CL, L, VL -> 0
+                is CL, L, VL -> -1
                 is VB -> t.vId
                 is VR -> t.vId
                 is N -> throw Exception("rly should fix this")  // TODO
             }
 
             val groundVars = lastVar(outline) + 1
-            w.block("Type ${sk(name)}(List<LabelKind> register, ref List<LabelKind> outRegister)") {
-                w.lines(listOf("List<LabelKind> tmpRegister; int tmpVars", "int vars = $groundVars", "Type root"))
+            w.block("Type ${sk(name)}(List<LabelKind> register, int numLKs)") {
+                w.line("Type root")
+                w.line("int labelVars = makeLabelVars()")
                 codeFor(outline, tid, groundVars, "root")
-                w.lines(listOf("outRegister = register", "return root"))
+                w.line("return root")
             }
         }
 
@@ -121,12 +107,11 @@ class ConcreteSketcher(
 
         private fun makeAndTest() = w.block("harness void main()") {
             w.lines(listOf(
-                "List<LabelKind> register = empty()", "List<LabelKind> tmpRegister = empty()"
-            ) + query.names.flatMap {
-                listOf(
-                    "Type ${sk(it)} = ${sk(it)}(register, tmpRegister)", "register = tmpRegister"
-                )
-            } + "minimize(len(register))")
+                "int numLKs",
+                "List@list<LabelKind> register = makeLabelKinds(numLKs)"
+            ) + query.names.map {
+                "Type ${sk(it)} = ${sk(it)}(register, numLKs)"
+            })
             w.lines(LinkedHashSet(query.posExamples.filterIsInstance<App>().flatMap { posExample(it) }))
             query.negExamples.filterIsInstance<App>().forEach { negExample(it) }
             obeysOracle()

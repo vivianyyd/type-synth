@@ -1,3 +1,4 @@
+package ct;
 include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
 
 adt Type {
@@ -127,102 +128,84 @@ boolean isFunction(Type t) {
 
 struct LabelKind { int l; int numParams; }
 
-LabelKind kind(Label l) {
-    return new LabelKind(l=l.l, numParams=len(l.params));
+List@list<LabelKind> makeLabelKinds(ref int numLKs) {
+    int nKinds = ??;
+    minimize (nKinds);
+    List@list<LabelKind> register = empty();
+    for (int i = 0; i < nKinds; i++) {
+        int nParams = ??;
+        minimize (nParams);
+        register = add(register, new LabelKind(l=i, numParams=nParams));
+    }
+    numLKs = len(register);
+    return register;
 }
 
-List@list<LabelKind> registerLabel(List@list<LabelKind> register, Label label) {
-    if (in(register, kind(label))) return register;
-    else return add(register, kind(label));
+generator int makeLabelVars() {
+    int nVars = ??;
+    minimize (nVars);
+    return nVars;
 }
 
-generator Type type(List@list<LabelKind> register, int tid, int vars, ref List@list<LabelKind> outRegister, ref int outVars) {
+generator Type type(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars) {
     int t = ??;
     if (t == 0) {
-        outRegister = register;
-        return variable(tid, vars, outVars);
+        return variable(tid, groundVars, labelVars);
     }
     if (t == 1) {
-        return label(register, tid, vars, outRegister, outVars);
+        return label(register, numLKs, tid, groundVars, labelVars);
     }
     if (t == 2) {
-        List@list<LabelKind> tmpRegister;
-        int tmpVars;
-        Type a = type(register, tid, vars, tmpRegister, tmpVars);
-        Type b = type(tmpRegister, tid, tmpVars, outRegister, outVars);
+        Type a = type(register, numLKs, tid, groundVars, labelVars);
+        Type b = type(register, numLKs, tid, groundVars, labelVars);
         return new Function(left=a, rite=b);
     }
     assert false;
 }
 
-generator Label label(List@list<LabelKind> register, int tid, int vars, ref List@list<LabelKind> outRegister, ref int outVars) {
-    int nParams = ??;
-    minimize(nParams);  // want weaker min than min(len(register))
+generator Label label(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars) {
+    int ind = ??;
+    assert (ind < numLKs);
+    LabelKind lk = get(register, ind);
     List@list<Type> params = empty();
-    List@list<LabelKind> currRegister = register;
-    int currVars = vars;
-    for (int i = 0; i < nParams; i++) {
-        List@list<LabelKind> nextRegister;
-        int nextVars;
-        params = add(params, type(currRegister, tid, currVars, nextRegister, nextVars));
-        currRegister = nextRegister;
-        currVars = nextVars;
+    for (int i = 0; i < lk.numParams; i++) {
+        params = add(params, type(register, numLKs, tid, groundVars, labelVars));
     }
-    Label o = new Label(l=??, params=params);
-    outRegister = registerLabel(currRegister, o);
-    outVars = currVars;
-    return o;
+    return new Label(l=lk.l, params=params);
 }
 
-generator Label clabel(List@list<LabelKind> register, int tid, int vars, ref List@list<LabelKind> outRegister, ref int outVars) {
-    int nParams = ??;
-    minimize(nParams);  // want weaker min than min(len(register))
-    List@list<Type> params = empty();
-    List@list<LabelKind> currRegister = register;
-    int currVars = vars;
-    for (int i = 0; i < nParams; i++) {
-        List@list<LabelKind> nextRegister;
-        int nextVars;
-        params = add(params, ctype(currRegister, tid, currVars, nextRegister, nextVars));
-        currRegister = nextRegister;
-        currVars = nextVars;
-    }
-    Label o = new Label(l=??, params=params);
-    outRegister = registerLabel(currRegister, o);
-    outVars = currVars;
-    return o;
+generator Variable variable(int tid, int groundVars, int labelVars) {
+    int v = ??;
+    assert (v < groundVars + labelVars);
+    return new Variable(tid=tid, vid=v);
+    // TODO we can add preference to variables bound outside of labels but that would be oddly asymmetric
 }
-generator Type ctype(List@list<LabelKind> register, int tid, int vars, ref List@list<LabelKind> outRegister, ref int outVars) {
+
+generator Variable variableInLabel(int tid, int groundVars, int labelVars) {
+    int v = ??;
+    assert (v < labelVars);
+    return new Variable(tid=tid, vid=groundVars + v);
+}
+
+generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars) {
+    int ind = ??;
+    assert (ind < numLKs);
+    LabelKind lk = get(register, ind);
+    List@list<Type> params = empty();
+    for (int i = 0; i < lk.numParams; i++) {
+        params = add(params, ctype(register, numLKs, tid, groundVars, labelVars));
+    }
+    return new Label(l=lk.l, params=params);
+}
+generator Type ctype(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars) {
     int t = ??;
     if (t == 1) {
-        return clabel(register, tid, vars, outRegister, outVars);
+        return label(register, numLKs, tid, groundVars, labelVars);
     }
     if (t == 2) {
-        List@list<LabelKind> tmpRegister;
-        int tmpVars;
-        Type a = type(register, tid, vars, tmpRegister, tmpVars);
-        Type b = type(tmpRegister, tid, tmpVars, outRegister, outVars);
+        Type a = type(register, numLKs, tid, groundVars, labelVars);
+        Type b = type(register, numLKs, tid, groundVars, labelVars);
         return new Function(left=a, rite=b);
     }
     assert false;
-}
-generator Variable variable(int tid, int vars, ref int outVars) {
-    bit b = ??;
-    if (b) {
-        outVars = vars + 1;
-        return new Variable(tid=tid, vid=vars);
-    }
-    else {
-        int v = ??;
-        assert (v < vars);
-        outVars = vars;
-        return new Variable(tid=tid, vid=v);
-    }
-    minimize(b);
-}
-
-generator Variable variableInRange(int tid, int minV, int maxV) {
-    int v = ??;
-    assert (minV <= v  && v < maxV);
-    return new Variable(tid=tid, vid=v);
 }
