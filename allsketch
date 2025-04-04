@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Define input and output directories
+INPUT_DIR="src/main/sketch/concretize/generated/input"
+OUTPUT_DIR="src/main/sketch/concretize/generated/output"
+
+for FILE in "$INPUT_DIR"/*.sk; do
+    FILENAME=$(basename "$FILE")
+    OUTPUT_FILE="$OUTPUT_DIR/$FILENAME"
+    
+    # Run the sketch command and redirect output
+    sketch "$INPUT_DIR/$FILENAME" \
+        --fe-custom-codegen ../applications/sketch-1.7.6/sketch-frontend/customcodegen.jar \
+        -V 10 --bnd-inline-amnt 3 > "$OUTPUT_FILE"
+done
+
