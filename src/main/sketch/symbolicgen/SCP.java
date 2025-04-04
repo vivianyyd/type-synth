@@ -287,7 +287,26 @@ public class SCP extends FEReplacer {
 			out.println("T=" + stmt.getTag());
 		}
 		{
-			printLine(stmt.toString() + ";");
+//			printLine(stmt.toString() + ";");
+			
+			String input = stmt.toString();
+			if (input.indexOf("(") == input.lastIndexOf(")") - 1) {
+				printLine(stmt.toString() + ";");
+			} else {
+				int lastCommaIndex = input.lastIndexOf(",");
+
+				int lhsIndex = lastCommaIndex;
+				String optionalParen = "";
+				if (lastCommaIndex == -1) {
+					optionalParen = "(";
+					lhsIndex = input.lastIndexOf("(");
+				}
+				int closingParenIndex = input.indexOf(")", lhsIndex);
+				String beforeLastComma = input.substring(0, lhsIndex).trim();
+				String afterLastComma = input.substring(lhsIndex + 1, closingParenIndex).trim();
+
+				printLine(afterLastComma + " = " + beforeLastComma + optionalParen + ")");
+			}
 		}
 		return stmt;
 	}

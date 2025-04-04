@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sketch "$1" -V 10 --bnd-inline-amnt 3 --fe-custom-codegen ~/applications/sketch-1.7.6/sketch-frontend/customcodegen.jar
