@@ -50,17 +50,17 @@ List@list<Type> applyBindingsToAll(List@list<Type> types, List@list<Binding> bin
     }
 }
 
-List@list<Binding> unifyAll(List@list<Type> params, List@list<Type> args) {
+List@list<Binding> unifyAll(List@list<Type> params, List@list<Type> args, boolean posFlag) {
     assert(len(params) == len(args));
     switch (params) {
         case Cons:{
             switch (args) {
                 case Cons:{
-                    List@list<Binding> bindings = unify(params.val, args.val);
-                    if (bindings == null) return null;
+                    List@list<Binding> bindings = unify(params.val, args.val, posFlag);
+                    if (bindings == null) return fail(posFlag);
                     List@list<Type> newParams = applyBindingsToAll(params.next, bindings);
-                    List@list<Binding> remainingBindings = unifyAll(newParams, args.next);
-                    if (remainingBindings == null) return null;
+                    List@list<Binding> remainingBindings = unifyAll(newParams, args.next, posFlag);
+                    if (remainingBindings == null) return fail(posFlag);
                     return plus(bindings, remainingBindings);
                 }
                 case Nil:{ assert false; }
@@ -75,8 +75,13 @@ List@list<Binding> unifyAll(List@list<Type> params, List@list<Type> args) {
     }
 }
 
+generator List@list<Binding> fail(boolean posFlag) {
+    if (posFlag) assert false;
+    else return null;
+}
+
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
-List@list<Binding> unify(Type param, Type arg) {
+List@list<Binding> unify(Type param, Type arg, boolean posFlag) {
     switch(param) {
         case Variable:{
             Binding b = new Binding(tid=param.tid, vid=param.vid, t=arg);
@@ -86,22 +91,22 @@ List@list<Binding> unify(Type param, Type arg) {
             switch(arg) {
                 case Variable:{ assert false; }  // TODO I think invariant. If we had []: L<a> this would be different
                 case Label:{
-                    if (param.l != arg.l || len(param.params) != len(arg.params)) return null;
-                    return unifyAll(param.params, arg.params);
+                    if (param.l != arg.l || len(param.params) != len(arg.params)) return fail(posFlag);
+                    return unifyAll(param.params, arg.params, posFlag);
                 }
-                case Function:{ return null; }
+                case Function:{ return fail(posFlag); }
             }
         }
         case Function:{
             switch(arg) {
                 case Variable:{ assert false; }  // TODO I think invariant
-                case Label:{ return null; }
+                case Label:{ return fail(posFlag); }
                 case Function:{
-                    List@list<Binding> leftBindings = unify(param.left, arg.left);
-                    if (leftBindings == null) return null;
+                    List@list<Binding> leftBindings = unify(param.left, arg.left, posFlag);
+                    if (leftBindings == null) return fail(posFlag);
                     Type newParamRight = applyBindings(param.rite, leftBindings);
-                    List@list<Binding> riteBindings = unify(newParamRight, arg.rite);
-                    if (riteBindings == null) return null;
+                    List@list<Binding> riteBindings = unify(newParamRight, arg.rite, posFlag);
+                    if (riteBindings == null) return fail(posFlag);
                     return plus(leftBindings, riteBindings);
                 }
             }
@@ -112,9 +117,12 @@ List@list<Binding> unify(Type param, Type arg) {
 /**
  Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
  */
-Type apply(Function fn, Type arg) {
-    List@list<Binding> b = unify(fn.left, arg);
-    if (b == null) return null;
+Type apply(Function fn, Type arg, boolean posFlag) {
+    List@list<Binding> b = unify(fn.left, arg, posFlag);
+    if (b == null) {
+        if (posFlag) assert false;
+        else return null;
+    }
     return applyBindings(fn.rite, b);
 }
 
@@ -147,29 +155,31 @@ generator int makeLabelVars() {
     return nVars;
 }
 
-generator Type type(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars) {
+generator Type type(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
+    if (bnd < 1) assert false;
     int t = ??;
     if (t == 0) {
         return variable(tid, groundVars, labelVars);
     }
     if (t == 1) {
-        return label(register, numLKs, tid, groundVars, labelVars);
+        return label(register, numLKs, tid, groundVars, labelVars, bnd - 1);
     }
     if (t == 2) {
-        Type a = type(register, numLKs, tid, groundVars, labelVars);
-        Type b = type(register, numLKs, tid, groundVars, labelVars);
+        Type a = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
+        Type b = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
         return new Function(left=a, rite=b);
     }
     assert false;
 }
 
-generator Label label(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars) {
+generator Label label(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
+    if (bnd < 1) assert false;
     int ind = ??;
     assert (ind < numLKs);
     LabelKind lk = get(register, ind);
     List@list<Type> params = empty();
     for (int i = 0; i < lk.numParams; i++) {
-        params = add(params, type(register, numLKs, tid, groundVars, labelVars));
+        params = add(params, type(register, numLKs, tid, groundVars, labelVars, bnd - 1));
     }
     return new Label(l=lk.l, params=params);
 }
@@ -187,24 +197,26 @@ generator Variable variableInLabel(int tid, int groundVars, int labelVars) {
     return new Variable(tid=tid, vid=groundVars + v);
 }
 
-generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars) {
+generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
+    if (bnd < 1) assert false;
     int ind = ??;
     assert (ind < numLKs);
     LabelKind lk = get(register, ind);
     List@list<Type> params = empty();
     for (int i = 0; i < lk.numParams; i++) {
-        params = add(params, ctype(register, numLKs, tid, groundVars, labelVars));
+        params = add(params, ctype(register, numLKs, tid, groundVars, labelVars, bnd - 1));
     }
     return new Label(l=lk.l, params=params);
 }
-generator Type ctype(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars) {
+generator Type ctype(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
+    if (bnd < 1) assert false;
     int t = ??;
     if (t == 1) {
-        return label(register, numLKs, tid, groundVars, labelVars);
+        return label(register, numLKs, tid, groundVars, labelVars, bnd - 1);
     }
     if (t == 2) {
-        Type a = type(register, numLKs, tid, groundVars, labelVars);
-        Type b = type(register, numLKs, tid, groundVars, labelVars);
+        Type a = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
+        Type b = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
         return new Function(left=a, rite=b);
     }
     assert false;
