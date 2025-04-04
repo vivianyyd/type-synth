@@ -137,11 +137,11 @@ boolean isFunction(Type t) {
 struct LabelKind { int l; int numParams; }
 
 List@list<LabelKind> makeLabelKinds(ref int numLKs) {
-    int nKinds = ??;
+    int nKinds = ??(3);
     minimize (nKinds);
     List@list<LabelKind> register = empty();
     for (int i = 0; i < nKinds; i++) {
-        int nParams = ??;
+        int nParams = ??(2);
         minimize (nParams);
         register = add(register, new LabelKind(l=i, numParams=nParams));
     }
@@ -150,14 +150,19 @@ List@list<LabelKind> makeLabelKinds(ref int numLKs) {
 }
 
 generator int makeLabelVars() {
-    int nVars = ??;
+    int nVars = ??(2);
     minimize (nVars);
     return nVars;
 }
 
+// BOUND ON NUMBER OF LABEL KINDS: 8
+// BOUND ON NUMBER OF PARAMS FOR A LABEL: 4
+// BOUND ON NUMBER OF FRESH VARIABLES INSIDE ONLY LABELS FOR A GIVEN TYPE: 4
+
+
 generator Type type(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
     if (bnd < 1) assert false;
-    int t = ??;
+    int t = ??(2);
     if (t == 0) {
         return variable(tid, groundVars, labelVars);
     }
@@ -174,7 +179,7 @@ generator Type type(List@list<LabelKind> register, int numLKs, int tid, int grou
 
 generator Label label(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
     if (bnd < 1) assert false;
-    int ind = ??;
+    int ind = ??(3);
     assert (ind < numLKs);
     LabelKind lk = get(register, ind);
     List@list<Type> params = empty();
@@ -185,21 +190,21 @@ generator Label label(List@list<LabelKind> register, int numLKs, int tid, int gr
 }
 
 generator Variable variable(int tid, int groundVars, int labelVars) {
-    int v = ??;
+    int v = ??(3); // labelVars bounded at 4; we assumed groundVars < 4
     assert (v < groundVars + labelVars);
     return new Variable(tid=tid, vid=v);
     // TODO we can add preference to variables bound outside of labels but that would be oddly asymmetric
 }
 
 generator Variable variableInLabel(int tid, int groundVars, int labelVars) {
-    int v = ??;
+    int v = ??(2);
     assert (v < labelVars);
     return new Variable(tid=tid, vid=groundVars + v);
 }
 
 generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
     if (bnd < 1) assert false;
-    int ind = ??;
+    int ind = ??(3);
     assert (ind < numLKs);
     LabelKind lk = get(register, ind);
     List@list<Type> params = empty();
@@ -210,11 +215,11 @@ generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int g
 }
 generator Type ctype(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
     if (bnd < 1) assert false;
-    int t = ??;
-    if (t == 1) {
+    bit t = ??;
+    if (t) {
         return label(register, numLKs, tid, groundVars, labelVars, bnd - 1);
     }
-    if (t == 2) {
+    else {
         Type a = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
         Type b = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
         return new Function(left=a, rite=b);

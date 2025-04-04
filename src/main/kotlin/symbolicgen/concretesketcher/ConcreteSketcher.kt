@@ -6,6 +6,8 @@ import java.lang.Integer.max
 
 typealias ContextOutline = Map<String, SpecializedSymbolicType>
 
+const val TYPE_DEPTH_BOUND = 3
+
 class ConcreteSketcher(
     val query: NewQuery,
     private val contextOutline: ContextOutline,
@@ -51,8 +53,8 @@ class ConcreteSketcher(
 
         private fun codeFor(t: SpecializedSymbolicType, tid: Int, groundVars: Int, destination: String): Unit =
             when (t) {
-                is CL -> w.line("$destination = clabel(register, numLKs, $tid, $groundVars, labelVars)")
-                L -> w.line("$destination = label(register, numLKs, $tid, $groundVars, labelVars)")
+                is CL -> w.line("$destination = clabel(register, numLKs, $tid, $groundVars, labelVars, $TYPE_DEPTH_BOUND)")
+                L -> w.line("$destination = label(register, numLKs, $tid, $groundVars, labelVars, $TYPE_DEPTH_BOUND)")
                 is F -> {
                     val (left, rite) = "${destination}l" to "${destination}r"
                     w.line("Type $left; Type $rite")
@@ -119,12 +121,12 @@ class ConcreteSketcher(
 
         private fun posExample(ex: App) = listOf(
             "assert (isFunction(${sk(ex.fn)}))",
-            "Type ${sk(ex)} = apply((Function)${sk(ex.fn)}, ${sk(ex.arg)})",
+            "Type ${sk(ex)} = apply((Function)${sk(ex.fn)}, ${sk(ex.arg)}, true)",
             "assert (${sk(ex)} != null)",
         )
 
         private fun negExample(ex: App) = w.line(
-            "assert (!isFunction(${sk(ex.fn)}) || apply((Function)${sk(ex.fn)}, ${sk(ex.arg)}) == null)"
+            "assert (!isFunction(${sk(ex.fn)}) || apply((Function)${sk(ex.fn)}, ${sk(ex.arg)}, false) == null)"
         )
     }
 
