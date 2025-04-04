@@ -50,17 +50,17 @@ List@list<Type> applyBindingsToAll(List@list<Type> types, List@list<Binding> bin
     }
 }
 
-List@list<Binding> unifyAll(List@list<Type> params, List@list<Type> args, boolean posFlag) {
+List@list<Binding> unifyAll(List@list<Type> params, List@list<Type> args) {
     assert(len(params) == len(args));
     switch (params) {
         case Cons:{
             switch (args) {
                 case Cons:{
-                    List@list<Binding> bindings = unify(params.val, args.val, posFlag);
-                    if (bindings == null) return fail(posFlag);
+                    List@list<Binding> bindings = unify(params.val, args.val);
+                    if (bindings == null) return null;
                     List@list<Type> newParams = applyBindingsToAll(params.next, bindings);
-                    List@list<Binding> remainingBindings = unifyAll(newParams, args.next, posFlag);
-                    if (remainingBindings == null) return fail(posFlag);
+                    List@list<Binding> remainingBindings = unifyAll(newParams, args.next);
+                    if (remainingBindings == null) return null;
                     return plus(bindings, remainingBindings);
                 }
                 case Nil:{ assert false; }
@@ -75,13 +75,8 @@ List@list<Binding> unifyAll(List@list<Type> params, List@list<Type> args, boolea
     }
 }
 
-generator List@list<Binding> fail(boolean posFlag) {
-    if (posFlag) assert false;
-    else return null;
-}
-
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
-List@list<Binding> unify(Type param, Type arg, boolean posFlag) {
+List@list<Binding> unify(Type param, Type arg) {
     switch(param) {
         case Variable:{
             Binding b = new Binding(tid=param.tid, vid=param.vid, t=arg);
@@ -91,22 +86,22 @@ List@list<Binding> unify(Type param, Type arg, boolean posFlag) {
             switch(arg) {
                 case Variable:{ assert false; }  // TODO I think invariant. If we had []: L<a> this would be different
                 case Label:{
-                    if (param.l != arg.l || len(param.params) != len(arg.params)) return fail(posFlag);
-                    return unifyAll(param.params, arg.params, posFlag);
+                    if (param.l != arg.l || len(param.params) != len(arg.params)) return null;
+                    return unifyAll(param.params, arg.params);
                 }
-                case Function:{ return fail(posFlag); }
+                case Function:{ return null; }
             }
         }
         case Function:{
             switch(arg) {
                 case Variable:{ assert false; }  // TODO I think invariant
-                case Label:{ return fail(posFlag); }
+                case Label:{ return null; }
                 case Function:{
-                    List@list<Binding> leftBindings = unify(param.left, arg.left, posFlag);
-                    if (leftBindings == null) return fail(posFlag);
+                    List@list<Binding> leftBindings = unify(param.left, arg.left);
+                    if (leftBindings == null) return null;
                     Type newParamRight = applyBindings(param.rite, leftBindings);
-                    List@list<Binding> riteBindings = unify(newParamRight, arg.rite, posFlag);
-                    if (riteBindings == null) return fail(posFlag);
+                    List@list<Binding> riteBindings = unify(newParamRight, arg.rite);
+                    if (riteBindings == null) return null;
                     return plus(leftBindings, riteBindings);
                 }
             }
@@ -117,12 +112,9 @@ List@list<Binding> unify(Type param, Type arg, boolean posFlag) {
 /**
  Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
  */
-Type apply(Function fn, Type arg, boolean posFlag) {
-    List@list<Binding> b = unify(fn.left, arg, posFlag);
-    if (b == null) {
-        if (posFlag) assert false;
-        else return null;
-    }
+Type apply(Function fn, Type arg) {
+    List@list<Binding> b = unify(fn.left, arg);
+    if (b == null) return null;
     return applyBindings(fn.rite, b);
 }
 
@@ -215,11 +207,11 @@ generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int g
 }
 generator Type ctype(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
     if (bnd < 1) assert false;
-    bit t = ??;
-    if (t) {
+    int t = ??(1);
+    if (t == 0) {
         return label(register, numLKs, tid, groundVars, labelVars, bnd - 1);
     }
-    else {
+    if (t == 1) {
         Type a = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
         Type b = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
         return new Function(left=a, rite=b);
