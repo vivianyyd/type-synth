@@ -91,8 +91,23 @@ class SymbolicTypeBuilder(val query: NewQuery) {
         s
     }
 
+//    fun deepen(): State {
+//        /*
+//        TODO can AU outputs too but for now just do inputs
+//        Map choices to set of examples:
+//            An example f x implies AUset of f.left contains tree of x, which might itself be a choice s.exprToChoice(x)
+//        AUset is a set of choices that must antiunify
+//         */
+//        val auSets = mutableMapOf<Choice, Set<Choice>>()
+//        query.posExamples.forEach {
+//            // the choice for param MUST permit AT LEAST ONE of the subtrees for arg (if hole, expand to permit all)
+//        }
+//        query.negExamples.forEach {
+//            // the choice for param CAN'T permit at least one of the subtrees for arg
+//        }
+//    }
+
     private fun patchEmptyLists() {
-        // TODO maybe patched functions can contain just V or other angel, since vl makes 4x blowup
         fun patch(t: SymbolicType, rightmost: Boolean) {
             when (t) {
                 is Function -> {
@@ -156,9 +171,6 @@ class SymbolicTypeBuilder(val query: NewQuery) {
         }.forEach { s.plant(it, listOf(Label())) }
 
         expandedApps.forEach { readPosApp(it) }
-//        query.negExamples.filterIsInstance<App>()
-//            ./*TODO do analysis to localize errors based on posexs when possible*/forEach { readNegApp(it) }
-        // TODO do we ever learn anything at this stage from negative examples?
     }
 }
 
