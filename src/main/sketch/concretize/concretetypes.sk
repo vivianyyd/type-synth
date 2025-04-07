@@ -25,13 +25,11 @@ Type applyBinding(Type t, int tid, int vid, Type sub) {
 }
 
 List@list<Type> applyBindingToAll(List@list<Type> types, int tid, int vid, Type sub) {
-    List@list<Type> result = empty();
     switch (types) {
         case Cons:{
-            List@list<Type> tmp = add(result, applyBinding(types.val, tid, vid, sub));
-            return tmp;
+            return add(applyBindingToAll(types.next, tid, vid, sub), applyBinding(types.val, tid, vid, sub));
         }
-        case Nil:{ return result; }
+        case Nil:{ return empty(); }
     }
 }
 
@@ -44,25 +42,24 @@ Type applyBindings(Type t, List@list<Binding> bindings, int bnd) {
 }
 
 List@list<Type> applyBindingsToAll(List@list<Type> types, List@list<Binding> bindings, int bnd) {
-    List@list<Type> result = empty();
     switch (types) {
         case Cons:{ return add(applyBindingsToAll(types.next, bindings, bnd - 1), applyBindings(types.val, bindings, 8)); }// todo since ground,label both capped at 4
         case Nil:{ return empty(); }
     }
 }
 
-List@list<Binding> unifyAll(List@list<Type> params, List@list<Type> args, int bnd) {
+List@list<Binding> unifyAll(List@list<Type> params, List@list<Type> args, boolean posFlag, int bnd) {
     assert bnd > 0;
     assert(len(params) == len(args));
     switch (params) {
         case Cons:{
             switch (args) {
                 case Cons:{
-                    List@list<Binding> bindings = unify(params.val, args.val, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
-                    if (bindings == null) return null;
+                    List@list<Binding> bindings = unify(params.val, args.val, posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
+                    if (bindings == null) return fail(posFlag);
                     List@list<Type> newParams = applyBindingsToAll(params.next, bindings, 4);  // TODO we can bound this by the max number of label parameters or even true number or min(maxnum, true num)
-                    List@list<Binding> remainingBindings = unifyAll(newParams, args.next, bnd);
-                    if (remainingBindings == null) return null;
+                    List@list<Binding> remainingBindings = unifyAll(newParams, args.next, posFlag, bnd);
+                    if (remainingBindings == null) return fail(posFlag);
                     return plus(bindings, remainingBindings);
                 }
                 case Nil:{ assert false; }
@@ -77,8 +74,13 @@ List@list<Binding> unifyAll(List@list<Type> params, List@list<Type> args, int bn
     }
 }
 
+generator List@list<Binding> fail(boolean posFlag) {
+    if (posFlag) assert false;
+    else return null;
+}
+
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
-List@list<Binding> unify(Type param, Type arg, int bnd) {
+List@list<Binding> unify(Type param, Type arg, boolean posFlag, int bnd) {
     assert bnd > 0;
     switch(param) {
         case Variable:{
@@ -89,22 +91,22 @@ List@list<Binding> unify(Type param, Type arg, int bnd) {
             switch(arg) {
                 case Variable:{ assert false; }  // TODO I think invariant. If we had []: L<a> this would be different
                 case Label:{
-                    if (param.l != arg.l || len(param.params) != len(arg.params)) return null;
-                    return unifyAll(param.params, arg.params, bnd - 1);
+                    if (param.l != arg.l || len(param.params) != len(arg.params)) return fail(posFlag);
+                    return unifyAll(param.params, arg.params, posFlag, bnd - 1);
                 }
-                case Function:{ return null; }
+                case Function:{ return fail(posFlag); }
             }
         }
         case Function:{
             switch(arg) {
                 case Variable:{ assert false; }  // TODO I think invariant
-                case Label:{ return null; }
+                case Label:{ return fail(posFlag); }
                 case Function:{
-                    List@list<Binding> leftBindings = unify(param.left, arg.left, bnd - 1);
-                    if (leftBindings == null) return null;
+                    List@list<Binding> leftBindings = unify(param.left, arg.left, posFlag, bnd - 1);
+                    if (leftBindings == null) return fail(posFlag);
                     Type newParamRight = applyBindings(param.rite, leftBindings, 8);
-                    List@list<Binding> riteBindings = unify(newParamRight, arg.rite, bnd - 1);
-                    if (riteBindings == null) return null;
+                    List@list<Binding> riteBindings = unify(newParamRight, arg.rite, posFlag, bnd - 1);
+                    if (riteBindings == null) return fail(posFlag);
                     return plus(leftBindings, riteBindings);
                 }
             }
@@ -115,9 +117,12 @@ List@list<Binding> unify(Type param, Type arg, int bnd) {
 /**
  Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
  */
-Type apply(Function fn, Type arg) {
-    List@list<Binding> b = unify(fn.left, arg, 5);  // TODO FIXME JUST PATCHED IN
-    if (b == null) return null;
+Type apply(Function fn, Type arg, boolean posFlag) {
+    List@list<Binding> b = unify(fn.left, arg, posFlag, 5);  // TODO FIXME JUST PATCHED IN
+    if (b == null) {
+        if (posFlag) assert false;
+        else return null;
+    }
     return applyBindings(fn.rite, b, 8);
 }
 
