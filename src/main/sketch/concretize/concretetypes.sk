@@ -12,7 +12,7 @@ struct Binding { int tid; int vid; Type t; }
 Type applyBinding(Type t, int tid, int vid, Type sub) {
     switch (t) {
         case Label:{
-            return new Label(l=t.l, params=applyBindingToAll(t.params, tid, vid, sub));
+            return new Label(l=t.l, params=applyBindingToAll(t.params, tid, vid, sub, 4));
         }
         case Function:{
             return new Function(left=applyBinding(t.left, tid, vid, sub), rite=applyBinding(t.rite, tid, vid, sub));
@@ -24,26 +24,27 @@ Type applyBinding(Type t, int tid, int vid, Type sub) {
     }
 }
 
-List@list<Type> applyBindingToAll(List@list<Type> types, int tid, int vid, Type sub) {
+List@list<Type> applyBindingToAll(List@list<Type> types, int tid, int vid, Type sub, int bnd) {
+    assert bnd > 0;
     switch (types) {
         case Cons:{
-            return add(applyBindingToAll(types.next, tid, vid, sub), applyBinding(types.val, tid, vid, sub));
+            return add(applyBindingToAll(types.next, tid, vid, sub, bnd - 1), applyBinding(types.val, tid, vid, sub));
         }
         case Nil:{ return empty(); }
     }
 }
 
-Type applyBindings(Type t, List@list<Binding> bindings, int bnd) {
-    assert bnd > 0;
+Type applyBindings(Type t, List@list<Binding> bindings) {
     switch (bindings) {
-        case Cons:{ return applyBindings(applyBinding(t, bindings.val.tid, bindings.val.vid, bindings.val.t), bindings.next, bnd - 1); }
+        case Cons:{ return applyBindings(applyBinding(t, bindings.val.tid, bindings.val.vid, bindings.val.t), bindings.next); }
         case Nil:{ return t; }
     }
 }
 
 List@list<Type> applyBindingsToAll(List@list<Type> types, List@list<Binding> bindings, int bnd) {
+    assert bnd > 0;
     switch (types) {
-        case Cons:{ return add(applyBindingsToAll(types.next, bindings, bnd - 1), applyBindings(types.val, bindings, 8)); }// todo since ground,label both capped at 4
+        case Cons:{ return add(applyBindingsToAll(types.next, bindings, bnd - 1), applyBindings(types.val, bindings)); }// todo since ground,label both capped at 4
         case Nil:{ return empty(); }
     }
 }
@@ -104,7 +105,7 @@ List@list<Binding> unify(Type param, Type arg, boolean posFlag, int bnd) {
                 case Function:{
                     List@list<Binding> leftBindings = unify(param.left, arg.left, posFlag, bnd - 1);
                     if (leftBindings == null) return fail(posFlag);
-                    Type newParamRight = applyBindings(param.rite, leftBindings, 8);
+                    Type newParamRight = applyBindings(param.rite, leftBindings);
                     List@list<Binding> riteBindings = unify(newParamRight, arg.rite, posFlag, bnd - 1);
                     if (riteBindings == null) return fail(posFlag);
                     return plus(leftBindings, riteBindings);
@@ -123,7 +124,7 @@ Type apply(Function fn, Type arg, boolean posFlag) {
         if (posFlag) assert false;
         else return null;
     }
-    return applyBindings(fn.rite, b, 8);
+    return applyBindings(fn.rite, b);
 }
 
 boolean isFunction(Type t) {
@@ -199,7 +200,7 @@ generator Label label(List@list<LabelKind> register, int numLKs, int tid, int gr
     return new Label(l=lk.l, params=params);
 }
 
-generator Variable variable(int tid, int groundVars, int labelVars) {
+generator Variable variable(int tid, int groundVars, int labelVars) {  // TODO if no groundvars, v can be bound at 2, so should actually pass its bit bound in here
     int v = ??(3); // labelVars bounded at 4; we assumed groundVars < 4  // TODO don't hardcode me
     assert (v < groundVars + labelVars);
     return new Variable(tid=tid, vid=v);
@@ -212,24 +213,25 @@ generator Variable variableInLabel(int tid, int groundVars, int labelVars) {
     return new Variable(tid=tid, vid=groundVars + v);
 }
 
-generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
+generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int bnd) {
     assert bnd > 0;
     int ind = ??(3);
     assert (ind < numLKs);
     LabelKind lk = get(register, ind);
     List@list<Type> params = empty();
     for (int i = 0; i < lk.numParams; i++) {
-        params = add(params, ctype(register, numLKs, tid, groundVars, labelVars, bnd - 1));
+        params = add(params, ctype(register, numLKs, tid, groundVars, bnd - 1));
     }
     return new Label(l=lk.l, params=params);
 }
-generator Type ctype(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
+generator Type ctype(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int bnd) {
     assert bnd > 0;
     bit t = ??;
     if (t) {
-        return label(register, numLKs, tid, groundVars, labelVars, bnd - 1);
+        return label(register, numLKs, tid, 0, 0, bnd - 1);
     }
     else {
+        int labelVars = makeLabelVars();
         Type a = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
         Type b = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
         return new Function(left=a, rite=b);
