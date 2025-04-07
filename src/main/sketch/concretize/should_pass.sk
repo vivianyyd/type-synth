@@ -1,0 +1,132 @@
+include "/home/vivianyyd/type-synth/src/main/sketch/concretize/concretetypes.sk";
+/*
+0=CL
+[]i=CL
+[[]]i=CL
+cons=L -> VL -> VL
+
+NAME		SKETCHNAME		DUMMY
+0			_0
+[]i			_i
+[[]]i			_i_0
+cons			_cons
+*/
+
+// TODO JUST TESTING UNIFY
+
+// L L INT
+generator Type _0_gen(List<LabelKind> register, int numLKs) {
+    Type tint = new Label(l=0, params={null, null, null, null});
+    Type lint = new Label(l=1, params={tint, null, null, null});
+    Type llint = new Label(l=1, params={lint, null, null, null});
+	return llint;
+}
+
+// L INT
+generator Type _i_gen(List<LabelKind> register, int numLKs) {
+	Type tint = new Label(l=0, params={null, null, null, null});
+    Type lint = new Label(l=1, params={tint, null, null, null});
+    return lint;
+}
+
+// INT
+generator Type _i_0_gen(List<LabelKind> register, int numLKs) {
+	Type tint = new Label(l=0, params={null, null, null, null});
+    return tint;
+}
+generator Type _cons_gen(List<LabelKind> register, int numLKs) {
+	Type root;
+	Type rootl; Type rootr;
+	Type alpha = new Variable(tid=3, vid=0);
+	rootl = new Label(l=1, params={alpha, null, null, null});
+	Type rootrl; Type rootrr;
+	rootrl = alpha;
+	rootrr = alpha;
+	rootr = new Function(left=rootrl, rite=rootrr);
+	root = new Function(left=rootl, rite=rootr);
+	return root;
+}
+
+
+Type _0(List<LabelKind> register, int numLKs) {
+	return _0_gen(register, numLKs);
+}
+Type _i(List<LabelKind> register, int numLKs) {
+	return _i_gen(register, numLKs);
+}
+Type _i_0(List<LabelKind> register, int numLKs) {
+	return _i_0_gen(register, numLKs);
+}
+Type _cons(List<LabelKind> register, int numLKs) {
+	return _cons_gen(register, numLKs);
+}
+harness void main() {
+	int numLKs;
+	List@list<LabelKind> register = makeLabelKinds(numLKs);
+	Type _0 = _0(register, numLKs);
+	Type _i = _i(register, numLKs);
+	Type _i_0 = _i_0(register, numLKs);
+	Type _cons = _cons(register, numLKs);
+	assert (isFunction(_cons));
+	Type oo_consco_0cc = apply((Function)_cons, _0, true);
+	assert (oo_consco_0cc != null);
+	assert (isFunction(oo_consco_0cc));
+	Type oooo_consco_0ccco_icc = apply((Function)oo_consco_0cc, _i, true);
+	assert (oooo_consco_0ccco_icc != null);
+	Type oooo_consco_0cccooooo_consco_0ccco_icccc = apply((Function)oo_consco_0cc, oooo_consco_0ccco_icc, true);
+	assert (oooo_consco_0cccooooo_consco_0ccco_icccc != null);
+	Type oo_consco_icc = apply((Function)_cons, _i, true);
+	assert (oo_consco_icc != null);
+	assert (isFunction(oo_consco_icc));
+	Type oooo_consco_iccco_i_0cc = apply((Function)oo_consco_icc, _i_0, true);
+	assert (oooo_consco_iccco_i_0cc != null);
+	Type oooo_consco_icccooooo_consco_iccco_i_0cccc = apply((Function)oo_consco_icc, oooo_consco_iccco_i_0cc, true);
+	assert (oooo_consco_icccooooo_consco_iccco_i_0cccc != null);
+	assert (!isFunction(oo_consco_icc) || apply((Function)oo_consco_icc, _0, false) == null);
+	assert(_0 != _i);
+	assert(_0 != _i_0);
+	assert(_0 != _cons);
+	assert(_0 != oo_consco_0cc);
+	assert(_0 != oooo_consco_0ccco_icc);
+	assert(_0 != oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(_0 != oo_consco_icc);
+	assert(_0 != oooo_consco_iccco_i_0cc);
+	assert(_0 != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(_i != _i_0);
+	assert(_i != _cons);
+	assert(_i != oo_consco_0cc);
+	assert(_i == oooo_consco_0ccco_icc);
+	assert(_i == oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(_i != oo_consco_icc);
+	assert(_i != oooo_consco_iccco_i_0cc);
+	assert(_i != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(_i_0 != _cons);
+	assert(_i_0 != oo_consco_0cc);
+	assert(_i_0 != oooo_consco_0ccco_icc);
+	assert(_i_0 != oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(_i_0 != oo_consco_icc);
+	assert(_i_0 == oooo_consco_iccco_i_0cc);
+	assert(_i_0 == oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(_cons != oo_consco_0cc);
+	assert(_cons != oooo_consco_0ccco_icc);
+	assert(_cons != oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(_cons != oo_consco_icc);
+	assert(_cons != oooo_consco_iccco_i_0cc);
+	assert(_cons != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(oo_consco_0cc != oooo_consco_0ccco_icc);
+	assert(oo_consco_0cc != oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(oo_consco_0cc != oo_consco_icc);
+	assert(oo_consco_0cc != oooo_consco_iccco_i_0cc);
+	assert(oo_consco_0cc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(oooo_consco_0ccco_icc == oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(oooo_consco_0ccco_icc != oo_consco_icc);
+	assert(oooo_consco_0ccco_icc != oooo_consco_iccco_i_0cc);
+	assert(oooo_consco_0ccco_icc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oo_consco_icc);
+	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oooo_consco_iccco_i_0cc);
+	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(oo_consco_icc != oooo_consco_iccco_i_0cc);
+	assert(oo_consco_icc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(oooo_consco_iccco_i_0cc == oooo_consco_icccooooo_consco_iccco_i_0cccc);
+}
+
