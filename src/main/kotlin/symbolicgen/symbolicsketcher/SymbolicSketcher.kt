@@ -230,7 +230,10 @@ class SymbolicSketcher(val query: NewQuery, private val state: State, private va
                             val (v, tId) = args.replace("vId=", "").replace("tId=", "").split(", ")
                             VR(vId = v.toInt(), tId = tId.toInt())
                         }
-                        "VarLabelBound" -> VL
+                        "VarLabelBound" -> {
+                            val (v, tId) = args.replace("vId=", "").replace("tId=", "").split(", ")
+                            VL(vId = v.toInt(), tId = tId.toInt())
+                        }
                         "ConcreteLabel" -> CL(dummy = args.replace("dummy=", "").toInt())
                         else -> throw Exception("Parsing error")
                     }

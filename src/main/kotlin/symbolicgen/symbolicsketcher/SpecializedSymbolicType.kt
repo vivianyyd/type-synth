@@ -35,11 +35,11 @@ data class VR(val vId: Int, val tId: Int) : SpecializedSymbolicType {
     override fun constructSketch(): String = "new VarRef(vId=$vId, tId=$tId)"
 }
 
-object VL : SpecializedSymbolicType {
+data class VL(val vId: Int, val tId: Int) : SpecializedSymbolicType {
 //    override fun toString(): String = "V"
 
-    override fun toString(): String = "VL"
-    override fun constructSketch(): String = "new VarLabelBound()"
+    override fun toString(): String = "${tId}_$vId"
+    override fun constructSketch(): String = "new VarLabelBound(vId=$vId, tId=$tId)"
 }
 
 data class CL(val dummy: Int) : SpecializedSymbolicType {
@@ -56,7 +56,7 @@ fun applyBinding(
     sub: SpecializedSymbolicType
 ): SpecializedSymbolicType =
     when (t) {
-        is CL, L, is VB, VL, is N -> t
+        is CL, L, is VB, is VL, is N -> t
         is F -> F(applyBinding(t.left, varId, tId, sub), applyBinding(t.rite, varId, tId, sub))
         is VR -> if (t.vId == varId && t.tId == tId) sub else t
     }
@@ -77,17 +77,17 @@ fun unify(param: SpecializedSymbolicType, arg: SpecializedSymbolicType): List<Bi
     is CL -> when (arg) {
         is CL -> if (param.dummy == arg.dummy) listOf() else null
         is F -> null
-        L, VL -> listOf()
+        L, is VL -> listOf()  // TODO I think we shouldn't see VLs here ever
         is VB, is VR, is N -> throw Exception("Invariant broken")
     }
     L -> when (arg) {
-        is CL, L, VL, is VB, is VR -> listOf() // TODO hack
+        is CL, L, is VL, is VB, is VR -> listOf() // TODO hack
         is F -> null
         is N -> throw Exception("Invariant broken")
     }
     is F -> when (arg) {
         is CL, L -> null
-        VL, is VB, is VR -> listOf() // TODO hack and might be wrong
+        is VL, is VB, is VR -> listOf() // TODO hack and might be wrong
         is F -> {
             val leftBindings = unify(param.left, arg.left)
             val riteBindings = leftBindings?.let { applyBindings(param.rite, it) }?.let { unify(it, arg.rite) }
@@ -95,14 +95,13 @@ fun unify(param: SpecializedSymbolicType, arg: SpecializedSymbolicType): List<Bi
         }
         is N -> throw Exception("Invariant broken")
     }
-    VL -> listOf()
-    is VR, is N -> throw Exception("Invariant broken")
+    is VL, is VR, is N -> throw Exception("Invariant broken")
 }
 
 /**
 Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
  */
 fun apply(fn: F, arg: SpecializedSymbolicType): SpecializedSymbolicType? {
-    if (arg is VB || arg is VR) throw Exception("Invariant broken")
+    if (arg is VR) throw Exception("Invariant broken")
     return unify(fn.left, arg)?.let { applyBindings(fn.rite, it) }
 }

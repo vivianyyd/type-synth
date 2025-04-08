@@ -26,12 +26,17 @@ class SymbolicEnumerator(
         fun check(ex: Example): SpecializedSymbolicType? = when (ex) {
             is Name -> context[ex.name]!!
             is App -> {
-                val f = check(ex.fn)
-                if (f is VL) VL else if (f !is F) null else check(ex.arg)?.let { apply(f, it) }
+                when (val f = check(ex.fn)) {
+                    is VL -> f  // This is not actually the output type! It's a hack but it works
+                    !is F -> null
+                    else -> check(ex.arg)?.let { apply(f, it) }
+                }
             }
         }
-        if (!query.posExamples.all { check(it) != null }) println("prune!")
-        return query.posExamples.all { check(it) != null }
+
+        val ok = query.posExamples.all { check(it) != null }
+        if (!ok) println("prune!")
+        return ok
     }
 
     private fun enumerate(
@@ -52,9 +57,13 @@ class SymbolicEnumerator(
             }
             is Label -> listOf(Triple(L, vars, true))
             is Variable -> {
-                (0 until vars).map { Triple(VR(it, tId(name)), vars, pickedLabel) } +
-                        (if (canBeFresh) listOf(Triple(VB(vars, tId(name)), vars + 1, pickedLabel)) else listOf()) +
-                        (if (pickedLabel) listOf(Triple(VL, vars, pickedLabel)) else listOf())
+                val variables: MutableList<Triple<SpecializedSymbolicType, Int, Boolean>> =
+                    (0 until vars).map { Triple(VR(it, tId(name)), vars, pickedLabel) }.toMutableList()
+                if (canBeFresh)
+                    variables.add(Triple(VB(vars, tId(name)), vars + 1, pickedLabel))
+                else if (pickedLabel)
+                    variables.add(Triple(VL(vars, tId(name)), vars + 1, pickedLabel))
+                variables
             }
         }
 

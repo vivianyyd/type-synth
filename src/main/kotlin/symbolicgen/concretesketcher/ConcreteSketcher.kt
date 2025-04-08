@@ -64,7 +64,7 @@ class ConcreteSketcher(
                 }
                 is VB -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
                 is VR -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
-                VL -> w.line("$destination = variableInLabel(${tid}, $groundVars, labelVars)")
+                is VL -> w.line("$destination = variableInLabel(${tid}, $groundVars, labelVars)")
                 is N -> throw Exception("rly should fix this")  // TODO
             }
 
@@ -73,7 +73,7 @@ class ConcreteSketcher(
             val outline = outline(name)
             fun lastVar(t: SpecializedSymbolicType): Int = when (t) {
                 is F -> max(lastVar(t.left), lastVar(t.rite))
-                is CL, L, VL -> -1
+                is CL, L, is VL -> -1
                 is VB -> t.vId
                 is VR -> t.vId
                 is N -> throw Exception("rly should fix this")  // TODO
