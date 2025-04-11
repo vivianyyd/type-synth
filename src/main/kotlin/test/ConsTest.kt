@@ -11,6 +11,7 @@ object ConsTest {
         "(+ []i)" to "lint",
         "(+ [[]]i)" to "llint",
         "(+ cons)" to "f",
+//        "(+ (cons cons))" to "lf to lf",
         "(+ (cons 0))" to "lint to lint",
         "(+ (cons 0 []i))" to "lint",
         "(+ (cons 0 (cons 0 []i)))" to "lint",
