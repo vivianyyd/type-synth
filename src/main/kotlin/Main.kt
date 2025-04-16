@@ -1,3 +1,5 @@
+import enumgen.visualizations.DependencyGraphVisualizer
+import symbolicgen.DependencyAnalysis
 import symbolicgen.SymbolicTypeBuilder
 import symbolicgen.symbolicenumerator.SymbolicEnumerator
 import test.ConsTest
@@ -18,7 +20,10 @@ fun main() {
     b.printState()
 
     val enum = SymbolicEnumerator(query, b, oracle)
-//    val specializedSymbolicTypes = enum.en umerateAll()
+    val specializedSymbolicTypes = enum.enumerateAll()
+    specializedSymbolicTypes.forEachIndexed { i, context ->
+        DependencyGraphVisualizer.viz(DependencyAnalysis(query, context, oracle).graphs["cons"]!!, "cons-$i")
+    }
 //    println(specializedSymbolicTypes)
 //
 //    b.deepen()
