@@ -1,10 +1,11 @@
-import enumgen.visualizations.DependencyGraphVisualizer
 import symbolicgen.DependencyAnalysis
 import symbolicgen.SymbolicTypeBuilder
+import symbolicgen.concretesketcher.DependencyConcreteSketcher
 import symbolicgen.symbolicenumerator.SymbolicEnumerator
 import test.ConsTest
 import test.HOFTest
 import test.IdTest
+import util.writeConcretizeInput
 
 const val ROUNDS = 4
 const val RUN_SKETCH = true
@@ -21,9 +22,18 @@ fun main() {
 
     val enum = SymbolicEnumerator(query, b, oracle)
     val specializedSymbolicTypes = enum.enumerateAll()
+    println(specializedSymbolicTypes.withIndex().pr())
     specializedSymbolicTypes.forEachIndexed { i, context ->
-        DependencyGraphVisualizer.viz(DependencyAnalysis(query, context, oracle).graphs["cons"]!!, "cons-$i")
+        val sketcher = DependencyConcreteSketcher(
+            query,
+            context,
+            DependencyAnalysis(query, context, oracle),
+            enum.varTypeIds,
+            oracle
+        )
+        writeConcretizeInput(sketcher.query(), "test$i")
     }
+
 //    println(specializedSymbolicTypes)
 //
 //    b.deepen()
@@ -43,4 +53,4 @@ fun main() {
 //    println("${types.size} types in $time seconds")
 }
 
-fun <T> List<T>.pr() = this.joinToString(separator = "\n")
+fun <T> Iterable<T>.pr() = this.joinToString(separator = "\n")

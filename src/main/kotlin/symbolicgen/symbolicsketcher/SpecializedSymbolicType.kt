@@ -5,6 +5,8 @@ sealed interface SpecializedSymbolicType {
     fun constructSketch(): String
 }
 
+sealed class Var(open val vId: Int, open val tId: Int) : SpecializedSymbolicType
+
 // TODO Rly horrible code style
 data class N(val name: String) : SpecializedSymbolicType {
     override fun constructSketch(): String = throw UnsupportedOperationException("Bad code style, fixme later")
@@ -21,21 +23,21 @@ data class F(val left: SpecializedSymbolicType, val rite: SpecializedSymbolicTyp
         "new Function(left=${left.constructSketch()}, rite=${rite.constructSketch()})"
 }
 
-data class VB(val vId: Int, val tId: Int) : SpecializedSymbolicType {
+data class VB(override val vId: Int, override val tId: Int) : Var(vId, tId) {
 //    override fun toString(): String = "V"
 
     override fun toString(): String = "${tId}_$vId"
     override fun constructSketch(): String = "new VarBind(vId=$vId, tId=$tId)"
 }
 
-data class VR(val vId: Int, val tId: Int) : SpecializedSymbolicType {
+data class VR(override val vId: Int, override val tId: Int) : Var(vId, tId) {
 //    override fun toString(): String = "V"
 
     override fun toString(): String = "${tId}_$vId"
     override fun constructSketch(): String = "new VarRef(vId=$vId, tId=$tId)"
 }
 
-data class VL(val vId: Int, val tId: Int) : SpecializedSymbolicType {
+data class VL(override val vId: Int, override val tId: Int) : Var(vId, tId) {
 //    override fun toString(): String = "V"
 
     override fun toString(): String = "${tId}_$vId"

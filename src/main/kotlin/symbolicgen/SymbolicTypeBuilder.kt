@@ -96,17 +96,33 @@ class SymbolicTypeBuilder(val query: NewQuery) {
     private fun antiunify(trees: List<List<SymbolicType>>, param: List<SymbolicType>): List<SymbolicType> {
         // TODO intersect stuff with param to produce the new param tree
         if (trees.size == 1) return trees[0]
-        if (trees.any { it.singleton<Hole>() }) return antiunify(trees.filter { !(it.size == 1 && it[0] is Hole) })
-        if (trees.any { it.singleton<Function>() } && trees.any { it.singleton<Label>() }) listOf<SymbolicType>() //TODO("PARAM MUST BE VARIABLE")
-        if (trees.all { it.singleton<Label>() }) return listOf(
-            Variable(),
-            Label()
-        )  // TODO should we keep variable here
+        if (trees.any { it.singleton<Hole>() }) return antiunify(
+            trees.filter { !(it.size == 1 && it[0] is Hole) },
+            param
+        )
+        if (trees.any { it.singleton<Function>() } && trees.any { it.singleton<Label>() }) listOf(Variable())
+//        if (trees.all { it.singleton<Label>() }) return listOf(
+//            Variable(),
+//            Label()
+//        )  // TODO should we keep variable here
         // no-op / bottom. could compare equality to guarantee is L instead of V but let's not
 
         // au(_, (v+_)) = bottom
         // au({l1->r1}, {l2->r2}, ...) = au({l1}, {l2}, ...) -> au({r1}, {r2}, ...)
-        TODO()
+        if (trees.all { it.singleton<Function>() }) {
+            return if (param.any { it is Function }) {
+                val (fn, notFn) = param.partition { it is Function }
+                notFn + Function(
+                    antiunify(trees.map { (it[0] as Function).left }, (fn[0] as Function).left).toMutableList(),
+                    antiunify(trees.map { (it[0] as Function).rite }, (fn[0] as Function).rite).toMutableList()
+                )
+
+            } else param + Function(
+                antiunify(trees.map { (it[0] as Function).left }, listOf(Hole())).toMutableList(),
+                antiunify(trees.map { (it[0] as Function).rite }, listOf(Hole())).toMutableList()
+            )
+        }
+        return param // TODO
     }
 
     fun deepen(): State {
@@ -125,7 +141,7 @@ class SymbolicTypeBuilder(val query: NewQuery) {
         }
 
         paramToArgs.forEach { (param, args) ->
-            val newOptions = antiunify(args.map { s.options(it) })
+            antiunify(args.map { s.options(it) }, s.options(param))
 
             // antiunify arguments, then use it to fill in param - second step is not quite antiunif?
             // actual type should be intersected with result of au unless hole then = returned thing and unless fn

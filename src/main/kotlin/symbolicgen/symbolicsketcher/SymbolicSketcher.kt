@@ -5,21 +5,6 @@ import symbolicgen.Function
 import util.*
 import kotlin.math.roundToInt
 
-fun main() {
-//    val query = ConsTest.query
-//    val oracle = ConsTest.oracle
-//    val b = SymbolicTypeBuilder(query).make
-//    val sketcher = SketchKnower(query, b, oracle)
-//
-//    var sketch = sketcher.initialSketch()
-//    // TODO fix upper bound calculation, make that the loop bound. Print to a csv file
-//    for (i in 0..8) {
-//        val out = callSketch(sketch, "test")
-//        println(sketcher.readableOutput(out))
-//        sketch = sketcher.nextQuery(out, i)
-//    }
-}
-
 class SymbolicSketcher(val query: NewQuery, private val state: State, private val oracle: EqualityNewOracle) {
     private val sw = SymbolicSketchWriter()
     fun nextQuery(sketch: String, round: Int) = sw.addBanned(SymbolicSketchParser(sketch).parseAll.first, round)

@@ -171,31 +171,64 @@ generator int makeLabelVars() {
 //    return clabel_b(register, numLKs, tid, groundVars, labelVars, 3);
 //}
 
-generator Type type(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
+generator Type type(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, Constraint c, int bnd) {
     assert bnd > 0;
-    int t = ??(2);
-    if (t == 0) {
-        return variable(tid, groundVars, labelVars);
+    if (c != null) {
+        switch(c) {
+            case NoVars: {
+                bit t = ??;
+                if (t) {
+                    return label(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
+                }
+                else {
+                    Type a = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
+                    Type b = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
+                    return new Function(left=a, rite=b);
+                }
+                assert false;
+            }
+            case OnlyVariable: {
+                int t = ??(2);
+                if (t == 0) {
+                    return new Variable(tid=c.tid, vid=c.vid);
+                }
+                if (t == 1) {
+                    return label(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
+                }
+                if (t == 2) {
+                    Type a = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
+                    Type b = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
+                    return new Function(left=a, rite=b);
+                }
+                assert false;
+            }
+        }
     }
-    if (t == 1) {
-        return label(register, numLKs, tid, groundVars, labelVars, bnd - 1);
+    else {
+        int t = ??(2);
+        if (t == 0) {
+            return variable(tid, groundVars, labelVars);
+        }
+        if (t == 1) {
+            return label(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
+        }
+        if (t == 2) {
+            Type a = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
+            Type b = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
+            return new Function(left=a, rite=b);
+        }
+        assert false;
     }
-    if (t == 2) {
-        Type a = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
-        Type b = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
-        return new Function(left=a, rite=b);
-    }
-    assert false;
 }
 
-generator Label label(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, int bnd) {
+generator Label label(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, Constraint c, int bnd) {
     assert bnd > 0;
     int ind = ??(3);
     assert (ind < numLKs);
     LabelKind lk = get(register, ind);
     List@list<Type> params = empty();
     for (int i = 0; i < lk.numParams; i++) {
-        params = add(params, type(register, numLKs, tid, groundVars, labelVars, bnd - 1));
+        params = add(params, type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1));
     }
     return new Label(l=lk.l, params=params);
 }
@@ -213,28 +246,34 @@ generator Variable variableInLabel(int tid, int groundVars, int labelVars) {
     return new Variable(tid=tid, vid=groundVars + v);
 }
 
-generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int bnd) {
+generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int groundVars, Constraint c, int bnd) {
     assert bnd > 0;
     int ind = ??(3);
     assert (ind < numLKs);
     LabelKind lk = get(register, ind);
     List@list<Type> params = empty();
     for (int i = 0; i < lk.numParams; i++) {
-        params = add(params, ctype(register, numLKs, tid, groundVars, bnd - 1));
+        params = add(params, ctype(register, numLKs, tid, groundVars, c, bnd - 1));
     }
     return new Label(l=lk.l, params=params);
 }
-generator Type ctype(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int bnd) {
+
+generator Type ctype(List@list<LabelKind> register, int numLKs, int tid, int groundVars, Constraint c, int bnd) {
     assert bnd > 0;
     bit t = ??;
     if (t) {
-        return label(register, numLKs, tid, 0, 0, bnd - 1);
+        return clabel(register, numLKs, tid, 0, c, bnd - 1);
     }
     else {
-        int labelVars = makeLabelVars();
-        Type a = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
-        Type b = type(register, numLKs, tid, groundVars, labelVars, bnd - 1);
+        int labelVars = makeLabelVars();  // only permit variables under functions
+        Type a = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
+        Type b = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
         return new Function(left=a, rite=b);
     }
     assert false;
+}
+
+adt Constraint {
+    NoVars { }
+    OnlyVariable { int tid; int vid; }
 }

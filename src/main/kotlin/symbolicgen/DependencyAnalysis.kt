@@ -2,8 +2,16 @@ package symbolicgen
 
 import symbolicgen.symbolicsketcher.F
 import symbolicgen.symbolicsketcher.SpecializedSymbolicType
+import symbolicgen.symbolicsketcher.Var
 import util.*
 import java.lang.Integer.max
+
+sealed interface DependencyConstraint
+
+// TODO MustContainVariables, MustSuperSet/SubSet. Currently don't really know how to use these anyway
+//   so not implemented yet
+object ContainsNoVariables : DependencyConstraint
+data class ContainsOnly(val vId: Int, val tId: Int) : DependencyConstraint
 
 /*
  * TODO:
@@ -12,18 +20,22 @@ import java.lang.Integer.max
  */
 class DependencyAnalysis(
     private val query: NewQuery,
-    private val outline: Map<String, SpecializedSymbolicType>,
+    outline: Map<String, SpecializedSymbolicType>,
     private val oracle: EqualityNewOracle
 ) {
-    val nodes: Set<ParameterNode> = outline.entries.fold(setOf()) { acc, (name, tree) ->
+    val nodeToType = outline.entries.fold(mutableMapOf<ParameterNode, SpecializedSymbolicType>()) { m, (name, tree) ->
         var curr = tree
         var count = 0
         while (curr is F) {
+            m[ParameterNode(name, count)] = curr.left
             count++
             curr = curr.rite
         }
-        acc.union((0..count).map { ParameterNode(name, it) }.toSet())
+        m[ParameterNode(name, count)] = curr
+        m
     }
+
+    val nodes: Set<ParameterNode> = nodeToType.keys
 
     fun nodes(name: String) = nodes.filter { it.f == name }
 
@@ -32,6 +44,19 @@ class DependencyAnalysis(
             val (deps, loops) = findEdges(name)
             DependencyGraph(name, nodes.filter { it.f == name }.toSet(), deps, loops)
         }
+    }
+
+    fun constraints(name: String): Map<Int, DependencyConstraint> {
+        val graph = graphs[name]!!
+        val constrs = mutableMapOf<Int, DependencyConstraint>()
+        graph.loops.forEach {
+            constrs[it.a.i] = ContainsNoVariables
+        }
+        graph.deps.forEach {
+            val sup = nodeToType[it.sup]!!
+            if (sup is Var) constrs[it.sub.i] = ContainsOnly(sup.vId, sup.tId)
+        }
+        return constrs
     }
 
     /**
