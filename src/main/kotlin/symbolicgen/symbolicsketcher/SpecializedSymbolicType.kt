@@ -83,13 +83,13 @@ fun unify(param: SpecializedSymbolicType, arg: SpecializedSymbolicType): List<Bi
         is VB, is VR, is N -> throw Exception("Invariant broken")
     }
     L -> when (arg) {
-        is CL, L, is VL, is VB, is VR -> listOf() // TODO hack
-        is F -> null
+        is CL, L, is VL -> listOf() // TODO hack
+        is F, is VB, is VR -> null
         is N -> throw Exception("Invariant broken")
     }
     is F -> when (arg) {
-        is CL, L -> null
-        is VL, is VB, is VR -> listOf() // TODO hack and might be wrong
+        is CL, L, is VB, is VR -> null
+        is VL -> listOf() // TODO hack and might be wrong
         is F -> {
             val leftBindings = unify(param.left, arg.left)
             val riteBindings = leftBindings?.let { applyBindings(param.rite, it) }?.let { unify(it, arg.rite) }
@@ -97,7 +97,8 @@ fun unify(param: SpecializedSymbolicType, arg: SpecializedSymbolicType): List<Bi
         }
         is N -> throw Exception("Invariant broken")
     }
-    is VL, is VR, is N -> throw Exception("Invariant broken")
+    is VL -> listOf()
+    is VR, is N -> throw Exception("Invariant broken")
 }
 
 /**
@@ -105,5 +106,7 @@ Returns the output type of [fn] on input [arg] with no free variables, or null i
  */
 fun apply(fn: F, arg: SpecializedSymbolicType): SpecializedSymbolicType? {
     if (arg is VR) throw Exception("Invariant broken")
-    return unify(fn.left, arg)?.let { applyBindings(fn.rite, it) }
+    return unify(fn.left, arg)?.let {
+        applyBindings(fn.rite, it)
+    }
 }

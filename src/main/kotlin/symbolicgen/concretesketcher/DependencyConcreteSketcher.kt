@@ -60,14 +60,22 @@ class DependencyConcreteSketcher(
             constraints: Map<Int, DependencyConstraint>,
             paramIndex: Int
         ): Unit {
-            val constraint = when (val c = constraints[paramIndex]) {
+            val c = constraints[paramIndex]
+            val constraint = when (c) {
                 null -> "null"
                 is ContainsNoVariables -> "new NoVars()"
                 is ContainsOnly -> "new OnlyVariable(tid=${c.tId}, vid=${c.vId})"
             }
+            val vars = when (c) {
+                is ContainsOnly -> "$groundVars"
+                is ContainsNoVariables -> "0"
+                else -> "$groundVars + labelVars"
+            }
+            // TODO make different generators for each constraint, sketch never sees
+            //   the constraints? for containsonly then fns have to define their own generators
             when (t) {
-                is CL -> w.line("$destination = clabel(register, numLKs, $tid, $groundVars, $constraint, $TYPE_DEPTH_BOUND)")
-                L -> w.line("$destination = label(register, numLKs, $tid, $groundVars, labelVars, $constraint, $TYPE_DEPTH_BOUND)")
+                is CL -> w.line("$destination = clabel(register, numLKs, $tid, $constraint, $TYPE_DEPTH_BOUND)")
+                L -> w.line("$destination = label(register, numLKs, $tid, $vars, $constraint, $TYPE_DEPTH_BOUND)")
                 is F -> {
                     val (left, rite) = "${destination}l" to "${destination}r"
                     w.line("Type $left; Type $rite")
@@ -75,9 +83,7 @@ class DependencyConcreteSketcher(
                     codeFor(t.rite, tid, groundVars, rite, constraints, paramIndex + 1)
                     w.line("$destination = new Function(left=$left, rite=$rite)")
                 }
-                is VB -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
-                is VR -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
-                is VL -> w.line("$destination = variableInLabel(${tid}, $groundVars, labelVars)")
+                is Var -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
                 is N -> throw Exception("rly should fix this")  // TODO
             }
         }
@@ -94,8 +100,9 @@ class DependencyConcreteSketcher(
             }
 
             val groundVars = lastVar(outline) + 1
-            w.block("Type ${sk(name)}(List<LabelKind> register, int numLKs)") {
+            w.block("Type ${sk(name)}(LabelKind[8] register, int numLKs)") {
                 w.line("Type root")
+                // TODO If all our params have constraints, we don't need to call this
                 if (!nullary(name)) w.line("int labelVars = makeLabelVars()")
                 codeFor(outline, tid, groundVars, "root", dependencies.constraints(name), 0)
                 w.line("return root")
@@ -124,7 +131,7 @@ class DependencyConcreteSketcher(
         private fun makeAndTest() = w.block("harness void main()") {
             w.lines(listOf(
                 "int numLKs",
-                "List@list<LabelKind> register = makeLabelKinds(numLKs)"
+                "LabelKind[8] register = makeLabelKinds(numLKs)"
             ) + query.names.map {
                 "Type ${sk(it)} = ${sk(it)}(register, numLKs)"
             })

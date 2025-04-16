@@ -16,11 +16,13 @@ class SymbolicEnumerator(
     val varTypeIds = query.names.withIndex().associate { (i, n) -> n to i }
     private fun tId(name: String) = varTypeIds[name]!!
 
-    fun enumerateAll(): List<Map<String, SpecializedSymbolicType>> =
-        state.mapValues { (n, options) ->
+    fun enumerateAll(): List<Map<String, SpecializedSymbolicType>> {
+        val all = state.mapValues { (n, options) ->
             if (options.size == 1 && options[0] is Label) listOf(CL(oracle.dummy(Name(n))))
             else options.flatMap { enumerate(it, 0, false, n, false).map { it.first } }
-        }.contexts().filter(::checkPosExamples)
+        }.contexts()
+        return all.filter(::checkPosExamples)
+    }
 
     private fun checkPosExamples(context: Map<String, SpecializedSymbolicType>): Boolean {
         fun check(ex: Example): SpecializedSymbolicType? = when (ex) {
@@ -35,7 +37,6 @@ class SymbolicEnumerator(
         }
 
         val ok = query.posExamples.all { check(it) != null }
-        if (!ok) println("prune!")
         return ok
     }
 

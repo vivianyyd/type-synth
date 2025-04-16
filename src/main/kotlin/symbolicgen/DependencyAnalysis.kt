@@ -19,9 +19,7 @@ data class ContainsOnly(val vId: Int, val tId: Int) : DependencyConstraint
  *  Visualizer for dep graphs
  */
 class DependencyAnalysis(
-    private val query: NewQuery,
-    outline: Map<String, SpecializedSymbolicType>,
-    private val oracle: EqualityNewOracle
+    private val query: NewQuery, outline: Map<String, SpecializedSymbolicType>, private val oracle: EqualityNewOracle
 ) {
     val nodeToType = outline.entries.fold(mutableMapOf<ParameterNode, SpecializedSymbolicType>()) { m, (name, tree) ->
         var curr = tree
@@ -85,6 +83,8 @@ class DependencyAnalysis(
         val deps = mutableSetOf<DependencyEdge>()
         val loops = mutableSetOf<SelfLoop>()
 
+        println("DEPS FOR $name")
+
         // TODO note we assume we have all subexprs in posExamples here
         val posExs = examples[name]!!
         val negExs = query.negExamples
@@ -110,7 +110,9 @@ class DependencyAnalysis(
                 }
 
                 /** all examples of the [index]th parameter. requires that parameter exists in all examples in [exs]. */
-                fun params(index: Int) = relevantExs.map { param(index, it) }
+                fun params(index: Int) =
+                    if (index == nodes.size - 1 && index == 0) listOf(Name(name))  // TODO pretty hacky
+                    else relevantExs.map { param(index, it) }
 
                 if (i == j) {
                     if (equivalenceClasses(params(i), oracle::equal).size == 1) {

@@ -3,16 +3,17 @@ include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
 
 adt Type {
     Variable { int tid; int vid; }
-    Label { int l; List@list<Type> params; }
+    Label { int l; Type[4] params; }
     Function { Type left; Type rite; }
 }
 
 struct Binding { int tid; int vid; Type t; }
 
 Type applyBinding(Type t, int tid, int vid, Type sub) {
+    if (t == null) return t;
     switch (t) {
         case Label:{
-            return new Label(l=t.l, params=applyBindingToAll(t.params, tid, vid, sub, 4));
+            return new Label(l=t.l, params=applyBindingToAll(t.params, tid, vid, sub));
         }
         case Function:{
             return new Function(left=applyBinding(t.left, tid, vid, sub), rite=applyBinding(t.rite, tid, vid, sub));
@@ -24,14 +25,12 @@ Type applyBinding(Type t, int tid, int vid, Type sub) {
     }
 }
 
-List@list<Type> applyBindingToAll(List@list<Type> types, int tid, int vid, Type sub, int bnd) {
-    assert bnd > 0;
-    switch (types) {
-        case Cons:{
-            return add(applyBindingToAll(types.next, tid, vid, sub, bnd - 1), applyBinding(types.val, tid, vid, sub));
-        }
-        case Nil:{ return empty(); }
+Type[4] applyBindingToAll(Type[4] types, int tid, int vid, Type sub) {
+    Type[4] result;
+    for (int i = 0; i < 4; i++) {
+        result[i] = applyBinding(types[i], tid, vid, sub);
     }
+    return result;
 }
 
 Type applyBindings(Type t, List@list<Binding> bindings) {
@@ -41,38 +40,25 @@ Type applyBindings(Type t, List@list<Binding> bindings) {
     }
 }
 
-List@list<Type> applyBindingsToAll(List@list<Type> types, List@list<Binding> bindings, int bnd) {
-    assert bnd > 0;
-    switch (types) {
-        case Cons:{ return add(applyBindingsToAll(types.next, bindings, bnd - 1), applyBindings(types.val, bindings)); }// todo since ground,label both capped at 4
-        case Nil:{ return empty(); }
+Type[4] applyBindingsToAll(Type[4] types, List@list<Binding> bindings) {
+    Type[4] result;
+    for (int i = 0; i < 4; i++) {
+        result[i] = applyBindings(types[i], bindings);
     }
+    return result;
 }
 
-List@list<Binding> unifyAll(List@list<Type> params, List@list<Type> args, boolean posFlag, int bnd) {
+List@list<Binding> unifyAll(Type[4] params, Type[4] args, boolean posFlag, int bnd) {
     assert bnd > 0;
-    assert(len(params) == len(args));
-    switch (params) {
-        case Cons:{
-            switch (args) {
-                case Cons:{
-                    List@list<Binding> bindings = unify(params.val, args.val, posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
-                    if (bindings == null) return fail(posFlag);
-                    List@list<Type> newParams = applyBindingsToAll(params.next, bindings, 4);  // TODO we can bound this by the max number of label parameters or even true number or min(maxnum, true num)
-                    List@list<Binding> remainingBindings = unifyAll(newParams, args.next, posFlag, bnd);
-                    if (remainingBindings == null) return fail(posFlag);
-                    return plus(bindings, remainingBindings);
-                }
-                case Nil:{ assert false; }
-            }
-        }
-        case Nil:{
-            switch (args) {
-                case Cons:{ assert false; }
-                case Nil:{ return empty(); }
-            }
-        }
+    Type[4] currParams = params;
+    List@list<Binding> bindings = empty();
+    for (int i = 0; i < 4; i++) {
+        List@list<Binding> newb = unify(currParams[i], args[i], posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
+        if (newb == null) return fail(posFlag);
+        bindings = plus(bindings, newb);
+        currParams = applyBindingsToAll(currParams, bindings);
     }
+    return bindings;
 }
 
 generator List@list<Binding> fail(boolean posFlag) {
@@ -83,6 +69,8 @@ generator List@list<Binding> fail(boolean posFlag) {
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
 List@list<Binding> unify(Type param, Type arg, boolean posFlag, int bnd) {
     assert bnd > 0;
+    if (param == null && arg == null) return empty();
+    if (param == null || arg == null) return null;
     switch(param) {
         case Variable:{
             Binding b = new Binding(tid=param.tid, vid=param.vid, t=arg);
@@ -92,7 +80,7 @@ List@list<Binding> unify(Type param, Type arg, boolean posFlag, int bnd) {
             switch(arg) {
                 case Variable:{ assert false; }  // TODO I think invariant. If we had []: L<a> this would be different
                 case Label:{
-                    if (param.l != arg.l || len(param.params) != len(arg.params)) return fail(posFlag);
+                    if (param.l != arg.l) return fail(posFlag);
                     return unifyAll(param.params, arg.params, posFlag, bnd - 1);
                 }
                 case Function:{ return fail(posFlag); }
@@ -137,16 +125,16 @@ boolean isFunction(Type t) {
 
 struct LabelKind { int l; int numParams; }
 
-List@list<LabelKind> makeLabelKinds(ref int numLKs) {
+LabelKind[8] makeLabelKinds(ref int numLKs) {
     int nKinds = ??(3);
     minimize (nKinds);
-    List@list<LabelKind> register = empty();
+    LabelKind[8] register;
     for (int i = 0; i < nKinds; i++) {
         int nParams = ??(2);
         minimize (nParams);
-        register = add(register, new LabelKind(l=i, numParams=nParams));
+        register[i] = new LabelKind(l=i, numParams=nParams);
     }
-    numLKs = len(register);
+    numLKs = nKinds;
     return register;
 }
 
@@ -162,112 +150,79 @@ generator int makeLabelVars() {
 
 // LABEL BOUND DEPTH IS SPECIFIED BY GENERATED CODE
 // TODO generated code tells us how deep the type is above any label. Then our upper bound on unify inlining is
-//   max label depth + type above
-//
-//generator Label label(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars) {
-//    return label_b(register, numLKs, tid, groundVars, labelVars, 3);
-//}
-//generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars) {
-//    return clabel_b(register, numLKs, tid, groundVars, labelVars, 3);
-//}
 
-generator Type type(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, Constraint c, int bnd) {
+generator Type type(LabelKind[8] register, int numLKs, int tid, int vars, Constraint c, int bnd) {
     assert bnd > 0;
+    Type var;
     if (c != null) {
         switch(c) {
-            case NoVars: {
-                bit t = ??;
-                if (t) {
-                    return label(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
-                }
-                else {
-                    Type a = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
-                    Type b = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
-                    return new Function(left=a, rite=b);
-                }
-                assert false;
-            }
-            case OnlyVariable: {
-                int t = ??(2);
-                if (t == 0) {
-                    return new Variable(tid=c.tid, vid=c.vid);
-                }
-                if (t == 1) {
-                    return label(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
-                }
-                if (t == 2) {
-                    Type a = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
-                    Type b = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
-                    return new Function(left=a, rite=b);
-                }
-                assert false;
-            }
+            case NoVars: { var = null; }
+            case OnlyVariable: { var = new Variable(tid=c.tid, vid=c.vid); }
         }
     }
-    else {
-        int t = ??(2);
-        if (t == 0) {
-            return variable(tid, groundVars, labelVars);
+    else { var = variable(tid, vars); }
+    int t = ??(2);
+    if (t == 0) {
+        if (c != null) {
+            switch(c) {
+                case NoVars: { assert false; }
+                case OnlyVariable: {  }
+            }
         }
-        if (t == 1) {
-            return label(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
-        }
-        if (t == 2) {
-            Type a = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
-            Type b = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
-            return new Function(left=a, rite=b);
-        }
-        assert false;
+        return var;
     }
+    if (t == 1) {
+        return label(register, numLKs, tid, vars, c, bnd - 1);
+    }
+    if (t == 2) {
+        Type a = type(register, numLKs, tid, vars, c, bnd - 1);
+        Type b = type(register, numLKs, tid, vars, c, bnd - 1);
+        return new Function(left=a, rite=b);
+    }
+    assert false;
 }
 
-generator Label label(List@list<LabelKind> register, int numLKs, int tid, int groundVars, int labelVars, Constraint c, int bnd) {
+generator Label label(LabelKind[8] register, int numLKs, int tid, int vars, Constraint c, int bnd) {
     assert bnd > 0;
     int ind = ??(3);
     assert (ind < numLKs);
-    LabelKind lk = get(register, ind);
-    List@list<Type> params = empty();
+    LabelKind lk = register[ind];
+    Type[4] params;
     for (int i = 0; i < lk.numParams; i++) {
-        params = add(params, type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1));
+        params[i] = type(register, numLKs, tid, vars, c, bnd - 1);
     }
     return new Label(l=lk.l, params=params);
 }
 
-generator Variable variable(int tid, int groundVars, int labelVars) {  // TODO if no groundvars, v can be bound at 2, so should actually pass its bit bound in here
+generator Variable variable(int tid, int vars) {  // TODO if no groundvars, v can be bound at 2, so should actually pass its bit bound in here
     int v = ??(3); // labelVars bounded at 4; we assumed groundVars < 4  // TODO don't hardcode me
-    assert (v < groundVars + labelVars);
+    assert (v < vars);
     return new Variable(tid=tid, vid=v);
-    // TODO we can add preference to variables bound outside of labels but that would be oddly asymmetric
 }
 
-generator Variable variableInLabel(int tid, int groundVars, int labelVars) {
-    int v = ??(2);
-    assert (v < labelVars);
-    return new Variable(tid=tid, vid=groundVars + v);
-}
-
-generator Label clabel(List@list<LabelKind> register, int numLKs, int tid, int groundVars, Constraint c, int bnd) {
+generator Label clabel(LabelKind[8] register, int numLKs, int tid, Constraint c, int bnd) {
     assert bnd > 0;
     int ind = ??(3);
     assert (ind < numLKs);
-    LabelKind lk = get(register, ind);
-    List@list<Type> params = empty();
+    LabelKind lk = register[ind];
+    Type[4] params;
     for (int i = 0; i < lk.numParams; i++) {
-        params = add(params, ctype(register, numLKs, tid, groundVars, c, bnd - 1));
+        params[i] = ctype(register, numLKs, tid, c, bnd - 1);
     }
     return new Label(l=lk.l, params=params);
 }
 
-generator Type ctype(List@list<LabelKind> register, int numLKs, int tid, int groundVars, Constraint c, int bnd) {
+generator Type ctype(LabelKind[8] register, int numLKs, int tid, Constraint c, int bnd) {
     assert bnd > 0;
     bit t = ??;
+    minimize(!t);
     if (t) {
-        return clabel(register, numLKs, tid, 0, c, bnd - 1);
+        return clabel(register, numLKs, tid, c, bnd - 1);
     }
     else {
-        int labelVars = makeLabelVars();  // only permit variables under functions
-        Type a = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
-        Type b = type(register, numLKs, tid, groundVars, labelVars, c, bnd - 1);
+        int vars = makeLabelVars();  // only permit variables under functions
+        Type a = type(register, numLKs, tid, vars, c, bnd - 1);
+        Type b = type(register, numLKs, tid, vars, c, bnd - 1);
         return new Function(left=a, rite=b);
     }
     assert false;

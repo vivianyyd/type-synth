@@ -1,3 +1,4 @@
+import enumgen.visualizations.DependencyGraphVisualizer
 import symbolicgen.DependencyAnalysis
 import symbolicgen.SymbolicTypeBuilder
 import symbolicgen.concretesketcher.DependencyConcreteSketcher
@@ -22,7 +23,16 @@ fun main() {
 
     val enum = SymbolicEnumerator(query, b, oracle)
     val specializedSymbolicTypes = enum.enumerateAll()
-    println(specializedSymbolicTypes.withIndex().pr())
+//    println(specializedSymbolicTypes.pr())
+    println(specializedSymbolicTypes.size)
+
+
+    specializedSymbolicTypes.forEachIndexed { i, context ->
+        query.names.forEach { name ->
+            DependencyGraphVisualizer.viz(DependencyAnalysis(query, context, oracle).graphs[name]!!, "$name-$i")
+        }
+    }
+
     specializedSymbolicTypes.forEachIndexed { i, context ->
         val sketcher = DependencyConcreteSketcher(
             query,
