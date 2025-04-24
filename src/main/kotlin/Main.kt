@@ -1,12 +1,8 @@
-import enumgen.visualizations.DependencyGraphVisualizer
-import symbolicgen.DependencyAnalysis
 import symbolicgen.SymbolicTypeBuilder
-import symbolicgen.concretesketcher.DependencyConcreteSketcher
 import symbolicgen.symbolicenumerator.SymbolicEnumerator
 import test.ConsTest
 import test.HOFTest
 import test.IdTest
-import util.writeConcretizeInput
 
 const val ROUNDS = 4
 const val RUN_SKETCH = true
@@ -23,26 +19,26 @@ fun main() {
 
     val enum = SymbolicEnumerator(query, b, oracle)
     val specializedSymbolicTypes = enum.enumerateAll()
-//    println(specializedSymbolicTypes.pr())
-    println(specializedSymbolicTypes.size)
+    println(specializedSymbolicTypes.pr())
+//    println(specializedSymbolicTypes.size)
 
-
-    specializedSymbolicTypes.forEachIndexed { i, context ->
-        query.names.forEach { name ->
-            DependencyGraphVisualizer.viz(DependencyAnalysis(query, context, oracle).graphs[name]!!, "$name-$i")
-        }
-    }
-
-    specializedSymbolicTypes.forEachIndexed { i, context ->
-        val sketcher = DependencyConcreteSketcher(
-            query,
-            context,
-            DependencyAnalysis(query, context, oracle),
-            enum.varTypeIds,
-            oracle
-        )
-        writeConcretizeInput(sketcher.query(), "test$i")
-    }
+//
+//    specializedSymbolicTypes.forEachIndexed { i, context ->
+//        query.names.forEach { name ->
+//            DependencyGraphVisualizer.viz(DependencyAnalysis(query, context, oracle).graphs[name]!!, "$name-$i")
+//        }
+//    }
+//
+//    specializedSymbolicTypes.forEachIndexed { i, context ->
+//        val sketcher = DependencyConcreteSketcher(
+//            query,
+//            context,
+//            DependencyAnalysis(query, context, oracle),
+//            enum.varTypeIds,
+//            oracle
+//        )
+//        writeConcretizeInput(sketcher.query(), "test$i")
+//    }
 
 //    println(specializedSymbolicTypes)
 //

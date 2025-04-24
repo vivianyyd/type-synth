@@ -18,7 +18,10 @@ object ConsTest {
         "(+ (cons []i))" to "llint to llint",
         "(+ (cons []i [[]]i))" to "llint",
         "(+ (cons []i (cons []i [[]]i)))" to "llint",
-        "(- (cons []i 0))" to null
+        "(- (cons []i 0))" to null,
+        // The following two had to be added for correctness in label equiv classes, but seem a little excessive
+        "(+ (cons [[]]i))" to "lllint to lllint",
+        "(+ (cons (cons 0 []i)))" to "llint to llint",
     )
     private val boolExamples = mapOf(
         "(+ tr)" to "bool",

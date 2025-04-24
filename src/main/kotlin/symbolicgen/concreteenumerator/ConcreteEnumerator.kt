@@ -1,22 +1,30 @@
-package symbolicgen
+package symbolicgen.concreteenumerator
 
+import symbolicgen.DependencyAnalysis
+import symbolicgen.DependencyConstraint
 import symbolicgen.concretesketcher.ContextOutline
+import symbolicgen.symbolicsketcher.*
+import symbolicgen.symbolicsketcher.F
+import symbolicgen.symbolicsketcher.L
 import util.EqualityNewOracle
 import util.NewQuery
 
+val labels = mapOf(0 to 1, 1 to 0, 2 to 0)
+
+class Root(val options: MutableList<ConstrainedType> = mutableListOf())
 sealed interface ConstrainedType
 sealed interface ConcreteType : ConstrainedType
-class ConsLHole(val options: MutableList<ConcreteType> = mutableListOf(), val constraint: DependencyConstraint?) :
-    ConstrainedType
+class Hole() : ConstrainedType
+class L(
+    val label: Int,
+    val ports: MutableList<MutableList<ConstrainedType>> = mutableListOf(),
+    val constraint: DependencyConstraint?
+) : ConstrainedType
 
-class ConcCL(val dummy: Int) : ConstrainedType
-
-
-class ConcL(val l: Int, val params: List<ConcreteType>) : ConcreteType
-class ConcF(val left: ConstrainedType, val rite: ConstrainedType) : ConcreteType
-class ConcVB(val vid: Int, val tid: Int) : ConcreteType
-class ConcVR(val vid: Int, val tid: Int) : ConcreteType
-class ConcVL(val vid: Int, val tid: Int) : ConcreteType
+class F(val left: MutableList<ConstrainedType>, val rite: MutableList<ConstrainedType>) : ConcreteType
+data class ConcVB(val vid: Int, val tid: Int) : ConcreteType
+data class ConcVR(val vid: Int, val tid: Int) : ConcreteType
+data class ConcVL(val vid: Int, val tid: Int) : ConcreteType
 
 class ConcreteEnumerator(
     val query: NewQuery,
@@ -25,35 +33,38 @@ class ConcreteEnumerator(
     private val varTypeIds: Map<String, Int>,
     private val oracle: EqualityNewOracle
 ) {
+    private val state: MutableMap<String, Root> = mutableMapOf()
+
     init {
         contextOutline.forEach { (name, outline) ->
             val paramIndex = 0
             val constraints = dependencies.constraints(name)
+            var curr = outline
+            if (curr !is F) state[name] = Root(outline.convert())
+            while (curr is F) {
+                TODO()
+            }
 
         }
-
     }
 
-//        val constraint = when (val c = constraints[paramIndex]) {
-//            null -> "null"
-//            is ContainsNoVariables -> "new NoVars()"
-//            is ContainsOnly -> "new OnlyVariable(tid=${c.tId}, vid=${c.vId})"
-//        }
-//        when (t) {
-//            is CL -> w.line("$destination = clabel(register, numLKs, $tid, $groundVars, $constraint, $TYPE_DEPTH_BOUND)")
-//            L -> w.line("$destination = label(register, numLKs, $tid, $groundVars, labelVars, $constraint, $TYPE_DEPTH_BOUND)")
-//            is F -> {
-//                val (left, rite) = "${destination}l" to "${destination}r"
-//                w.line("Type $left; Type $rite")
-//                codeFor(t.left, tid, groundVars, left, constraints, paramIndex)
-//                codeFor(t.rite, tid, groundVars, rite, constraints, paramIndex + 1)
-//                w.line("$destination = new Function(left=$left, rite=$rite)")
-//            }
-//            is VB -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
-//            is VR -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
-//            is VL -> w.line("$destination = variableInLabel(${tid}, $groundVars, labelVars)")
-//            is N -> throw Exception("rly should fix this")  // TODO
-//        }
+    /** Must call once for each *parameter* */
+    private fun SpecializedSymbolicType.convert(constraint: DependencyConstraint? = null): MutableList<ConstrainedType> =
+        when (this) {
+            is CL, L -> labels.map { (n, p) -> L(n, MutableList(p) { mutableListOf(Hole()) }, constraint) }
+                .toMutableList()
+            is F -> mutableListOf(F(this.left.convert(constraint), this.rite.convert(constraint)))
+            is N -> throw Exception("shouldn't happen this is bad code quality")
+            is VB -> mutableListOf(ConcVB(this.vId, this.tId))
+            is VL -> mutableListOf(ConcVL(this.vId, this.tId))
+            is VR -> mutableListOf(ConcVR(this.vId, this.tId))
+        }
+
+    fun enumerate(): Map<String, ConstrainedType> {
+
+        TODO()
+    }
+
 //
 //        private fun generator(name: String) {
 //            val tid = tId(name)
@@ -65,7 +76,6 @@ class ConcreteEnumerator(
 //                is VR -> t.vId
 //                is N -> throw Exception("rly should fix this")  // TODO
 //            }
-//
 //            val groundVars = lastVar(outline) + 1
 //            w.block("Type ${sk(name)}(LabelKind[8] register, int numLKs)") {
 //                w.line("Type root")
