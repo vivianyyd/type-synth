@@ -1,0 +1,84 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ground truth
+f: a -> b
+
+id: 'a -> 'a
+	id f
+	id id
+	id (id f)
+	id 0
+	id add
+	id fid
+	(id add) 0 0
+	add ((id fz) f) 1
+
+add: i -> i -> i
+	add 0 0
+	add 1 1
+	add (add 1 0) 0
+
+fid: ('a -> 'b) -> 'a -> 'b
+	(fid add) 0 (fz (fid fz))
+	fid fid
+	fid f
+	fid id
+
+fz: ('a -> 'b) -> i
+	add (fz f) (fz id)	 
+	add (fz fid) 1
+	add (fz add) 0
+
+Applications
+
+id: id1 -> id2
+add: add1 -> add2
+fid: fid1 -> fid2
+fz: fz1 -> fz2
+
+f, id, id f = id2[t(f)/id1], add, fid, fz, 0 < id1
+0, 1, add 1 0, (id fz) f, fz f, fz fid, fz add < add1
+add, fz, fid, f, id < fid1
+f, id, fid, add < fz1
+id, fid fz, f, fid, add < fz1
+
+t(id add) = id2[t(add)/id1]: p1 -> p2
+t(id fz) = id2[t(fz)/id1]: p3 -> p4
+t((id fz) f) = p4[t(f)/p3] < add1 
+
+
+Abstract interpretation
+Abstract version of the concrete state must have a commutativity property: If you take a concrete state, execute a statement, and then abstract the resulting state, you should obtain the same result as if you abstract the initial state, and then execute the same statement but on the abstract state. This commutativity diagram appears in both papers. This is the common idea. Again, abstract interpretation is more general, for it does not dictate how to abstract a state -- it just says there should be a way to do it. In contrast, symbolic execution says that you use (symbolic) expressions that mention the initial values.
+
+If program execution reaches a certain statement in two different ways, symbolic execution does not try to merge the two analyzes. That is why the quote above talks about execution trees, rather than dags. But, remember that abstract interpretation wants to cover all executions. Thus, it asks for a way to merge the analyses of two executions at the point where they have the same program counter. (The join could be very dumb ({a} join {b} = {a,b}) such that it amounts to what symbolic execution does.) In general, joining itself is not sufficient to guarantee that you'll eventually finish analyzing all executions. (In particular, the dumb join mentioned earlier won't work.) Consider a program with a loops: "n=input(); for i in range(n): dostuff()". How many times should you go around the loop and keep joining? No fixed answer works. Thus, something else is needed, and that is widening, which can be seen as a heuristic. Suppose you went around the loop 3 times and you learned that "i=0 or i=1 or i=2". Then you say: hmmm, ... let's widen, and you get "i>=0". Again abstract interpretation does not say how to do widening -- it just says what properties widening should have to work out.
+
+Reading the original descriptions of these two techniques should be enough.
+
+King, Symbolic Execution and Program Testing, 1976
+Cousot, Cousot, Abstract Interpretation: a Unified Lattice Model for Static Analysis of Programs by Construction of Approximation of Fixpoints, 1977
+
+"Symbolic execution" usually refers to one kind of abstract interpretation, where you attempt to get an "exact" approximation by using symbolic expressions instead of finite classes of values.
+
+"Typical" abstract interpretation loses information whenever values are combined in some operation; symbolic execution stands out by retaining all information after all operations, so that it can be significantly more precise (and massively more expensive to evaluate).
+
+SMT solvers search a space of all possible states, symbolic execution grows a tree of state spaces
+
+
+
+
+
+Symbolic execution is static. Concolic execution combines symbolic execution with dynamic analysis (hence why it's called concolic and not symbolic).
+
+In practice, it is profitable to combine as many techniques as possible for understanding programs, so that's why those engines use multiple techniques.
