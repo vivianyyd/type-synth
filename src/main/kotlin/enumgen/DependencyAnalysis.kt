@@ -1,52 +1,8 @@
 package enumgen
 
-import util.Application
-import util.EqualityOracle
-import util.Query
-import util.equivalenceClasses
+import util.*
 import java.lang.Integer.max
 
-data class ParameterNode(val f: String, val i: Int) {
-    private var ctr = 0
-    fun freshArgument() = ArgumentNode(f, i, ctr++)
-}
-
-data class ArgumentNode(val f: String, val i: Int, val id: Int)
-
-sealed interface Edge
-
-/** directed, variables subset relation */
-data class DependencyEdge(val sub: ParameterNode, val sup: ParameterNode) : Edge
-// TODO is it weird that this is a data class but [LinkEdge] isn't?
-
-/** undirected, otherwise nonempty intersection */
-class LinkEdge(val a: ParameterNode, val b: ParameterNode) : Edge {
-    override fun equals(other: Any?): Boolean {
-        if (other !is LinkEdge) return false
-        return (a == other.a && b == other.b) || (a == other.b && b == other.a)
-    }
-
-    override fun hashCode(): Int {
-        return a.hashCode() + b.hashCode()  // TODO aaa
-    }
-}
-
-/** TODO maybe these should just be a type of dependency */
-class SelfLoop(val a: ParameterNode) : Edge
-
-// TODO decide if nodes/edges should be constructed in init block or by DepAnalysis class and only stored here
-class DependencyGraph(
-    val name: String,
-    val nodes: Set<ParameterNode>,
-    val links: Set<LinkEdge>,
-    val deps: Set<DependencyEdge>,
-    val loops: Set<SelfLoop>
-) {
-    /**
-     * Invariants: all [f] fields of contained nodes are the same. All edges only contain those nodes
-     */
-    val edges: Set<Edge> by lazy { links + deps + loops }
-}
 
 class ExampleNet {
 
@@ -97,8 +53,8 @@ class DependencyAnalysis(
 
     val graphs: Map<String, DependencyGraph> by lazy {
         query.names.associateWith { name ->
-            val (links, deps, loops) = findEdges(name)
-            DependencyGraph(name, nodes.filter { it.f == name }.toSet(), links, deps, loops)
+            val (deps, loops) = findEdges(name)
+            DependencyGraph(name, nodes.filter { it.f == name }.toSet(), deps, loops)
         }
     }
 
@@ -110,7 +66,7 @@ class DependencyAnalysis(
             this
         }
 
-    private fun findEdges(name: String): Triple<Set<LinkEdge>, Set<DependencyEdge>, Set<SelfLoop>> {
+    private fun findEdges(name: String): Pair<Set<DependencyEdge>, Set<SelfLoop>> {
         val links = mutableSetOf<LinkEdge>()
         val deps = mutableSetOf<DependencyEdge>()
         val loops = mutableSetOf<SelfLoop>()
@@ -175,7 +131,7 @@ class DependencyAnalysis(
                 }
             }
         }
-        return Triple(links, deps, loops)
+        return Pair(deps, loops)
     }
     /*
     ## Undirected links:

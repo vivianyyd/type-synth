@@ -38,7 +38,7 @@ class State(query: NewQuery) {
         return options.find { it is Function }?.let { Port(it as Function, 0) }
     }
 
-    private fun options(choice: Choice) = when (choice) {
+    fun options(choice: Choice) = when (choice) {
         is Port -> if (choice.side == 0) choice.f.left else choice.f.rite
         is Root -> state[choice.name]!!
     }
@@ -91,21 +91,72 @@ class SymbolicTypeBuilder(val query: NewQuery) {
         s
     }
 
-//    fun deepen(): State {
-//        /*
-//        TODO can AU outputs too but for now just do inputs
-//        Map choices to set of examples:
-//            An example f x implies AUset of f.left contains tree of x, which might itself be a choice s.exprToChoice(x)
-//        AUset is a set of choices that must antiunify
-//         */
-//        val auSets = mutableMapOf<Choice, Set<Choice>>()
-//        query.posExamples.forEach {
-//            // the choice for param MUST permit AT LEAST ONE of the subtrees for arg (if hole, expand to permit all)
-//        }
-//        query.negExamples.forEach {
-//            // the choice for param CAN'T permit at least one of the subtrees for arg
-//        }
-//    }
+    private inline fun <reified R> List<*>.singleton(): Boolean = this.size == 1 && this[0] is R
+
+    private fun antiunify(trees: List<List<SymbolicType>>, param: List<SymbolicType>): List<SymbolicType> {
+        // TODO intersect stuff with param to produce the new param tree
+        if (trees.size == 1) return trees[0]
+        if (trees.any { it.singleton<Hole>() }) return antiunify(
+            trees.filter { !(it.size == 1 && it[0] is Hole) },
+            param
+        )
+        if (trees.any { it.singleton<Function>() } && trees.any { it.singleton<Label>() }) listOf(Variable())
+//        if (trees.all { it.singleton<Label>() }) return listOf(
+//            Variable(),
+//            Label()
+//        )  // TODO should we keep variable here
+        // no-op / bottom. could compare equality to guarantee is L instead of V but let's not
+
+        // au(_, (v+_)) = bottom
+        // au({l1->r1}, {l2->r2}, ...) = au({l1}, {l2}, ...) -> au({r1}, {r2}, ...)
+        if (trees.all { it.singleton<Function>() }) {
+            return if (param.any { it is Function }) {
+                val (fn, notFn) = param.partition { it is Function }
+                notFn + Function(
+                    antiunify(trees.map { (it[0] as Function).left }, (fn[0] as Function).left).toMutableList(),
+                    antiunify(trees.map { (it[0] as Function).rite }, (fn[0] as Function).rite).toMutableList()
+                )
+
+            } else param + Function(
+                antiunify(trees.map { (it[0] as Function).left }, listOf(Hole())).toMutableList(),
+                antiunify(trees.map { (it[0] as Function).rite }, listOf(Hole())).toMutableList()
+            )
+        }
+        return param // TODO
+    }
+
+    fun deepen(): State {
+        // TODO can AU outputs too but for now just do inputs
+        val paramToArgs = mutableMapOf<Choice, MutableSet<Choice>>()
+        fun add(param: Choice, arg: Choice) {
+            if (param in paramToArgs) paramToArgs[param]!!.add(arg) else paramToArgs[param] = mutableSetOf(arg)
+        }
+        query.posExamples.filterIsInstance<App>().forEach { (fn, arg) ->
+            val f = s.exprToChoice(fn)
+            val a = s.exprToChoice(arg)
+            if (f != null && a != null) {
+                val p = s.param(f)
+                p?.let { add(p, a) }
+            }
+        }
+
+        paramToArgs.forEach { (param, args) ->
+            antiunify(args.map { s.options(it) }, s.options(param))
+
+            // antiunify arguments, then use it to fill in param - second step is not quite antiunif?
+            // actual type should be intersected with result of au unless hole then = returned thing and unless fn
+            // then recurse??
+
+            TODO()
+        }
+        // the choice for param MUST permit AT LEAST ONE of the subtrees for arg (if hole, expand to permit all)
+
+        query.negExamples.forEach {
+            // the choice for param CAN'T permit at least one of the subtrees for arg
+//               ^ that's too strong, we don't have to deal with negexs if we don't want to
+        }
+        TODO()
+    }
 
     private fun patchEmptyLists() {
         fun patch(t: SymbolicType, rightmost: Boolean) {

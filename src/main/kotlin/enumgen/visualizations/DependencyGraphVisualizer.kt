@@ -1,8 +1,8 @@
 package enumgen.visualizations
 
 import enumgen.DependencyAnalysis
-import enumgen.DependencyGraph
-import enumgen.ParameterNode
+import util.DependencyGraph
+import util.ParameterNode
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintWriter
@@ -27,7 +27,6 @@ object DependencyGraphVisualizer {
         val nodeLabels = graph.nodes.associateWith { it.display() }
         dw.writeEdges(graph.deps.map { Pair(nodeLabels[it.sub]!!, nodeLabels[it.sup]!!) }, true, "deps")
         dw.writeEdges(graph.loops.map { Pair(nodeLabels[it.a]!!, nodeLabels[it.a]!!) }, true, "loops")
-        dw.writeEdges(graph.links.map { Pair(nodeLabels[it.a]!!, nodeLabels[it.b]!!) }, false, "links")
         dw.finishGraph()
         val out = dw.output()
         dw.restart()
