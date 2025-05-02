@@ -1,8 +1,8 @@
 package symbolicgen
 
-import symbolicgen.symbolicsketcher.F
-import symbolicgen.symbolicsketcher.SpecializedSymbolicType
-import symbolicgen.symbolicsketcher.Var
+import symbolicgen.symbolicenumerator.EnumeratedSymbolicType
+import symbolicgen.symbolicenumerator.F
+import symbolicgen.symbolicenumerator.Var
 import util.*
 import java.lang.Integer.max
 
@@ -19,9 +19,9 @@ data class ContainsOnly(val vId: Int, val tId: Int) : DependencyConstraint
  *  Visualizer for dep graphs
  */
 class DependencyAnalysis(
-    private val query: NewQuery, outline: Map<String, SpecializedSymbolicType>, private val oracle: EqualityNewOracle
+    private val query: NewQuery, outline: Map<String, EnumeratedSymbolicType>, private val oracle: EqualityNewOracle
 ) {
-    val nodeToType = outline.entries.fold(mutableMapOf<ParameterNode, SpecializedSymbolicType>()) { m, (name, tree) ->
+    val nodeToType = outline.entries.fold(mutableMapOf<ParameterNode, EnumeratedSymbolicType>()) { m, (name, tree) ->
         var curr = tree
         var count = 0
         while (curr is F) {
@@ -33,14 +33,12 @@ class DependencyAnalysis(
         m
     }
 
-    val nodes: Set<ParameterNode> = nodeToType.keys
-
-    fun nodes(name: String) = nodes.filter { it.f == name }
+    fun nodes(name: String) = nodeToType.keys.filter { it.f == name }
 
     val graphs: Map<String, DependencyGraph> by lazy {
         query.names.associateWith { name ->
             val (deps, loops) = findEdges(name)
-            DependencyGraph(name, nodes.filter { it.f == name }.toSet(), deps, loops)
+            DependencyGraph(name, nodes(name).toSet(), deps, loops)
         }
     }
 
@@ -83,61 +81,73 @@ class DependencyAnalysis(
         val deps = mutableSetOf<DependencyEdge>()
         val loops = mutableSetOf<SelfLoop>()
 
-        println("DEPS FOR $name")
-
         // TODO note we assume we have all subexprs in posExamples here
         val posExs = examples[name]!!
         val negExs = query.negExamples
         val parameters = nodes.filter { it.f == name }
+
+        // TODO use flattened examples
+        fun param(index: Int, ex: List<App>): Example = if (index < nodes.size - 1) {
+            assert(ex.size > index)
+            ex[index].arg
+        } else {
+            assert(ex.size >= index)
+            ex[index - 1]
+        }
+
+        fun relevantExs(params: Int) =
+            if (params < nodes.size - 1) posExs.filter { it.size > params } else posExs.filter { it.size >= params }
+
         for (pi in parameters) {
+            val i = pi.i
+
+            val exs = relevantExs(i)
+
+            /** all examples of the [index]th parameter. requires that parameter exists in all examples in [exs]. */
+            val params = if (i == nodes.size - 1 && i == 0) listOf(Name(name))  // TODO pretty hacky
+            else exs.map { param(i, it) }
+
+            if (equivalenceClasses(params, oracle::equal).size == 1) {
+                loops.add(SelfLoop(pi))
+            }
+            /**
+             * Node p3 has
+             * F tag when
+             *  + f t1 t2 t3
+             *  + f t1 t2 t3'
+             * where t3 =/= t3'
+             *
+             * B tag when
+             *  + f t1 t2 t3
+             *  - f t1 t2 t3'
+             * where l(t3) = l(t3')
+             */
+
             for (pj in parameters) {
-                val i = pi.i
                 val j = pj.i
 
                 // Skip half the pairs since links are undirected. We'll do both directions of deps at once below
-                if (j < i) continue
+                if (j <= i) continue
 
-                fun param(index: Int, ex: List<App>): Example = if (index < nodes.size - 1) {
-                    assert(ex.size > index)
-                    ex[index].arg
-                } else {
-                    assert(ex.size >= index)
-                    ex[index - 1]
-                }
 
-                val relevantExs = max(i, j).let { m ->
-                    if (m < nodes.size - 1) posExs.filter { it.size > m } else posExs.filter { it.size >= m }
-                }
-
-                /** all examples of the [index]th parameter. requires that parameter exists in all examples in [exs]. */
-                fun params(index: Int) =
-                    if (index == nodes.size - 1 && index == 0) listOf(Name(name))  // TODO pretty hacky
-                    else relevantExs.map { param(index, it) }
-
-                if (i == j) {
-                    if (equivalenceClasses(params(i), oracle::equal).size == 1) {
-                        loops.add(SelfLoop(pi))
+                // Do both directions of dependency edges
+                fun depEdge(source: Int, sink: Int): Boolean {
+                    val groupedBySink = equivalenceClasses(relevantExs(max(i, j))) { e1, e2 ->
+                        oracle.equal(param(sink, e1), param(sink, e2))
                     }
-                } else {
-                    // Do both directions of dependency edges
-                    fun depEdge(source: Int, sink: Int): Boolean {
-                        val groupedBySink = equivalenceClasses(relevantExs) { e1, e2 ->
-                            oracle.equal(param(sink, e1), param(sink, e2))
+                    val sourceChangesWhileSinkConstant = groupedBySink.any { eqClass ->
+                        eqClass.any {
+                            val arbitraryElem = param(source, eqClass.first())
+                            !oracle.equal(param(source, it), arbitraryElem)
                         }
-                        val sourceChangesWhileSinkConstant = groupedBySink.any { eqClass ->
-                            eqClass.any {
-                                val arbitraryElem = param(source, eqClass.first())
-                                !oracle.equal(param(source, it), arbitraryElem)
-                            }
-                        }
-                        return !sourceChangesWhileSinkConstant
                     }
-                    if (depEdge(i, j)) {
-                        deps.add(DependencyEdge(pi, pj))
-                    }
-                    if (depEdge(j, i)) {
-                        deps.add(DependencyEdge(pj, pi))
-                    }
+                    return !sourceChangesWhileSinkConstant
+                }
+                if (depEdge(i, j)) {
+                    deps.add(DependencyEdge(pi, pj))
+                }
+                if (depEdge(j, i)) {
+                    deps.add(DependencyEdge(pj, pi))
                 }
             }
         }
