@@ -5,6 +5,7 @@ import enumgen.types.checkApplication
 
 interface EqualityNewOracle {
     fun equal(a: Example, b: Example): Boolean
+    fun flatEqual(a: FlatApp, b: FlatApp): Boolean = equal(a.unflatten(), b.unflatten())
     fun dummy(e: Example): Int
 }
 

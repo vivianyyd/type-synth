@@ -55,69 +55,51 @@ class DependencyAnalysis(
         return constrs
     }
 
-    /**
-     * A map from function names to a list of sequences of applications with that name as the leftmost function,
-     * from smallest to largest by containment
-     * e.g. If positive examples are (f 0) and (f 1 2), produces {f: [[(f 0)], [(f 1), (f 1 2)]]}
-     * So for each of the internal lists, index i includes applications up to the ith argument.
-     * TODO this is super inefficient. Should instead flatten all examples to be like the old Application version
-     */
-    val examples =
-        query.posExamples.fold(query.names.associateWith<String, MutableList<List<App>>> { mutableListOf() }) { acc, ex ->
-            var curr = ex
-            val apps = mutableListOf<App>()
-            while (curr is App) {
-                apps.add(curr)
-                curr = curr.fn
-            }
-            apps.reverse()
-            val name = (curr as Name).name
-            if (apps.isNotEmpty()) acc[name]!!.add(apps)
-            acc
-        }
+    val flatExs =
+        equivalenceClasses(query.posExamples.map { it.flatten() }) { e1, e2 -> e1.name == e2.name }.associateBy { it.first().name }
 
     private fun findEdges(name: String): Pair<Set<DependencyEdge>, Set<SelfLoop>> {
         val nodes = nodes(name)
         val deps = mutableSetOf<DependencyEdge>()
         val loops = mutableSetOf<SelfLoop>()
 
-        // TODO note we assume we have all subexprs in posExamples here
-        val posExs = examples[name]!!
+        // TODO I think we don't actually need all subexprs in posexs here
+        val posExs = flatExs[name]!!
         val negExs = query.negExamples
         val parameters = nodes.filter { it.f == name }
 
-        // TODO use flattened examples
-        fun param(index: Int, ex: List<App>): Example = if (index < nodes.size - 1) {
-            assert(ex.size > index)
-            ex[index].arg
-        } else {
-            assert(ex.size >= index)
-            ex[index - 1]
-        }
-
-        fun relevantExs(params: Int) =
-            if (params < nodes.size - 1) posExs.filter { it.size > params } else posExs.filter { it.size >= params }
+        fun relevantExs(args: Int) =
+            if (args < nodes.size - 1) posExs.filter { it.args.size > args } else posExs.filter { it.args.size >= args }
 
         for (pi in parameters) {
             val i = pi.i
 
             val exs = relevantExs(i)
+            val args = exs.map { if (i == nodes.size - 1) it else it.args[i] }
 
-            /** all examples of the [index]th parameter. requires that parameter exists in all examples in [exs]. */
-            val params = if (i == nodes.size - 1 && i == 0) listOf(Name(name))  // TODO pretty hacky
-            else exs.map { param(i, it) }
-
-            if (equivalenceClasses(params, oracle::equal).size == 1) {
+            if (equivalenceClasses(args, oracle::flatEqual).size == 1) {
                 loops.add(SelfLoop(pi))
             }
+
+            /** In each equivalence class, all args prior to the ith arg have the same type */
+            val exsGroupedByConcreteParamTypeForThisParam = equivalenceClasses(exs) { e1, e2 ->
+                e1.args.subList(0, i).zip(e2.args.subList(0, i)).all { (a1, a2) -> oracle.flatEqual(a1, a2) }
+            }
+
             /**
-             * Node p3 has
-             * F tag when
+             * Node p3 has F tag when there exist
              *  + f t1 t2 t3
              *  + f t1 t2 t3'
              * where t3 =/= t3'
-             *
-             * B tag when
+             */
+            val fTag = exsGroupedByConcreteParamTypeForThisParam.any { c ->
+                c.any { e1 ->
+                    c.any { e2 -> !oracle.flatEqual(e1.args[i], e2.args[i]) }
+                }
+            }
+
+            /**  TODO
+             * Node p3 has B tag when
              *  + f t1 t2 t3
              *  - f t1 t2 t3'
              * where l(t3) = l(t3')
@@ -125,29 +107,22 @@ class DependencyAnalysis(
 
             for (pj in parameters) {
                 val j = pj.i
+                if (j == i) continue
 
-                // Skip half the pairs since links are undirected. We'll do both directions of deps at once below
-                if (j <= i) continue
-
-
-                // Do both directions of dependency edges
                 fun depEdge(source: Int, sink: Int): Boolean {
                     val groupedBySink = equivalenceClasses(relevantExs(max(i, j))) { e1, e2 ->
-                        oracle.equal(param(sink, e1), param(sink, e2))
+                        oracle.flatEqual(e1.args[sink], e2.args[sink])
                     }
                     val sourceChangesWhileSinkConstant = groupedBySink.any { eqClass ->
                         eqClass.any {
-                            val arbitraryElem = param(source, eqClass.first())
-                            !oracle.equal(param(source, it), arbitraryElem)
+                            val arbitraryElem = eqClass.first().args[source]
+                            !oracle.flatEqual(it.args[source], arbitraryElem)
                         }
                     }
                     return !sourceChangesWhileSinkConstant
                 }
                 if (depEdge(i, j)) {
                     deps.add(DependencyEdge(pi, pj))
-                }
-                if (depEdge(j, i)) {
-                    deps.add(DependencyEdge(pj, pi))
                 }
             }
         }

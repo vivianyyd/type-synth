@@ -9,6 +9,23 @@ data class App(val fn: Example, val arg: Example) : Example {
     override fun toString(): String = "$fn ${if (arg is App) "($arg)" else "$arg"}"
 }
 
+fun Example.flatten(): FlatApp = when (this) {
+    is Name -> FlatApp(this.name)
+    is App -> {
+        val flatFn = fn.flatten()
+        val flatArg = arg.flatten()
+        FlatApp(flatFn.name, flatFn.args + flatArg)
+    }
+}
+
+fun FlatApp.unflatten(): Example {
+    if (this.args.isEmpty()) return Name(this.name)
+    return App(
+        FlatApp(this.name, this.args.dropLast(1)).unflatten(),
+        this.args.last().unflatten()
+    )
+}
+
 /**
  * This is more general than the previous query because we can apply the result of applications
  *  without them being explicitly assigned to a name
@@ -20,7 +37,7 @@ class Query(
     names: List<String> = listOf()
 ) {
     val posExamples: Set<Example> =
-        (posExamples.toSet() + names.map { Name(it) }.toSet()).flatMap { it.subexprs() }.toSet()
+        (posExamples.toSet().flatMap { it.subexprs() }.toSet() + names.map { Name(it) }).toSet()
     val names: List<String> = names.union(posExamples.fold(setOf()) { acc, ex ->
         fun names(ex: Example): Set<String> = when (ex) {
             is Name -> setOf(ex.name)
