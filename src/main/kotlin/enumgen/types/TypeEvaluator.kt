@@ -1,10 +1,10 @@
 package enumgen.types
 
-import enumgen.*
-import util.Application
+import enumgen.Assignment
+import util.FlatApp
 
-fun checkApplication(app: Application, map: Assignment): Type {
+fun checkApplication(app: FlatApp, map: Assignment): Type {
     var fn = map[app.name] ?: throw Exception("Function name not found")
-    app.arguments.forEach { arg -> fn = Unify.apply(fn, checkApplication(arg, map)) }
+    app.args.forEach { arg -> fn = Unify.apply(fn, checkApplication(arg, map)) }
     return fn
 }

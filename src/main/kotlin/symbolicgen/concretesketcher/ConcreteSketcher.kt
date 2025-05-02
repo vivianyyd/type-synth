@@ -9,7 +9,7 @@ typealias ContextOutline = Map<String, SpecializedSymbolicType>
 const val TYPE_DEPTH_BOUND = 3
 
 class ConcreteSketcher(
-    val query: NewQuery,
+    val query: Query,
     private val contextOutline: ContextOutline,
     private val varTypeIds: Map<String, Int>,
     private val oracle: EqualityNewOracle

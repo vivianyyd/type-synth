@@ -24,14 +24,14 @@ class ScrappyNewOracle(private val secret: Map<Example, String?>) : EqualityNewO
 }
 
 interface EqualityOracle {
-    fun equal(a: Application, b: Application): Boolean
+    fun equal(a: FlatApp, b: FlatApp): Boolean
 }
 
 /**
  * Computes types of applications based on types of named values, given as [secret]
  */
 class CheckingOracle(private val secret: Map<String, Type>) : EqualityOracle {
-    override fun equal(a: Application, b: Application): Boolean =
+    override fun equal(a: FlatApp, b: FlatApp): Boolean =
         checkApplication(a, secret) == checkApplication(b, secret)
 }
 
@@ -39,11 +39,11 @@ class CheckingOracle(private val secret: Map<String, Type>) : EqualityOracle {
  * Requires [secretTypes[app]] is null iff [app] is a negative example
  * Requires a mapping of *all* applications (including all subexpressions) to their dummy types
  */
-class ScrappyOracle(private val secret: Map<Application, String?>) : EqualityOracle {
-    override fun equal(a: Application, b: Application): Boolean =
+class ScrappyOracle(private val secret: Map<FlatApp, String?>) : EqualityOracle {
+    override fun equal(a: FlatApp, b: FlatApp): Boolean =
         if (secret[a] == null || secret[b] == null) false else secret[a] == secret[b]
 }
 
 class PairwiseCheckOracle() : EqualityOracle {
-    override fun equal(a: Application, b: Application): Boolean = TODO("memoize results")
+    override fun equal(a: FlatApp, b: FlatApp): Boolean = TODO("memoize results")
 }

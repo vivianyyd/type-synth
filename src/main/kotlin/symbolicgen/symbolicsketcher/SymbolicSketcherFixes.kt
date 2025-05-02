@@ -7,7 +7,7 @@ import kotlin.math.roundToInt
 
 // TODO style: can inline tests into the harness that wraps all the tests
 class SymbolicSketcherFixes(
-    val query: NewQuery,
+    val query: Query,
     private val state: State,
     private val oracle: EqualityNewOracle,
     private val rounds: Int? = null

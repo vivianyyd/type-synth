@@ -1,28 +1,31 @@
 package enumgen
 
-import enumgen.types.*
-import util.Application
-import util.Query
+import enumgen.types.Error
+import enumgen.types.SiblingHole
+import enumgen.types.Type
+import enumgen.types.checkApplication
+import util.FlatApp
+import util.FlatQuery
 
 
-class ExampleAnalysis(private val query: Query) {
+class ExampleAnalysis(private val query: FlatQuery) {
     private val params: MutableMap<String, Int> = query.names.associateWith { 0 }.toMutableMap()
-    private val posFor: MutableMap<String, MutableSet<Application>> =
-        query.names.associateWith { mutableSetOf<Application>() }.toMutableMap()
-    private val negFor: MutableMap<String, MutableSet<Application>> =
-        query.names.associateWith { mutableSetOf<Application>() }.toMutableMap()
+    private val posFor: MutableMap<String, MutableSet<FlatApp>> =
+        query.names.associateWith { mutableSetOf<FlatApp>() }.toMutableMap()
+    private val negFor: MutableMap<String, MutableSet<FlatApp>> =
+        query.names.associateWith { mutableSetOf<FlatApp>() }.toMutableMap()
 
     init {
-        fun helpPos(app: Application) {
-            params[app.name] = maxOf(params[app.name]!!, app.arguments.size)
+        fun helpPos(app: FlatApp) {
+            params[app.name] = maxOf(params[app.name]!!, app.args.size)
             posFor[app.name]!!.add(app)
-            app.arguments.forEach { helpPos(it) }
+            app.args.forEach { helpPos(it) }
         }
         query.posExamples.forEach { helpPos(it) }
 
-        fun helpNeg(app: Application) {
+        fun helpNeg(app: FlatApp) {
             negFor[app.name]!!.add(app)
-            app.arguments.forEach { helpNeg(it) }
+            app.args.forEach { helpNeg(it) }
         }
         query.negExamples.forEach { helpNeg(it) }
 
@@ -30,8 +33,8 @@ class ExampleAnalysis(private val query: Query) {
     }
 
     fun params(name: String): Int = params[name]!!
-    fun posFor(name: String): Set<Application> = posFor[name]!!
-    fun negFor(name: String): Set<Application> = negFor[name]!!
+    fun posFor(name: String): Set<FlatApp> = posFor[name]!!
+    fun negFor(name: String): Set<FlatApp> = negFor[name]!!
 
     private fun partialArgParamCompatible(
         fn: String,
@@ -47,7 +50,7 @@ class ExampleAnalysis(private val query: Query) {
 
     fun partialArgsParamsCompatible(fn: String, t: Type, tree: SearchState): Boolean {
         val exs = query.posExamples.filter { it.name == fn }
-        val arguments = exs.flatMap { it.arguments }.map { it.name }.toSet()
+        val arguments = exs.flatMap { it.args }.map { it.name }.toSet()
         val argTyRoots =
             arguments.associateWith { tree.tree(it) }  // Should be no NPE, just single ChildHole
         return argTyRoots.all { (argName, treeRoot) ->
@@ -65,7 +68,7 @@ class ExampleAnalysis(private val query: Query) {
     }
 
     // TODO actually flatten the posexs, negexs so each application is named, then enum types for everything in posexs names
-    fun canBeEqual(expressions: Set<Application>): Boolean {
+    fun canBeEqual(expressions: Set<FlatApp>): Boolean {
         return expressions.all { e ->
             query.posExamples.all { app ->
                 expressions.all { ePrime -> works(replace(app, e, ePrime)) }
@@ -73,8 +76,8 @@ class ExampleAnalysis(private val query: Query) {
         }
     }
 
-    private fun replace(a: Application, e: Application, ePrime: Application): Application =
-        if (a == e) ePrime else Application(a.name, a.arguments.map { replace(it, e, ePrime) })
+    private fun replace(a: FlatApp, e: FlatApp, ePrime: FlatApp): FlatApp =
+        if (a == e) ePrime else FlatApp(a.name, a.args.map { replace(it, e, ePrime) })
 
-    private fun works(a: Application): Boolean = a in query.posExamples  // TODO replace with call to black box type checker
+    private fun works(a: FlatApp): Boolean = a in query.posExamples  // TODO replace with call to black box type checker
 }

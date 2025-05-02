@@ -1,12 +1,12 @@
 package enumgen
 
-import enumgen.visualizations.SearchStateVisualizer
 import enumgen.types.*
 import enumgen.types.Function
-import util.Query
+import enumgen.visualizations.SearchStateVisualizer
+import util.FlatQuery
 
 class NonArrowEnumerator(
-    private val query: Query,
+    private val query: FlatQuery,
     skeletons: Map<String, Type>
 ) {
     private var vizFileID = 0
@@ -333,7 +333,7 @@ class NonArrowEnumerator(
         if (curr.left is LabelNode && (curr.left as LabelNode).params.isEmpty()) {
             // Check whether all examples have args in corresponding spot which can be the same type
             val argumentsUsed =
-                query.posExamples.filter { it.name == fn }.mapNotNull { it.arguments.getOrNull(height - 2) }.toSet()
+                query.posExamples.filter { it.name == fn }.mapNotNull { it.args.getOrNull(height - 2) }.toSet()
             prune = prune || !(exampleAnalysis.canBeEqual(argumentsUsed))
         }
         while (next is Function) {
@@ -343,7 +343,7 @@ class NonArrowEnumerator(
             if (curr.left is LabelNode && (curr.left as LabelNode).params.isEmpty()) {
                 // Check whether all examples have args in corresponding spot which can be the same type
                 val argumentsUsed =
-                    query.posExamples.filter { it.name == fn }.mapNotNull { it.arguments.getOrNull(height - 2) }.toSet()
+                    query.posExamples.filter { it.name == fn }.mapNotNull { it.args.getOrNull(height - 2) }.toSet()
                 prune = prune || !(exampleAnalysis.canBeEqual(argumentsUsed))
             }
         }

@@ -5,7 +5,7 @@ import symbolicgen.Function
 import util.*
 
 class SymbolicEnumerator(
-    val query: NewQuery,
+    val query: Query,
     state: State,
     private val oracle: EqualityNewOracle,
 ) {

@@ -1,24 +1,40 @@
 package util
 
-data class Application(val name: String, val arguments: List<Application> = listOf()) {
-    override fun toString(): String {
-        return if (arguments.isEmpty()) name else
-            "($name ${(arguments.joinToString(separator = " "))})"
-    }
+sealed interface Example
+data class Name(val name: String) : Example {
+    override fun toString() = name
 }
 
-fun Iterable<Application>.print(positive: Boolean): String =
-    this.joinToString("\n") { "(${if (positive) "+" else "-"} $it)" }
+data class App(val fn: Example, val arg: Example) : Example {
+    override fun toString(): String = "$fn ${if (arg is App) "($arg)" else "$arg"}"
+}
 
-/** TODO deprecated, convert all usages of Query/Application to NewQuery/Example */
+/**
+ * This is more general than the previous query because we can apply the result of applications
+ *  without them being explicitly assigned to a name
+ *  [posExamples] contains all subexpressions!
+ *  */
 class Query(
-    posExamples: Collection<Application> = listOf(),
-    val negExamples: Collection<Application> = listOf(),
+    posExamples: Collection<Example> = listOf(),
+    val negExamples: Collection<Example> = listOf(),
     names: List<String> = listOf()
 ) {
-    val posExamples: Set<Application> = (posExamples.toSet() + names.map { Application(it) }.toSet())
-    val names: List<String> = posExamples.fold(setOf<String>()) { acc, ex ->
-        fun names(app: Application): Set<String> = app.arguments.fold(setOf(app.name)) { a, arg -> a + names(arg) }
+    val posExamples: Set<Example> =
+        (posExamples.toSet() + names.map { Name(it) }.toSet()).flatMap { it.subexprs() }.toSet()
+    val names: List<String> = names.union(posExamples.fold(setOf()) { acc, ex ->
+        fun names(ex: Example): Set<String> = when (ex) {
+            is Name -> setOf(ex.name)
+            is App -> names(ex.fn) + names(ex.arg)
+        }
         acc + names(ex)
-    }.toList()
+    }).toList()
 }
+
+/** Produce all subexpressions of [this] and [this] TODO for some reason before, I didn't want to include Names? why
+ * All subexprs appear in the list before any expression that contains them. */
+private fun Example.subexprs(): List<Example> = LinkedHashSet(
+    when (this) {
+        is Name -> listOf(this)
+        is App -> fn.subexprs() + arg.subexprs() + this
+    }
+).toList()

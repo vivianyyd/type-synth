@@ -1,6 +1,6 @@
 package test
 
-import util.NewQuery
+import util.Query
 import util.ScrappyNewOracle
 import util.parseNewApp
 import util.parseNewExamples
@@ -38,6 +38,6 @@ object IdTest {
         "(+ (inc (id n)))" to "int",
     )
 
-    val query: NewQuery = parseNewExamples(examples.keys)
+    val query: Query = parseNewExamples(examples.keys)
     val oracle = ScrappyNewOracle(examples.mapKeys { parseNewApp(it.key) })
 }

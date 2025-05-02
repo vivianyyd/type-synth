@@ -23,7 +23,7 @@ fun equals(p1: ParameterNode, p2: ParameterNode): Boolean =
  *  Visualizer for dep graphs
  */
 class DependencyAnalysis(
-    private val query: Query,
+    private val query: FlatQuery,
     private val oracle: EqualityOracle
 ) {
     // TODO maybe the oracle should support this, but then it would have access to all the examples which is not good
@@ -59,10 +59,10 @@ class DependencyAnalysis(
     }
 
     /** Precondition: i is in bounds */
-    fun Application.getParam(i: Int) =
-        if (i < this.arguments.size) this.arguments[i]
+    fun FlatApp.getParam(i: Int) =
+        if (i < this.args.size) this.args[i]
         else {
-            assert(i == this.arguments.size)
+            assert(i == this.args.size)
             this
         }
 
@@ -85,9 +85,9 @@ class DependencyAnalysis(
                 // We wait til now to do this filtering so we can use as many exs as possible, since sometimes it might
                 //  be only partially applied. At the cost of extra work
                 val pos = if (exampleAnalysis.params(name) == 1) posExs
-                else posExs.filter { it.arguments.size >= max(i, j) }
+                else posExs.filter { it.args.size >= max(i, j) }
                 val neg = if (exampleAnalysis.params(name) == 1) negExs
-                else negExs.filter { it.arguments.size >= max(i, j) }
+                else negExs.filter { it.args.size >= max(i, j) }
 
                 if (i == j) {
                     if (equivalenceClasses(pos) { e1, e2 ->

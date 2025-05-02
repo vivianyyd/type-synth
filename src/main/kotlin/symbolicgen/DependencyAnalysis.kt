@@ -19,7 +19,7 @@ data class ContainsOnly(val vId: Int, val tId: Int) : DependencyConstraint
  *  Visualizer for dep graphs
  */
 class DependencyAnalysis(
-    private val query: NewQuery, outline: Map<String, EnumeratedSymbolicType>, private val oracle: EqualityNewOracle
+    private val query: Query, outline: Map<String, EnumeratedSymbolicType>, private val oracle: EqualityNewOracle
 ) {
     val nodeToType = outline.entries.fold(mutableMapOf<ParameterNode, EnumeratedSymbolicType>()) { m, (name, tree) ->
         var curr = tree

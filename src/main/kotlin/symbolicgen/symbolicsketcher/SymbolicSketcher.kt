@@ -5,7 +5,7 @@ import symbolicgen.Function
 import util.*
 import kotlin.math.roundToInt
 
-class SymbolicSketcher(val query: NewQuery, private val state: State, private val oracle: EqualityNewOracle) {
+class SymbolicSketcher(val query: Query, private val state: State, private val oracle: EqualityNewOracle) {
     private val sw = SymbolicSketchWriter()
     fun nextQuery(sketch: String, round: Int) = sw.addBanned(SymbolicSketchParser(sketch).parseAll.first, round)
     fun output(sketch: String): Pair<Int, String> {

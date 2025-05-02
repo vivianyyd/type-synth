@@ -7,7 +7,7 @@ import symbolicgen.symbolicsketcher.*
 import symbolicgen.symbolicsketcher.F
 import symbolicgen.symbolicsketcher.L
 import util.EqualityNewOracle
-import util.NewQuery
+import util.Query
 
 val labels = mapOf(0 to 1, 1 to 0, 2 to 0)
 
@@ -27,7 +27,7 @@ data class ConcVR(val vid: Int, val tid: Int) : ConcreteType
 data class ConcVL(val vid: Int, val tid: Int) : ConcreteType
 
 class ConcreteEnumerator(
-    val query: NewQuery,
+    val query: Query,
     private val contextOutline: ContextOutline,
     private val dependencies: DependencyAnalysis,
     private val varTypeIds: Map<String, Int>,

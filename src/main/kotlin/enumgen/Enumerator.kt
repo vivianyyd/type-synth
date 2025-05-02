@@ -1,14 +1,14 @@
 package enumgen
 
-import enumgen.visualizations.SearchStateVisualizer
 import enumgen.types.*
 import enumgen.types.Function
-import util.Query
+import enumgen.visualizations.SearchStateVisualizer
+import util.FlatQuery
 
 typealias Assignment = Map<String, Type>
 
 class Enumerator(
-    val query: Query
+    val query: FlatQuery
 //    private val MAX_TYPE_PARAMS: Int
 ) {
     //    val DEPTH_BOUND = 4  // TODO remove this safeguard
@@ -232,7 +232,8 @@ class Enumerator(
         val passesPos = contexts.filter { assignmentPassesPositives(it) }
         println("Filter- passes all positives: ${passesPos.size}")
 
-        val exploded = passesPos.flatMap { it.populateVariablesPartitionBlowup(state.names.associateWith { nullary(it) },2) }
+        val exploded =
+            passesPos.flatMap { it.populateVariablesPartitionBlowup(state.names.associateWith { nullary(it) }, 2) }
         println("Exploded contexts: ${exploded.size}")
 
         println("Total negexs: ${query.negExamples.size}")
@@ -330,7 +331,7 @@ class Enumerator(
         return if (curr.left is LabelNode && (curr.left as LabelNode).params.isEmpty()) {
             // Check whether all examples have args in corresponding spot which can be the same type
             val argumentsUsed =
-                query.posExamples.filter { it.name == fn }.mapNotNull { it.arguments.getOrNull(height - 2) }.toSet()
+                query.posExamples.filter { it.name == fn }.mapNotNull { it.args.getOrNull(height - 2) }.toSet()
             // TODO More general: Check that they can all simultaneously unify with the proposed type. Then the param
             //   in question need not be a primitive literal to do the check
             //   edit, idk what I meant by this. Think about it again
@@ -354,5 +355,6 @@ class Enumerator(
             .all { it is Function }
     }
 
-    private fun viz(stage: String = "") = SearchStateVisualizer.viz(state, "${vizFileID++}${if (stage == "") "" else "-"}$stage")
+    private fun viz(stage: String = "") =
+        SearchStateVisualizer.viz(state, "${vizFileID++}${if (stage == "") "" else "-"}$stage")
 }

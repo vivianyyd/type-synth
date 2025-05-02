@@ -1,6 +1,6 @@
 package test
 
-import util.NewQuery
+import util.Query
 import util.ScrappyNewOracle
 import util.parseNewApp
 import util.parseNewExamples
@@ -37,6 +37,6 @@ object ConsTest {
     )
     val examples = intExamples// + boolExamples
 
-    val query: NewQuery = parseNewExamples(examples.keys)
+    val query: Query = parseNewExamples(examples.keys)
     val oracle = ScrappyNewOracle(examples.mapKeys { parseNewApp(it.key) })
 }

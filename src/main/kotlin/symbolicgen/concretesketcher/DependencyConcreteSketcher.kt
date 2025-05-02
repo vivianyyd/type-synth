@@ -9,7 +9,7 @@ import util.*
 import java.lang.Integer.max
 
 class DependencyConcreteSketcher(
-    val query: NewQuery,
+    val query: Query,
     private val contextOutline: ContextOutline,
     private val dependencies: DependencyAnalysis,
     private val varTypeIds: Map<String, Int>,

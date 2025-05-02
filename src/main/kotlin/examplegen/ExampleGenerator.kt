@@ -1,12 +1,12 @@
 package examplegen
 
 import enumgen.Assignment
-import util.Application
-import util.reflexiveNaryProduct
 import enumgen.types.*
 import enumgen.types.Function
-import util.Query
+import util.FlatApp
+import util.FlatQuery
 import util.SExprParser
+import util.reflexiveNaryProduct
 import java.util.*
 
 class ExampleGenerator(
@@ -63,12 +63,12 @@ class ExampleGenerator(
         return typesWithDummies.keys.associateBy { freshValue() }
     }
 
-    fun examples(): Pair<Query, Assignment> {
-        if (fns.isEmpty()) return Pair(Query(), mapOf())
+    fun examples(): Pair<FlatQuery, Assignment> {
+        if (fns.isEmpty()) return Pair(FlatQuery(), mapOf())
 
         val dummies = dummies(observableNonFunctionTypes()).toMutableMap()
-        val posExamples = dummies.keys.map { Application(it) }.toMutableSet()
-        val negExs: MutableMap<ErrorCategory, MutableSet<Application>> =
+        val posExamples = dummies.keys.map { FlatApp(it) }.toMutableSet()
+        val negExs: MutableMap<ErrorCategory, MutableSet<FlatApp>> =
             EnumMap(ErrorCategory.values().associateWith { mutableSetOf() })
         // We don't want functions to show up in examples for now TODO no HOF..., but we want to give them names
         val fnDummies = fns.filterIsInstance<Function>().associateBy { freshValue() }
@@ -82,13 +82,13 @@ class ExampleGenerator(
                 //   we should be doing bottom up enumeration if that makes sense idk
                 var apps =  // If we make new examples from only positive ones, any errors won't be redundant!
                     reflexiveNaryProduct(posExamples.toList(), ty.numParams()).map { argChoice ->
-                        Application(
+                        FlatApp(
                             name,
                             argChoice
                         )
                     }
                 // Don't modify posExamples in the loop, since we loop over apps which is generated from posExamples
-                val posExsTmp = mutableSetOf<Application>()
+                val posExsTmp = mutableSetOf<FlatApp>()
                 while (apps.any() /*&& negExs.any { (_, v) -> v.size < ERROR_COVERAGE_CAPACITY } we want exhaustive list of posexs*/) {
                     val example = apps.first()
                     apps = apps.drop(1)
@@ -106,8 +106,8 @@ class ExampleGenerator(
                 //  it shouldn't be necessary
             }
         }
-        posExamples.addAll(fnDummies.keys.map { Application(it) })
-        return Pair(Query(posExamples, negExs.values.flatten().toSet()), dummies)
+        posExamples.addAll(fnDummies.keys.map { FlatApp(it) })
+        return Pair(FlatQuery(posExamples, negExs.values.flatten().toSet()), dummies)
     }
     // TODO Very good to have negexs where the first args are ok but latter ones don't bc of var mismatch or something.
     //   Instead of keeping all exs, we could throw away some if we have >5 for that error type for that fn name already!
@@ -129,8 +129,8 @@ fun main() {
     println(query.negExamples.size)
 }
 
-private fun printInvertDummies(exs: Collection<Application>, context: Assignment): String {
-    fun replaceDummiesWithTypeString(app: Application): Application =
-        Application("(${context[app.name]}). ", app.arguments.map { replaceDummiesWithTypeString(it) })
+private fun printInvertDummies(exs: Collection<FlatApp>, context: Assignment): String {
+    fun replaceDummiesWithTypeString(app: FlatApp): FlatApp =
+        FlatApp("(${context[app.name]}). ", app.args.map { replaceDummiesWithTypeString(it) })
     return exs.map { replaceDummiesWithTypeString(it) }.joinToString(separator = "\n")
 }

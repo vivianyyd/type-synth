@@ -7,7 +7,7 @@ sealed interface Choice
 data class Port(val f: Function, val side: Int) : Choice
 data class Root(val name: String) : Choice
 
-class State(query: NewQuery) {
+class State(query: Query) {
     private val state: Map<String, MutableList<SymbolicType>> = query.names.associateWith { mutableListOf() }
 
     /** Replace the entire subtree rooted at [name]. Use with caution.
@@ -82,7 +82,7 @@ class State(query: NewQuery) {
     fun read(): Map<String, List<SymbolicType>> = state
 }
 
-class SymbolicTypeBuilder(val query: NewQuery) {
+class SymbolicTypeBuilder(val query: Query) {
     private val s = State(query)
 
     val make: State by lazy {

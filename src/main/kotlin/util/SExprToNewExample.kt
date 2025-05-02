@@ -1,13 +1,13 @@
 package util
 
-fun parseNewExamples(sexps: Collection<String>): NewQuery = examplesFromSexps(sexps.map { SExprParser(it).parse() })
+fun parseNewExamples(sexps: Collection<String>): Query = examplesFromSexps(sexps.map { SExprParser(it).parse() })
 
-private fun examplesFromSexps(sexps: Collection<SExpr>): NewQuery {
+private fun examplesFromSexps(sexps: Collection<SExpr>): Query {
     val exsWithNames = sexps.map { it.toSignedExample() }
     val exs = exsWithNames.map { Pair(it.second, it.first) }
     val names = exsWithNames.map { it.third }.fold(setOf<String>()) { a, b -> a.union(b) }
     val (pos, neg) = splitNewExamples(exs)
-    return NewQuery(pos, neg, names.toList())
+    return Query(pos, neg, names.toList())
 }
 
 /**

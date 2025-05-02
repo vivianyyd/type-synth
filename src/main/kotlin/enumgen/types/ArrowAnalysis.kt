@@ -1,12 +1,11 @@
 package enumgen.types
 
 import examplegen.ExampleGenerator
-import util.Application
-import util.parseApp
+import util.FlatApp
 
 sealed interface Skeleton
 
-data class TypeVar(val app: Application) : Skeleton {
+data class TypeVar(val app: FlatApp) : Skeleton {
     override fun toString(): String = app.toString()
 }
 
@@ -18,25 +17,25 @@ object ArrowAnalysis {
     /** Use me carefully */
     private fun <K, V> Map<K, V>.at(key: K): V = this[key]!!
 
-    private fun constraints(posExamples: List<Application>): List<Pair<Skeleton, Skeleton>> {
-        fun subexprs(app: Application): List<Application> =
-            if (app.arguments.isEmpty()) listOf(app)
+    private fun constraints(posExamples: List<FlatApp>): List<Pair<Skeleton, Skeleton>> {
+        fun subexprs(app: FlatApp): List<FlatApp> =
+            if (app.args.isEmpty()) listOf(app)
             else subexprs(  // partial application
-                Application(
+                FlatApp(
                     app.name,
-                    app.arguments.dropLast(1)
+                    app.args.dropLast(1)
                 )
-            ) + subexprs(app.arguments.lastOrNull()!!) + listOf(app)
+            ) + subexprs(app.args.lastOrNull()!!) + listOf(app)
 
         val subexprs = posExamples.flatMap { subexprs(it) }
         val vars = subexprs.associateWith { TypeVar(it) }
         val constraints = mutableListOf<Pair<Skeleton, Skeleton>>()
         subexprs.forEach { app ->
-            if (app.arguments.isNotEmpty()) {
+            if (app.args.isNotEmpty()) {
                 constraints.add(
                     Pair(
-                        vars.at(Application(app.name, app.arguments.dropLast(1))),
-                        Arrow(left = vars.at(app.arguments.lastOrNull()!!), rite = vars.at(app))
+                        vars.at(FlatApp(app.name, app.args.dropLast(1))),
+                        Arrow(left = vars.at(app.args.lastOrNull()!!), rite = vars.at(app))
                     )
                 )
             }
@@ -79,7 +78,7 @@ object ArrowAnalysis {
         return substitution
     }
 
-    fun unifyAll(posExamples: List<Application>, propagateEqualities: Boolean): Substitution {
+    fun unifyAll(posExamples: List<FlatApp>, propagateEqualities: Boolean): Substitution {
         val unified = unify(constraints(posExamples))
         return if (propagateEqualities) propagateEqualities(unified) else unified
     }
@@ -119,7 +118,7 @@ object ArrowAnalysis {
             prevResultSize = result.size
             result.map { it /* avoid ConcurrentModificationException... */ }.forEach { (lhs, rhs) ->
                 fun removeThisPair() =
-                    result.removeIf { it.first == lhs && it.second == rhs && it.first.app.arguments.isNotEmpty() }
+                    result.removeIf { it.first == lhs && it.second == rhs && it.first.app.args.isNotEmpty() }
                 if (shapeEqual(lhs, rhs)) removeThisPair() // If they have the same shape, don't bother
                 else {
                     val containsLHS = result.filter { contain(it.second, lhs) }
@@ -136,7 +135,7 @@ object ArrowAnalysis {
     }
 
     fun unifyToTypes(
-        posExamples: List<Application>,
+        posExamples: List<FlatApp>,
         names: List<String>,
         propagateEqualities: Boolean
     ): Map<String, Type> {
@@ -147,7 +146,7 @@ object ArrowAnalysis {
 
         val unified = unifyAll(posExamples, propagateEqualities)
         return names.associateWith { name ->
-            val skeleton = unified.find { it.first.app.name == name && it.first.app.arguments.isEmpty() }
+            val skeleton = unified.find { it.first.app.name == name && it.first.app.args.isEmpty() }
             if (skeleton == null) ChildHole()  // [name] is unconstrained. TODO if completely unconstrained, can we actually make it a variable here?
             else skeletonToType(skeleton.second)
         }
@@ -164,7 +163,7 @@ fun main() {
 
 //    val pos = listOf("a", "f", "g", "h", "(f a)", "(g f)", "(h g)").map{parseApp(it)}
 
-    val names = pos.filter { it.arguments.isEmpty() }.map { it.name }
+    val names = pos.filter { it.args.isEmpty() }.map { it.name }
     println(
         ArrowAnalysis.unifyAll(pos.toList(), propagateEqualities = true)
             .joinToString(separator = "\n") { (a, b) -> "$a := $b" })
