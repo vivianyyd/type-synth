@@ -1,7 +1,7 @@
 package util
 
-class Writer {
-    private val sb = StringBuilder()
+sealed class Writer {
+    protected val sb = StringBuilder()
     private var indentLevel = 0
 
     fun indent() = indentLevel++
@@ -9,14 +9,29 @@ class Writer {
 
     fun newLine() = sb.appendLine()
 
-    fun line(l: String) = lineNoSemi("$l;")
-
-    private fun lineNoSemi(l: String) {
+    protected fun lineNoSemi(l: String) {
         repeat(indentLevel) { sb.append("\t") }
         sb.appendLine(l)
     }
 
-    fun lines(l: Collection<String>) = l.forEach { line(it) }
+    abstract fun line(l: String)
+    abstract fun lines(l: Collection<String>)
+}
+
+class PyWriter : Writer() {
+    override fun line(l: String) = lineNoSemi(l)
+
+    override fun lines(l: Collection<String>) = l.forEach { line(it) }
+
+    fun import(l: String) {
+        line("from $l import *")
+    }
+}
+
+class SketchWriter : Writer() {
+    override fun line(l: String) = lineNoSemi("$l;")
+
+    override fun lines(l: Collection<String>) = l.forEach { line(it) }
 
     fun include(l: String) {
         line("include \"$l\"")

@@ -30,7 +30,7 @@ class DependencyConcreteSketcher(
     fun query() = sw.make()
 
     private inner class ConcreteSketchWriter {
-        private val w = Writer()
+        private val w = SketchWriter()
 
         fun make(): String {
             header()

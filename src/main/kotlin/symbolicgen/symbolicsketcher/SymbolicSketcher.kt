@@ -35,7 +35,7 @@ class SymbolicSketcher(val query: Query, private val state: State, private val o
     }
 
     private inner class SymbolicSketchWriter {
-        private val w = Writer()
+        private val w = SketchWriter()
 
         fun make(): String {
             header()
