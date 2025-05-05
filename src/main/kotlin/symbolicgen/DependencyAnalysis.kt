@@ -55,36 +55,48 @@ class DependencyAnalysis(
         return constrs
     }
 
-    val flatExs =
-        equivalenceClasses(query.posExamples.map { it.flatten() }) { e1, e2 -> e1.name == e2.name }.associateBy { it.first().name }
+    private fun flatExs(name: String, exs: Collection<Example>) =
+        equivalenceClasses(exs.map { it.flatten() }) { e1, e2 -> e1.name == e2.name }.associateBy { it.first().name }[name]!!
 
-    private fun findEdges(name: String): Pair<Set<DependencyEdge>, Set<SelfLoop>> {
+    private fun findEdges(name: String): Triple<Set<DependencyEdge>, Set<SelfLoop>, Set<ParameterNode>> {
         val nodes = nodes(name)
         val deps = mutableSetOf<DependencyEdge>()
         val loops = mutableSetOf<SelfLoop>()
+        val hasFresh = mutableSetOf<ParameterNode>()
 
         // TODO I think we don't actually need all subexprs in posexs here
-        val posExs = flatExs[name]!!
-        val negExs = query.negExamples
+        val posExs = flatExs(name, query.posExamples)
+        val negExs = flatExs(name, query.negExamples)
         val parameters = nodes.filter { it.f == name }
-
-        fun relevantExs(args: Int) =
-            if (args < nodes.size - 1) posExs.filter { it.args.size > args } else posExs.filter { it.args.size >= args }
 
         for (pi in parameters) {
             val i = pi.i
 
-            val exs = relevantExs(i)
-            val args = exs.map { if (i == nodes.size - 1) it else it.args[i] }
+            fun relevantExs(args: Int, exs: Collection<FlatApp>) =
+                if (args < nodes.size - 1) exs.filter { it.args.size > args } else exs.filter { it.args.size >= args }
+
+            val pos = relevantExs(i, posExs)
+            val neg = relevantExs(i, negExs)
+            val args = pos.map { if (i == nodes.size - 1) it else it.args[i] }
 
             if (equivalenceClasses(args, oracle::flatEqual).size == 1) {
                 loops.add(SelfLoop(pi))
             }
 
-            /** In each equivalence class, all args prior to the ith arg have the same type */
-            val exsGroupedByConcreteParamTypeForThisParam = equivalenceClasses(exs) { e1, e2 ->
-                e1.args.subList(0, i).zip(e2.args.subList(0, i)).all { (a1, a2) -> oracle.flatEqual(a1, a2) }
-            }
+            /**
+             * In each equivalence class, the type of the function that the arg at [argIndex] is applied to is the same
+             * */
+            fun groupExsByTypeBeforeArg(argIndex: Int, exs: Collection<FlatApp>) =
+                equivalenceClasses(exs) { e1, e2 ->
+                    oracle.flatEqual(
+                        FlatApp(e1.name, e1.args.subList(0, argIndex)),
+                        FlatApp(e2.name, e2.args.subList(0, argIndex))
+                    )
+                    // Weaker test: all args prior to the ith have the same type. Use this if the oracle
+                    //   doesn't work for arbitrary subexpressions.. But it should.
+//                    e1.args.subList(0, argIndex).zip(e2.args.subList(0, argIndex))
+//                        .all { (a1, a2) -> oracle.flatEqual(a1, a2) }
+                }
 
             /**
              * Node p3 has F tag when there exist
@@ -92,17 +104,48 @@ class DependencyAnalysis(
              *  + f t1 t2 t3'
              * where t3 =/= t3'
              */
-            val fTag = exsGroupedByConcreteParamTypeForThisParam.any { c ->
+            val fTag = groupExsByTypeBeforeArg(i, pos).any { c ->
                 c.any { e1 ->
                     c.any { e2 -> !oracle.flatEqual(e1.args[i], e2.args[i]) }
                 }
             }
+            if (fTag) hasFresh.add(pi)
 
-            /**  TODO
-             * Node p3 has B tag when
-             *  + f t1 t2 t3
-             *  - f t1 t2 t3'
-             * where l(t3) = l(t3')
+            /*
+            val allGroupedByConcreteParamTypeForThisParam = groupExsByTypeBeforeArg(i, pos + neg)
+
+            fun labelsDefinitelyEqual(e1: FlatApp, e2: FlatApp): Boolean {
+                fun lab(e: FlatApp): L? {
+                    var curr: EnumeratedSymbolicType? = outline[e.name]
+                    val bindings = mutableMapOf<VB, FlatApp>()
+                    e.args.forEach {
+                        if (curr !is F) curr = null
+                        else {
+                            val c = curr as F
+                            if (c.left is VB) bindings[c.left] = it
+                            curr = c.rite
+                        }
+                    }
+                    return when (curr) {
+                        is F, is VB, is VL, null -> null
+                        is L -> curr as L
+                        is VR -> bindings[VB((curr as VR).vId, (curr as VR).tId)]?.let { lab(it) }
+                    }
+                }
+                return e1 == e2 || (lab(e1) == lab(e2) && lab(e1) != null)
+            }
+            val bTag =
+                allGroupedByConcreteParamTypeForThisParam.filter { c -> c.any { it in pos } && c.any { it in neg } }
+                    .any { c ->
+                        c.any { e1 ->
+                            c.any { e2 ->
+                                labelsDefinitelyEqual(
+                                    e1.args[i],
+                                    e2.args[i]
+                                ) && ((e1 in pos && e2 in neg) || (e1 in neg && e2 in pos))
+                            }
+                        }
+                    }
              */
 
             for (pj in parameters) {
@@ -110,10 +153,10 @@ class DependencyAnalysis(
                 if (j == i) continue
 
                 fun depEdge(source: Int, sink: Int): Boolean {
-                    val groupedBySink = equivalenceClasses(relevantExs(max(i, j))) { e1, e2 ->
+                    val posGroupedBySink = equivalenceClasses(relevantExs(max(i, j), pos)) { e1, e2 ->
                         oracle.flatEqual(e1.args[sink], e2.args[sink])
                     }
-                    val sourceChangesWhileSinkConstant = groupedBySink.any { eqClass ->
+                    val sourceChangesWhileSinkConstant = posGroupedBySink.any { eqClass ->
                         eqClass.any {
                             val arbitraryElem = eqClass.first().args[source]
                             !oracle.flatEqual(it.args[source], arbitraryElem)
@@ -126,7 +169,7 @@ class DependencyAnalysis(
                 }
             }
         }
-        return Pair(deps, loops)
+        return Triple(deps, loops, hasFresh)
     }
     /*
     ## Undirected links:
