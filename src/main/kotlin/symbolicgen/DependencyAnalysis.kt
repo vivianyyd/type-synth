@@ -58,6 +58,8 @@ class DependencyAnalysis(
     private fun flatExs(name: String, exs: Collection<Example>) =
         equivalenceClasses(exs.map { it.flatten() }) { e1, e2 -> e1.name == e2.name }.associateBy { it.first().name }[name]!!
 
+    fun all() = query.names.associateWith { findEdges(it) }
+
     private fun findEdges(name: String): Triple<Set<DependencyEdge>, Set<SelfLoop>, Set<ParameterNode>> {
         val nodes = nodes(name)
         val deps = mutableSetOf<DependencyEdge>()

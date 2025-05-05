@@ -19,12 +19,34 @@ sealed class Writer {
 }
 
 class PyWriter : Writer() {
+    private val decls = mutableListOf<String>()
+    private val constrs = mutableListOf<String>()
+
     override fun line(l: String) = lineNoSemi(l)
 
     override fun lines(l: Collection<String>) = l.forEach { line(it) }
 
     fun import(l: String) {
         line("from $l import *")
+    }
+
+    fun beginMain() {
+        line("if __name__ == '__main__':")
+        indent()
+    }
+
+    fun decls(d: List<String>) = decls.addAll(d)
+
+    fun constrs(c: List<String>) = constrs.addAll(c)
+
+    fun s(): String {
+        decls.forEach { line(it) }
+        line("solve(")
+        indent()
+        line(constrs.joinToString(separator = ",\n"))
+        dedent()
+        line(")")
+        return sb.toString()
     }
 }
 

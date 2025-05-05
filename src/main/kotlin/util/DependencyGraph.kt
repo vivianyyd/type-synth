@@ -29,7 +29,7 @@ class LinkEdge(val a: ParameterNode, val b: ParameterNode) : Edge {
 }
 
 /** TODO maybe these should just be a type of dependency */
-class SelfLoop(val a: ParameterNode) : Edge
+data class SelfLoop(val a: ParameterNode) : Edge
 
 // TODO decide if nodes/edges should be constructed in init block or by DepAnalysis class and only stored here
 class DependencyGraph(
