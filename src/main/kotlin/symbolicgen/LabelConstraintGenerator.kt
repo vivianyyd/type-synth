@@ -22,22 +22,37 @@ class LabelConstraintGenerator(
         var pyNameFresh = 0
         depInfo.keys.forEach { name ->
             val n = "_${name.filter { it.isLetterOrDigit() }}"
-            if (n !in pyName.values) pyName[n] = n
-            else pyName[n] = n + "_${pyNameFresh++}"
+            if (n !in pyName.values) pyName[name] = n
+            else pyName[name] = n + "_${pyNameFresh++}"
         }
     }
 
     private fun py(node: ParameterNode) = "${pyName[node.f]!!}_${node.i}"
+    private fun py(v: Var) = "v$v"
+    private fun pySize(l: L) = "$l"
 
-    private fun declareInts(names: List<String>) =
-        w.decls(listOf("${names.joinToString(separator = ", ")} = Ints('${names.joinToString(separator = " ")}')"))
+    private fun declareInts(names: List<String>) {
+        if (names.isEmpty()) return
+        val py = names.joinToString(separator = ", ")
+        val cvc5 = names.joinToString(separator = " ")
+        w.decls(listOf("$py = Int${if (names.size == 1) "" else "s"}('$cvc5')"))
+    }
 
     fun gen(): String {
         // Declare top-level variables, label sizes
-        val vars = dep.nodeToType.values.filterIsInstance<Var>().map { "v$it" }.toSet().toList()
-        val lsizes = dep.nodeToType.values.filterIsInstance<L>().map { "$it" }.toSet().toList()
+        val vars = dep.nodeToType.values.filterIsInstance<Var>().map { py(it) }.toSet().toList()
+        val lsizes = dep.nodeToType.values.filterIsInstance<L>().map { pySize(it) }.toSet().toList()
         declareInts(vars)
         declareInts(lsizes)
+        val labelsMatchConstrs = dep.nodeToType.filter { (_, t) -> t is L }.map { (n, t) ->
+            "${pySize(t as L)} >= Cardinality(${py(n)})"
+        }
+
+        val varsAreSingletons = dep.nodeToType.filter { (_, t) -> t is Var }.map { (n, t) ->
+            "${py(n)} == Singleton(${py(t as Var)})"
+        }
+
+        w.constrs(labelsMatchConstrs + varsAreSingletons)
 
         // Translate dependency info into set constraints
         depInfo.forEach { (name, info) ->
@@ -62,14 +77,24 @@ class LabelConstraintGenerator(
                     } else null
                 }
             }.flatten()
-            w.constrs(edgeConstrs)
 
-            // TODO fresh variable constraints with setminus and union
+            val freshConstrs = nodes.mapNotNull { p ->
+                if (p.i == 0) null
+                else {
+                    /** Union parameters [0 to n) */
+                    fun union(n: Int): String {
+                        return if (n == 1) py(ParameterNode(p.f, 0))
+                        else "SetUnion(${union(n - 1)}, ${py(ParameterNode(p.f, n - 1))})"
+                    }
+
+                    val diffPrev = "SetMinus(${py(p)}, ${union(p.i)})"
+                    val rel = if (p in fresh) "!=" else "=="
+                    val empty = "EmptySet(IntSort())"
+                    "$diffPrev $rel $empty"
+                }
+            }
+            w.constrs(edgeConstrs + freshConstrs)
         }
-
-        // Add constraint: all params with same label must have matched varset sizes
-        // Add constraint: all params with variable must be singletons containing that variable (make int literals)
-        val paramHypotheses = dep.nodeToType
 
         return w.s()
     }

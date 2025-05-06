@@ -43,7 +43,7 @@ class PyWriter : Writer() {
         decls.forEach { line(it) }
         line("solve(")
         indent()
-        line(constrs.joinToString(separator = ",\n"))
+        lines(constrs.map { "$it," })
         dedent()
         line(")")
         return sb.toString()

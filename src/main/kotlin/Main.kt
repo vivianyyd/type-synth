@@ -1,3 +1,5 @@
+import symbolicgen.DependencyAnalysis
+import symbolicgen.LabelConstraintGenerator
 import symbolicgen.SymbolicTypeBuilder
 import symbolicgen.symbolicenumerator.SymbolicEnumerator
 import test.ConsTest
@@ -19,7 +21,15 @@ fun main() {
 
     val enum = SymbolicEnumerator(query, b, oracle)
     val specializedSymbolicTypes = enum.enumerateAll()
-    println(specializedSymbolicTypes.pr())
+//    println(specializedSymbolicTypes.pr())
+
+    val candidate = specializedSymbolicTypes[7]
+    println(candidate)
+
+    val depAnalysis = DependencyAnalysis(query, candidate, oracle)
+    val gener = LabelConstraintGenerator(depAnalysis)
+    println(gener.gen())
+
 //    println(specializedSymbolicTypes.size)
 
 //

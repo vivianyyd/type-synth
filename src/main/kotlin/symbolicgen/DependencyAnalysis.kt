@@ -56,9 +56,13 @@ class DependencyAnalysis(
     }
 
     private fun flatExs(name: String, exs: Collection<Example>) =
-        equivalenceClasses(exs.map { it.flatten() }) { e1, e2 -> e1.name == e2.name }.associateBy { it.first().name }[name]!!
+        equivalenceClasses(exs.map { it.flatten() }) { e1, e2 -> e1.name == e2.name }.associateBy { it.first().name }[name]
+            ?: setOf()
 
     fun all() = query.names.associateWith { findEdges(it) }
+
+    /** Requires: i is in bounds for ex. */
+    private fun arg(ex: FlatApp, i: Int) = if (i == ex.args.size) ex else ex.args[i]
 
     private fun findEdges(name: String): Triple<Set<DependencyEdge>, Set<SelfLoop>, Set<ParameterNode>> {
         val nodes = nodes(name)
@@ -79,7 +83,9 @@ class DependencyAnalysis(
 
             val pos = relevantExs(i, posExs)
             val neg = relevantExs(i, negExs)
-            val args = pos.map { if (i == nodes.size - 1) it else it.args[i] }
+
+            /** Arguments compatible with this parameter. */
+            val args = pos.map { arg(it, i) } // if (i == nodes.size - 1) it else it.args[i]
 
             if (equivalenceClasses(args, oracle::flatEqual).size == 1) {
                 loops.add(SelfLoop(pi))
@@ -106,11 +112,14 @@ class DependencyAnalysis(
              *  + f t1 t2 t3'
              * where t3 =/= t3'
              */
-            val fTag = groupExsByTypeBeforeArg(i, pos).any { c ->
-                c.any { e1 ->
-                    c.any { e2 -> !oracle.flatEqual(e1.args[i], e2.args[i]) }
+            val fTag =
+                if (i == nodes.size - 1)
+                    false  // No additional arguments to take in, so fully determined. Assumes nullary contains no variables
+                else groupExsByTypeBeforeArg(i, pos).any { c ->
+                    c.any { e1 ->
+                        c.any { e2 -> !oracle.flatEqual(arg(e1, i), arg(e2, i)) }
+                    }
                 }
-            }
             if (fTag) hasFresh.add(pi)
 
             /*
@@ -142,8 +151,7 @@ class DependencyAnalysis(
                         c.any { e1 ->
                             c.any { e2 ->
                                 labelsDefinitelyEqual(
-                                    e1.args[i],
-                                    e2.args[i]
+                                    arg(e1, i), arg(e2, i)
                                 ) && ((e1 in pos && e2 in neg) || (e1 in neg && e2 in pos))
                             }
                         }
@@ -156,12 +164,12 @@ class DependencyAnalysis(
 
                 fun depEdge(source: Int, sink: Int): Boolean {
                     val posGroupedBySink = equivalenceClasses(relevantExs(max(i, j), pos)) { e1, e2 ->
-                        oracle.flatEqual(e1.args[sink], e2.args[sink])
+                        oracle.flatEqual(arg(e1, sink), arg(e2, sink))
                     }
                     val sourceChangesWhileSinkConstant = posGroupedBySink.any { eqClass ->
                         eqClass.any {
-                            val arbitraryElem = eqClass.first().args[source]
-                            !oracle.flatEqual(it.args[source], arbitraryElem)
+                            val arbitraryElem = arg(eqClass.first(), source)
+                            !oracle.flatEqual(arg(it, source), arbitraryElem)
                         }
                     }
                     return !sourceChangesWhileSinkConstant
