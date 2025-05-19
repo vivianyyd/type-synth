@@ -13,7 +13,7 @@ include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
 // TODO generated code tells us how deep the type is above any label. Then our upper bound on unify inlining is
 
 
-/* TODO do we need these still? They are for nullaries, which might still have variables but only under a label's params
+/* TODO do we need these still? They are for nullaries, which might still have variables but only under a label's params if there's a function
 generator Label clabel(int tid, Constraint c, int bnd) {
     assert bnd > 0;
     int ind = ??(3);
@@ -90,15 +90,14 @@ Type[4] applyBindingsToAll(Type[4] types, List@list<Binding> bindings) {
     return result;
 }
 
-List@list<Binding> unifyAll(Type[4] params, Type[4] args, boolean posFlag, int bnd) {    assert bnd > 0;
+List@list<Binding> unifyAll(Type[4] params, Type[4] args, boolean posFlag, int bnd) {
+    assert bnd > 0;
     Type[4] currParams = params;
     List@list<Binding> bindings = empty();
     for (int i = 0; i < 4; i++) {
-//        Type[4][8] newb = unify(currParams[i], args[i], posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
         List@list<Binding> newb = unify(currParams[i], args[i], posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
         if (newb == null) return fail(posFlag);
         bindings = plus(bindings, newb);
-//        bindings = merge(bindings, newb);
         currParams = applyBindingsToAll(currParams, bindings);
     }
     return bindings;
@@ -234,6 +233,7 @@ generator Label label_L2(LabelKind[2] register, int tid, int vars, Constraint c,
     for (int i = 0; i < 1; i++) {  // We know L2 has 1 parameters
         params[i] = type(register, tid, vars, c, bnd - 1);
     }
+//    params[0] = type(register, tid, vars, c, bnd - 1);  // For some reason unsat when we have this line instead
     return new Label(l=2, params=params);
 }
 
@@ -249,16 +249,16 @@ Type _0(LabelKind[2] register) {  // No need to make LabelVars when no vars in t
     //root = label_L0(register, 0, 0, new NoVars(), 3);
 	return root;
 }
-Type _i(LabelKind[2] register) {
+Type _Li_(LabelKind[2] register) {
 	Type root;
     root = new Label(l=2, params={_0(register), null, null, null});
 	//root = label_L2(register, 1, 0, new NoVars(), 3);
 	return root;
 }
-Type _i_0(LabelKind[2] register) {
+Type _LLi_(LabelKind[2] register) {
 	Type root;
 	//root = label_L2(register, 2, 0, new NoVars(), 3);
-    root = new Label(l=2, params={_i(register), null, null, null});
+    root = new Label(l=2, params={_Li_(register), null, null, null});
 	return root;
 }
 Type _cons(LabelKind[2] register) {  // No need to make LabelVars when all labels have constraints
@@ -277,94 +277,111 @@ harness void main(int test) {
     register[0] = new LabelKind(l=0, numParams=0);
     register[1] = new LabelKind(l=2, numParams=1);
     Type _0 = _0(register);
-    Type _i = _i(register);
-    Type _i_0 = _i_0(register);
+    Type _Li_ = _Li_(register);
+    Type _LLi_ = _LLi_(register);
     Type _cons = _cons(register);
 	assert (isFunction(_cons));
-	Type oo_consco_0cc = apply((Function)_cons, _0, true);
-	assert (oo_consco_0cc != null);
-	assert (isFunction(oo_consco_0cc));
-	Type oooo_consco_0ccco_icc = apply((Function)oo_consco_0cc, _i, true);
-	assert (oooo_consco_0ccco_icc != null);
-	Type oooo_consco_0cccooooo_consco_0ccco_icccc = apply((Function)oo_consco_0cc, oooo_consco_0ccco_icc, true);
-	assert (oooo_consco_0cccooooo_consco_0ccco_icccc != null);
-	Type oo_consco_icc = apply((Function)_cons, _i, true);
-	assert (oo_consco_icc != null);
-	assert (isFunction(oo_consco_icc));
-	Type oooo_consco_iccco_i_0cc = apply((Function)oo_consco_icc, _i_0, true);
-	assert (oooo_consco_iccco_i_0cc != null);
-	Type oooo_consco_icccooooo_consco_iccco_i_0cccc = apply((Function)oo_consco_icc, oooo_consco_iccco_i_0cc, true);
-	assert (oooo_consco_icccooooo_consco_iccco_i_0cccc != null);
-	Type oo_consco_i_0cc = apply((Function)_cons, _i_0, true);
-	assert (oo_consco_i_0cc != null);
-	Type oo_conscooooo_consco_0ccco_icccc = apply((Function)_cons, oooo_consco_0ccco_icc, true);
-	assert (oo_conscooooo_consco_0ccco_icccc != null);
-	assert (!isFunction(oo_consco_icc) || apply((Function)oo_consco_icc, _0, false) == null);
-	assert(_0 != _i);
-	assert(_0 != _i_0);
+
+    // We already know that the argument will work since cons takes a variable, and we know what variable to bind 0 to.
+    // So we can skip the call to unify, and the list traversal applying bindings, when passing an arg to var param,
+    // UNLESS it's bound already... This gets complicated b/c labels can bind variables, so we don't know what's still
+    // free at any given moment. I think this is only a special case.
+    //Type _cons0_ = apply((Function)_cons, _0, true);
+    Type _cons0_ = applyBinding(((Function)_cons).rite, 3, 0, _0);
+
+	assert (_cons0_ != null);
+	assert (isFunction(_cons0_));
+	Type _cons0Li_ = apply((Function)_cons0_, _Li_, true);
+	assert (_cons0Li_ != null);
+	Type oo_cons0_co_cons0Li_cc = apply((Function)_cons0_, _cons0Li_, true);
+	assert (oo_cons0_co_cons0Li_cc != null);
+
+	// Same here
+//	Type _consLi_ = apply((Function)_cons, _Li_, true);
+	Type _consLi_ = applyBinding(((Function)_cons).rite, 3, 0, _Li_);
+
+	assert (_consLi_ != null);
+	assert (isFunction(_consLi_));
+	Type oo_consLi_co_LLi_cc = apply((Function)_consLi_, _LLi_, true);
+	assert (oo_consLi_co_LLi_cc != null);
+	Type oo_consLi_cooo_consLi_co_LLi_cccc = apply((Function)_consLi_, oo_consLi_co_LLi_cc, true);
+	assert (oo_consLi_cooo_consLi_co_LLi_cccc != null);
+
+//	Type _consLLi_ = apply((Function)_cons, _LLi_, true);
+    Type _consLLi_ = applyBinding(((Function)_cons).rite, 3, 0, _LLi_);
+
+	assert (_consLLi_ != null);
+
+//	Type oo_consco_cons0Li_cc = apply((Function)_cons, _cons0Li_, true);
+	Type oo_consco_cons0Li_cc = applyBinding(((Function)_cons).rite, 3, 0, _cons0Li_);
+
+	assert (oo_consco_cons0Li_cc != null);
+	assert (!isFunction(_consLi_) || apply((Function)_consLi_, _0, false) == null);
+	assert(_0 != _Li_);
+	assert(_0 != _LLi_);
 	assert(_0 != _cons);
-	assert(_0 != oo_consco_0cc);
-	assert(_0 != oooo_consco_0ccco_icc);
-	assert(_0 != oooo_consco_0cccooooo_consco_0ccco_icccc);
-	assert(_0 != oo_consco_icc);
-	assert(_0 != oooo_consco_iccco_i_0cc);
-	assert(_0 != oooo_consco_icccooooo_consco_iccco_i_0cccc);
-	assert(_0 != oo_consco_i_0cc);
-	assert(_0 != oo_conscooooo_consco_0ccco_icccc);
-	assert(_i != _i_0);
-	assert(_i != _cons);
-	assert(_i != oo_consco_0cc);
-	assert(_i == oooo_consco_0ccco_icc);
-	assert(_i == oooo_consco_0cccooooo_consco_0ccco_icccc);
-	assert(_i != oo_consco_icc);
-	assert(_i != oooo_consco_iccco_i_0cc);
-	assert(_i != oooo_consco_icccooooo_consco_iccco_i_0cccc);
-	assert(_i != oo_consco_i_0cc);
-	assert(_i != oo_conscooooo_consco_0ccco_icccc);
-	assert(_i_0 != _cons);
-	assert(_i_0 != oo_consco_0cc);
-	assert(_i_0 != oooo_consco_0ccco_icc);
-	assert(_i_0 != oooo_consco_0cccooooo_consco_0ccco_icccc);
-	assert(_i_0 != oo_consco_icc);
-	assert(_i_0 == oooo_consco_iccco_i_0cc);
-	assert(_i_0 == oooo_consco_icccooooo_consco_iccco_i_0cccc);
-	assert(_i_0 != oo_consco_i_0cc);
-	assert(_i_0 != oo_conscooooo_consco_0ccco_icccc);
-	assert(_cons != oo_consco_0cc);
-	assert(_cons != oooo_consco_0ccco_icc);
-	assert(_cons != oooo_consco_0cccooooo_consco_0ccco_icccc);
-	assert(_cons != oo_consco_icc);
-	assert(_cons != oooo_consco_iccco_i_0cc);
-	assert(_cons != oooo_consco_icccooooo_consco_iccco_i_0cccc);
-	assert(_cons != oo_consco_i_0cc);
-	assert(_cons != oo_conscooooo_consco_0ccco_icccc);
-	assert(oo_consco_0cc != oooo_consco_0ccco_icc);
-	assert(oo_consco_0cc != oooo_consco_0cccooooo_consco_0ccco_icccc);
-	assert(oo_consco_0cc != oo_consco_icc);
-	assert(oo_consco_0cc != oooo_consco_iccco_i_0cc);
-	assert(oo_consco_0cc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
-	assert(oo_consco_0cc != oo_consco_i_0cc);
-	assert(oo_consco_0cc != oo_conscooooo_consco_0ccco_icccc);
-	assert(oooo_consco_0ccco_icc == oooo_consco_0cccooooo_consco_0ccco_icccc);
-	assert(oooo_consco_0ccco_icc != oo_consco_icc);
-	assert(oooo_consco_0ccco_icc != oooo_consco_iccco_i_0cc);
-	assert(oooo_consco_0ccco_icc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
-	assert(oooo_consco_0ccco_icc != oo_consco_i_0cc);
-	assert(oooo_consco_0ccco_icc != oo_conscooooo_consco_0ccco_icccc);
-	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oo_consco_icc);
-	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oooo_consco_iccco_i_0cc);
-	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
-	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oo_consco_i_0cc);
-	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oo_conscooooo_consco_0ccco_icccc);
-	assert(oo_consco_icc != oooo_consco_iccco_i_0cc);
-	assert(oo_consco_icc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
-	assert(oo_consco_icc != oo_consco_i_0cc);
-	assert(oo_consco_icc == oo_conscooooo_consco_0ccco_icccc);
-	assert(oooo_consco_iccco_i_0cc == oooo_consco_icccooooo_consco_iccco_i_0cccc);
-	assert(oooo_consco_iccco_i_0cc != oo_consco_i_0cc);
-	assert(oooo_consco_iccco_i_0cc != oo_conscooooo_consco_0ccco_icccc);
-	assert(oooo_consco_icccooooo_consco_iccco_i_0cccc != oo_consco_i_0cc);
-	assert(oooo_consco_icccooooo_consco_iccco_i_0cccc != oo_conscooooo_consco_0ccco_icccc);
-	assert(oo_consco_i_0cc != oo_conscooooo_consco_0ccco_icccc);
+	assert(_0 != _cons0_);
+	assert(_0 != _cons0Li_);
+	assert(_0 != oo_cons0_co_cons0Li_cc);
+	assert(_0 != _consLi_);
+	assert(_0 != oo_consLi_co_LLi_cc);
+	assert(_0 != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_0 != _consLLi_);
+	assert(_0 != oo_consco_cons0Li_cc);
+	assert(_Li_ != _LLi_);
+	assert(_Li_ != _cons);
+	assert(_Li_ != _cons0_);
+	assert(_Li_ == _cons0Li_);
+	assert(_Li_ == oo_cons0_co_cons0Li_cc);
+	assert(_Li_ != _consLi_);
+	assert(_Li_ != oo_consLi_co_LLi_cc);
+	assert(_Li_ != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_Li_ != _consLLi_);
+	assert(_Li_ != oo_consco_cons0Li_cc);
+	assert(_LLi_ != _cons);
+	assert(_LLi_ != _cons0_);
+	assert(_LLi_ != _cons0Li_);
+	assert(_LLi_ != oo_cons0_co_cons0Li_cc);
+	assert(_LLi_ != _consLi_);
+	assert(_LLi_ == oo_consLi_co_LLi_cc);
+	assert(_LLi_ == oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_LLi_ != _consLLi_);
+	assert(_LLi_ != oo_consco_cons0Li_cc);
+	assert(_cons != _cons0_);
+	assert(_cons != _cons0Li_);
+	assert(_cons != oo_cons0_co_cons0Li_cc);
+	assert(_cons != _consLi_);
+	assert(_cons != oo_consLi_co_LLi_cc);
+	assert(_cons != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_cons != _consLLi_);
+	assert(_cons != oo_consco_cons0Li_cc);
+	assert(_cons0_ != _cons0Li_);
+	assert(_cons0_ != oo_cons0_co_cons0Li_cc);
+	assert(_cons0_ != _consLi_);
+	assert(_cons0_ != oo_consLi_co_LLi_cc);
+	assert(_cons0_ != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_cons0_ != _consLLi_);
+	assert(_cons0_ != oo_consco_cons0Li_cc);
+	assert(_cons0Li_ == oo_cons0_co_cons0Li_cc);
+	assert(_cons0Li_ != _consLi_);
+	assert(_cons0Li_ != oo_consLi_co_LLi_cc);
+	assert(_cons0Li_ != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_cons0Li_ != _consLLi_);
+	assert(_cons0Li_ != oo_consco_cons0Li_cc);
+	assert(oo_cons0_co_cons0Li_cc != _consLi_);
+	assert(oo_cons0_co_cons0Li_cc != oo_consLi_co_LLi_cc);
+	assert(oo_cons0_co_cons0Li_cc != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(oo_cons0_co_cons0Li_cc != _consLLi_);
+	assert(oo_cons0_co_cons0Li_cc != oo_consco_cons0Li_cc);
+	assert(_consLi_ != oo_consLi_co_LLi_cc);
+	assert(_consLi_ != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_consLi_ != _consLLi_);
+	assert(_consLi_ == oo_consco_cons0Li_cc);
+	assert(oo_consLi_co_LLi_cc == oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(oo_consLi_co_LLi_cc != _consLLi_);
+	assert(oo_consLi_co_LLi_cc != oo_consco_cons0Li_cc);
+	assert(oo_consLi_cooo_consLi_co_LLi_cccc != _consLLi_);
+	assert(oo_consLi_cooo_consLi_co_LLi_cccc != oo_consco_cons0Li_cc);
+	assert(_consLLi_ != oo_consco_cons0Li_cc);
 }
 
