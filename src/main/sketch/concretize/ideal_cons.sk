@@ -1,0 +1,370 @@
+//include "/home/vivianyyd/type-synth/src/main/sketch/concretize/concretetypesgivenlabels.sk";
+
+//========================================================== GENERIC FILE
+package ct;
+include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
+
+
+// ASSUMED BOUND ON NUMBER OF LABEL KINDS: 8
+// ASSUMED BOUND ON NUMBER OF PARAMS FOR A LABEL: 4
+// ASSUMED BOUND ON NUMBER OF FRESH VARIABLES INSIDE ONLY LABELS FOR A GIVEN TID: 4
+
+// LABEL BOUND DEPTH IS SPECIFIED BY GENERATED CODE
+// TODO generated code tells us how deep the type is above any label. Then our upper bound on unify inlining is
+
+
+/* TODO do we need these still? They are for nullaries, which might still have variables but only under a label's params
+generator Label clabel(int tid, Constraint c, int bnd) {
+    assert bnd > 0;
+    int ind = ??(3);
+    assert (ind < numLKs);
+    LabelKind lk = register[ind];
+    Type[4] params;
+    for (int i = 0; i < lk.numParams; i++) {
+        params[i] = ctype(tid, c, bnd - 1);
+    }
+    return new Label(l=lk.l, params=params);
+}
+
+generator Type ctype(int tid, Constraint c, int bnd) {
+    assert bnd > 0;
+    bit t = ??;
+    minimize(!t);
+    if (t) {
+        return clabel(tid, c, bnd - 1);
+    }
+    else {
+        int vars = makeLabelVars();  // only permit variables under functions
+        Type a = type(tid, vars, c, bnd - 1);
+        Type b = type(tid, vars, c, bnd - 1);
+        return new Function(left=a, rite=b);
+    }
+    assert false;
+}
+*/
+
+adt Type {
+    Variable { int tid; int vid; }
+    Label { int l; Type[4] params; }
+    Function { Type left; Type rite; }
+}
+
+struct Binding { int tid; int vid; Type t; }
+
+Type applyBinding(Type t, int tid, int vid, Type sub) {
+    if (t == null) return t;
+    switch (t) {
+        case Label:{
+            return new Label(l=t.l, params=applyBindingToAll(t.params, tid, vid, sub));
+        }
+        case Function:{
+            return new Function(left=applyBinding(t.left, tid, vid, sub), rite=applyBinding(t.rite, tid, vid, sub));
+        }
+        case Variable:{
+            if (t.tid == tid && t.vid == vid) return sub;
+            else return t;
+        }
+    }
+}
+
+Type[4] applyBindingToAll(Type[4] types, int tid, int vid, Type sub) {
+    Type[4] result;
+    for (int i = 0; i < 4; i++) {
+        result[i] = applyBinding(types[i], tid, vid, sub);
+    }
+    return result;
+}
+
+Type applyBindings(Type t, List@list<Binding> bindings) {
+    switch (bindings) {
+        case Cons:{ return applyBindings(applyBinding(t, bindings.val.tid, bindings.val.vid, bindings.val.t), bindings.next); }
+        case Nil:{ return t; }
+    }
+}
+
+Type[4] applyBindingsToAll(Type[4] types, List@list<Binding> bindings) {
+    Type[4] result;
+    for (int i = 0; i < 4; i++) {
+        result[i] = applyBindings(types[i], bindings);
+    }
+    return result;
+}
+
+List@list<Binding> unifyAll(Type[4] params, Type[4] args, boolean posFlag, int bnd) {    assert bnd > 0;
+    Type[4] currParams = params;
+    List@list<Binding> bindings = empty();
+    for (int i = 0; i < 4; i++) {
+//        Type[4][8] newb = unify(currParams[i], args[i], posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
+        List@list<Binding> newb = unify(currParams[i], args[i], posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
+        if (newb == null) return fail(posFlag);
+        bindings = plus(bindings, newb);
+//        bindings = merge(bindings, newb);
+        currParams = applyBindingsToAll(currParams, bindings);
+    }
+    return bindings;
+}
+
+generator List@list<Binding> fail(boolean posFlag) {
+    if (posFlag) assert false;
+    else return null;
+}
+
+/** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
+List@list<Binding> unify(Type param, Type arg, boolean posFlag, int bnd) {
+    assert bnd > 0;
+    if (param == null && arg == null) return empty();
+    if (param == null || arg == null) return null;
+    switch(param) {
+        case Variable:{
+            Binding b = new Binding(tid=param.tid, vid=param.vid, t=arg);
+            return single(b);
+        }
+        case Label:{
+            switch(arg) {
+                case Variable:{ assert false; }  // TODO I think invariant. If we had []: L<a> this would be different
+                case Label:{
+                    if (param.l != arg.l) return fail(posFlag);
+                    return unifyAll(param.params, arg.params, posFlag, bnd - 1);
+                }
+                case Function:{ return fail(posFlag); }
+            }
+        }
+        case Function:{
+            switch(arg) {
+                case Variable:{ assert false; }  // TODO I think invariant
+                case Label:{ return fail(posFlag); }
+                case Function:{
+                    List@list<Binding> leftBindings = unify(param.left, arg.left, posFlag, bnd - 1);
+                    if (leftBindings == null) return fail(posFlag);
+                    Type newParamRight = applyBindings(param.rite, leftBindings);
+                    List@list<Binding> riteBindings = unify(newParamRight, arg.rite, posFlag, bnd - 1);
+                    if (riteBindings == null) return fail(posFlag);
+                    return plus(leftBindings, riteBindings);                }
+            }
+        }
+    }
+}
+
+/**
+ Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
+ */
+Type apply(Function fn, Type arg, boolean posFlag) {
+    List@list<Binding> b = unify(fn.left, arg, posFlag, 5);  // TODO FIXME JUST PATCHED IN
+    if (b == null) {
+        if (posFlag) assert false;
+        else return null;
+    }
+    return applyBindings(fn.rite, b);
+}
+
+boolean isFunction(Type t) {
+    switch(t) {
+        case Variable:{ return false; }  // TODO think about this
+        case Label:{ return false; }
+        case Function:{ return true; }
+    }
+}
+
+struct LabelKind { int l; int numParams; }
+
+generator int makeLabelVars() {
+    int nVars = ??(2);
+    minimize (nVars);
+    return nVars;
+}
+
+generator Type type(LabelKind[2] register, int tid, int vars, Constraint c, int bnd) {
+    assert bnd > 0;
+    Type var;
+    int t = ??(2);
+    if (t == 0) {
+        if (c != null) {
+            switch(c) {
+                case NoVars: { assert false; }
+                case OnlyVariable: { var = new Variable(tid=c.tid, vid=c.vid); }
+            }
+        }
+        else { var = variable(tid, vars); }
+        return var;
+    }
+    if (t == 1) {
+        return label(register, tid, vars, c, bnd - 1);
+    }
+    if (t == 2) {
+        Type a = type(register, tid, vars, c, bnd - 1);
+        Type b = type(register, tid, vars, c, bnd - 1);
+        return new Function(left=a, rite=b);
+    }
+    assert false;
+}
+
+generator Label label(LabelKind[2] register, int tid, int vars, Constraint c, int bnd) {
+    assert bnd > 0;
+    int ind = ??(3);
+    assert (ind < 2);  // can hard-code num labels
+    LabelKind lk = register[ind];
+    Type[4] params;
+    for (int i = 0; i < lk.numParams; i++) {
+        params[i] = type(register, tid, vars, c, bnd - 1);
+    }
+    return new Label(l=lk.l, params=params);
+}
+
+generator Variable variable(int tid, int vars) {  // TODO if no groundvars, v can be bound at 2, so should actually pass its bit bound in here
+    int v = ??(3); // labelVars bounded at 4; we assumed groundVars < 4  // TODO don't hardcode me
+    assert (v < vars);
+    return new Variable(tid=tid, vid=v);
+}
+
+adt Constraint {
+    NoVars { }
+    OnlyVariable { int tid; int vid; }
+}
+
+//========================================================== GENERIC FILE
+
+/*
+Context 7 {0=L0, []i=L2, [[]]i=L2, cons=3_0 -> L2 -> L2}
+TODO are variables kept here guaranteed to be the first n numbers, like will any be skipped as in 0 2 3 or 1 2?
+*/
+
+generator Label label_L2(LabelKind[2] register, int tid, int vars, Constraint c, int bnd) {
+    assert bnd > 0;
+    Type[4] params;
+    for (int i = 0; i < 1; i++) {  // We know L2 has 1 parameters
+        params[i] = type(register, tid, vars, c, bnd - 1);
+    }
+    return new Label(l=2, params=params);
+}
+
+generator Label label_L0(LabelKind[2] register, int tid, int vars, Constraint c, int bnd) {
+    assert bnd > 0;
+    Type[4] params;
+    return new Label(l=0, params=params);  // We know L0 has 0 parameters
+}
+
+Type _0(LabelKind[2] register) {  // No need to make LabelVars when no vars in the label
+	Type root;
+    root = new Label(l=0, params={null, null, null, null});
+    //root = label_L0(register, 0, 0, new NoVars(), 3);
+	return root;
+}
+Type _i(LabelKind[2] register) {
+	Type root;
+    root = new Label(l=2, params={_0(register), null, null, null});
+	//root = label_L2(register, 1, 0, new NoVars(), 3);
+	return root;
+}
+Type _i_0(LabelKind[2] register) {
+	Type root;
+	//root = label_L2(register, 2, 0, new NoVars(), 3);
+    root = new Label(l=2, params={_i(register), null, null, null});
+	return root;
+}
+Type _cons(LabelKind[2] register) {  // No need to make LabelVars when all labels have constraints
+	Type root;
+	Type rootl; Type rootr;
+	rootl = new Variable(tid=3, vid=0);
+	Type rootrl; Type rootrr;
+	rootrl = label_L2(register, 3, 1, new OnlyVariable(tid=3, vid=0), 3);
+	rootrr = label_L2(register, 3, 1, new OnlyVariable(tid=3, vid=0), 3);
+	rootr = new Function(left=rootrl, rite=rootrr);
+	root = new Function(left=rootl, rite=rootr);
+	return root;
+}
+harness void main(int test) {
+	LabelKind[2] register;
+    register[0] = new LabelKind(l=0, numParams=0);
+    register[1] = new LabelKind(l=2, numParams=1);
+    Type _0 = _0(register);
+    Type _i = _i(register);
+    Type _i_0 = _i_0(register);
+    Type _cons = _cons(register);
+	assert (isFunction(_cons));
+	Type oo_consco_0cc = apply((Function)_cons, _0, true);
+	assert (oo_consco_0cc != null);
+	assert (isFunction(oo_consco_0cc));
+	Type oooo_consco_0ccco_icc = apply((Function)oo_consco_0cc, _i, true);
+	assert (oooo_consco_0ccco_icc != null);
+	Type oooo_consco_0cccooooo_consco_0ccco_icccc = apply((Function)oo_consco_0cc, oooo_consco_0ccco_icc, true);
+	assert (oooo_consco_0cccooooo_consco_0ccco_icccc != null);
+	Type oo_consco_icc = apply((Function)_cons, _i, true);
+	assert (oo_consco_icc != null);
+	assert (isFunction(oo_consco_icc));
+	Type oooo_consco_iccco_i_0cc = apply((Function)oo_consco_icc, _i_0, true);
+	assert (oooo_consco_iccco_i_0cc != null);
+	Type oooo_consco_icccooooo_consco_iccco_i_0cccc = apply((Function)oo_consco_icc, oooo_consco_iccco_i_0cc, true);
+	assert (oooo_consco_icccooooo_consco_iccco_i_0cccc != null);
+	Type oo_consco_i_0cc = apply((Function)_cons, _i_0, true);
+	assert (oo_consco_i_0cc != null);
+	Type oo_conscooooo_consco_0ccco_icccc = apply((Function)_cons, oooo_consco_0ccco_icc, true);
+	assert (oo_conscooooo_consco_0ccco_icccc != null);
+	assert (!isFunction(oo_consco_icc) || apply((Function)oo_consco_icc, _0, false) == null);
+	assert(_0 != _i);
+	assert(_0 != _i_0);
+	assert(_0 != _cons);
+	assert(_0 != oo_consco_0cc);
+	assert(_0 != oooo_consco_0ccco_icc);
+	assert(_0 != oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(_0 != oo_consco_icc);
+	assert(_0 != oooo_consco_iccco_i_0cc);
+	assert(_0 != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(_0 != oo_consco_i_0cc);
+	assert(_0 != oo_conscooooo_consco_0ccco_icccc);
+	assert(_i != _i_0);
+	assert(_i != _cons);
+	assert(_i != oo_consco_0cc);
+	assert(_i == oooo_consco_0ccco_icc);
+	assert(_i == oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(_i != oo_consco_icc);
+	assert(_i != oooo_consco_iccco_i_0cc);
+	assert(_i != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(_i != oo_consco_i_0cc);
+	assert(_i != oo_conscooooo_consco_0ccco_icccc);
+	assert(_i_0 != _cons);
+	assert(_i_0 != oo_consco_0cc);
+	assert(_i_0 != oooo_consco_0ccco_icc);
+	assert(_i_0 != oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(_i_0 != oo_consco_icc);
+	assert(_i_0 == oooo_consco_iccco_i_0cc);
+	assert(_i_0 == oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(_i_0 != oo_consco_i_0cc);
+	assert(_i_0 != oo_conscooooo_consco_0ccco_icccc);
+	assert(_cons != oo_consco_0cc);
+	assert(_cons != oooo_consco_0ccco_icc);
+	assert(_cons != oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(_cons != oo_consco_icc);
+	assert(_cons != oooo_consco_iccco_i_0cc);
+	assert(_cons != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(_cons != oo_consco_i_0cc);
+	assert(_cons != oo_conscooooo_consco_0ccco_icccc);
+	assert(oo_consco_0cc != oooo_consco_0ccco_icc);
+	assert(oo_consco_0cc != oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(oo_consco_0cc != oo_consco_icc);
+	assert(oo_consco_0cc != oooo_consco_iccco_i_0cc);
+	assert(oo_consco_0cc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(oo_consco_0cc != oo_consco_i_0cc);
+	assert(oo_consco_0cc != oo_conscooooo_consco_0ccco_icccc);
+	assert(oooo_consco_0ccco_icc == oooo_consco_0cccooooo_consco_0ccco_icccc);
+	assert(oooo_consco_0ccco_icc != oo_consco_icc);
+	assert(oooo_consco_0ccco_icc != oooo_consco_iccco_i_0cc);
+	assert(oooo_consco_0ccco_icc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(oooo_consco_0ccco_icc != oo_consco_i_0cc);
+	assert(oooo_consco_0ccco_icc != oo_conscooooo_consco_0ccco_icccc);
+	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oo_consco_icc);
+	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oooo_consco_iccco_i_0cc);
+	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oo_consco_i_0cc);
+	assert(oooo_consco_0cccooooo_consco_0ccco_icccc != oo_conscooooo_consco_0ccco_icccc);
+	assert(oo_consco_icc != oooo_consco_iccco_i_0cc);
+	assert(oo_consco_icc != oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(oo_consco_icc != oo_consco_i_0cc);
+	assert(oo_consco_icc == oo_conscooooo_consco_0ccco_icccc);
+	assert(oooo_consco_iccco_i_0cc == oooo_consco_icccooooo_consco_iccco_i_0cccc);
+	assert(oooo_consco_iccco_i_0cc != oo_consco_i_0cc);
+	assert(oooo_consco_iccco_i_0cc != oo_conscooooo_consco_0ccco_icccc);
+	assert(oooo_consco_icccooooo_consco_iccco_i_0cccc != oo_consco_i_0cc);
+	assert(oooo_consco_icccooooo_consco_iccco_i_0cccc != oo_conscooooo_consco_0ccco_icccc);
+	assert(oo_consco_i_0cc != oo_conscooooo_consco_0ccco_icccc);
+}
+

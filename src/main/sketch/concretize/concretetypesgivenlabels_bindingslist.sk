@@ -1,0 +1,252 @@
+package ct;
+include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
+
+adt Type {
+    Variable { int tid; int vid; }
+    Label { int l; Type[4] params; }
+    Function { Type left; Type rite; }
+}
+
+struct Binding { int tid; int vid; Type t; }
+
+// TODO WE HARD CODED THE NUMBER OF TIDS POSSIBLE IN BINDINGS ARRAY. INSTEAD WE NEED TO SIMPLY GENERATE THIS CODE
+// ASSUMED BOUND ON TOTAL NUMBER OF VARIABLES FOR A GIVEN TID: 8
+
+Type applyBinding(Type t, int tid, int vid, Type sub) {
+    if (t == null) return t;
+    switch (t) {
+        case Label:{
+            return new Label(l=t.l, params=applyBindingToAll(t.params, tid, vid, sub));
+        }
+        case Function:{
+            return new Function(left=applyBinding(t.left, tid, vid, sub), rite=applyBinding(t.rite, tid, vid, sub));
+        }
+        case Variable:{
+            if (t.tid == tid && t.vid == vid) return sub;
+            else return t;
+        }
+    }
+}
+
+Type[4] applyBindingToAll(Type[4] types, int tid, int vid, Type sub) {
+    Type[4] result;
+    for (int i = 0; i < 4; i++) {
+        result[i] = applyBinding(types[i], tid, vid, sub);
+    }
+    return result;
+}
+
+Type applyBindings(Type t, List@list<Binding> bindings) {
+    switch (bindings) {
+        case Cons:{ return applyBindings(applyBinding(t, bindings.val.tid, bindings.val.vid, bindings.val.t), bindings.next); }
+        case Nil:{ return t; }
+    }
+}
+
+Type[4] applyBindingsToAll(Type[4] types, List@list<Binding> bindings) {
+    Type[4] result;
+    for (int i = 0; i < 4; i++) {
+        result[i] = applyBindings(types[i], bindings);
+    }
+    return result;
+}
+
+//Type[4][8] merge(Type[4][8] a, Type[4][8] b) {
+//    Type[4][8] result;
+//    for (int i = 0; i < 4; i++) {
+//        for (int j = 0; j < 8; j++) {
+//            if (b[i] != null && b[i][j] != null) {
+//                result[i][j] = b[i][j];
+//            }
+//            else if (a[i] != null && a[i][j] != null) {
+//                result[i][j] = a[i][j];
+//            }
+//        }
+//    }
+//    return result;
+//}
+
+List@list<Binding> unifyAll(Type[4] params, Type[4] args, boolean posFlag, int bnd) {    assert bnd > 0;
+    Type[4] currParams = params;
+    List@list<Binding> bindings = empty();
+    for (int i = 0; i < 4; i++) {
+//        Type[4][8] newb = unify(currParams[i], args[i], posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
+        List@list<Binding> newb = unify(currParams[i], args[i], posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
+        if (newb == null) return fail(posFlag);
+        bindings = plus(bindings, newb);
+//        bindings = merge(bindings, newb);
+        currParams = applyBindingsToAll(currParams, bindings);
+    }
+    return bindings;
+}
+
+generator List@list<Binding> fail(boolean posFlag) {
+    if (posFlag) assert false;
+    else return null;
+}
+
+/** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
+List@list<Binding> unify(Type param, Type arg, boolean posFlag, int bnd) {
+    assert bnd > 0;
+    if (param == null && arg == null) return empty();
+    if (param == null || arg == null) return null;
+    switch(param) {
+        case Variable:{
+            Binding b = new Binding(tid=param.tid, vid=param.vid, t=arg);
+            return single(b);
+        }
+        case Label:{
+            switch(arg) {
+                case Variable:{ assert false; }  // TODO I think invariant. If we had []: L<a> this would be different
+                case Label:{
+                    if (param.l != arg.l) return fail(posFlag);
+                    return unifyAll(param.params, arg.params, posFlag, bnd - 1);
+                }
+                case Function:{ return fail(posFlag); }
+            }
+        }
+        case Function:{
+            switch(arg) {
+                case Variable:{ assert false; }  // TODO I think invariant
+                case Label:{ return fail(posFlag); }
+                case Function:{
+                    List@list<Binding> leftBindings = unify(param.left, arg.left, posFlag, bnd - 1);
+                    if (leftBindings == null) return fail(posFlag);
+                    Type newParamRight = applyBindings(param.rite, leftBindings);
+                    List@list<Binding> riteBindings = unify(newParamRight, arg.rite, posFlag, bnd - 1);
+                    if (riteBindings == null) return fail(posFlag);
+                    return plus(leftBindings, riteBindings);                }
+            }
+        }
+    }
+}
+
+/**
+ Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
+ */
+Type apply(Function fn, Type arg, boolean posFlag) {
+    List@list<Binding> b = unify(fn.left, arg, posFlag, 5);  // TODO FIXME JUST PATCHED IN
+    if (b == null) {
+        if (posFlag) assert false;
+        else return null;
+    }
+    return applyBindings(fn.rite, b);
+}
+
+boolean isFunction(Type t) {
+    switch(t) {
+        case Variable:{ return false; }  // TODO think about this
+        case Label:{ return false; }
+        case Function:{ return true; }
+    }
+}
+
+struct LabelKind { int l; int numParams; }
+
+//LabelKind[3] makeLabelKinds(ref int numLKs) {
+//    int nKinds = ??(3);
+//    minimize (nKinds);
+//    LabelKind[3] register;
+//    for (int i = 0; i < nKinds; i++) {
+//        int nParams = ??(2);
+//        minimize (nParams);
+//        register[i] = new LabelKind(l=i, numParams=nParams);
+//    }
+//    numLKs = nKinds;
+//    return register;
+//}
+
+generator int makeLabelVars() {
+    int nVars = ??(2);
+    minimize (nVars);
+    return nVars;
+}
+
+// ASSUMED BOUND ON NUMBER OF LABEL KINDS: 8
+// ASSUMED BOUND ON NUMBER OF PARAMS FOR A LABEL: 4
+// ASSUMED BOUND ON NUMBER OF FRESH VARIABLES INSIDE ONLY LABELS FOR A GIVEN TID: 4
+
+// LABEL BOUND DEPTH IS SPECIFIED BY GENERATED CODE
+// TODO generated code tells us how deep the type is above any label. Then our upper bound on unify inlining is
+
+generator Type type(LabelKind[3] register, int numLKs, int tid, int vars, Constraint c, int bnd) {
+    assert bnd > 0;
+    Type var;
+    if (c != null) {
+        switch(c) {
+            case NoVars: { var = null; }
+            case OnlyVariable: { var = new Variable(tid=c.tid, vid=c.vid); }
+        }
+    }
+    else { var = variable(tid, vars); }
+    int t = ??(2);
+    if (t == 0) {
+        if (c != null) {
+            switch(c) {
+                case NoVars: { assert false; }
+                case OnlyVariable: {  }
+            }
+        }
+        return var;
+    }
+    if (t == 1) {
+        return label(register, numLKs, tid, vars, c, bnd - 1);
+    }
+    if (t == 2) {
+        Type a = type(register, numLKs, tid, vars, c, bnd - 1);
+        Type b = type(register, numLKs, tid, vars, c, bnd - 1);
+        return new Function(left=a, rite=b);
+    }
+    assert false;
+}
+
+generator Label label(LabelKind[3] register, int numLKs, int tid, int vars, Constraint c, int bnd) {
+    assert bnd > 0;
+    int ind = ??(3);
+    assert (ind < numLKs);
+    LabelKind lk = register[ind];
+    Type[4] params;
+    for (int i = 0; i < lk.numParams; i++) {
+        params[i] = type(register, numLKs, tid, vars, c, bnd - 1);
+    }
+    return new Label(l=lk.l, params=params);
+}
+
+generator Variable variable(int tid, int vars) {  // TODO if no groundvars, v can be bound at 2, so should actually pass its bit bound in here
+    int v = ??(3); // labelVars bounded at 4; we assumed groundVars < 4  // TODO don't hardcode me
+    assert (v < vars);
+    return new Variable(tid=tid, vid=v);
+}
+
+generator Label clabel(LabelKind[3] register, int numLKs, int tid, Constraint c, int bnd) {
+    assert bnd > 0;
+    int ind = ??(3);
+    assert (ind < numLKs);
+    LabelKind lk = register[ind];
+    Type[4] params;
+    for (int i = 0; i < lk.numParams; i++) {
+        params[i] = ctype(register, numLKs, tid, c, bnd - 1);
+    }
+    return new Label(l=lk.l, params=params);
+}
+
+generator Type ctype(LabelKind[3] register, int numLKs, int tid, Constraint c, int bnd) {
+    assert bnd > 0;
+    bit t = ??;
+    minimize(!t);
+    if (t) {
+        return clabel(register, numLKs, tid, c, bnd - 1);
+    }
+    else {
+        int vars = makeLabelVars();  // only permit variables under functions
+        Type a = type(register, numLKs, tid, vars, c, bnd - 1);
+        Type b = type(register, numLKs, tid, vars, c, bnd - 1);
+        return new Function(left=a, rite=b);
+    }
+    assert false;
+}
+
+adt Constraint {
+    NoVars { }
+    OnlyVariable { int tid; int vid; }
+}
