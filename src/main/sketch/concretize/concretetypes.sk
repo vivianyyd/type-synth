@@ -34,7 +34,7 @@ Type[4] applyBindingToAll(Type[4] types, int tid, int vid, Type sub) {
     return result;
 }
 
-Type applyBindings(Type t, Type[4][8] bindings) {
+Type applyBindings(Type t, Type[4, 8] bindings) {
     Type result = t;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 8; j++) {
@@ -46,7 +46,7 @@ Type applyBindings(Type t, Type[4][8] bindings) {
     return result;
 }
 
-Type[4] applyBindingsToAll(Type[4] types, Type[4][8] bindings) {
+Type[4] applyBindingsToAll(Type[4] types, Type[4, 8] bindings) {
     Type[4] result;
     for (int i = 0; i < 4; i++) {
         result[i] = applyBindings(types[i], bindings);
@@ -54,8 +54,8 @@ Type[4] applyBindingsToAll(Type[4] types, Type[4][8] bindings) {
     return result;
 }
 
-Type[4][8] merge(Type[4][8] a, Type[4][8] b) {
-    Type[4][8] result;
+Type[4, 8] merge(Type[4, 8] a, Type[4, 8] b) {
+    Type[4, 8] result;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 8; j++) {
             if (b[i][j] != null) {
@@ -69,12 +69,12 @@ Type[4][8] merge(Type[4][8] a, Type[4][8] b) {
     return result;
 }
 
-Type[4][8] unifyAll(Type[4] params, Type[4] args, boolean posFlag, int bnd) {
+Type[4, 8] unifyAll(Type[4] params, Type[4] args, boolean posFlag, int bnd) {
     assert bnd > 0;
     Type[4] currParams = params;
-    Type[4][8] bindings;
+    Type[4, 8] bindings;
     for (int i = 0; i < 4; i++) {
-        Type[4][8] newb = unify(currParams[i], args[i], posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
+        Type[4, 8] newb = unify(currParams[i], args[i], posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
         if (newb == null) return fail(posFlag);
         bindings = merge(bindings, newb);
         currParams = applyBindingsToAll(currParams, bindings);
@@ -82,15 +82,15 @@ Type[4][8] unifyAll(Type[4] params, Type[4] args, boolean posFlag, int bnd) {
     return bindings;
 }
 
-generator Type[4][8] fail(boolean posFlag) {
+generator Type[4, 8] fail(boolean posFlag) {
     if (posFlag) assert false;
     else return null;
 }
 
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
-Type[4][8] unify(Type param, Type arg, boolean posFlag, int bnd) {
+Type[4, 8] unify(Type param, Type arg, boolean posFlag, int bnd) {
     assert bnd > 0;
-    Type[4][8] result;
+    Type[4, 8] result;
     if (param == null && arg == null) return result;
     if (param == null || arg == null) return null;
     switch(param) {
@@ -113,10 +113,10 @@ Type[4][8] unify(Type param, Type arg, boolean posFlag, int bnd) {
                 case Variable:{ assert false; }  // TODO I think invariant
                 case Label:{ return fail(posFlag); }
                 case Function:{
-                    Type[4][8] leftBindings = unify(param.left, arg.left, posFlag, bnd - 1);
+                    Type[4, 8] leftBindings = unify(param.left, arg.left, posFlag, bnd - 1);
                     if (leftBindings == null) return fail(posFlag);
                     Type newParamRight = applyBindings(param.rite, leftBindings);
-                    Type[4][8] riteBindings = unify(newParamRight, arg.rite, posFlag, bnd - 1);
+                    Type[4, 8] riteBindings = unify(newParamRight, arg.rite, posFlag, bnd - 1);
                     if (riteBindings == null) return fail(posFlag);
                     return merge(leftBindings, riteBindings);
                 }
@@ -129,7 +129,7 @@ Type[4][8] unify(Type param, Type arg, boolean posFlag, int bnd) {
  Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
  */
 Type apply(Function fn, Type arg, boolean posFlag) {
-    Type[4][8] b = unify(fn.left, arg, posFlag, 5);  // TODO FIXME JUST PATCHED IN
+    Type[4, 8] b = unify(fn.left, arg, posFlag, 5);  // TODO FIXME JUST PATCHED IN
     if (b == null) {
         if (posFlag) assert false;
         else return null;
@@ -176,21 +176,15 @@ generator int makeLabelVars() {
 generator Type type(LabelKind[8] register, int numLKs, int tid, int vars, Constraint c, int bnd) {
     assert bnd > 0;
     Type var;
-    if (c != null) {
-        switch(c) {
-            case NoVars: { var = null; }
-            case OnlyVariable: { var = new Variable(tid=c.tid, vid=c.vid); }
-        }
-    }
-    else { var = variable(tid, vars); }
     int t = ??(2);
     if (t == 0) {
         if (c != null) {
             switch(c) {
                 case NoVars: { assert false; }
-                case OnlyVariable: {  }
+                case OnlyVariable: { var = new Variable(tid=c.tid, vid=c.vid); }
             }
         }
+        else { var = variable(tid, vars); }
         return var;
     }
     if (t == 1) {
