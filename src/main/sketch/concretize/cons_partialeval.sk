@@ -1,0 +1,424 @@
+//include "/home/vivianyyd/type-synth/src/main/sketch/concretize/concretetypesgivenlabels.sk";
+
+//========================================================== GENERIC FILE
+package ct;
+include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
+
+// ASSUMED BOUND ON NUMBER OF LABEL KINDS: 8
+// ASSUMED BOUND ON NUMBER OF PARAMS FOR A LABEL: 4
+// ASSUMED BOUND ON NUMBER OF FRESH VARIABLES INSIDE ONLY LABELS FOR A GIVEN TID: 4
+// LABEL BOUND DEPTH IS SPECIFIED BY GENERATED CODE
+// TODO generated code tells us how deep the type is above any label. Then our upper bound on unify inlining is
+
+/* TODO do we need these still? They are for nullaries, which might still have variables but only under a label's params if there's a function
+generator Label clabel(int tid, Constraint c, int bnd) {
+    assert bnd > 0;
+    int ind = ??(3);
+    assert (ind < numLKs);
+    LabelKind lk = register[ind];
+    Type[4] params;
+    for (int i = 0; i < lk.numParams; i++) {
+        params[i] = ctype(tid, c, bnd - 1);
+    }
+    return new Label(l=lk.l, params=params);
+}
+
+generator Type ctype(int tid, Constraint c, int bnd) {
+    assert bnd > 0;
+    bit t = ??;
+    minimize(!t);
+    if (t) {
+        return clabel(tid, c, bnd - 1);
+    }
+    else {
+        int vars = makeLabelVars();  // only permit variables under functions
+        Type a = type(tid, vars, c, bnd - 1);
+        Type b = type(tid, vars, c, bnd - 1);
+        return new Function(left=a, rite=b);
+    }
+    assert false;
+}
+*/
+
+adt Type {
+    Variable { int tid; int vid; }
+    Label { int l; Type[4] params; }
+    Function { Type left; Type rite; }
+}
+
+struct Binding { int tid; int vid; Type t; }
+
+Type applyBinding(Type t, int tid, int vid, Type sub) {
+    if (t == null) return t;
+    switch (t) {
+        case Label:{
+            return new Label(l=t.l, params=applyBindingToAll(t.params, tid, vid, sub));
+        }
+        case Function:{
+            return new Function(left=applyBinding(t.left, tid, vid, sub), rite=applyBinding(t.rite, tid, vid, sub));
+        }
+        case Variable:{
+            if (t.tid == tid && t.vid == vid) return sub;
+            else return t;
+        }
+    }
+}
+
+Type[4] applyBindingToAll(Type[4] types, int tid, int vid, Type sub) {
+    Type[4] result;
+    for (int i = 0; i < 4; i++) {
+        result[i] = applyBinding(types[i], tid, vid, sub);
+    }
+    return result;
+}
+
+Type applyBindings(Type t, List@list<Binding> bindings) {
+    switch (bindings) {
+        case Cons:{ return applyBindings(applyBinding(t, bindings.val.tid, bindings.val.vid, bindings.val.t), bindings.next); }
+        case Nil:{ return t; }
+    }
+}
+
+Type[4] applyBindingsToAll(Type[4] types, List@list<Binding> bindings) {
+    Type[4] result;
+    for (int i = 0; i < 4; i++) {
+        result[i] = applyBindings(types[i], bindings);
+    }
+    return result;
+}
+
+List@list<Binding> unifyAll(Type[4] params, Type[4] args, boolean posFlag, int bnd) {
+    assert bnd > 0;
+    Type[4] currParams = params;
+    List@list<Binding> bindings = empty();
+    for (int i = 0; i < 4; i++) {
+        List@list<Binding> newb = unify(currParams[i], args[i], posFlag, bnd);  // TODO is it fine that these are the same, I think yes bc this fn call just redirects and stays on same level
+        if (newb == null) return fail(posFlag);
+        bindings = plus(bindings, newb);
+        currParams = applyBindingsToAll(currParams, bindings);
+    }
+    return bindings;
+}
+
+generator List@list<Binding> fail(boolean posFlag) {
+    return null; // todo this is here to fix a bug since we reuse Types for posexs and negexs, but posexs assert false
+//    if (posFlag) assert false;
+//    else return null;
+}
+
+/** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
+List@list<Binding> unify(Type param, Type arg, boolean posFlag, int bnd) {
+    assert bnd > 0;
+    if (param == null && arg == null) return empty();
+    if (param == null || arg == null) return null;
+    switch(param) {
+        case Variable:{
+            Binding b = new Binding(tid=param.tid, vid=param.vid, t=arg);
+            return single(b);
+        }
+        case Label:{
+            switch(arg) {
+                case Variable:{ assert false; }  // TODO I think invariant. If we had []: L<a> this would be different
+                case Label:{
+                    if (param.l != arg.l) return fail(posFlag);
+                    return unifyAll(param.params, arg.params, posFlag, bnd - 1);
+                }
+                case Function:{ return fail(posFlag); }
+            }
+        }
+        case Function:{
+            switch(arg) {
+                case Variable:{ assert false; }  // TODO I think invariant
+                case Label:{ return fail(posFlag); }
+                case Function:{
+                    List@list<Binding> leftBindings = unify(param.left, arg.left, posFlag, bnd - 1);
+                    if (leftBindings == null) return fail(posFlag);
+                    Type newParamRight = applyBindings(param.rite, leftBindings);
+                    List@list<Binding> riteBindings = unify(newParamRight, arg.rite, posFlag, bnd - 1);
+                    if (riteBindings == null) return fail(posFlag);
+                    return plus(leftBindings, riteBindings);                }
+            }
+        }
+    }
+}
+
+/**
+ Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
+ */
+Type apply(Function fn, Type arg, boolean posFlag) {
+    List@list<Binding> b = unify(fn.left, arg, posFlag, 5);  // TODO FIXME JUST PATCHED IN
+    if (b == null) {
+//        if (posFlag) assert false;
+//        else return null;
+        return null; // todo this is here to fix a bug temporarily
+    }
+    return applyBindings(fn.rite, b);
+}
+
+boolean isFunction(Type t) {
+    switch(t) {
+        case Variable:{ return false; }  // TODO think about this
+        case Label:{ return false; }
+        case Function:{ return true; }
+    }
+}
+
+struct LabelKind { int l; int numParams; }
+
+generator int makeLabelVars() {
+    int nVars = ??(2);
+    minimize (nVars);
+    return nVars;
+}
+
+generator Type type(LabelKind[2] register, int tid, int vars, Constraint c, int bnd) {
+    assert bnd > 0;
+    Type var;
+    int t = ??(2);
+    if (t == 0) {
+        if (c != null) {
+            switch(c) {
+                case NoVars: { assert false; }
+                case OnlyVariable: { var = new Variable(tid=c.tid, vid=c.vid); }
+            }
+        }
+        else { var = variable(tid, vars); }
+        return var;
+    }
+    if (t == 1) {
+        return label(register, tid, vars, c, bnd - 1);
+    }
+    if (t == 2) {
+        Type a = type(register, tid, vars, c, bnd - 1);
+        Type b = type(register, tid, vars, c, bnd - 1);
+        return new Function(left=a, rite=b);
+    }
+    assert false;
+}
+
+generator Label label(LabelKind[2] register, int tid, int vars, Constraint c, int bnd) {
+    assert bnd > 0;
+    int ind = ??(3);
+    assert (ind < 2);  // can hard-code num labels
+    LabelKind lk = register[ind];
+    Type[4] params;
+    for (int i = 0; i < lk.numParams; i++) {
+        params[i] = type(register, tid, vars, c, bnd - 1);
+    }
+    return new Label(l=lk.l, params=params);
+}
+
+generator Variable variable(int tid, int vars) {  // TODO if no groundvars, v can be bound at 2, so should actually pass its bit bound in here
+    int v = ??(3); // labelVars bounded at 4; we assumed groundVars < 4  // TODO don't hardcode me
+    assert (v < vars);
+    return new Variable(tid=tid, vid=v);
+}
+
+adt Constraint {
+    NoVars { }
+    OnlyVariable { int tid; int vid; }
+}
+
+//========================================================== GENERIC FILE
+
+/*
+Context 7 {0=L0, []i=L2, [[]]i=L2, cons=3_0 -> L2 -> L2}
+TODO are variables kept here guaranteed to be the first n numbers, like will any be skipped as in 0 2 3 or 1 2?
+*/
+
+generator Label label_L2(LabelKind[2] register, int tid, int vars, Constraint c, int bnd) {
+    assert bnd > 0;
+    Type[4] params;
+    for (int i = 0; i < 1; i++) {  // We know L2 has 1 parameters
+        params[i] = type(register, tid, vars, c, bnd - 1);
+    }
+//    params[0] = type(register, tid, vars, c, bnd - 1);  // For some reason unsat when we have this line instead
+    return new Label(l=2, params=params);
+}
+
+generator Label label_L0(LabelKind[2] register, int tid, int vars, Constraint c, int bnd) {
+    assert bnd > 0;
+    Type[4] params;
+    return new Label(l=0, params=params);  // We know L0 has 0 parameters
+}
+
+Type _0(LabelKind[2] register) {  // No need to make LabelVars when no vars in the label
+	Type root;
+    root = new Label(l=0, params={null, null, null, null});
+    //root = label_L0(register, 0, 0, new NoVars(), 3);
+	return root;
+}
+Type _Li_(LabelKind[2] register) {
+	Type root;
+    root = new Label(l=2, params={_0(register), null, null, null});
+	//root = label_L2(register, 1, 0, new NoVars(), 3);
+	return root;
+}
+Type _LLi_(LabelKind[2] register) {
+	Type root;
+	//root = label_L2(register, 2, 0, new NoVars(), 3);
+    root = new Label(l=2, params={_Li_(register), null, null, null});
+	return root;
+}
+Type _cons(LabelKind[2] register) {  // No need to make LabelVars when all labels have constraints
+	Type root;
+	Type rootl; Type rootr;
+	rootl = new Variable(tid=3, vid=0);
+	Type rootrl; Type rootrr;
+	rootrl = label_L2(register, 3, 1, new OnlyVariable(tid=3, vid=0), 3);
+	rootrr = label_L2(register, 3, 1, new OnlyVariable(tid=3, vid=0), 3);
+	rootr = new Function(left=rootrl, rite=rootrr);
+	root = new Function(left=rootl, rite=rootr);
+	return root;
+}
+harness void main(int test) {
+	LabelKind[2] register;
+    register[0] = new LabelKind(l=0, numParams=0);
+    register[1] = new LabelKind(l=2, numParams=1);
+    Type _0 = _0(register);
+    Type _Li_ = _Li_(register);
+    Type _LLi_ = _LLi_(register);
+    Type _cons = _cons(register);
+
+    // We know this assertion will pass!
+//	assert (isFunction(_cons));
+
+    // We already know that the argument will work since cons takes a variable, and we know what variable to bind 0 to.
+    // So we can skip the call to unify, and the list traversal applying bindings, when passing an arg to var param,
+    // UNLESS it's bound already... This gets complicated b/c labels can bind variables, so we don't know what's still
+    // free at any given moment. I think this is only a special case.
+//    Type _cons0_ = apply((Function)_cons, _0, true);
+    Type _cons0_ = applyBinding(((Function)_cons).rite, 3, 0, _0);
+
+    // We know these assertions will pass, since we simply passed a type into a free variable
+//	assert (_cons0_ != null);
+//	assert (isFunction(_cons0_));
+
+    /*
+    Apply does the following:
+        Unifies argument and parameter:
+            Switch on structure - here, matches Label/Label; both param/arg are known at Sk generation time to be L2!
+                So we can skip this check
+            Get bindings from unifying all parameters. We can skip directly here.
+        Checks for error
+        Applies binding to the RHS
+    */
+//	Type _cons0Li_ = apply((Function)_cons0_, _Li_, true);
+    List@list<Binding> tmp1 = unifyAll(((Label)((Function)_cons0_).left).params, ((Label)_Li_).params, true, 5);
+    if (tmp1 == null) assert false;
+    Type _cons0Li_ = applyBindings(((Function)_cons0_).rite, tmp1);
+
+    // This check should be unneccesary if we unwrap/inline the check for bindings being null into main()
+//	assert (_cons0Li_ != null);
+
+//	Type oo_cons0_co_cons0Li_cc = apply((Function)_cons0_, _cons0Li_, true);
+    // Only works because we know the output of cons is another L2
+	List@list<Binding> tmp2 = unifyAll(((Label)((Function)_cons0_).left).params, ((Label)_cons0Li_).params, true, 5);
+    if (tmp2 == null) assert false;
+    Type oo_cons0_co_cons0Li_cc = applyBindings(((Function)_cons0_).rite, tmp2);
+//	assert (oo_cons0_co_cons0Li_cc != null);
+
+	// Same here with partial eval variable binding unification
+//	Type _consLi_ = apply((Function)_cons, _Li_, true);
+	Type _consLi_ = applyBinding(((Function)_cons).rite, 3, 0, _Li_);
+
+    // We know these assertions will pass, since we simply passed a type into a free variable
+//	assert (_consLi_ != null);
+//	assert (isFunction(_consLi_));
+
+//	Type oo_consLi_co_LLi_cc = apply((Function)_consLi_, _LLi_, true);
+	List@list<Binding> tmp3 = unifyAll(((Label)((Function)_consLi_).left).params, ((Label)_LLi_).params, true, 5);
+    if (tmp3 == null) assert false;
+    Type oo_consLi_co_LLi_cc = applyBindings(((Function)_consLi_).rite, tmp3);
+//	assert (oo_consLi_co_LLi_cc != null);
+
+//	Type oo_consLi_cooo_consLi_co_LLi_cccc = apply((Function)_consLi_, oo_consLi_co_LLi_cc, true);
+	List@list<Binding> tmp4 = unifyAll(((Label)((Function)_consLi_).left).params, ((Label)oo_consLi_co_LLi_cc).params, true, 5);
+    if (tmp4 == null) assert false;
+    Type oo_consLi_cooo_consLi_co_LLi_cccc = applyBindings(((Function)_consLi_).rite, tmp4);
+//	assert (oo_consLi_cooo_consLi_co_LLi_cccc != null);
+
+	// Same here with partial eval variable binding unification
+//	Type _consLLi_ = apply((Function)_cons, _LLi_, true);
+    Type _consLLi_ = applyBinding(((Function)_cons).rite, 3, 0, _LLi_);
+
+// We know these assertions will pass, since we simply passed a type into a free variable
+//	assert (_consLLi_ != null);
+
+	// Same here with partial eval variable binding unification
+//	Type oo_consco_cons0Li_cc = apply((Function)_cons, _cons0Li_, true);
+	Type oo_consco_cons0Li_cc = applyBinding(((Function)_cons).rite, 3, 0, _cons0Li_);
+
+    // We know these assertions will pass, since we simply passed a type into a free variable
+//	assert (oo_consco_cons0Li_cc != null);
+
+	// TODO there is a bug in how we return nulls. We reuse Types for negexs and posexs, but posexs assert false
+    //   instead of returning null whereas negexes want nulls.
+    assert (!isFunction(_consLi_) || apply((Function)_consLi_, _0, false) == null);
+	assert(_0 != _Li_);
+	assert(_0 != _LLi_);
+	assert(_0 != _cons);
+	assert(_0 != _cons0_);
+	assert(_0 != _cons0Li_);
+	assert(_0 != oo_cons0_co_cons0Li_cc);
+	assert(_0 != _consLi_);
+	assert(_0 != oo_consLi_co_LLi_cc);
+	assert(_0 != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_0 != _consLLi_);
+	assert(_0 != oo_consco_cons0Li_cc);
+	assert(_Li_ != _LLi_);
+	assert(_Li_ != _cons);
+	assert(_Li_ != _cons0_);
+	assert(_Li_ == _cons0Li_);
+	assert(_Li_ == oo_cons0_co_cons0Li_cc);
+	assert(_Li_ != _consLi_);
+	assert(_Li_ != oo_consLi_co_LLi_cc);
+	assert(_Li_ != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_Li_ != _consLLi_);
+	assert(_Li_ != oo_consco_cons0Li_cc);
+	assert(_LLi_ != _cons);
+	assert(_LLi_ != _cons0_);
+	assert(_LLi_ != _cons0Li_);
+	assert(_LLi_ != oo_cons0_co_cons0Li_cc);
+	assert(_LLi_ != _consLi_);
+	assert(_LLi_ == oo_consLi_co_LLi_cc);
+	assert(_LLi_ == oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_LLi_ != _consLLi_);
+	assert(_LLi_ != oo_consco_cons0Li_cc);
+	assert(_cons != _cons0_);
+	assert(_cons != _cons0Li_);
+	assert(_cons != oo_cons0_co_cons0Li_cc);
+	assert(_cons != _consLi_);
+	assert(_cons != oo_consLi_co_LLi_cc);
+	assert(_cons != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_cons != _consLLi_);
+	assert(_cons != oo_consco_cons0Li_cc);
+	assert(_cons0_ != _cons0Li_);
+	assert(_cons0_ != oo_cons0_co_cons0Li_cc);
+	assert(_cons0_ != _consLi_);
+	assert(_cons0_ != oo_consLi_co_LLi_cc);
+	assert(_cons0_ != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_cons0_ != _consLLi_);
+	assert(_cons0_ != oo_consco_cons0Li_cc);
+	assert(_cons0Li_ == oo_cons0_co_cons0Li_cc);
+	assert(_cons0Li_ != _consLi_);
+	assert(_cons0Li_ != oo_consLi_co_LLi_cc);
+	assert(_cons0Li_ != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_cons0Li_ != _consLLi_);
+	assert(_cons0Li_ != oo_consco_cons0Li_cc);
+	assert(oo_cons0_co_cons0Li_cc != _consLi_);
+	assert(oo_cons0_co_cons0Li_cc != oo_consLi_co_LLi_cc);
+	assert(oo_cons0_co_cons0Li_cc != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(oo_cons0_co_cons0Li_cc != _consLLi_);
+	assert(oo_cons0_co_cons0Li_cc != oo_consco_cons0Li_cc);
+	assert(_consLi_ != oo_consLi_co_LLi_cc);
+	assert(_consLi_ != oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(_consLi_ != _consLLi_);
+	assert(_consLi_ == oo_consco_cons0Li_cc);
+	assert(oo_consLi_co_LLi_cc == oo_consLi_cooo_consLi_co_LLi_cccc);
+	assert(oo_consLi_co_LLi_cc != _consLLi_);
+	assert(oo_consLi_co_LLi_cc != oo_consco_cons0Li_cc);
+	assert(oo_consLi_cooo_consLi_co_LLi_cccc != _consLLi_);
+	assert(oo_consLi_cooo_consLi_co_LLi_cccc != oo_consco_cons0Li_cc);
+	assert(_consLLi_ != oo_consco_cons0Li_cc);
+}

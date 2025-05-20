@@ -4,14 +4,11 @@
 package ct;
 include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
 
-
 // ASSUMED BOUND ON NUMBER OF LABEL KINDS: 8
 // ASSUMED BOUND ON NUMBER OF PARAMS FOR A LABEL: 4
 // ASSUMED BOUND ON NUMBER OF FRESH VARIABLES INSIDE ONLY LABELS FOR A GIVEN TID: 4
-
 // LABEL BOUND DEPTH IS SPECIFIED BY GENERATED CODE
 // TODO generated code tells us how deep the type is above any label. Then our upper bound on unify inlining is
-
 
 /* TODO do we need these still? They are for nullaries, which might still have variables but only under a label's params if there's a function
 generator Label clabel(int tid, Constraint c, int bnd) {
@@ -104,8 +101,9 @@ List@list<Binding> unifyAll(Type[4] params, Type[4] args, boolean posFlag, int b
 }
 
 generator List@list<Binding> fail(boolean posFlag) {
-    if (posFlag) assert false;
-    else return null;
+    return null; // todo this is here to fix a bug since we reuse Types for posexs and negexs, but posexs assert false
+//    if (posFlag) assert false;
+//    else return null;
 }
 
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
@@ -150,8 +148,9 @@ List@list<Binding> unify(Type param, Type arg, boolean posFlag, int bnd) {
 Type apply(Function fn, Type arg, boolean posFlag) {
     List@list<Binding> b = unify(fn.left, arg, posFlag, 5);  // TODO FIXME JUST PATCHED IN
     if (b == null) {
-        if (posFlag) assert false;
-        else return null;
+//        if (posFlag) assert false;
+//        else return null;
+        return null; // todo this is here to fix a bug temporarily
     }
     return applyBindings(fn.rite, b);
 }
@@ -280,25 +279,22 @@ harness void main(int test) {
     Type _Li_ = _Li_(register);
     Type _LLi_ = _LLi_(register);
     Type _cons = _cons(register);
+
 	assert (isFunction(_cons));
 
-    // We already know that the argument will work since cons takes a variable, and we know what variable to bind 0 to.
-    // So we can skip the call to unify, and the list traversal applying bindings, when passing an arg to var param,
-    // UNLESS it's bound already... This gets complicated b/c labels can bind variables, so we don't know what's still
-    // free at any given moment. I think this is only a special case.
-    //Type _cons0_ = apply((Function)_cons, _0, true);
-    Type _cons0_ = applyBinding(((Function)_cons).rite, 3, 0, _0);
+    Type _cons0_ = apply((Function)_cons, _0, true);
 
 	assert (_cons0_ != null);
 	assert (isFunction(_cons0_));
+
 	Type _cons0Li_ = apply((Function)_cons0_, _Li_, true);
+
 	assert (_cons0Li_ != null);
+
 	Type oo_cons0_co_cons0Li_cc = apply((Function)_cons0_, _cons0Li_, true);
 	assert (oo_cons0_co_cons0Li_cc != null);
 
-	// Same here
-//	Type _consLi_ = apply((Function)_cons, _Li_, true);
-	Type _consLi_ = applyBinding(((Function)_cons).rite, 3, 0, _Li_);
+	Type _consLi_ = apply((Function)_cons, _Li_, true);
 
 	assert (_consLi_ != null);
 	assert (isFunction(_consLi_));
@@ -307,16 +303,17 @@ harness void main(int test) {
 	Type oo_consLi_cooo_consLi_co_LLi_cccc = apply((Function)_consLi_, oo_consLi_co_LLi_cc, true);
 	assert (oo_consLi_cooo_consLi_co_LLi_cccc != null);
 
-//	Type _consLLi_ = apply((Function)_cons, _LLi_, true);
-    Type _consLLi_ = applyBinding(((Function)_cons).rite, 3, 0, _LLi_);
+	Type _consLLi_ = apply((Function)_cons, _LLi_, true);
 
 	assert (_consLLi_ != null);
 
-//	Type oo_consco_cons0Li_cc = apply((Function)_cons, _cons0Li_, true);
-	Type oo_consco_cons0Li_cc = applyBinding(((Function)_cons).rite, 3, 0, _cons0Li_);
+	Type oo_consco_cons0Li_cc = apply((Function)_cons, _cons0Li_, true);
 
-	assert (oo_consco_cons0Li_cc != null);
-	assert (!isFunction(_consLi_) || apply((Function)_consLi_, _0, false) == null);
+    assert (oo_consco_cons0Li_cc != null);
+
+	// TODO there is a bug in how we return nulls. We reuse Types for negexs and posexs, but posexs assert false
+    //   instead of returning null whereas negexes want nulls.
+    assert (!isFunction(_consLi_) || apply((Function)_consLi_, _0, false) == null);
 	assert(_0 != _Li_);
 	assert(_0 != _LLi_);
 	assert(_0 != _cons);
