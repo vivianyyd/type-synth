@@ -2,7 +2,7 @@
 
 //========================================================== GENERIC FILE
 package ct;
-include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
+include "/scratch/vyd/type-synth/src/main/sketch/util.sk";
 
 // ASSUMED BOUND ON NUMBER OF LABEL KINDS: 8
 // ASSUMED BOUND ON NUMBER OF PARAMS FOR A LABEL: 4
@@ -244,20 +244,20 @@ generator Label label_L0(LabelKind[2] register, int tid, int vars, Constraint c,
 
 Type _0(LabelKind[2] register) {  // No need to make LabelVars when no vars in the label
 	Type root;
-    //root = new Label(l=0, params={null, null, null, null});
-    root = label_L0(register, 0, 0, new NoVars(), 3);
+    root = new Label(l=0, params={null, null, null, null});
+//    root = label_L0(register, 0, 0, new NoVars(), 3);
 	return root;
 }
 Type _Li_(LabelKind[2] register) {
 	Type root;
-    //root = new Label(l=2, params={_0(register), null, null, null});
-	root = label_L2(register, 1, 0, new NoVars(), 3);
+    root = new Label(l=2, params={_0(register), null, null, null});
+//	root = label_L2(register, 1, 0, new NoVars(), 3);
 	return root;
 }
 Type _LLi_(LabelKind[2] register) {
 	Type root;
-	root = label_L2(register, 2, 0, new NoVars(), 3);
-    //root = new Label(l=2, params={_Li_(register), null, null, null});
+//	root = label_L2(register, 2, 0, new NoVars(), 3);
+    root = new Label(l=2, params={_Li_(register), null, null, null});
 	return root;
 }
 Type _cons(LabelKind[2] register) {  // No need to make LabelVars when all labels have constraints

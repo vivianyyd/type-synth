@@ -2,7 +2,7 @@
 
 //========================================================== GENERIC FILE
 package ct;
-include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
+include "/scratch/vyd/type-synth/src/main/sketch/util.sk";
 
 // ASSUMED BOUND ON NUMBER OF LABEL KINDS: 8
 // ASSUMED BOUND ON NUMBER OF PARAMS FOR A LABEL: 4
@@ -101,9 +101,9 @@ List@list<Binding> unifyAll(Type[4] params, Type[4] args, boolean posFlag, int b
 }
 
 generator List@list<Binding> fail(boolean posFlag) {
-    return null; // todo this is here to fix a bug since we reuse Types for posexs and negexs, but posexs assert false
-//    if (posFlag) assert false;
-//    else return null;
+//    return null; // todo this is here to fix a bug since we reuse Types for posexs and negexs, but posexs assert false
+    if (posFlag) assert false;
+    else return null;
 }
 
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
@@ -148,9 +148,9 @@ List@list<Binding> unify(Type param, Type arg, boolean posFlag, int bnd) {
 Type apply(Function fn, Type arg, boolean posFlag) {
     List@list<Binding> b = unify(fn.left, arg, posFlag, 5);  // TODO FIXME JUST PATCHED IN
     if (b == null) {
-//        if (posFlag) assert false;
-//        else return null;
-        return null; // todo this is here to fix a bug temporarily
+        if (posFlag) assert false;
+        else return null;
+//        return null; // todo this is here to fix a bug temporarily
     }
     return applyBindings(fn.rite, b);
 }
@@ -229,10 +229,10 @@ TODO are variables kept here guaranteed to be the first n numbers, like will any
 generator Label label_L2(LabelKind[2] register, int tid, int vars, Constraint c, int bnd) {
     assert bnd > 0;
     Type[4] params;
-    for (int i = 0; i < 1; i++) {  // We know L2 has 1 parameters
-        params[i] = type(register, tid, vars, c, bnd - 1);
-    }
-//    params[0] = type(register, tid, vars, c, bnd - 1);  // For some reason unsat when we have this line instead
+//    for (int i = 0; i < 1; i++) {  // We know L2 has 1 parameters
+//        params[i] = type(register, tid, vars, c, bnd - 1);
+//    }
+    params[0] = type(register, tid, vars, c, bnd - 1);  // For some reason unsat when we have this line instead
     return new Label(l=2, params=params);
 }
 
@@ -245,18 +245,18 @@ generator Label label_L0(LabelKind[2] register, int tid, int vars, Constraint c,
 Type _0(LabelKind[2] register) {  // No need to make LabelVars when no vars in the label
 	Type root;
     root = new Label(l=0, params={null, null, null, null});
-    //root = label_L0(register, 0, 0, new NoVars(), 3);
+//    root = label_L0(register, 0, 0, new NoVars(), 3);
 	return root;
 }
 Type _Li_(LabelKind[2] register) {
 	Type root;
     root = new Label(l=2, params={_0(register), null, null, null});
-	//root = label_L2(register, 1, 0, new NoVars(), 3);
+//	root = label_L2(register, 1, 0, new NoVars(), 3);
 	return root;
 }
 Type _LLi_(LabelKind[2] register) {
 	Type root;
-	//root = label_L2(register, 2, 0, new NoVars(), 3);
+//	root = label_L2(register, 2, 0, new NoVars(), 3);
     root = new Label(l=2, params={_Li_(register), null, null, null});
 	return root;
 }
@@ -280,76 +280,29 @@ harness void main(int test) {
     Type _LLi_ = _LLi_(register);
     Type _cons = _cons(register);
 
-    // We know this assertion will pass!
-//	assert (isFunction(_cons));
-
-    // We already know that the argument will work since cons takes a variable, and we know what variable to bind 0 to.
-    // So we can skip the call to unify, and the list traversal applying bindings, when passing an arg to var param,
-    // UNLESS it's bound already... This gets complicated b/c labels can bind variables, so we don't know what's still
-    // free at any given moment. I think this is only a special case.
-//    Type _cons0_ = apply((Function)_cons, _0, true);
     Type _cons0_ = applyBinding(((Function)_cons).rite, 3, 0, _0);
 
-    // We know these assertions will pass, since we simply passed a type into a free variable
-//	assert (_cons0_ != null);
-//	assert (isFunction(_cons0_));
+    List@list<Binding> tmp1 = unify(((Label)((Function)_cons0_).left).params[0], ((Label)_Li_).params[0], true, 5);
+    if (tmp1 == null) assert false;
+    Type _cons0Li_ = applyBindings(((Function)_cons0_).rite, tmp1);
 
-    /*
-    Apply does the following:
-        Unifies argument and parameter:
-            Switch on structure - here, matches Label/Label; both param/arg are known at Sk generation time to be L2!
-                So we can skip this check
-            Get bindings from unifying all parameters. We can skip directly here.
-        Checks for error
-        Applies binding to the RHS
-    */
-	Type _cons0Li_ = apply((Function)_cons0_, _Li_, true);
-//    List@list<Binding> tmp1 = unifyAll(((Label)((Function)_cons0_).left).params, ((Label)_Li_).params, true, 5);
-//    if (tmp1 == null) assert false;
-//    Type _cons0Li_ = applyBindings(((Function)_cons0_).rite, tmp1);
-    // This check should be unneccesary if we unwrap/inline the check for bindings being null into main()
-	assert (_cons0Li_ != null);
+	List@list<Binding> tmp2 = unify(((Label)((Function)_cons0_).left).params[0], ((Label)_cons0Li_).params[0], true, 5);
+    if (tmp2 == null) assert false;
+    Type oo_cons0_co_cons0Li_cc = applyBindings(((Function)_cons0_).rite, tmp2);
 
-	Type oo_cons0_co_cons0Li_cc = apply((Function)_cons0_, _cons0Li_, true);
-    // Only works because we know the output of cons is another L2
-//	List@list<Binding> tmp2 = unifyAll(((Label)((Function)_cons0_).left).params, ((Label)_cons0Li_).params, true, 5);
-//    if (tmp2 == null) assert false;
-//    Type oo_cons0_co_cons0Li_cc = applyBindings(((Function)_cons0_).rite, tmp2);
-	assert (oo_cons0_co_cons0Li_cc != null);
-
-	// Same here with partial eval variable binding unification
-//	Type _consLi_ = apply((Function)_cons, _Li_, true);
 	Type _consLi_ = applyBinding(((Function)_cons).rite, 3, 0, _Li_);
 
-    // We know these assertions will pass, since we simply passed a type into a free variable
-//	assert (_consLi_ != null);
-//	assert (isFunction(_consLi_));
+	List@list<Binding> tmp3 = unify(((Label)((Function)_consLi_).left).params[0], ((Label)_LLi_).params[0], true, 5);
+    if (tmp3 == null) assert false;
+    Type oo_consLi_co_LLi_cc = applyBindings(((Function)_consLi_).rite, tmp3);
 
-	Type oo_consLi_co_LLi_cc = apply((Function)_consLi_, _LLi_, true);
-//	List@list<Binding> tmp3 = unifyAll(((Label)((Function)_consLi_).left).params, ((Label)_LLi_).params, true, 5);
-//    if (tmp3 == null) assert false;
-//    Type oo_consLi_co_LLi_cc = applyBindings(((Function)_consLi_).rite, tmp3);
-	assert (oo_consLi_co_LLi_cc != null);
+	List@list<Binding> tmp4 = unify(((Label)((Function)_consLi_).left).params[0], ((Label)oo_consLi_co_LLi_cc).params[0], true, 5);
+    if (tmp4 == null) assert false;
+    Type oo_consLi_cooo_consLi_co_LLi_cccc = applyBindings(((Function)_consLi_).rite, tmp4);
 
-	Type oo_consLi_cooo_consLi_co_LLi_cccc = apply((Function)_consLi_, oo_consLi_co_LLi_cc, true);
-//	List@list<Binding> tmp4 = unifyAll(((Label)((Function)_consLi_).left).params, ((Label)oo_consLi_co_LLi_cc).params, true, 5);
-//    if (tmp4 == null) assert false;
-//    Type oo_consLi_cooo_consLi_co_LLi_cccc = applyBindings(((Function)_consLi_).rite, tmp4);
-	assert (oo_consLi_cooo_consLi_co_LLi_cccc != null);
-
-	// Same here with partial eval variable binding unification
-//	Type _consLLi_ = apply((Function)_cons, _LLi_, true);
     Type _consLLi_ = applyBinding(((Function)_cons).rite, 3, 0, _LLi_);
 
-// We know these assertions will pass, since we simply passed a type into a free variable
-//	assert (_consLLi_ != null);
-
-	// Same here with partial eval variable binding unification
-//	Type oo_consco_cons0Li_cc = apply((Function)_cons, _cons0Li_, true);
 	Type oo_consco_cons0Li_cc = applyBinding(((Function)_cons).rite, 3, 0, _cons0Li_);
-
-    // We know these assertions will pass, since we simply passed a type into a free variable
-//	assert (oo_consco_cons0Li_cc != null);
 
 	// TODO there is a bug in how we return nulls. We reuse Types for negexs and posexs, but posexs assert false
     //   instead of returning null whereas negexes want nulls.
