@@ -1,10 +1,12 @@
 import symbolicgen.DependencyAnalysis
 import symbolicgen.LabelConstraintGenerator
 import symbolicgen.SymbolicTypeBuilder
+import symbolicgen.concretesketcher.DepLabConcreteSketcher
 import symbolicgen.symbolicenumerator.SymbolicEnumerator
 import test.ConsTest
 import test.HOFTest
 import test.IdTest
+import util.writeConcretizeInput
 
 const val ROUNDS = 4
 const val RUN_SKETCH = true
@@ -39,16 +41,18 @@ fun main() {
 //        }
 //    }
 //
-//    specializedSymbolicTypes.forEachIndexed { i, context ->
-//        val sketcher = DependencyConcreteSketcher(
-//            query,
-//            context,
-//            DependencyAnalysis(query, context, oracle),
-//            enum.varTypeIds,
-//            oracle
-//        )
-//        writeConcretizeInput(sketcher.query(), "test$i")
-//    }
+    specializedSymbolicTypes.forEachIndexed { i, context ->
+        println(i)
+        println(context)
+        val sketcher = DepLabConcreteSketcher(
+            query,
+            context,
+            DependencyAnalysis(query, context, oracle),
+            enum.varTypeIds,
+            oracle
+        )
+        writeConcretizeInput(sketcher.query(), "test$i")
+    }
 
 //    println(specializedSymbolicTypes)
 //

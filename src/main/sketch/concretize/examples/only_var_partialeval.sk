@@ -280,36 +280,76 @@ harness void main(int test) {
     Type _LLi_ = _LLi_(register);
     Type _cons = _cons(register);
 
-	assert (isFunction(_cons));
+    // We know this assertion will pass!
+//	assert (isFunction(_cons));
 
-    Type _cons0_ = apply((Function)_cons, _0, true);
+    // We already know that the argument will work since cons takes a variable, and we know what variable to bind 0 to.
+    // So we can skip the call to unify, and the list traversal applying bindings, when passing an arg to var param,
+    // UNLESS it's bound already... This gets complicated b/c labels can bind variables, so we don't know what's still
+    // free at any given moment. I think this is only a special case.
+//    Type _cons0_ = apply((Function)_cons, _0, true);
+    Type _cons0_ = applyBinding(((Function)_cons).rite, 3, 0, _0);
 
-	assert (_cons0_ != null);
-	assert (isFunction(_cons0_));
+    // We know these assertions will pass, since we simply passed a type into a free variable
+//	assert (_cons0_ != null);
+//	assert (isFunction(_cons0_));
 
+    /*
+    Apply does the following:
+        Unifies argument and parameter:
+            Switch on structure - here, matches Label/Label; both param/arg are known at Sk generation time to be L2!
+                So we can skip this check
+            Get bindings from unifying all parameters. We can skip directly here.
+        Checks for error
+        Applies binding to the RHS
+    */
 	Type _cons0Li_ = apply((Function)_cons0_, _Li_, true);
-
+//    List@list<Binding> tmp1 = unifyAll(((Label)((Function)_cons0_).left).params, ((Label)_Li_).params, true, 5);
+//    if (tmp1 == null) assert false;
+//    Type _cons0Li_ = applyBindings(((Function)_cons0_).rite, tmp1);
+    // This check should be unneccesary if we unwrap/inline the check for bindings being null into main()
 	assert (_cons0Li_ != null);
 
 	Type oo_cons0_co_cons0Li_cc = apply((Function)_cons0_, _cons0Li_, true);
+    // Only works because we know the output of cons is another L2
+//	List@list<Binding> tmp2 = unifyAll(((Label)((Function)_cons0_).left).params, ((Label)_cons0Li_).params, true, 5);
+//    if (tmp2 == null) assert false;
+//    Type oo_cons0_co_cons0Li_cc = applyBindings(((Function)_cons0_).rite, tmp2);
 	assert (oo_cons0_co_cons0Li_cc != null);
 
-	Type _consLi_ = apply((Function)_cons, _Li_, true);
+	// Same here with partial eval variable binding unification
+//	Type _consLi_ = apply((Function)_cons, _Li_, true);
+	Type _consLi_ = applyBinding(((Function)_cons).rite, 3, 0, _Li_);
 
-	assert (_consLi_ != null);
-	assert (isFunction(_consLi_));
+    // We know these assertions will pass, since we simply passed a type into a free variable
+//	assert (_consLi_ != null);
+//	assert (isFunction(_consLi_));
+
 	Type oo_consLi_co_LLi_cc = apply((Function)_consLi_, _LLi_, true);
+//	List@list<Binding> tmp3 = unifyAll(((Label)((Function)_consLi_).left).params, ((Label)_LLi_).params, true, 5);
+//    if (tmp3 == null) assert false;
+//    Type oo_consLi_co_LLi_cc = applyBindings(((Function)_consLi_).rite, tmp3);
 	assert (oo_consLi_co_LLi_cc != null);
+
 	Type oo_consLi_cooo_consLi_co_LLi_cccc = apply((Function)_consLi_, oo_consLi_co_LLi_cc, true);
+//	List@list<Binding> tmp4 = unifyAll(((Label)((Function)_consLi_).left).params, ((Label)oo_consLi_co_LLi_cc).params, true, 5);
+//    if (tmp4 == null) assert false;
+//    Type oo_consLi_cooo_consLi_co_LLi_cccc = applyBindings(((Function)_consLi_).rite, tmp4);
 	assert (oo_consLi_cooo_consLi_co_LLi_cccc != null);
 
-	Type _consLLi_ = apply((Function)_cons, _LLi_, true);
+	// Same here with partial eval variable binding unification
+//	Type _consLLi_ = apply((Function)_cons, _LLi_, true);
+    Type _consLLi_ = applyBinding(((Function)_cons).rite, 3, 0, _LLi_);
 
-	assert (_consLLi_ != null);
+// We know these assertions will pass, since we simply passed a type into a free variable
+//	assert (_consLLi_ != null);
 
-	Type oo_consco_cons0Li_cc = apply((Function)_cons, _cons0Li_, true);
+	// Same here with partial eval variable binding unification
+//	Type oo_consco_cons0Li_cc = apply((Function)_cons, _cons0Li_, true);
+	Type oo_consco_cons0Li_cc = applyBinding(((Function)_cons).rite, 3, 0, _cons0Li_);
 
-    assert (oo_consco_cons0Li_cc != null);
+    // We know these assertions will pass, since we simply passed a type into a free variable
+//	assert (oo_consco_cons0Li_cc != null);
 
 	// TODO there is a bug in how we return nulls. We reuse Types for negexs and posexs, but posexs assert false
     //   instead of returning null whereas negexes want nulls.
@@ -381,4 +421,3 @@ harness void main(int test) {
 	assert(oo_consLi_cooo_consLi_co_LLi_cccc != oo_consco_cons0Li_cc);
 	assert(_consLLi_ != oo_consco_cons0Li_cc);
 }
-
