@@ -1,0 +1,62 @@
+include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
+
+//include "/home/vivianyyd/type-synth/src/main/sketch/concretize/concretetypesgivenlabels.sk";
+
+//========================================================== GENERIC FILE
+adt Type {
+    Variable { int tid; int vid; }
+    Label { int l; Type[4] params; }
+    Function { Type left; Type rite; }
+}
+
+//========================================================== GENERIC FILE
+
+Type[2] a() {
+    return null;
+}
+
+Type[1, 2] b() {
+    return null;
+}
+
+harness void main(int test) {
+    assert (a() == null); // passes
+//    assert (a() == {null, null});  // passes
+//    assert (b() != null); // fail
+//    assert (b() == null); // fail
+    assert (b() == {{null, null}}); // passes
+}
+
+
+
+
+
+
+
+//harness void main() {
+//    assert(n() == null);
+//}
+
+//Type id() {
+//    Type rootl = new Variable(tid=3, vid=0);
+//	Type rootr = rootl;
+//	return new Function(left=rootl, rite=rootr);
+//}
+//Type ii() {
+//    Type i = new Label(l=0, params={null, null, null, null});
+//    return new Function(left=i, rite=i);
+//}
+//
+//Type f(LabelKind[2] register) {
+//	Type root;
+//	Type rootl; Type rootr;
+//	rootl = new Variable(tid=3, vid=0);
+//	Type rootrl; Type rootrr;
+//    rootrl = rootl;
+//	//rootrl = label_L2(register, 3, 1, new OnlyVariable(tid=3, vid=0), 3);
+//    rootrr = rootl;
+//	//rootrr = label_L2(register, 3, 1, new OnlyVariable(tid=3, vid=0), 3);
+//	rootr = new Function(left=rootrl, rite=rootrr);
+//	root = new Function(left=rootl, rite=rootr);
+//	return root;
+//}

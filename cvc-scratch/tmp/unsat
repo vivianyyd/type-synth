@@ -1,0 +1,6 @@
+generator Label label_L2(LabelKind[2] register, int tid, int vars, Constraint c, int bnd) {
+    assert bnd > 0;
+    Type[4] params;
+    params[0] = type(register, tid, vars, c, bnd - 1);
+    return new Label(l=2, params=params);
+}
