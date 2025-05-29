@@ -2,8 +2,8 @@
 
 //========================================================== GENERIC FILE
 package ct;
-include "/scratch/vyd/type-synth/src/main/sketch/util.sk";
-
+//include "/scratch/vyd/type-synth/src/main/sketch/util.sk";
+include "/home/vivianyyd/type-synth/src/main/sketch/util.sk";
 // ASSUMED BOUND ON NUMBER OF LABEL KINDS: 8
 // ASSUMED BOUND ON NUMBER OF PARAMS FOR A LABEL: 4
 // ASSUMED BOUND ON NUMBER OF FRESH VARIABLES INSIDE ONLY LABELS FOR A GIVEN TID: 4
@@ -188,11 +188,11 @@ generator Type type(LabelKind[2] register, int tid, int vars, Constraint c, int 
     if (t == 1) {
         return label(register, tid, vars, c, bnd - 1);
     }
-    if (t == 2) {
-        Type a = type(register, tid, vars, c, bnd - 1);
-        Type b = type(register, tid, vars, c, bnd - 1);
-        return new Function(left=a, rite=b);
-    }
+//    if (t == 2) {
+//        Type a = type(register, tid, vars, c, bnd - 1);
+//        Type b = type(register, tid, vars, c, bnd - 1);
+//        return new Function(left=a, rite=b);
+//    }
     assert false;
 }
 
