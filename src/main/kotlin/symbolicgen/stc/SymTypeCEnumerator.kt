@@ -1,10 +1,10 @@
-package symbolicgen.symbolicenumerator
+package symbolicgen.stc
 
 import symbolicgen.*
 import symbolicgen.Function
 import util.*
 
-class SymbolicEnumerator(
+class SymTypeCEnumerator(
     val query: Query,
     state: State,
     private val oracle: EqualityNewOracle,
@@ -16,7 +16,7 @@ class SymbolicEnumerator(
     val varTypeIds = query.names.withIndex().associate { (i, n) -> n to i }
     private fun tId(name: String) = varTypeIds[name]!!
 
-    fun enumerateAll(): List<Map<String, EnumeratedSymbolicType>> {
+    fun enumerateAll(): List<Map<String, SymTypeC>> {
         val all = state.mapValues { (n, options) ->
             options.flatMap { enumerate(it, 0, false, n, false).map { it.first } }
         }.contexts().map { it.toMutableMap() }
@@ -26,9 +26,9 @@ class SymbolicEnumerator(
     /**
      * checks positive examples, and introduces label equivalences as needed
      */
-    private fun checkPosExsAndMergeLabels(context: MutableMap<String, EnumeratedSymbolicType>): Boolean {
+    private fun checkPosExsAndMergeLabels(context: MutableMap<String, SymTypeC>): Boolean {
         val labelClasses = UnionFind(freshLabel)
-        fun check(ex: Example): EnumeratedSymbolicType? = when (ex) {
+        fun check(ex: Example): SymTypeC? = when (ex) {
             is Name -> context[ex.name]!!
             is App -> {
                 when (val f = check(ex.fn)) {
@@ -40,7 +40,7 @@ class SymbolicEnumerator(
         }
 
         val pass = query.posExamples.all { check(it) != null }
-        fun updateLs(t: EnumeratedSymbolicType): EnumeratedSymbolicType = when (t) {
+        fun updateLs(t: SymTypeC): SymTypeC = when (t) {
             is F -> F(updateLs(t.left), updateLs(t.rite))
             is L -> L(labelClasses.find(t.label))
             is Var -> t
@@ -54,8 +54,8 @@ class SymbolicEnumerator(
     }
 
     private fun enumerate(
-        t: SymbolicType, vars: Int, pickedLabel: Boolean, name: String, canBeFresh: Boolean
-    ): List<Triple<EnumeratedSymbolicType, Int, Boolean>> = when (t) {
+        t: SymTypeA, vars: Int, pickedLabel: Boolean, name: String, canBeFresh: Boolean
+    ): List<Triple<SymTypeC, Int, Boolean>> = when (t) {
         is Hole -> listOf(Variable(), Label()).flatMap { enumerate(it, vars, pickedLabel, name, canBeFresh) }
         is Function -> {
             val lefts = t.left.flatMap { enumerate(it, vars, pickedLabel, name, true) }
@@ -66,7 +66,7 @@ class SymbolicEnumerator(
         }
         is Label -> listOf(Triple(L(freshLabel++), vars, true))
         is Variable -> {
-            val variables: MutableList<Triple<EnumeratedSymbolicType, Int, Boolean>> =
+            val variables: MutableList<Triple<SymTypeC, Int, Boolean>> =
                 (0 until vars).map { Triple(VR(it, tId(name)), vars, pickedLabel) }.toMutableList()
             if (canBeFresh) variables.add(Triple(VB(vars, tId(name)), vars + 1, pickedLabel))
             else if (pickedLabel) variables.add(Triple(VL(vars, tId(name)), vars + 1, pickedLabel))
@@ -74,7 +74,7 @@ class SymbolicEnumerator(
         }
     }
 
-    private fun Map<String, List<EnumeratedSymbolicType>>.contexts(): List<Map<String, EnumeratedSymbolicType>> {
+    private fun Map<String, List<SymTypeC>>.contexts(): List<Map<String, SymTypeC>> {
         val m = LinkedHashMap(this)
         return naryCartesianProduct(m.values.toList()).map { this.keys.zip(it).toMap() }
     }

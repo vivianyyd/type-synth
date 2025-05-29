@@ -1,11 +1,11 @@
-package symbolicgen.symbolicsketcher
+package symbolicgen.stbold
 
 import symbolicgen.*
 import symbolicgen.Function
 import util.*
 import kotlin.math.roundToInt
 
-class SymbolicSketcher(val query: Query, private val state: State, private val oracle: EqualityNewOracle) {
+class OldSymTypeBSketcher(val query: Query, private val state: State, private val oracle: EqualityNewOracle) {
     private val sw = SymbolicSketchWriter()
     fun nextQuery(sketch: String, round: Int) = sw.addBanned(SymbolicSketchParser(sketch).parseAll.first, round)
     fun output(sketch: String): Pair<Int, String> {
@@ -44,7 +44,7 @@ class SymbolicSketcher(val query: Query, private val state: State, private val o
             return w.s()
         }
 
-        fun addBanned(banned: Map<String, SpecializedSymbolicType>, round: Int): String {
+        fun addBanned(banned: Map<String, OldSymTypeB>, round: Int): String {
             w.block("harness void banned$round()") {
                 w.line(
                     "assert (${
@@ -75,7 +75,7 @@ class SymbolicSketcher(val query: Query, private val state: State, private val o
         }
 
         /** typeId is used to distinguish variables - avoids capture by making their id include which type they're part of */
-        private fun chooseFromOptions(portSketchName: String, options: List<SymbolicType>, typeId: Int) {
+        private fun chooseFromOptions(portSketchName: String, options: List<SymTypeA>, typeId: Int) {
             val flag = "flag_$portSketchName"
             // TODO not sure if this is right. we didn't see anything that forced us to make this a function so anything but arrow is ok
             // TODO at the very least this should happen in a pass at the end of Tree building, not here
@@ -94,7 +94,7 @@ class SymbolicSketcher(val query: Query, private val state: State, private val o
             }
         }
 
-        private fun pickOption(portSketchName: String, t: SymbolicType, typeId: Int): Unit = when (t) {
+        private fun pickOption(portSketchName: String, t: SymTypeA, typeId: Int): Unit = when (t) {
             is Hole -> {
                 val hole = "${portSketchName}_hole"
                 w.line("Type $hole")
@@ -226,10 +226,10 @@ class SymbolicSketcher(val query: Query, private val state: State, private val o
                 }
             }
 
-        private fun typeAfterSubs(l: Map<String, SpecializedSymbolicType>): SpecializedSymbolicType =
+        private fun typeAfterSubs(l: Map<String, OldSymTypeB>): OldSymTypeB =
             sub(l["root"]!!, l)
 
-        private fun sub(t: SpecializedSymbolicType, l: Map<String, SpecializedSymbolicType>): SpecializedSymbolicType =
+        private fun sub(t: OldSymTypeB, l: Map<String, OldSymTypeB>): OldSymTypeB =
             when (t) {
                 is N -> sub(l[t.name]!!, l)
                 is L, is VL, is VB, is VR, is CL -> t

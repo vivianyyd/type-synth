@@ -1,13 +1,14 @@
 package symbolicgen
 
-typealias PortContents = MutableList<SymbolicType>
+typealias PortContents = MutableList<SymTypeA>
 
-sealed interface SymbolicType {
+/** SymbolicTypes are V/F/L. */
+sealed interface SymTypeA {
     var parent: Parent?
 }
 
 /** The symbolic type if we decide to use this node. Kills all port siblings along the path to this node */
-fun SymbolicType.determinedTypeSoFar(): SymbolicType {
+fun SymTypeA.determinedTypeSoFar(): SymTypeA {
     if (this is Error) return this
     if (this.parent == null) return this
     val p = this.parent as Parent
@@ -20,7 +21,7 @@ fun SymbolicType.determinedTypeSoFar(): SymbolicType {
 /** When node [n] has parent [p], the [index]th child of [p] is [n]. */
 data class Parent(val node: Function, val index: Int)
 
-sealed class AbstractType(override var parent: Parent?) : SymbolicType
+sealed class AbstractType(override var parent: Parent?) : SymTypeA
 
 class Variable(override var parent: Parent? = null) : AbstractType(parent) {
     override fun toString(): String = "V"

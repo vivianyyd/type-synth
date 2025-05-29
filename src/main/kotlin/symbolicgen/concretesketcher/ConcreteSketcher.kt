@@ -1,10 +1,10 @@
 package symbolicgen.concretesketcher
 
-import symbolicgen.symbolicsketcher.*
+import symbolicgen.stbold.*
 import util.*
 import java.lang.Integer.max
 
-typealias ContextOutline = Map<String, SpecializedSymbolicType>
+typealias ContextOutline = Map<String, OldSymTypeB>
 
 const val TYPE_DEPTH_BOUND = 3
 
@@ -51,7 +51,7 @@ class ConcreteSketcher(
             })
         }
 
-        private fun codeFor(t: SpecializedSymbolicType, tid: Int, groundVars: Int, destination: String): Unit =
+        private fun codeFor(t: OldSymTypeB, tid: Int, groundVars: Int, destination: String): Unit =
             when (t) {
                 is CL -> w.line("$destination = clabel(register, numLKs, $tid, $groundVars, labelVars, $TYPE_DEPTH_BOUND)")
                 L -> w.line("$destination = label(register, numLKs, $tid, $groundVars, labelVars, $TYPE_DEPTH_BOUND)")
@@ -71,7 +71,7 @@ class ConcreteSketcher(
         private fun generator(name: String) {
             val tid = tId(name)
             val outline = outline(name)
-            fun lastVar(t: SpecializedSymbolicType): Int = when (t) {
+            fun lastVar(t: OldSymTypeB): Int = when (t) {
                 is F -> max(lastVar(t.left), lastVar(t.rite))
                 is CL, L, is VL -> -1
                 is VB -> t.vId

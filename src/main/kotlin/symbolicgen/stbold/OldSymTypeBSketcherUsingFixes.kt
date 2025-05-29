@@ -1,4 +1,4 @@
-package symbolicgen.symbolicsketcher
+package symbolicgen.stbold
 
 import symbolicgen.*
 import symbolicgen.Function
@@ -6,7 +6,7 @@ import util.*
 import kotlin.math.roundToInt
 
 // TODO style: can inline tests into the harness that wraps all the tests
-class SymbolicSketcherFixes(
+class OldSymTypeBSketcherUsingFixes(
     val query: Query,
     private val state: State,
     private val oracle: EqualityNewOracle,
@@ -39,7 +39,7 @@ class SymbolicSketcherFixes(
         private val rounds: Int by lazy {
             if (rounds != null) rounds else {
                 fun <T> List<T>.mapSum(f: (T) -> Int) = this.map(f).fold(0) { a, b -> a + b }
-                fun bound(t: SymbolicType): Int = when (t) {
+                fun bound(t: SymTypeA): Int = when (t) {
                     is Function -> t.left.mapSum(::bound) * t.rite.mapSum(::bound)
                     is Label -> 1
                     is Variable -> 3
@@ -100,7 +100,7 @@ class SymbolicSketcherFixes(
         }
 
         /** typeId is used to distinguish variables - avoids capture by making their id include which type they're part of */
-        private fun chooseFromOptions(portSketchName: String, options: List<SymbolicType>, typeId: Int) {
+        private fun chooseFromOptions(portSketchName: String, options: List<SymTypeA>, typeId: Int) {
             val flag = "flag_$portSketchName"
             if (options.size == 1) {
                 pickOption(portSketchName, options[0], typeId)  // Makes code shorter
@@ -117,7 +117,7 @@ class SymbolicSketcherFixes(
             }
         }
 
-        private fun pickOption(portSketchName: String, t: SymbolicType, typeId: Int): Unit = when (t) {
+        private fun pickOption(portSketchName: String, t: SymTypeA, typeId: Int): Unit = when (t) {
             is Hole -> {
                 val hole = "${portSketchName}_hole"
                 w.line("Type $hole")
@@ -336,10 +336,10 @@ class SymbolicSketcherFixes(
                 }
             }
 
-        private fun typeAfterSubs(l: Map<String, SpecializedSymbolicType>): SpecializedSymbolicType =
+        private fun typeAfterSubs(l: Map<String, OldSymTypeB>): OldSymTypeB =
             sub(l["root"]!!, l)
 
-        private fun sub(t: SpecializedSymbolicType, l: Map<String, SpecializedSymbolicType>): SpecializedSymbolicType =
+        private fun sub(t: OldSymTypeB, l: Map<String, OldSymTypeB>): OldSymTypeB =
             when (t) {
                 is N -> sub(l[t.name]!!, l)
                 is L, is VL, is VB, is VR, is CL -> t

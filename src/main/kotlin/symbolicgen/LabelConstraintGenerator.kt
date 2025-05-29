@@ -1,7 +1,7 @@
 package symbolicgen
 
-import symbolicgen.symbolicenumerator.L
-import symbolicgen.symbolicenumerator.Var
+import symbolicgen.stc.L
+import symbolicgen.stc.Var
 import util.DependencyEdge
 import util.ParameterNode
 import util.PyWriter

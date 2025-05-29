@@ -4,7 +4,7 @@ import symbolicgen.ContainsNoVariables
 import symbolicgen.ContainsOnly
 import symbolicgen.DependencyAnalysis
 import symbolicgen.DependencyConstraint
-import symbolicgen.symbolicsketcher.*
+import symbolicgen.stbold.*
 import util.*
 import java.lang.Integer.max
 
@@ -53,7 +53,7 @@ class DependencyConcreteSketcher(
         }
 
         private fun codeFor(
-            t: SpecializedSymbolicType,
+            t: OldSymTypeB,
             tid: Int,
             groundVars: Int,
             destination: String,
@@ -91,7 +91,7 @@ class DependencyConcreteSketcher(
         private fun generator(name: String) {
             val tid = tId(name)
             val outline = outline(name)
-            fun lastVar(t: SpecializedSymbolicType): Int = when (t) {
+            fun lastVar(t: OldSymTypeB): Int = when (t) {
                 is F -> max(lastVar(t.left), lastVar(t.rite))
                 is CL, L, is VL -> -1
                 is VB -> t.vId

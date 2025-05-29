@@ -8,11 +8,11 @@ data class Port(val f: Function, val side: Int) : Choice
 data class Root(val name: String) : Choice
 
 class State(query: Query) {
-    private val state: Map<String, MutableList<SymbolicType>> = query.names.associateWith { mutableListOf() }
+    private val state: Map<String, MutableList<SymTypeA>> = query.names.associateWith { mutableListOf() }
 
     /** Replace the entire subtree rooted at [name]. Use with caution.
      * TODO: This is only intended for manually setting nullaries to Label; make this nicer encapsulated later */
-    fun plant(name: String, types: List<SymbolicType>) {
+    fun plant(name: String, types: List<SymTypeA>) {
         state[name]!!.clear()
         state[name]!!.addAll(types)
     }
@@ -43,7 +43,7 @@ class State(query: Query) {
         is Root -> state[choice.name]!!
     }
 
-    fun singleton(choice: Choice): SymbolicType? {
+    fun singleton(choice: Choice): SymTypeA? {
         val l = options(choice)
         return if (l.size == 1) l[0] else null
     }
@@ -52,12 +52,12 @@ class State(query: Query) {
 
     /**  Ensure the options for [choice] are a subset of types satisfying [predicate].
      * If options for [choice] are empty/not yet enumerated, populates them. */
-    fun ensureSubset(choice: Choice, predicate: Predicate<SymbolicType>) {
+    fun ensureSubset(choice: Choice, predicate: Predicate<SymTypeA>) {
         if (empty(choice)) addAll(choice)
         prune(choice, predicate.negate())
     }
 
-    private fun prune(choice: Choice, predicate: Predicate<SymbolicType>) {
+    private fun prune(choice: Choice, predicate: Predicate<SymTypeA>) {
         assert(!empty(choice))
         options(choice).removeAll { predicate.test(it) }
         // TODO Somebody needs to catch this. Or do something more idiomatic and return special type or boolean
@@ -79,10 +79,10 @@ class State(query: Query) {
 
     fun printState() = println(state)
 
-    fun read(): Map<String, List<SymbolicType>> = state
+    fun read(): Map<String, List<SymTypeA>> = state
 }
 
-class SymbolicTypeBuilder(val query: Query) {
+class SymTypeABuilder(val query: Query) {
     private val s = State(query)
 
     val make: State by lazy {
@@ -93,7 +93,7 @@ class SymbolicTypeBuilder(val query: Query) {
 
     private inline fun <reified R> List<*>.singleton(): Boolean = this.size == 1 && this[0] is R
 
-    private fun antiunify(trees: List<List<SymbolicType>>, param: List<SymbolicType>): List<SymbolicType> {
+    private fun antiunify(trees: List<List<SymTypeA>>, param: List<SymTypeA>): List<SymTypeA> {
         // TODO intersect stuff with param to produce the new param tree
         if (trees.size == 1) return trees[0]
         if (trees.any { it.singleton<Hole>() }) return antiunify(
@@ -159,7 +159,7 @@ class SymbolicTypeBuilder(val query: Query) {
     }
 
     private fun patchEmptyLists() {
-        fun patch(t: SymbolicType, rightmost: Boolean) {
+        fun patch(t: SymTypeA, rightmost: Boolean) {
             when (t) {
                 is Function -> {
                     if (t.left.isEmpty()) t.left.add(Hole())
@@ -181,7 +181,7 @@ class SymbolicTypeBuilder(val query: Query) {
 
     private fun mustBeFn(fn: Example) {
         val choice = s.exprToChoice(fn) ?: return
-        s.ensureSubset(choice) { t: SymbolicType -> t is Function || t is Variable }
+        s.ensureSubset(choice) { t: SymTypeA -> t is Function || t is Variable }
     }
 
     private fun validArg(fn: Example, arg: Example) {
@@ -191,11 +191,11 @@ class SymbolicTypeBuilder(val query: Query) {
         val lhsSingle = s.singleton(lhs)
         val rhsSingle = s.singleton(rhs)
 
-        if (lhsSingle is Label) s.ensureSubset(rhs) { t: SymbolicType -> t is Label || t is Variable }
-        if (lhsSingle is Function) s.ensureSubset(rhs) { t: SymbolicType -> t is Function || t is Variable }
+        if (lhsSingle is Label) s.ensureSubset(rhs) { t: SymTypeA -> t is Label || t is Variable }
+        if (lhsSingle is Function) s.ensureSubset(rhs) { t: SymTypeA -> t is Function || t is Variable }
         // TODO IS IT TRUE THAT IF RHS IS LABEL, LHS CAN'T BE VAR?
-        if (rhsSingle is Label) s.ensureSubset(lhs) { t: SymbolicType -> t is Label }
-        if (rhsSingle is Function) s.ensureSubset(lhs) { t: SymbolicType -> t is Function }
+        if (rhsSingle is Label) s.ensureSubset(lhs) { t: SymTypeA -> t is Label }
+        if (rhsSingle is Function) s.ensureSubset(lhs) { t: SymTypeA -> t is Function }
         // TODO any other interesting inferences?
 
         /*
@@ -248,6 +248,6 @@ fun main() {
 
     val query = parseNewExamples(consExamples.keys)
 
-    SymbolicTypeBuilder(query).make.printState()
+    SymTypeABuilder(query).make.printState()
 }
 /* {cons=[[V, L] -> [V, [V, L] -> []]], 0=[L], []i=[L]} */

@@ -1,23 +1,23 @@
-package symbolicgen.symbolicsketcher
+package symbolicgen.stbold
 
-/** Symbolic types with annotations on variables */
-sealed interface SpecializedSymbolicType {
+/** Symbolic types with annotations on variables: L/F/VB/VR/VL */
+sealed interface OldSymTypeB {
     fun constructSketch(): String
 }
 
-sealed class Var(open val vId: Int, open val tId: Int) : SpecializedSymbolicType
+sealed class Var(open val vId: Int, open val tId: Int) : OldSymTypeB
 
 // TODO Rly horrible code style
-data class N(val name: String) : SpecializedSymbolicType {
+data class N(val name: String) : OldSymTypeB {
     override fun constructSketch(): String = throw UnsupportedOperationException("Bad code style, fixme later")
 }
 
-object L : SpecializedSymbolicType {
+object L : OldSymTypeB {
     override fun toString(): String = "L"
     override fun constructSketch(): String = "new Label()"
 }
 
-data class F(val left: SpecializedSymbolicType, val rite: SpecializedSymbolicType) : SpecializedSymbolicType {
+data class F(val left: OldSymTypeB, val rite: OldSymTypeB) : OldSymTypeB {
     override fun toString(): String = "${if (left is F) "($left)" else "$left"} -> $rite"
     override fun constructSketch(): String =
         "new Function(left=${left.constructSketch()}, rite=${rite.constructSketch()})"
@@ -44,26 +44,26 @@ data class VL(override val vId: Int, override val tId: Int) : Var(vId, tId) {
     override fun constructSketch(): String = "new VarLabelBound(vId=$vId, tId=$tId)"
 }
 
-data class CL(val dummy: Int) : SpecializedSymbolicType {
+data class CL(val dummy: Int) : OldSymTypeB {
     override fun toString(): String = "CL"
     override fun constructSketch(): String = "new ConcreteLabel(dummy=$dummy)"
 }
 
-typealias Binding = Triple<Int, Int, SpecializedSymbolicType>
+typealias Binding = Triple<Int, Int, OldSymTypeB>
 
 fun applyBinding(
-    t: SpecializedSymbolicType,
+    t: OldSymTypeB,
     varId: Int,
     tId: Int,
-    sub: SpecializedSymbolicType
-): SpecializedSymbolicType =
+    sub: OldSymTypeB
+): OldSymTypeB =
     when (t) {
         is CL, L, is VB, is VL, is N -> t
         is F -> F(applyBinding(t.left, varId, tId, sub), applyBinding(t.rite, varId, tId, sub))
         is VR -> if (t.vId == varId && t.tId == tId) sub else t
     }
 
-fun applyBindings(t: SpecializedSymbolicType, bindings: List<Binding>): SpecializedSymbolicType =
+fun applyBindings(t: OldSymTypeB, bindings: List<Binding>): OldSymTypeB =
     bindings.fold(t) { acc, (vId, tId, sub) -> applyBinding(acc, vId, tId, sub) }
 
 
@@ -74,7 +74,7 @@ TODO {f=0_0 -> 0_0, g=1_0 -> 1_0, h=(2_0 -> 2_0) -> 2_0, a=L} with example (h f)
  Once we fix this, make sure to copy to the sketch version of unify
  */
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
-fun unify(param: SpecializedSymbolicType, arg: SpecializedSymbolicType): List<Binding>? = when (param) {
+fun unify(param: OldSymTypeB, arg: OldSymTypeB): List<Binding>? = when (param) {
     is VB -> listOf(Binding(param.vId, param.tId, arg))
     is CL -> when (arg) {
         is CL -> if (param.dummy == arg.dummy) listOf() else null
@@ -104,7 +104,7 @@ fun unify(param: SpecializedSymbolicType, arg: SpecializedSymbolicType): List<Bi
 /**
 Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
  */
-fun apply(fn: F, arg: SpecializedSymbolicType): SpecializedSymbolicType? {
+fun apply(fn: F, arg: OldSymTypeB): OldSymTypeB? {
     if (arg is VR) throw Exception("Invariant broken")
     return unify(fn.left, arg)?.let {
         applyBindings(fn.rite, it)

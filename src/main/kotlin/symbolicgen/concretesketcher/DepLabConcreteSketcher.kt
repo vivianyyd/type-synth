@@ -4,13 +4,13 @@ import symbolicgen.ContainsNoVariables
 import symbolicgen.ContainsOnly
 import symbolicgen.DependencyAnalysis
 import symbolicgen.DependencyConstraint
-import symbolicgen.symbolicenumerator.*
+import symbolicgen.stc.*
 import util.*
 import java.lang.Integer.max
 
 class DepLabConcreteSketcher(
     val query: Query,
-    private val contextOutline: Map<String, EnumeratedSymbolicType>,
+    private val contextOutline: Map<String, SymTypeC>,
     private val dependencies: DependencyAnalysis,
     private val varTypeIds: Map<String, Int>,
     private val oracle: EqualityNewOracle
@@ -56,7 +56,7 @@ class DepLabConcreteSketcher(
         }
 
         private fun codeFor(
-            t: EnumeratedSymbolicType,
+            t: SymTypeC,
             tid: Int,
             groundVars: Int,
             destination: String,
@@ -94,7 +94,7 @@ class DepLabConcreteSketcher(
         private fun generator(name: String) {
             val tid = tId(name)
             val outline = outline(name)
-            fun lastVar(t: EnumeratedSymbolicType): Int = when (t) {
+            fun lastVar(t: SymTypeC): Int = when (t) {
                 is F -> max(lastVar(t.left), lastVar(t.rite))
                 is L, is VL -> -1
                 is VB -> t.vId

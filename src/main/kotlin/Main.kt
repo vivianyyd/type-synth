@@ -1,8 +1,8 @@
 import symbolicgen.DependencyAnalysis
 import symbolicgen.LabelConstraintGenerator
-import symbolicgen.SymbolicTypeBuilder
+import symbolicgen.SymTypeABuilder
 import symbolicgen.concretesketcher.DepLabConcreteSketcher
-import symbolicgen.symbolicenumerator.SymbolicEnumerator
+import symbolicgen.stc.SymTypeCEnumerator
 import test.ConsTest
 import test.HOFTest
 import test.IdTest
@@ -18,10 +18,10 @@ fun main() {
     val test = constest
 
     val (query, oracle) = (test.query to test.oracle)
-    val b = SymbolicTypeBuilder(query).make
+    val b = SymTypeABuilder(query).make
     b.printState()
 
-    val enum = SymbolicEnumerator(query, b, oracle)
+    val enum = SymTypeCEnumerator(query, b, oracle)
     val specializedSymbolicTypes = enum.enumerateAll()
 //    println(specializedSymbolicTypes.pr())
 
