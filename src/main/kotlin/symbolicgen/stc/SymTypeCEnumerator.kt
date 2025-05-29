@@ -1,7 +1,7 @@
 package symbolicgen.stc
 
-import symbolicgen.*
-import symbolicgen.Function
+import symbolicgen.sta.*
+import symbolicgen.sta.Function
 import util.*
 
 class SymTypeCEnumerator(

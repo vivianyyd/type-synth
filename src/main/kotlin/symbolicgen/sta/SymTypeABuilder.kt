@@ -1,4 +1,4 @@
-package symbolicgen
+package symbolicgen.sta
 
 import util.*
 import java.util.function.Predicate
