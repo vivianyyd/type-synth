@@ -1,12 +1,11 @@
 import symbolicgen.DependencyAnalysis
-import symbolicgen.LabelConstraintGenerator
-import symbolicgen.SymTypeABuilder
-import symbolicgen.concretesketcher.DepLabConcreteSketcher
+import symbolicgen.concreteenumerator.ConcreteEnumerator
+import symbolicgen.sta.SymTypeABuilder
 import symbolicgen.stc.SymTypeCEnumerator
+import symbolicgen.std.flatten
 import test.ConsTest
 import test.HOFTest
 import test.IdTest
-import util.writeConcretizeInput
 
 const val ROUNDS = 4
 const val RUN_SKETCH = true
@@ -19,7 +18,7 @@ fun main() {
 
     val (query, oracle) = (test.query to test.oracle)
     val b = SymTypeABuilder(query).make
-    b.printState()
+//    b.printState()
 
     val enum = SymTypeCEnumerator(query, b, oracle)
     val specializedSymbolicTypes = enum.enumerateAll()
@@ -29,30 +28,36 @@ fun main() {
     println(candidate)
 
     val depAnalysis = DependencyAnalysis(query, candidate, oracle)
-    val gener = LabelConstraintGenerator(depAnalysis)
-    println(gener.gen())
 
-//    println(specializedSymbolicTypes.size)
+    val concEnum = ConcreteEnumerator(
+        query,
+        candidate.mapValues { it.value.flatten() },
+        mapOf(0 to 0, 2 to 1),
+        depAnalysis,
+        oracle
+    )
+    println(concEnum.callMe(2))
+//    val gener = LabelConstraintGenerator(depAnalysis)
+//    println(gener.gen())
 
-//
 //    specializedSymbolicTypes.forEachIndexed { i, context ->
 //        query.names.forEach { name ->
 //            DependencyGraphVisualizer.viz(DependencyAnalysis(query, context, oracle).graphs[name]!!, "$name-$i")
 //        }
 //    }
 //
-    specializedSymbolicTypes.forEachIndexed { i, context ->
-        println(i)
-        println(context)
-        val sketcher = DepLabConcreteSketcher(
-            query,
-            context,
-            DependencyAnalysis(query, context, oracle),
-            enum.varTypeIds,
-            oracle
-        )
-        writeConcretizeInput(sketcher.query(), "test$i")
-    }
+//    specializedSymbolicTypes.forEachIndexed { i, context ->
+//        println(i)
+//        println(context)
+//        val sketcher = DepLabConcreteSketcher(
+//            query,
+//            context,
+//            DependencyAnalysis(query, context, oracle),
+//            enum.varTypeIds,
+//            oracle
+//        )
+//        writeConcretizeInput(sketcher.query(), "test$i")
+//    }
 
 //    println(specializedSymbolicTypes)
 //

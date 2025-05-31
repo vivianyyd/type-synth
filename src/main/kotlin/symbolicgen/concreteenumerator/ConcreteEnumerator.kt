@@ -2,71 +2,131 @@ package symbolicgen.concreteenumerator
 
 import symbolicgen.DependencyAnalysis
 import symbolicgen.DependencyConstraint
-import symbolicgen.stc.SymTypeC
+import symbolicgen.std.SymTypeDFlat
 import util.EqualityNewOracle
 import util.Query
 
-val labels = mapOf(0 to 1, 1 to 0, 2 to 0)
+sealed interface Node {
+    val constraint: DependencyConstraint?
+}
 
-class Root(val options: MutableList<ConstrainedType> = mutableListOf())
-sealed interface ConstrainedType
-sealed interface ConcreteType : ConstrainedType
-class Hole() : ConstrainedType
+class Hole(override val constraint: DependencyConstraint?) : Node {
+    override fun toString(): String = "_"
+}
+
 class L(
     val label: Int,
-    val ports: MutableList<MutableList<ConstrainedType>> = mutableListOf(),
-    val constraint: DependencyConstraint?
-) : ConstrainedType
+    val params: List<MutableList<Node>>,
+    override val constraint: DependencyConstraint?
+) : Node {
+    constructor(label: Int, numParams: Int, constraint: DependencyConstraint? = null) :
+            this(label, (0 until numParams).map { mutableListOf(Hole(constraint)) }, constraint)
 
-class F(val left: MutableList<ConstrainedType>, val rite: MutableList<ConstrainedType>) : ConstrainedType
-data class ConcVB(val vid: Int, val tid: Int) : ConcreteType
-data class ConcVR(val vid: Int, val tid: Int) : ConcreteType
-data class ConcVL(val vid: Int, val tid: Int) : ConcreteType
+    override fun toString(): String = "L$label(${params.joinToString(separator = ",")})"
+}
+
+class F(
+    val params: List<MutableList<Node>>,
+    override val constraint: DependencyConstraint?
+) : Node {
+    override fun toString(): String = params.joinToString(separator = "->")
+}
+
+sealed class Var(open val vid: Int, open val tid: Int, override val constraint: DependencyConstraint?) : Node
+
+data class VB(override val vid: Int, override val tid: Int, override val constraint: DependencyConstraint?) :
+    Var(vid, tid, constraint) {
+    override fun toString(): String = "${tid}_$vid"
+}
+
+data class VR(override val vid: Int, override val tid: Int, override val constraint: DependencyConstraint?) :
+    Var(vid, tid, constraint) {
+    override fun toString(): String = "${tid}_$vid"
+}
+
+data class VL(override val vid: Int, override val tid: Int, override val constraint: DependencyConstraint?) :
+    Var(vid, tid, constraint) {
+    override fun toString(): String = "${tid}_$vid"
+}
 
 class ConcreteEnumerator(
     val query: Query,
-    private val contextOutline: Map<String, SymTypeC>,
+    contextOutline: Map<String, SymTypeDFlat>,
+    /** Map from label ids to number of parameters */
+    private val labels: Map<Int, Int>,
     private val dependencies: DependencyAnalysis,
-    private val varTypeIds: Map<String, Int>,
     private val oracle: EqualityNewOracle
 ) {
-    private val state: MutableMap<String, Root> = mutableMapOf()
+    private val state: MutableMap<String, Node> = mutableMapOf()
+    private val variablesInScope: Map<String, MutableList<Pair<Int, Int>>> =
+        query.names.associateWith { mutableListOf() }
+
+    private val frontier: MutableList<Node> = mutableListOf()
 
     init {
         contextOutline.forEach { (name, outline) ->
-
-            // TODO flatten outlines into fns with mulitple arguments
-            val paramIndex = 0
             val constraints = dependencies.constraints(name)
-            var curr = outline
-//            if (curr !is F) state[name] = Root(outline.convert(constraints))
-//            while (curr is F) {
-//                TODO()
-//            }
 
+            fun SymTypeDFlat.toNode(constraint: DependencyConstraint?): Node = when (this) {
+                is symbolicgen.std.F ->
+                    F(
+                        (this.args + this.rite).map { mutableListOf(it.toNode(constraint)) },
+                        constraint
+                    )
+                is symbolicgen.std.L -> {
+                    L(this.label, labels[this.label]!!, constraints[0])
+                }
+                is symbolicgen.std.VB -> VB(this.vId, this.tId, constraint)
+                is symbolicgen.std.VL -> VL(this.vId, this.tId, constraint)
+                is symbolicgen.std.VR -> VR(this.vId, this.tId, constraint)
+            }
+
+            state[name] = when (outline) {
+                is symbolicgen.std.F ->
+                    F(
+                        (outline.args + outline.rite).mapIndexed { i, a -> mutableListOf(a.toNode(constraints[i])) },
+                        null
+                    )
+                is symbolicgen.std.L, is symbolicgen.std.VB, is symbolicgen.std.VL, is symbolicgen.std.VR ->
+                    outline.toNode(constraints[0])
+            }
+
+            fun variables(outline: SymTypeDFlat): Set<Pair<Int, Int>> = when (outline) {
+                is symbolicgen.std.F -> (outline.args.flatMap { variables(it) } + variables(outline.rite)).toSet()
+                is symbolicgen.std.L -> setOf()
+                is symbolicgen.std.Var -> setOf(outline.vId to outline.tId)
+            }
+            variablesInScope[name]!!.addAll(variables(outline))
         }
     }
 
-    /** Must call once for each *parameter* */
-    private fun SymTypeC.convert(constraint: DependencyConstraint? = null): MutableList<ConstrainedType> =
-        mutableListOf() // TODO
-//        when (this) {
-////            is CL, L -> labels.map { (n, p) -> L(n, MutableList(p) { mutableListOf(Hole()) }, constraint) }
-////                .toMutableList()
-////            is F -> mutableListOf(F(this.left.convert(constraint), this.rite.convert(constraint)))
-////            is N -> throw Exception("shouldn't happen this is bad code quality")
-////            is VB -> mutableListOf(ConcVB(this.vId, this.tId))
-////            is VL -> mutableListOf(ConcVL(this.vId, this.tId))
-////            is VR -> mutableListOf(ConcVR(this.vId, this.tId))
-//            is F -> TODO()
-//            is L -> TODO()
-//            is VB -> TODO()
-//            is VL -> TODO()
-//            is VR -> TODO()
-//        }
+    /** While we start with all functions flattened, we might enumerate functions with functions as outputs */
+    private fun filler(name: String, constraint: DependencyConstraint?) =
+        labels.map { L(it.key, it.value, constraint) } +
+                variablesInScope[name]!!.map { VR(it.first, it.second, constraint) } +
+                F(listOf(mutableListOf(Hole(constraint)), mutableListOf(Hole(constraint))), constraint)
 
-    fun enumerate(): Map<String, ConstrainedType> {
+    fun callMe(iterations: Int): Map<String, Node> {
+        repeat(iterations) { state.forEach { (f, root) -> root.enumerate(f) } }
+        return state
+    }
 
-        TODO()
+    fun Node.enumerate(name: String): Unit = when (this) {
+        is Hole -> throw Exception("Should be handled by parent")
+        is F -> params.forEach { options ->
+            if (options.removeAll { it is Hole }) {
+                options.addAll(filler(name, this.constraint))
+            } else {
+                options.forEach { it.enumerate(name) }
+            }
+        }
+        is L -> params.forEach { options ->
+            if (options.removeAll { it is Hole }) {
+                options.addAll(filler(name, this.constraint))
+            } else {
+                options.forEach { it.enumerate(name) }
+            }
+        }
+        is Var -> {}
     }
 }

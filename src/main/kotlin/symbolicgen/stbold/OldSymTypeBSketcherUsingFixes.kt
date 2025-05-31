@@ -1,7 +1,7 @@
 package symbolicgen.stbold
 
-import symbolicgen.*
-import symbolicgen.Function
+import symbolicgen.sta.*
+import symbolicgen.sta.Function
 import util.*
 import kotlin.math.roundToInt
 
