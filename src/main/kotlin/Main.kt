@@ -32,11 +32,14 @@ fun main() {
     val concEnum = ConcreteEnumerator(
         query,
         candidate.mapValues { it.value.flatten() },
-        mapOf(0 to 0, 2 to 1),
+        mapOf(0 to 0, 2 to 1),  // TODO call label solver
         depAnalysis,
         oracle
     )
-    println(concEnum.callMe(2))
+    concEnum.callMe(2)
+    val contexts = concEnum.contexts().filter { concEnum.check(it) }
+    contexts.forEach { println(it.toList().joinToString(separator = "\n", postfix = "\n---\n")) }
+    println(contexts.size)
 //    val gener = LabelConstraintGenerator(depAnalysis)
 //    println(gener.gen())
 

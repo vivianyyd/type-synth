@@ -1,10 +1,11 @@
 package symbolicgen.concreteenumerator
 
+import symbolicgen.ContainsNoVariables
+import symbolicgen.ContainsOnly
 import symbolicgen.DependencyAnalysis
 import symbolicgen.DependencyConstraint
 import symbolicgen.std.SymTypeDFlat
-import util.EqualityNewOracle
-import util.Query
+import util.*
 
 sealed interface Node {
     val constraint: DependencyConstraint?
@@ -47,6 +48,15 @@ data class VR(override val vid: Int, override val tid: Int, override val constra
 data class VL(override val vid: Int, override val tid: Int, override val constraint: DependencyConstraint?) :
     Var(vid, tid, constraint) {
     override fun toString(): String = "${tid}_$vid"
+}
+
+fun Node.concretizations(): List<Node> = when (this) {
+    is F -> if (params.isEmpty()) listOf(this) else naryCartesianProduct(params.map { it.flatMap { it.concretizations() } })
+        .map { F(it.map { mutableListOf(it) }, constraint) }
+    is L -> if (params.isEmpty()) listOf(this) else naryCartesianProduct(params.map { it.flatMap { it.concretizations() } })
+        .map { L(this.label, it.map { mutableListOf(it) }, constraint) }
+    is Var -> listOf(this)
+    is Hole -> listOf()
 }
 
 class ConcreteEnumerator(
@@ -101,14 +111,21 @@ class ConcreteEnumerator(
     }
 
     /** While we start with all functions flattened, we might enumerate functions with functions as outputs */
-    private fun filler(name: String, constraint: DependencyConstraint?) =
-        labels.map { L(it.key, it.value, constraint) } +
-                variablesInScope[name]!!.map { VR(it.first, it.second, constraint) } +
-                F(listOf(mutableListOf(Hole(constraint)), mutableListOf(Hole(constraint))), constraint)
+    private fun filler(name: String, constraint: DependencyConstraint?) = when (constraint) {
+        null -> variablesInScope[name]!!.map { VR(it.first, it.second, null) }
+        ContainsNoVariables -> listOf()
+        is ContainsOnly -> listOf(VR(constraint.vId, constraint.tId, null))
+    } + labels.map { L(it.key, it.value, constraint) } +
+            F(listOf(mutableListOf(Hole(constraint)), mutableListOf(Hole(constraint))), constraint)
 
     fun callMe(iterations: Int): Map<String, Node> {
         repeat(iterations) { state.forEach { (f, root) -> root.enumerate(f) } }
         return state
+    }
+
+    fun contexts(): Set<Map<String, Node>> {
+        val possTys = state.map { it.value.concretizations() }
+        return naryCartesianProduct(possTys).map { query.names.zip(it).toMap() }.toSet()
     }
 
     fun Node.enumerate(name: String): Unit = when (this) {
@@ -129,4 +146,96 @@ class ConcreteEnumerator(
         }
         is Var -> {}
     }
+
+
+    fun applyBinding(
+        t: Node,
+        varId: Int,
+        tId: Int,
+        sub: Node
+    ): Node =
+        when (t) {
+            is Hole -> throw Exception("Hole in concrete type")
+            is VB, is VL -> t
+            is L -> L(t.label, t.params.map { mutableListOf(applyBinding(it.first(), varId, tId, sub)) }, t.constraint)
+            is F -> F(t.params.map { mutableListOf(applyBinding(it.first(), varId, tId, sub)) }, t.constraint)
+            is VR -> if (t.vid == varId && t.tid == tId) sub else t
+        }
+
+    fun applyBindings(t: Node, bindings: List<Binding>): Node =
+        bindings.fold(t) { acc, (vId, tId, sub) -> applyBinding(acc, vId, tId, sub) }
+
+    /*
+    TODO {f=0_0 -> 0_0, g=1_0 -> 1_0, h=(2_0 -> 2_0) -> 2_0, a=L} with example (h f)
+     Under current impl, the second 2_0 gets bound to VB(0_0), although we want it to be a reference.
+     Do we need VB/VR separation at all?
+     Once we fix this, make sure to copy to the sketch version of unify
+     */
+    /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible.
+     * @modifies [labelClasses]
+     * */
+    fun unify(param: Node, arg: Node): List<Binding>? =
+        when (param) {
+            is VB -> listOf(Binding(param.vid, param.tid, arg))
+            is L -> when (arg) {
+                is L -> {
+                    if (param.label != arg.label) null
+                    else {
+                        var bindings: MutableList<Binding>? = mutableListOf()
+                        param.params.indices.forEach {
+                            if (bindings != null) {
+                                val p = applyBindings(param.params[it].first(), bindings!!)
+                                val a = applyBindings(arg.params[it].first(), bindings!!)
+                                val u = unify(p, a)
+                                if (u == null) bindings = null else bindings!!.addAll(u)
+                            }
+                        }
+                        bindings
+                    }
+                }
+                is F, is VL, is VB, is VR, is Hole -> null
+            }
+            is F -> when (arg) {
+                is L, is VL, is VB, is VR, is Hole -> null
+                is F -> {
+                    var bindings: MutableList<Binding>? = mutableListOf()
+                    param.params.indices.forEach {
+                        if (bindings != null) {
+                            val p = applyBindings(param.params[it].first(), bindings!!)
+                            val a = applyBindings(arg.params[it].first(), bindings!!)
+                            val u = unify(p, a)
+                            if (u == null) bindings = null else bindings!!.addAll(u)
+                        }
+                    }
+                    bindings
+                }
+            }
+            is VL, is VR, is Hole -> throw Exception("Invariant broken")
+        }
+
+    /**
+     * Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
+     * @modifies [labelClasses]
+     */
+    fun apply(fn: F, arg: Node): Node? {
+        if (arg is VR) throw Exception("Invariant broken")
+        return unify(fn.params.first().first(), arg)?.let {
+            val out = if (fn.params.size == 2) fn.params[1].first() else F(fn.params.drop(1), fn.constraint)
+            applyBindings(out, it)
+        }
+    }
+
+    fun type(context: Map<String, Node>, example: Example): Node? = when (example) {
+        is Name -> context[example.name]
+        is App -> type(context, example.fn).let { f ->
+            type(context, example.arg)?.let { arg ->
+                if (f is F) apply(f, arg) else null
+            }
+        }
+    }
+
+    fun check(context: Map<String, Node>): Boolean =
+        query.posExamples.all { type(context, it) != null } && query.negExamples.all { type(context, it) == null }
 }
+
+typealias Binding = Triple<Int, Int, Node>

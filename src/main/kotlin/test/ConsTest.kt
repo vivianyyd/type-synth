@@ -19,6 +19,7 @@ object ConsTest {
         "(+ (cons Li LLi))" to "llint",
         "(+ (cons Li (cons Li LLi)))" to "llint",
         "(- (cons Li 0))" to null,
+        "(- (cons LLi Li))" to null, // had to add this or else we make (Li, L2([L0()])), (LLi, L2([L0()])), (cons, [3_0]->[L2([L0()])]->[L2([L0()])])
         // The following two had to be added for correctness in label equiv classes, but seem a little excessive
         "(+ (cons LLi))" to "lllint to lllint",
         "(+ (cons (cons 0 Li)))" to "llint to llint",
