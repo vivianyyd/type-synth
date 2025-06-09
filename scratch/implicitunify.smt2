@@ -1,4 +1,4 @@
-(set-logic HORN)
+;(set-logic HORN)
 
 (declare-datatypes ((type 0) (tlist 0))(
     ((lab (l Int) (p tlist))

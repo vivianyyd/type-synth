@@ -1,0 +1,43 @@
+Eager ADT SMT - Amar Shah, Sanjit Seshia:
+
+Eager approach (Barrett et al. 2021) 
+
+Lazy SMT architecture, i.e., they use a theory specific solver to handle the data types and a core solver to handle the logical formula (Sebastiani 2007).
+
+A common theory solver will use a combination of congruence closure, syntactic unification, and acyclicality checks (Barrett, Shikanian, and Tinelli 2007; Oppen 1980; Reynolds and Blanchette 2017; Reynolds et al. 2018). 
+- CVC5, SMTInterpol, Z3 do this
+Barret 2007 - Add support for multiple constructors to Oppen by delaying choice of constructors before constructing graph
+^ closest comparison
+Oppen 1980 - OG algo but only one constructor => no selectors
+Reynolds and Blanchette 2017 - codatatypes (i.e. infinite applications of constructors allowed)
+Reynolds et al. 2018 - ADTs with shared selectors e.g. fn that takes multiple variants and does something
+
+The scope of our work is quantifier-free ADT queries. 
+
+
+Recursive DS not harder than ADT since you can wrap everything in Maybes and then a big if-then-else?
+Oppen 1980 no testers
+
+Modern theory-specific solvers only handle conjunctions of literals/predicates they understand? Or is that just this Oppen 80 paper 
+
+Synthesizing data structures (not their transformations..)
+Can we generalize - make this also be synthesis where we are synthesizing ASTs
+
+
+
+
+From Oppen 1980 https://dl.acm.org/doi/pdf/10.1145/322203.322204, provers that handle recursive DS: 
+    Boyer and Moore's prover for recursively defined functions [1]
+    Guttag and Musser's prover for ADTs [3]
+    Stanford simplifier [8,9] <- on combining decision procedures
+
+Read or not super relevant:
+
+Work on ADTs with quantifiers:
+
+ADT Constrained Horn Clauses (CHCs) - De Angelis et al. (2020) and Kostyukov, Mordvinov, and Fedyukovich (2021)
+
+ADTs with (FOLD) Abstractions - Suter, Dotta, and Kuncak 2010; Pham and Whalen 2014 - restricted forms of recursive functions (called catamorphisms) via partial evaluation
+e.g. abstractions: set of elements in tree, free vars in lambda expr
+
+Quantified ADTs: Kovacs, Robillard, and Voronkov (2017)
