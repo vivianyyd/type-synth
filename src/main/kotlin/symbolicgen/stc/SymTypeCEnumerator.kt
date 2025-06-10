@@ -69,6 +69,7 @@ class SymTypeCEnumerator(
             val variables: MutableList<Triple<SymTypeC, Int, Boolean>> =
                 (0 until vars).map { Triple(VR(it, tId(name)), vars, pickedLabel) }.toMutableList()
             if (canBeFresh) variables.add(Triple(VB(vars, tId(name)), vars + 1, pickedLabel))
+            // VLs can only appear in the rightmost position. VBs can actually have been previously bound in a label
             else if (pickedLabel) variables.add(Triple(VL(vars, tId(name)), vars + 1, pickedLabel))
             variables
         }

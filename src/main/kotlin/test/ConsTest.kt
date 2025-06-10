@@ -36,7 +36,7 @@ object ConsTest {
         "(- (cons tr LLi))" to null,
         "(- (cons tr (cons 0 Li)))" to null,
     )
-    val examples = intExamples// + boolExamples
+    val examples = intExamples + boolExamples
 
     val query: Query = parseNewExamples(examples.keys)
     val oracle = ScrappyNewOracle(examples.mapKeys { parseNewApp(it.key) })

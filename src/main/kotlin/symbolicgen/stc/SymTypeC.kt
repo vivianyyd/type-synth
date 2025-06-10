@@ -26,7 +26,7 @@ data class VR(override val vId: Int, override val tId: Int) : Var(vId, tId) {
 }
 
 data class VL(override val vId: Int, override val tId: Int) : Var(vId, tId) {
-    override fun toString(): String = "${tId}_$vId"
+    override fun toString(): String = "VL${tId}_$vId"
 }
 
 typealias Binding = Triple<Int, Int, SymTypeC>
