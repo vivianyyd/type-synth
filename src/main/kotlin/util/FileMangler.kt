@@ -37,9 +37,10 @@ fun callCVC(content: String, testName: String): String {
 }
 
 fun readCVCresults(): List<String> =
-    File(join("src", "main", "python", "output")).listFiles()!!.mapNotNull { file ->
-        if (file.isFile) file.readText() else null
-    }
+    File(join("src", "main", "python", "output")).listFiles()!!.filter { it.isFile }.sortedBy { it.name }
+        .mapNotNull { file ->
+            if (file.isFile) file.readText() else null
+        }
 
 fun writeProfiling(output: String, testName: String) = write(profilingResultPath(testName), output)
 

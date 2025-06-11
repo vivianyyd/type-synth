@@ -1,10 +1,12 @@
 import symbolicgen.DependencyAnalysis
+import symbolicgen.LabelConstraintGenerator
 import symbolicgen.sta.SymTypeABuilder
 import symbolicgen.stc.*
 import test.ConsTest
 import test.DictTest
 import test.HOFTest
 import test.IdTest
+import util.callCVC
 import util.parse
 import util.readCVCresults
 
@@ -23,7 +25,7 @@ fun main() {
     b.printState()
 
     val projections = SymTypeCEnumerator(query, b, oracle).enumerateAll()
-    println(projections.pr())
+//    println(projections.pr())
 
     val skeletonSizes = projections.associateWith { proj ->
         proj.keys.associateWith {
@@ -36,13 +38,19 @@ fun main() {
     }
     val sizeToCandidate = skeletonSizes.entries.associateBy({ it.value }) { it.key }
     // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to num params)
-    var count = 0
     val deps = skeletonSizes.values.associateWith { DependencyAnalysis(query, sizeToCandidate[it]!!, oracle) }
 
-// TODO WRAP THE BELOW IN "IF CALL CVC"
-//    projections.forEach { callCVC(LabelConstraintGenerator(it, deps[skeletonSizes[it]!!]!!).gen(), "${count++}") }
+    val callcvc = false
+    if (callcvc) {
+        projections.forEachIndexed { i, it ->
+            callCVC(LabelConstraintGenerator(it, deps[skeletonSizes[it]!!]!!).gen(), "$i")
+        }
+        projections.forEachIndexed { i, it ->
+            if (i in listOf(41, 44, 48, 50)) println(it)
+        }
+    }
 
-
+    // TODO pretty thrilling how many candidates get pruned away simply from being unsatisfiable!!!!!!!
     readCVCresults().forEach {
         println(parse(it).joinToString(separator = "\n"))
         println()
