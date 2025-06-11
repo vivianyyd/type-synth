@@ -1,7 +1,8 @@
 package util
 
-import enumgen.types.Type
-import enumgen.types.checkApplication
+import query.*
+import types.Type
+import types.checkApplication
 
 interface EqualityNewOracle {
     fun equal(a: Example, b: Example): Boolean

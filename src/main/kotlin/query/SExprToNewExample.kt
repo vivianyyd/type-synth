@@ -1,4 +1,7 @@
-package util
+package query
+
+import util.SExpr
+import util.SExprParser
 
 fun parseNewExamples(sexps: Collection<String>): Query = examplesFromSexps(sexps.map { SExprParser(it).parse() })
 

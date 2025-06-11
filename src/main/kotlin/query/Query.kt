@@ -1,4 +1,4 @@
-package util
+package query
 
 sealed interface Example
 data class Name(val name: String) : Example {

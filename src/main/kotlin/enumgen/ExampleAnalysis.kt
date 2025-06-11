@@ -1,11 +1,11 @@
 package enumgen
 
-import enumgen.types.Error
-import enumgen.types.SiblingHole
-import enumgen.types.Type
-import enumgen.types.checkApplication
-import util.FlatApp
-import util.FlatQuery
+import query.FlatApp
+import query.FlatQuery
+import types.Error
+import types.SiblingHole
+import types.Type
+import types.checkApplication
 
 
 class ExampleAnalysis(private val query: FlatQuery) {

@@ -1,11 +1,16 @@
 package symbolicgen.concretesketcher
 
+import query.App
+import query.Example
+import query.Name
+import query.Query
 import symbolicgen.ContainsNoVariables
 import symbolicgen.ContainsOnly
 import symbolicgen.DependencyAnalysis
 import symbolicgen.DependencyConstraint
 import symbolicgen.stc.*
-import util.*
+import util.EqualityNewOracle
+import util.SketchWriter
 import java.lang.Integer.max
 
 class DepLabConcreteSketcher(

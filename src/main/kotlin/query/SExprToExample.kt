@@ -1,4 +1,7 @@
-package util
+package query
+
+import util.SExpr
+import util.SExprParser
 
 fun parseExamples(sexps: Collection<String>): FlatQuery = examplesFromSexps(sexps.map { SExprParser(it).parse() })
 

@@ -1,4 +1,4 @@
-package enumgen.types
+package types
 
 /**
  * TODO Ideally, there should be two type files: One for the notion of type which is shared across all synthesis

@@ -1,8 +1,12 @@
 package symbolicgen.stbold
 
+import query.App
+import query.Example
+import query.Name
+import query.Query
 import symbolicgen.sta.*
 import symbolicgen.sta.Function
-import util.*
+import util.EqualityNewOracle
 import kotlin.math.roundToInt
 
 // TODO style: can inline tests into the harness that wraps all the tests

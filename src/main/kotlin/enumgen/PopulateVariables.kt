@@ -1,7 +1,7 @@
 package enumgen
 
-import enumgen.types.*
-import enumgen.types.Function
+import types.*
+import types.Function
 
 /** Assume the type has only Variables of the same name. Replace those and child holes with various paritionings
  * into at most [cap] variables

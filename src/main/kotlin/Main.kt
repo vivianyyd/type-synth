@@ -40,7 +40,7 @@ fun main() {
     val depAnalysis = DependencyAnalysis(query, candidate, oracle)
     DependencyVisualizer.viz(depAnalysis.graphs["put"]!!, "put")
     TODO("No need for dep analysis for every candidate context, just every OUTER arrow skeleton (each unique mapping of name to num params)")
-    TODO("Enumerate everything, do dep analyses for skeletons, THEN filter projected contexts with existing function PLUS one that uses check that if param !mayBeFresh, all args to it must be the same!!!")
+    TODO("Enumerate everything, do dep analyses for skeletons, THEN filter projected contexts with existing function PLUS one that uses check that if param !mayBeFresh, all args to it must be the same!!! (ok duh, that's cus that's how we decide !maybefresh anyway. equivalently, we just go through all the named stuff and make them the same label if oracleq. Need to be careful: Can names be observationally equal wrt where they're used but not actually?)")
 
     val lbcn = LabelConstraintGenerator(depAnalysis)
     println(lbcn.gen())

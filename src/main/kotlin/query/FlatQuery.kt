@@ -1,4 +1,4 @@
-package util
+package query
 
 data class FlatApp(val name: String, val args: List<FlatApp> = listOf()) {
     override fun toString(): String {

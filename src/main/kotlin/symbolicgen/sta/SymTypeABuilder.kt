@@ -1,5 +1,6 @@
 package symbolicgen.sta
 
+import query.*
 import util.*
 import java.util.function.Predicate
 

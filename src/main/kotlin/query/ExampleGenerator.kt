@@ -1,10 +1,8 @@
-package examplegen
+package query
 
 import enumgen.Assignment
-import enumgen.types.*
-import enumgen.types.Function
-import util.FlatApp
-import util.FlatQuery
+import types.*
+import types.Function
 import util.SExprParser
 import util.reflexiveNaryProduct
 import java.util.*
@@ -93,7 +91,7 @@ class ExampleGenerator(
                     val example = apps.first()
                     apps = apps.drop(1)
 
-                    val eval = checkApplication(example, dummies)
+                    val eval = checkApplication(example, dummies)  // TODO use better newer unify here
                     if (eval is Error) {
                         if (negExs[eval.category]!!.size < ERROR_COVERAGE_CAPACITY)
                             negExs[eval.category]!!.add(example)

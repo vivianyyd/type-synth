@@ -1,4 +1,4 @@
-package enumgen.types
+package types
 
 typealias Binding = Pair<String, Type>
 

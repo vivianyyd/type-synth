@@ -1,4 +1,7 @@
-package enumgen.types
+package types
+
+import enumgen.Assignment
+import query.FlatApp
 
 typealias Context = MutableMap<Variable, Type>
 
@@ -138,4 +141,10 @@ object OldUnify {
             }
         }
     }
+}
+
+fun checkApplication(app: FlatApp, map: Assignment): Type {
+    var fn = map[app.name] ?: throw Exception("Function name not found")
+    app.args.forEach { arg -> fn = OldUnify.apply(fn, checkApplication(arg, map)) }
+    return fn
 }

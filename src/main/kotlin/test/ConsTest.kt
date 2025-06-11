@@ -1,9 +1,9 @@
 package test
 
-import util.Query
+import query.Query
+import query.parseNewApp
+import query.parseNewExamples
 import util.ScrappyNewOracle
-import util.parseNewApp
-import util.parseNewExamples
 
 object ConsTest {
     private val intExamples = mapOf(

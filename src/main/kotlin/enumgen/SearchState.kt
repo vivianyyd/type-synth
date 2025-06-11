@@ -1,7 +1,9 @@
 package enumgen
 
-import enumgen.types.*
-import enumgen.types.Function
+import types.ChildHole
+import types.Function
+import types.Type
+import types.recursiveNumChildHoles
 
 class SearchState(
     val names: List<String>,

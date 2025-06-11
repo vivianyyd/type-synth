@@ -1,7 +1,12 @@
 package symbolicgen.concretesketcher
 
+import query.App
+import query.Example
+import query.Name
+import query.Query
 import symbolicgen.stbold.*
-import util.*
+import util.EqualityNewOracle
+import util.SketchWriter
 import java.lang.Integer.max
 
 typealias ContextOutline = Map<String, OldSymTypeB>

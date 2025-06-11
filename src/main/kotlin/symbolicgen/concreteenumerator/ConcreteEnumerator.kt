@@ -1,5 +1,6 @@
 package symbolicgen.concreteenumerator
 
+import query.*
 import symbolicgen.ContainsNoVariables
 import symbolicgen.ContainsOnly
 import symbolicgen.DependencyAnalysis

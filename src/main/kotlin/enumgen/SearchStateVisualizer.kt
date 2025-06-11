@@ -1,7 +1,7 @@
 package enumgen
 
-import enumgen.types.*
-import enumgen.types.Function
+import types.*
+import types.Function
 import util.visualizations.TreeDotWriter
 import java.io.File
 import java.io.FileOutputStream

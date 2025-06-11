@@ -1,8 +1,13 @@
 package symbolicgen.stbold
 
+import query.App
+import query.Example
+import query.Name
+import query.Query
 import symbolicgen.sta.*
 import symbolicgen.sta.Function
-import util.*
+import util.EqualityNewOracle
+import util.SketchWriter
 import kotlin.math.roundToInt
 
 class OldSymTypeBSketcher(val query: Query, private val state: State, private val oracle: EqualityNewOracle) {

@@ -1,9 +1,9 @@
 package test
 
-import enumgen.types.parseType
+import query.Query
+import query.parseNewExamples
+import types.parseType
 import util.CheckingOracle
-import util.Query
-import util.parseNewExamples
 
 object DictTest {
     private val basics = listOf(
@@ -60,7 +60,7 @@ object DictTest {
         "(+ (put (put Eii 0 0) 0 1))",
         "(+ (put (put Eii 0 0) 1 0))",
         "(+ (put (put Eii 1 0) 1 1))",
-        
+
         ////////////
         "(- (put 0))",
         "(- (put tr))",
