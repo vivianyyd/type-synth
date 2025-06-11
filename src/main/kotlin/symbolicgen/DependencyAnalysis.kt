@@ -68,7 +68,7 @@ class DependencyAnalysis(
         val nodes = nodes(name)
         val deps = mutableSetOf<DependencyEdge>()
         val loops = mutableSetOf<SelfLoop>()
-        val hasFresh = mutableSetOf<ParameterNode>()
+        val mayHaveFresh = mutableSetOf<ParameterNode>()
 
         // TODO I think we don't actually need all subexprs in posexs here
         val posExs = flatExs(name, query.posExamples)
@@ -110,53 +110,17 @@ class DependencyAnalysis(
              * Node p3 has F tag when there exist
              *  + f t1 t2 t3
              *  + f t1 t2 t3'
-             * where t3 =/= t3'
+             * where t3 =/= t3', i.e. there are still degrees of flexibility (unbound variables) in the parameter
              */
             val fTag =
                 if (i == nodes.size - 1)
-                    false  // No additional arguments to take in, so fully determined. Assumes nullary contains no variables
+                    false  // No additional arguments to take in, so fully determined. TODO Assumes nullary contains no variables
                 else groupExsByTypeBeforeArg(i, pos).any { c ->
                     c.any { e1 ->
                         c.any { e2 -> !oracle.flatEqual(arg(e1, i), arg(e2, i)) }
                     }
                 }
-            if (fTag) hasFresh.add(pi)
-
-            /*
-            val allGroupedByConcreteParamTypeForThisParam = groupExsByTypeBeforeArg(i, pos + neg)
-
-            fun labelsDefinitelyEqual(e1: FlatApp, e2: FlatApp): Boolean {
-                fun lab(e: FlatApp): L? {
-                    var curr: EnumeratedSymbolicType? = outline[e.name]
-                    val bindings = mutableMapOf<VB, FlatApp>()
-                    e.args.forEach {
-                        if (curr !is F) curr = null
-                        else {
-                            val c = curr as F
-                            if (c.left is VB) bindings[c.left] = it
-                            curr = c.rite
-                        }
-                    }
-                    return when (curr) {
-                        is F, is VB, is VL, null -> null
-                        is L -> curr as L
-                        is VR -> bindings[VB((curr as VR).vId, (curr as VR).tId)]?.let { lab(it) }
-                    }
-                }
-                return e1 == e2 || (lab(e1) == lab(e2) && lab(e1) != null)
-            }
-            val bTag =
-                allGroupedByConcreteParamTypeForThisParam.filter { c -> c.any { it in pos } && c.any { it in neg } }
-                    .any { c ->
-                        c.any { e1 ->
-                            c.any { e2 ->
-                                labelsDefinitelyEqual(
-                                    arg(e1, i), arg(e2, i)
-                                ) && ((e1 in pos && e2 in neg) || (e1 in neg && e2 in pos))
-                            }
-                        }
-                    }
-             */
+            if (fTag) mayHaveFresh.add(pi)
 
             for (pj in parameters) {
                 val j = pj.i
@@ -179,7 +143,7 @@ class DependencyAnalysis(
                 }
             }
         }
-        return Triple(deps, loops, hasFresh)
+        return Triple(deps, loops, mayHaveFresh)
     }
     /*
     ## Undirected links:

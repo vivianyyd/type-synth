@@ -27,9 +27,9 @@ class LabelConstraintGenerator(
         }
     }
 
-    private fun py(node: ParameterNode) = "${pyName[node.f]!!}_${node.i}"
+    private fun py(node: ParameterNode) = "p${pyName[node.f]!!}_${node.i}"
     private fun py(v: Var) = "v$v"
-    private fun pySize(l: L) = "$l"
+    private fun pySize(l: L) = "size$l"
 
     private fun declareInts(names: List<String>) {
         if (names.isEmpty()) return
@@ -44,6 +44,13 @@ class LabelConstraintGenerator(
         val lsizes = dep.nodeToType.values.filterIsInstance<L>().map { pySize(it) }.toSet().toList()
         declareInts(vars)
         declareInts(lsizes)
+
+        val varsDistinct = vars.flatMapIndexed { i, u ->
+            vars.mapIndexedNotNull { j, v ->
+                if (u == v || i < j) null else "$u != $v"
+            }
+        }
+
         val labelsMatchConstrs = dep.nodeToType.filter { (_, t) -> t is L }.map { (n, t) ->
             "${pySize(t as L)} >= Cardinality(${py(n)})"
         }
@@ -52,7 +59,7 @@ class LabelConstraintGenerator(
             "${py(n)} == Singleton(${py(t as Var)})"
         }
 
-        w.constrs(labelsMatchConstrs + varsAreSingletons)
+        w.constrs(varsDistinct + labelsMatchConstrs + varsAreSingletons)
 
         // Translate dependency info into set constraints
         depInfo.forEach { (name, info) ->
@@ -88,9 +95,9 @@ class LabelConstraintGenerator(
                     }
 
                     val diffPrev = "SetMinus(${py(p)}, ${union(p.i)})"
-                    val rel = if (p in fresh) "!=" else "=="
+//                    val rel = if (p in fresh) "!=" else "=="
                     val empty = "EmptySet(IntSort())"
-                    "$diffPrev $rel $empty"
+                    if (p !in fresh) "$diffPrev == $empty" else null
                 }
             }
             w.constrs(edgeConstrs + freshConstrs)

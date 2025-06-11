@@ -1,5 +1,11 @@
+import symbolicgen.DependencyAnalysis
+import symbolicgen.DependencyVisualizer
+import symbolicgen.LabelConstraintGenerator
 import symbolicgen.sta.SymTypeABuilder
+import symbolicgen.stc.F
+import symbolicgen.stc.L
 import symbolicgen.stc.SymTypeCEnumerator
+import symbolicgen.stc.Var
 import test.ConsTest
 import test.DictTest
 import test.HOFTest
@@ -21,12 +27,26 @@ fun main() {
 
     val enum = SymTypeCEnumerator(query, b, oracle)
     val specializedSymbolicTypes = enum.enumerateAll()
-    println(specializedSymbolicTypes.pr())
+//    println(specializedSymbolicTypes.pr())
+
+    val cherrypick = specializedSymbolicTypes.filter { context ->
+        context["put"] is F && (context["put"] as F).left is L &&
+                (context["put"] as F).rite is F && ((context["put"] as F).rite as F).left is Var &&
+                ((context["put"] as F).rite as F).rite is F && (((context["put"] as F).rite as F).rite as F).left is Var &&
+                (((context["put"] as F).rite as F).rite as F).rite is L
+    }
+    val candidate = cherrypick[1]
+    println(candidate)
+    val depAnalysis = DependencyAnalysis(query, candidate, oracle)
+    DependencyVisualizer.viz(depAnalysis.graphs["put"]!!, "put")
+    TODO("No need for dep analysis for every candidate context, just every OUTER arrow skeleton (each unique mapping of name to num params)")
+    TODO("Enumerate everything, do dep analyses for skeletons, THEN filter projected contexts with existing function PLUS one that uses check that if param !mayBeFresh, all args to it must be the same!!!")
+
+    val lbcn = LabelConstraintGenerator(depAnalysis)
+    println(lbcn.gen())
 
 //    val candidate = specializedSymbolicTypes[7]
 //    println(candidate)
-//
-//    val depAnalysis = DependencyAnalysis(query, candidate, oracle)
 //
 //    val concEnum = ConcreteEnumerator(
 //        query,

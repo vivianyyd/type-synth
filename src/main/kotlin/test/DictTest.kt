@@ -12,7 +12,8 @@ object DictTest {
         "(+ tr)",
         "(+ Eib)",
         "(+ Ebi)",
-        "(+ put)"
+        "(+ put)",
+        "(+ Eii)"
     )
     private val put = listOf(
         "(+ (put Eib))",
@@ -37,7 +38,30 @@ object DictTest {
         "(+ (put (put Ebi tr 1) tr 0))",
         "(+ (put (put Ebi tr 1) tr))",
         "(+ (put (put Ebi tr 1) tr 1))",
-        ///////
+        //////////
+//        "(+ (put Ebb))",
+//        "(+ (put Ebb tr))",
+//        "(+ (put Ebb tr tr))",
+//        "(+ (put (put Ebb tr tr)))",
+//        "(+ (put (put Ebb tr tr) tr))",
+//        "(+ (put (put Ebb tr tr) tr tr))",
+//        //////////
+        "(+ (put Eii))",
+        "(+ (put Eii 0))",
+        "(+ (put Eii 1))",
+        "(+ (put Eii 0 1))",
+        "(+ (put Eii 1 0))",
+        "(+ (put Eii 1 1))",
+        "(+ (put (put Eii 0 0)))",
+        "(+ (put (put Eii 1 0)))",
+        "(+ (put (put Eii 0 1) 0))",
+        "(+ (put (put Eii 0 1) 1))",
+        "(+ (put (put Eii 1 0) 1))",
+        "(+ (put (put Eii 0 0) 0 1))",
+        "(+ (put (put Eii 0 0) 1 0))",
+        "(+ (put (put Eii 1 0) 1 1))",
+        
+        ////////////
         "(- (put 0))",
         "(- (put tr))",
         "(- (put 1))",
@@ -61,6 +85,8 @@ object DictTest {
         "tr" to "(b)",
         "Eib" to "(d (i) (b))",
         "Ebi" to "(d (b) (i))",
+        "Eii" to "(d (i) (i))",
+        "Ebb" to "(d (b) (b))",
         "put" to "(-> (d k v) (-> k (-> v (d k v))))"
     ).mapValues { parseType(it.value) })
 }
