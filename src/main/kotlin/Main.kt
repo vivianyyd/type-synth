@@ -1,15 +1,12 @@
 import symbolicgen.DependencyAnalysis
-import symbolicgen.DependencyVisualizer
-import symbolicgen.LabelConstraintGenerator
 import symbolicgen.sta.SymTypeABuilder
-import symbolicgen.stc.F
-import symbolicgen.stc.L
-import symbolicgen.stc.SymTypeCEnumerator
-import symbolicgen.stc.Var
+import symbolicgen.stc.*
 import test.ConsTest
 import test.DictTest
 import test.HOFTest
 import test.IdTest
+import util.parse
+import util.readCVCresults
 
 const val ROUNDS = 4
 const val RUN_SKETCH = true
@@ -25,25 +22,39 @@ fun main() {
     val b = SymTypeABuilder(query).make
     b.printState()
 
-    val enum = SymTypeCEnumerator(query, b, oracle)
-    val specializedSymbolicTypes = enum.enumerateAll()
-//    println(specializedSymbolicTypes.pr())
+    val projections = SymTypeCEnumerator(query, b, oracle).enumerateAll()
+    println(projections.pr())
 
-    val cherrypick = specializedSymbolicTypes.filter { context ->
-        context["put"] is F && (context["put"] as F).left is L &&
-                (context["put"] as F).rite is F && ((context["put"] as F).rite as F).left is Var &&
-                ((context["put"] as F).rite as F).rite is F && (((context["put"] as F).rite as F).rite as F).left is Var &&
-                (((context["put"] as F).rite as F).rite as F).rite is L
+    val skeletonSizes = projections.associateWith { proj ->
+        proj.keys.associateWith {
+            fun SymTypeC.params(): Int = when (this) {
+                is F -> 1 + this.rite.params()
+                is L, is Var -> 1
+            }
+            proj[it]!!.params()
+        }
     }
-    val candidate = cherrypick[1]
-    println(candidate)
-    val depAnalysis = DependencyAnalysis(query, candidate, oracle)
-    DependencyVisualizer.viz(depAnalysis.graphs["put"]!!, "put")
-    TODO("No need for dep analysis for every candidate context, just every OUTER arrow skeleton (each unique mapping of name to num params)")
-    TODO("Enumerate everything, do dep analyses for skeletons, THEN filter projected contexts with existing function PLUS one that uses check that if param !mayBeFresh, all args to it must be the same!!! (ok duh, that's cus that's how we decide !maybefresh anyway. equivalently, we just go through all the named stuff and make them the same label if oracleq. Need to be careful: Can names be observationally equal wrt where they're used but not actually?)")
+    val sizeToCandidate = skeletonSizes.entries.associateBy({ it.value }) { it.key }
+    // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to num params)
+    var count = 0
+    val deps = skeletonSizes.values.associateWith { DependencyAnalysis(query, sizeToCandidate[it]!!, oracle) }
 
-    val lbcn = LabelConstraintGenerator(depAnalysis)
-    println(lbcn.gen())
+// TODO WRAP THE BELOW IN "IF CALL CVC"
+//    projections.forEach { callCVC(LabelConstraintGenerator(it, deps[skeletonSizes[it]!!]!!).gen(), "${count++}") }
+
+
+    readCVCresults().forEach {
+        println(parse(it).joinToString(separator = "\n"))
+        println()
+        println()
+
+    }
+
+
+    TODO("Call cvc to solve label constraints, parse them, then use them for enumeration")
+
+    TODO("Can names be observationally equal wrt where they're used but not actually due to differences in arguments they expect? It doesn't break our blind unionfind labels for values that are obs equiv, but maybe it breaks other stuff esp when we have HOFs... Actually I think it's fine bc the way we do observational equiv is we substitute one for the other for ALL occurrences including as the function in an application. That's really expensive to do with examples though)")
+    TODO("When doing final enumeration, take step in each candidate")
 
 //    val candidate = specializedSymbolicTypes[7]
 //    println(candidate)

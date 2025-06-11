@@ -76,6 +76,8 @@ object DictTest {
         "(- (put Ebi tr tr))",
     )
 
+    // TODO next: chain operator takes dicts ab, bc and produces ac
+
     val examples = basics + put
 
     val query: Query = parseNewExamples(examples)
@@ -90,29 +92,3 @@ object DictTest {
         "put" to "(-> (d k v) (-> k (-> v (d k v))))"
     ).mapValues { parseType(it.value) })
 }
-
-//private val basics = mapOf(
-//    "(+ 0)" to "(i)",
-//    "(+ 1)" to "(i)",
-//    "(+ tr)" to "(b)",
-//    "(+ Eib)" to "(d (i) (b))",
-//    "(+ Ebi)" to "(d (b) (i))",
-//)
-//private val put = mapOf(
-//    "(+ (put Eib))" to "(-> (i) (-> (b) (d (i) (b))))",
-//    "(+ (put Eib 0))" to "(-> (b) (d (i) (b)))",
-//    "(+ (put Eib 1))" to "(-> (b) (d (i) (b)))",
-//    "(+ (put Eib 0 tr))" to "(d (i) (b))",
-//    "(+ (put (put Eib 0 tr)))" to "(-> (i) (-> (b) (d (i) (b))))",
-//    "(+ (put (put Eib 0 tr) 0))" to "(-> (b) (d (i) (b)))",
-//    "(+ (put (put Eib 0 tr) 0 tr))" to "(d (i) (b))",
-//    "(+ (put (put Eib 0 tr) 1 tr))" to "(d (i) (b))",
-//    ////////////
-//    "(+ (put Ebi))" to "(-> (b) (-> (i) (d (b) (i))))",
-//    "(+ (put Ebi tr))" to "(-> (i) (d (b) (i)))",
-//    "(+ (put Ebi tr 0))" to "(d (b) (i))",
-//    "(+ (put (put Ebi tr 0)))" to "(-> (b) (-> (i) (d (b) (i))))",
-//    "(+ (put (put Ebi tr 0) tr))" to "(-> (i) (d (b) (i)))",
-//    "(+ (put (put Ebi tr 0) tr 0))" to "(d (b) (i))",
-//    "(+ (put (put Ebi tr 1) tr 0))" to "(d (b) (i))",
-//)

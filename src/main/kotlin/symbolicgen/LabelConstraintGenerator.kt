@@ -1,6 +1,8 @@
 package symbolicgen
 
+import symbolicgen.stc.F
 import symbolicgen.stc.L
+import symbolicgen.stc.SymTypeC
 import symbolicgen.stc.Var
 import util.DependencyEdge
 import util.ParameterNode
@@ -8,6 +10,7 @@ import util.PyWriter
 import util.SelfLoop
 
 class LabelConstraintGenerator(
+    private val hyp: Map<String, SymTypeC>,
     private val dep: DependencyAnalysis
 ) {
     private val w = PyWriter()
@@ -27,6 +30,19 @@ class LabelConstraintGenerator(
         }
     }
 
+    // TODO this is duplicate code with dep analysis, factor out
+    private val nodeToType = hyp.entries.fold(mutableMapOf<ParameterNode, SymTypeC>()) { m, (name, tree) ->
+        var curr = tree
+        var count = 0
+        while (curr is F) {
+            m[ParameterNode(name, count)] = curr.left
+            count++
+            curr = curr.rite
+        }
+        m[ParameterNode(name, count)] = curr
+        m
+    }
+
     private fun py(node: ParameterNode) = "p${pyName[node.f]!!}_${node.i}"
     private fun py(v: Var) = "v$v"
     private fun pySize(l: L) = "size$l"
@@ -40,8 +56,8 @@ class LabelConstraintGenerator(
 
     fun gen(): String {
         // Declare top-level variables, label sizes
-        val vars = dep.nodeToType.values.filterIsInstance<Var>().map { py(it) }.toSet().toList()
-        val lsizes = dep.nodeToType.values.filterIsInstance<L>().map { pySize(it) }.toSet().toList()
+        val vars = nodeToType.values.filterIsInstance<Var>().map { py(it) }.toSet().toList()
+        val lsizes = nodeToType.values.filterIsInstance<L>().map { pySize(it) }.toSet().toList()
         declareInts(vars)
         declareInts(lsizes)
 
@@ -51,11 +67,11 @@ class LabelConstraintGenerator(
             }
         }
 
-        val labelsMatchConstrs = dep.nodeToType.filter { (_, t) -> t is L }.map { (n, t) ->
+        val labelsMatchConstrs = nodeToType.filter { (_, t) -> t is L }.map { (n, t) ->
             "${pySize(t as L)} >= Cardinality(${py(n)})"
         }
 
-        val varsAreSingletons = dep.nodeToType.filter { (_, t) -> t is Var }.map { (n, t) ->
+        val varsAreSingletons = nodeToType.filter { (_, t) -> t is Var }.map { (n, t) ->
             "${py(n)} == Singleton(${py(t as Var)})"
         }
 

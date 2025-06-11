@@ -25,7 +25,7 @@ data class ContainsOnly(val vId: Int, val tId: Int) : DependencyConstraint
 class DependencyAnalysis(
     private val query: Query, outline: Map<String, SymTypeC>, private val oracle: EqualityNewOracle
 ) {
-    val nodeToType = outline.entries.fold(mutableMapOf<ParameterNode, SymTypeC>()) { m, (name, tree) ->
+    private val nodeToType = outline.entries.fold(mutableMapOf<ParameterNode, SymTypeC>()) { m, (name, tree) ->
         var curr = tree
         var count = 0
         while (curr is F) {
