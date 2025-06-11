@@ -1,8 +1,14 @@
 package symbolicgen.stc
 
+import query.App
+import query.Example
+import query.Name
+import query.Query
 import symbolicgen.sta.*
 import symbolicgen.sta.Function
-import util.*
+import util.EqualityNewOracle
+import util.UnionFind
+import util.naryCartesianProduct
 
 class SymTypeCEnumerator(
     val query: Query,
@@ -28,6 +34,15 @@ class SymTypeCEnumerator(
      */
     private fun checkPosExsAndMergeLabels(context: MutableMap<String, SymTypeC>): Boolean {
         val labelClasses = UnionFind(freshLabel)
+
+        // TODO so hacky. There must be a more principled way...
+        context.toList().forEachIndexed { i, (n1, t1) ->
+            context.toList().forEachIndexed { j, (n2, t2) ->
+                if (i < j && t1 is L && t2 is L && oracle.equal(Name(n1), Name(n2)))
+                    labelClasses.union(t1.label, t2.label)
+            }
+        }
+
         fun check(ex: Example): SymTypeC? = when (ex) {
             is Name -> context[ex.name]!!
             is App -> {
