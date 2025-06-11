@@ -1,8 +1,8 @@
-package enumgen.visualizations
+package util.visualizations
 
 import java.io.PrintWriter
 
-class FlowDotWriter {
+class TreeDotWriter {
     private val sb = StringBuilder()
 
     fun restart() = sb.delete(0, sb.length)
@@ -11,8 +11,8 @@ class FlowDotWriter {
         sb.append("digraph g {")
         sb.appendLine()
         listOf(
-            "splines=true;",
-            "rankdir=LR; ordering=out;",
+            "splines=false;",
+            "rankdir=TD; ordering=out;",
             "node [shape = record, height=.1];"
         ).forEach { sb.append("\t$it\n") }
     }
@@ -21,17 +21,15 @@ class FlowDotWriter {
         sb.append("\t$nodeName [label = \"$label\"];\n")
     }
 
-    fun writeEdges(edges: List<Pair<String, String>>, directed: Boolean, subgraphName: String) {
-        sb.append("\tsubgraph $subgraphName {")
-        sb.appendLine()
-        if (!directed) sb.append("\t\tedge [dir=none, color=purple]\n")
-        writeSubgraphEdges(edges)
-        sb.append("\t}\n")
-    }
+    fun writeTypeNode(nodeName: String, type: String, ports: List<String>) =
+        if (ports.isEmpty()) writeNode(nodeName, type)
+        else writeNode(
+            nodeName,
+            "{ $type | { ${ports.joinToString(separator = " | ") { "<$it>" }} } }"
+        )
 
-    private fun writeSubgraphEdges(edges: List<Pair<String, String>>) {
-        edges.map { (a, b) -> "$a -> $b" }.forEach { sb.append("\t\t$it\n") }
-    }
+    fun writeEdge(sourceName: String, sinkName: String) =
+        sb.append("\t$sourceName:s -> $sinkName:n;\n")
 
     fun finishGraph() {
         sb.append("}")

@@ -1,8 +1,8 @@
-package enumgen.visualizations
+package enumgen
 
-import enumgen.*
 import enumgen.types.*
 import enumgen.types.Function
+import util.visualizations.TreeDotWriter
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintWriter
@@ -24,9 +24,31 @@ object SearchStateVisualizer {
         is ChildHole -> "_"
         is SiblingHole -> "-${type.depth}"
         is Variable -> {
-             val greeks = listOf(
-            "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta", "iota", "kappa",
-            "lambda", "mu", "nu", "xi", "omicron", "pi", "rho", "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega"
+            val greeks = listOf(
+                "alpha",
+                "beta",
+                "gamma",
+                "delta",
+                "epsilon",
+                "zeta",
+                "eta",
+                "theta",
+                "iota",
+                "kappa",
+                "lambda",
+                "mu",
+                "nu",
+                "xi",
+                "omicron",
+                "pi",
+                "rho",
+                "sigma",
+                "tau",
+                "upsilon",
+                "phi",
+                "chi",
+                "psi",
+                "omega"
             )
             type.id
 //            if (type.id in greeks.indices) "&${greeks[type.id]};" else "v${type.id}"

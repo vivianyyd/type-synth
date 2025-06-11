@@ -2,7 +2,6 @@ package enumgen
 
 import enumgen.types.*
 import enumgen.types.Function
-import enumgen.visualizations.SearchStateVisualizer
 import util.FlatQuery
 
 typealias Assignment = Map<String, Type>
