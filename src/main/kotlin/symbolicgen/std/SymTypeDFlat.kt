@@ -17,9 +17,7 @@ fun SymTypeC.flatten(): SymTypeDFlat = when (this) {
         F(args.map { it.flatten() }, curr.flatten() as NotF)
     }
     is symbolicgen.stc.L -> L(this.label)
-    is symbolicgen.stc.VB -> VB(this.vId, this.tId)
-    is symbolicgen.stc.VL -> VL(this.vId, this.tId)
-    is symbolicgen.stc.VR -> VR(this.vId, this.tId)
+    is symbolicgen.stc.Var -> Var(this.vId, this.tId)
 }
 
 data class F(val args: List<SymTypeDFlat>, val rite: NotF) : SymTypeDFlat {
@@ -29,20 +27,18 @@ data class F(val args: List<SymTypeDFlat>, val rite: NotF) : SymTypeDFlat {
 
 class L(val label: Int) : NotF {
     override fun toString(): String = "L$label"
+
+    companion object {
+        fun toL(s: String) = symbolicgen.stc.L(s.removePrefix("L").toInt())
+    }
 }
 
-sealed class Var(open val vId: Int, open val tId: Int) : NotF {
-    override fun toString(): String = "${tId}_$vId"
-}
+data class Var(val vId: Int, val tId: Int) : NotF {
+    constructor(ids: Pair<Int, Int>) : this(ids.second, ids.first)
 
-data class VB(override val vId: Int, override val tId: Int) : Var(vId, tId) {
     override fun toString(): String = "${tId}_$vId"
-}
-
-data class VR(override val vId: Int, override val tId: Int) : Var(vId, tId) {
-    override fun toString(): String = "${tId}_$vId"
-}
-
-data class VL(override val vId: Int, override val tId: Int) : Var(vId, tId) {
-    override fun toString(): String = "${tId}_$vId"
+    
+    companion object {
+        fun toIds(s: String) = s.substringBefore('_').toInt() to s.substringAfter('_').toInt()
+    }
 }

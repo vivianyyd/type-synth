@@ -34,20 +34,7 @@ class F(
     override fun toString(): String = params.joinToString(separator = "->")
 }
 
-sealed class Var(open val vid: Int, open val tid: Int, override val constraint: DependencyConstraint?) : Node
-
-data class VB(override val vid: Int, override val tid: Int, override val constraint: DependencyConstraint?) :
-    Var(vid, tid, constraint) {
-    override fun toString(): String = "${tid}_$vid"
-}
-
-data class VR(override val vid: Int, override val tid: Int, override val constraint: DependencyConstraint?) :
-    Var(vid, tid, constraint) {
-    override fun toString(): String = "${tid}_$vid"
-}
-
-data class VL(override val vid: Int, override val tid: Int, override val constraint: DependencyConstraint?) :
-    Var(vid, tid, constraint) {
+class Var(val vid: Int, val tid: Int, override val constraint: DependencyConstraint?) : Node {
     override fun toString(): String = "${tid}_$vid"
 }
 
@@ -87,9 +74,7 @@ class ConcreteEnumerator(
                 is symbolicgen.std.L -> {
                     L(this.label, labels[this.label]!!, constraints[0])
                 }
-                is symbolicgen.std.VB -> VB(this.vId, this.tId, constraint)
-                is symbolicgen.std.VL -> VL(this.vId, this.tId, constraint)
-                is symbolicgen.std.VR -> VR(this.vId, this.tId, constraint)
+                is symbolicgen.std.Var -> Var(this.vId, this.tId, constraint)
             }
 
             state[name] = when (outline) {
@@ -98,7 +83,7 @@ class ConcreteEnumerator(
                         (outline.args + outline.rite).mapIndexed { i, a -> mutableListOf(a.toNode(constraints[i])) },
                         null
                     )
-                is symbolicgen.std.L, is symbolicgen.std.VB, is symbolicgen.std.VL, is symbolicgen.std.VR ->
+                is symbolicgen.std.L, is symbolicgen.std.Var ->
                     outline.toNode(constraints[0])
             }
 
@@ -113,9 +98,9 @@ class ConcreteEnumerator(
 
     /** While we start with all functions flattened, we might enumerate functions with functions as outputs */
     private fun filler(name: String, constraint: DependencyConstraint?) = when (constraint) {
-        null -> variablesInScope[name]!!.map { VR(it.first, it.second, null) }
+        null -> variablesInScope[name]!!.map { Var(it.first, it.second, null) }
         ContainsNoVariables -> listOf()
-        is ContainsOnly -> listOf(VR(constraint.vId, constraint.tId, null))
+        is ContainsOnly -> listOf(Var(constraint.vId, constraint.tId, null))
     } + labels.map { L(it.key, it.value, constraint) } +
             F(listOf(mutableListOf(Hole(constraint)), mutableListOf(Hole(constraint))), constraint)
 
@@ -157,10 +142,9 @@ class ConcreteEnumerator(
     ): Node =
         when (t) {
             is Hole -> throw Exception("Hole in concrete type")
-            is VB, is VL -> t
             is L -> L(t.label, t.params.map { mutableListOf(applyBinding(it.first(), varId, tId, sub)) }, t.constraint)
             is F -> F(t.params.map { mutableListOf(applyBinding(it.first(), varId, tId, sub)) }, t.constraint)
-            is VR -> if (t.vid == varId && t.tid == tId) sub else t
+            is Var -> if (t.vid == varId && t.tid == tId) sub else t  // TODO t should never be a binding variable and hit this case; reason about it a bit more
         }
 
     fun applyBindings(t: Node, bindings: List<Binding>): Node =
@@ -177,7 +161,7 @@ class ConcreteEnumerator(
      * */
     fun unify(param: Node, arg: Node): List<Binding>? =
         when (param) {
-            is VB -> listOf(Binding(param.vid, param.tid, arg))
+            is Var -> listOf(Binding(param.vid, param.tid, arg))
             is L -> when (arg) {
                 is L -> {
                     if (param.label != arg.label) null
@@ -194,10 +178,10 @@ class ConcreteEnumerator(
                         bindings
                     }
                 }
-                is F, is VL, is VB, is VR, is Hole -> null
+                is F, is Var, is Hole -> null
             }
             is F -> when (arg) {
-                is L, is VL, is VB, is VR, is Hole -> null
+                is L, is Var, is Hole -> null
                 is F -> {
                     var bindings: MutableList<Binding>? = mutableListOf()
                     param.params.indices.forEach {
@@ -211,20 +195,18 @@ class ConcreteEnumerator(
                     bindings
                 }
             }
-            is VL, is VR, is Hole -> throw Exception("Invariant broken")
+            is Hole -> throw Exception("Invariant broken")
         }
 
     /**
      * Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
      * @modifies [labelClasses]
      */
-    fun apply(fn: F, arg: Node): Node? {
-        if (arg is VR) throw Exception("Invariant broken")
-        return unify(fn.params.first().first(), arg)?.let {
+    fun apply(fn: F, arg: Node): Node? =
+        unify(fn.params.first().first(), arg)?.let {
             val out = if (fn.params.size == 2) fn.params[1].first() else F(fn.params.drop(1), fn.constraint)
             applyBindings(out, it)
         }
-    }
 
     fun type(context: Map<String, Node>, example: Example): Node? = when (example) {
         is Name -> context[example.name]

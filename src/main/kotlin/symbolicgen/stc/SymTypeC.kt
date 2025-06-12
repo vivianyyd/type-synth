@@ -9,7 +9,8 @@ sealed class Var(open val vId: Int, open val tId: Int) : SymTypeC {
     override fun toString(): String = "${tId}_$vId"
 }
 
-class L(val label: Int) : SymTypeC {
+// TODO This used to be normal, not data class, I forget why...
+data class L(val label: Int) : SymTypeC {
     override fun toString(): String = "L$label"
 }
 
