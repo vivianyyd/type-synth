@@ -4,6 +4,7 @@ import symbolicgen.stc.F
 import symbolicgen.stc.L
 import symbolicgen.stc.SymTypeC
 import symbolicgen.stc.Var
+import symbolicgen.std.flatten
 import util.DependencyEdge
 import util.ParameterNode
 import util.PyWriter
@@ -18,6 +19,7 @@ class LabelConstraintGenerator(
     private val pyName = mutableMapOf<String, String>()
 
     init {
+        w.comment("$hyp")
         w.import("cvc5.pythonic")
         w.import("cardinality")
         w.beginMain()
@@ -43,7 +45,17 @@ class LabelConstraintGenerator(
         m
     }
 
-    private fun py(node: ParameterNode) = "p${pyName[node.f]!!}_${node.i}"
+    fun pyParamToNode(p: String) =
+        ParameterNode(
+            pyName.entries.find { it.value == p.removePrefix("p").substringBeforeLast('_') }!!.key,
+            p.substringAfterLast('_').toInt()
+        )
+
+    fun pySizeToL(s: String) = symbolicgen.std.L.toL(s.removePrefix("size")).flatten()
+
+    fun pyVarToIds(s: String) = symbolicgen.std.Var.toIds(s.removePrefix("v"))
+
+    fun py(node: ParameterNode) = "p${pyName[node.f]!!}_${node.i}"
     private fun py(v: Var) = "v$v"
     private fun pySize(l: L) = "size$l"
 
@@ -83,12 +95,12 @@ class LabelConstraintGenerator(
             w.decls(nodes.map { "${py(it)} = Const('${py(it)}', SetSort(IntSort()))" })
 
             val (deps, primitives, fresh) = info
-            val edgeConstrs = nodes.flatMap { p1 ->
+            val edgeConstrs = nodes.map {
+                if (SelfLoop(it) in primitives) "${py(it)} == EmptySet(IntSort())"
+                else "${py(it)} != EmptySet(IntSort())"
+            } + nodes.flatMap { p1 ->
                 nodes.mapNotNull { p2 ->
-                    if (p1.i == p2.i) {
-                        if (SelfLoop(p1) in primitives) listOf("${py(p1)} == EmptySet(IntSort())")
-                        else listOf("${py(p1)} != EmptySet(IntSort())")
-                    } else if (p1.i < p2.i) {
+                    if (p1.i < p2.i) {
                         val p1subp2 = DependencyEdge(p1, p2) in deps
                         val p2subp1 = DependencyEdge(p2, p1) in deps
                         if (p1subp2 && p2subp1) listOf("${py(p1)} == ${py(p2)}")

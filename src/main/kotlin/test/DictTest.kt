@@ -12,8 +12,8 @@ object DictTest {
         "(+ tr)",
         "(+ Eib)",
         "(+ Ebi)",
+        "(+ Eii)",
         "(+ put)",
-        "(+ Eii)"
     )
     private val put = listOf(
         "(+ (put Eib))",

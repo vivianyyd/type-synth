@@ -27,13 +27,16 @@ fun String.runCommand(
     }
 }
 
-fun callCVC(content: String, testName: String): String {
+fun callCVC(content: String, testName: String, actuallyCall: Boolean): String {
     val inPath = join("src", "main", "python", "input", "cvc-$testName.py")
     val outPath = join("src", "main", "python", "output", "cvc-$testName.py")
     write(inPath, content)
-    val out = "python3 $inPath".runCommand() ?: throw Exception("I'm sad")
-    if ("no solution" !in out) write(outPath, out)
-    return out
+    if (actuallyCall) {
+        val out = "python3 $inPath".runCommand() ?: throw Exception("I'm sad")
+        if ("no solution" !in out) write(outPath, out)
+        return out
+    }
+    return ""
 }
 
 fun readCVCresults(): List<String> =

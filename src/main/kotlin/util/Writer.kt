@@ -26,6 +26,8 @@ class PyWriter : Writer() {
 
     override fun lines(l: Collection<String>) = l.forEach { line(it) }
 
+    fun comment(l: String) = line("# $l")
+
     fun import(l: String) {
         line("from $l import *")
     }

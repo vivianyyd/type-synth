@@ -1,10 +1,80 @@
+Dependency info:
 
+Fails due to fresh variable thing:
+    33	{0=L1, 1=L1, tr=L2, Eib=L28, Ebi=L28, put=L28 -> VL5_0, Eii=L28}
+        1 has no fresh variables, but there is no dep edge
+    34	{0=L1, 1=L1, tr=L2, Eib=L28, Ebi=L28, put=L28 -> 5_0 -> VL5_1, Eii=L28}
+    45	{0=L2, 1=L2, tr=L2, Eib=L28, Ebi=L28, put=L28 -> L2 -> VL5_0, Eii=L28}
+        These fail bc 2 has no fresh vars, but there is no dep edge between 2 and anything else
+        TODO Is that a bug (see 22)
 
+Fails bc contradicts no dep edge:
+    37	{0=L2, 1=L2, tr=L2, Eib=L28, Ebi=L28, put=L28 -> 5_0 -> 5_0 -> L28, Eii=L28}
+        1, 2 are the same, but there is no subset dep edge.
 
+Fails bc contradicts dep edge:
+    31	{0=L2, 1=L2, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> L2 -> L2 -> VL5_1, Eii=L28}
+        0, 3 are different, but they have dep edges in both directions (=)
 
+Fails since we have one param subset a variable:
 
+    22	{0=L2, 1=L2, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> L2 -> VL5_1, Eii=L28}
+        This fails bc we have 1 in 0 but 0 is a variable
+        Maybe interesting inference: 2 has to be in 1 since it's a VL.
+        The solver has more restricted version: fresh variable thing.
+        Due to !mayBeFresh, we know 2 has no fresh vars.
+        But there were no subset relations btwn 2 and 0/1 in the dep analysis
+            Is this a bug? 2 is a function from V -> DKV, it should have arrows with 0
+            TODO why isn't there a dep edge for the 3 param put
 
+    Fails 1,2 < 0,3
+    0	{0=L2, 1=L2, tr=L2, Eib=L2, Ebi=L2, put=5_0 -> 5_0 -> 5_0 -> 5_0, Eii=L2}
+    1	{0=L2, 1=L2, tr=L2, Eib=L2, Ebi=L2, put=5_0 -> 5_0 -> 5_0 -> L2, Eii=L2}
+    2	{0=L1, 1=L1, tr=L2, Eib=L1, Ebi=L2, put=5_0 -> 5_0 -> 5_1 -> 5_0, Eii=L1}
+    3	{0=L1, 1=L1, tr=L1, Eib=L1, Ebi=L1, put=5_0 -> 5_0 -> 5_1 -> 5_1, Eii=L1}
+    4	{0=L2, 1=L2, tr=L2, Eib=L2, Ebi=L2, put=5_0 -> 5_0 -> 5_1 -> L2, Eii=L2}
+    5	{0=L1, 1=L1, tr=L1, Eib=L1, Ebi=L1, put=5_0 -> 5_0 -> L1 -> 5_0, Eii=L1}
+    6	{0=L1, 1=L1, tr=L1, Eib=L1, Ebi=L1, put=5_0 -> 5_0 -> L1 -> VL5_1, Eii=L1}
+    7	{0=L1, 1=L1, tr=L1, Eib=L1, Ebi=L1, put=5_0 -> 5_0 -> L1 -> L1, Eii=L1}
+    8	{0=L1, 1=L1, tr=L2, Eib=L2, Ebi=L1, put=5_0 -> 5_1 -> 5_0 -> 5_0, Eii=L1}
+    9	{0=L2, 1=L2, tr=L2, Eib=L2, Ebi=L2, put=5_0 -> 5_1 -> 5_0 -> 5_1, Eii=L2}
+    10	{0=L1, 1=L1, tr=L1, Eib=L1, Ebi=L1, put=5_0 -> 5_1 -> 5_0 -> L1, Eii=L1}
+    11	{0=L2, 1=L2, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> 5_1 -> 5_1 -> 5_0, Eii=L28}
+    12	{0=L2, 1=L2, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> 5_1 -> 5_1 -> 5_1, Eii=L28}
+    13	{0=L2, 1=L2, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> 5_1 -> 5_1 -> L13, Eii=L28}
+    14	{0=L1, 1=L1, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> 5_1 -> 5_2 -> 5_0, Eii=L28}
+    15	{0=L1, 1=L1, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> 5_1 -> 5_2 -> 5_1, Eii=L28}
+    16	{0=L1, 1=L1, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> 5_1 -> 5_2 -> 5_2, Eii=L28}
+    17	{0=L1, 1=L1, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> 5_1 -> 5_2 -> L14, Eii=L28}
+    18	{0=L1, 1=L1, tr=L1, Eib=L3, Ebi=L4, put=5_0 -> 5_1 -> L1 -> 5_0, Eii=L28}
+    19	{0=L1, 1=L1, tr=L1, Eib=L3, Ebi=L4, put=5_0 -> 5_1 -> L1 -> 5_1, Eii=L28}
+    20	{0=L1, 1=L1, tr=L1, Eib=L3, Ebi=L4, put=5_0 -> 5_1 -> L1 -> VL5_2, Eii=L28}
+    21	{0=L1, 1=L1, tr=L1, Eib=L3, Ebi=L4, put=5_0 -> 5_1 -> L1 -> L15, Eii=L28}
+    23	{0=L2, 1=L2, tr=L2, Eib=L2, Ebi=L2, put=5_0 -> L2 -> 5_0 -> 5_0, Eii=L2}
+    24	{0=L2, 1=L2, tr=L2, Eib=L2, Ebi=L2, put=5_0 -> L2 -> 5_0 -> VL5_1, Eii=L2}
+    25	{0=L2, 1=L2, tr=L2, Eib=L2, Ebi=L2, put=5_0 -> L2 -> 5_0 -> L2, Eii=L2}
+    26	{0=L2, 1=L2, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> L2 -> 5_1 -> 5_0, Eii=L28}
+    27	{0=L2, 1=L2, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> L2 -> 5_1 -> 5_1, Eii=L28}
+    28	{0=L2, 1=L2, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> L2 -> 5_1 -> VL5_2, Eii=L28}
+    29	{0=L2, 1=L2, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> L2 -> 5_1 -> L18, Eii=L28}
+    35	{0=L28, 1=L28, tr=L28, Eib=L28, Ebi=L28, put=L28 -> 5_0 -> 5_0 -> 5_0, Eii=L28}
+    36	{0=L2, 1=L2, tr=L2, Eib=L28, Ebi=L28, put=L28 -> 5_0 -> 5_0 -> VL5_1, Eii=L28}
+    38	{0=L28, 1=L28, tr=L28, Eib=L28, Ebi=L28, put=L28 -> 5_0 -> 5_1 -> 5_0, Eii=L28}
+    39	{0=L28, 1=L28, tr=L28, Eib=L28, Ebi=L28, put=L28 -> 5_0 -> 5_1 -> 5_1, Eii=L28}
+    40	{0=L1, 1=L1, tr=L2, Eib=L28, Ebi=L28, put=L28 -> 5_0 -> 5_1 -> VL5_2, Eii=L28}
+    42	{0=L28, 1=L28, tr=L28, Eib=L28, Ebi=L28, put=L28 -> 5_0 -> L28 -> 5_0, Eii=L28}
+    43	{0=L1, 1=L1, tr=L1, Eib=L28, Ebi=L28, put=L28 -> 5_0 -> L1 -> VL5_1, Eii=L28}
+    46	{0=L28, 1=L28, tr=L28, Eib=L28, Ebi=L28, put=L28 -> L28 -> 5_0 -> 5_0, Eii=L28}
+    47	{0=L2, 1=L2, tr=L2, Eib=L28, Ebi=L28, put=L28 -> L2 -> 5_0 -> VL5_1, Eii=L28}
+    30	{0=L2, 1=L2, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> L2 -> L2 -> 5_0, Eii=L28}
+    32	{0=L2, 1=L2, tr=L2, Eib=L3, Ebi=L4, put=5_0 -> L2 -> L2 -> L19, Eii=L28}
+    49	{0=L2, 1=L2, tr=L2, Eib=L28, Ebi=L28, put=L28 -> L2 -> L2 -> VL5_0, Eii=L28}
 
+SAT
+41	{0=L1, 1=L1, tr=L2, Eib=L28, Ebi=L28, put=L28 -> 5_0 -> 5_1 -> L28, Eii=L28}
+44	{0=L1, 1=L1, tr=L1, Eib=L28, Ebi=L28, put=L28 -> 5_0 -> L1 -> L28, Eii=L28}
+48	{0=L2, 1=L2, tr=L2, Eib=L28, Ebi=L28, put=L28 -> L2 -> 5_0 -> L28, Eii=L28}
+50	{0=L2, 1=L2, tr=L2, Eib=L28, Ebi=L28, put=L28 -> L2 -> L2 -> L28, Eii=L28}
 
 
 
@@ -74,10 +144,6 @@ Cousot, Cousot, Abstract Interpretation: a Unified Lattice Model for Static Anal
 "Typical" abstract interpretation loses information whenever values are combined in some operation; symbolic execution stands out by retaining all information after all operations, so that it can be significantly more precise (and massively more expensive to evaluate).
 
 SMT solvers search a space of all possible states, symbolic execution grows a tree of state spaces
-
-
-
-
 
 Symbolic execution is static. Concolic execution combines symbolic execution with dynamic analysis (hence why it's called concolic and not symbolic).
 
