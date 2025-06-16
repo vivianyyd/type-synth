@@ -9,6 +9,11 @@ data class App(val fn: Example, val arg: Example) : Example {
     override fun toString(): String = "$fn ${if (arg is App) "($arg)" else "$arg"}"
 }
 
+fun Example.size(): Int = when (this) {
+    is Name -> 1
+    is App -> fn.size() + arg.size()
+}
+
 fun Example.flatten(): FlatApp = when (this) {
     is Name -> FlatApp(this.name)
     is App -> {
@@ -34,10 +39,11 @@ fun FlatApp.unflatten(): Example {
 class Query(
     posExamples: Collection<Example> = listOf(),
     val negExamples: Collection<Example> = listOf(),
-    names: List<String> = listOf()
+    names: List<String> = listOf(),
+    includesSubexprs: Boolean = false
 ) {
-    val posExamples: Set<Example> =
-        (posExamples.toSet().flatMap { it.subexprs() }.toSet() + names.map { Name(it) }).toSet()
+    val posExamples: Set<Example> = (posExamples + names.map { Name(it) }).toSet()
+        .let { if (includesSubexprs) it else it.flatMap { it.subexprs() }.toSet() }
     val names: List<String> = names.union(posExamples.fold(setOf()) { acc, ex ->
         fun names(ex: Example): Set<String> = when (ex) {
             is Name -> setOf(ex.name)

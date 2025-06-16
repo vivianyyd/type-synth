@@ -20,6 +20,7 @@ fun unifyOrError(param: Type, arg: Type): OrError<List<Binding>> =
             is Variable -> Err(ErrorCategory.UNBOUND_VARIABLE)
             is LabelNode -> Err(ErrorCategory.PASSED_LABEL_AS_FN)
             is Function -> {
+                // TODO THE WAY WE TREAT VARIABLES IS WRONG FOR HOFS / NOT HM I THINK
                 val leftBindings = unifyOrError(param.left, arg.left)
                 val riteBindings = if (leftBindings is Err) leftBindings else
                     unifyOrError(applyBindings(param.rite, (leftBindings as Ok).result), arg.rite)

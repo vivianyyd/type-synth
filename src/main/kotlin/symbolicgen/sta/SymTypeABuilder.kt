@@ -78,7 +78,7 @@ class State(query: Query) {
         })
     }
 
-    fun printState() = println(state)
+    fun printState() = state.toString()
 
     fun read(): Map<String, List<SymTypeA>> = state
 }
@@ -222,7 +222,8 @@ class SymTypeABuilder(val query: Query) {
             expandedApps.none { app -> app.fn is Name && app.fn.name == it }
         }.forEach { s.plant(it, listOf(Label())) }
 
-        expandedApps.forEach { readPosApp(it) }
+        // Hack for multi arg fns: need to read partial applications in order to deepen the tree one node at a time
+        expandedApps.sortedBy { it.size() }.forEach { readPosApp(it) }
     }
 }
 
@@ -249,6 +250,6 @@ fun main() {
 
     val query = parseNewExamples(consExamples.keys)
 
-    SymTypeABuilder(query).make.printState()
+    println(SymTypeABuilder(query).make.printState())
 }
 /* {cons=[[V, L] -> [V, [V, L] -> []]], 0=[L], []i=[L]} */

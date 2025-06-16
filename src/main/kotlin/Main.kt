@@ -1,3 +1,6 @@
+import query.ExampleGenerator
+import query.flatten
+import query.printInvertDummies
 import symbolicgen.DependencyAnalysis
 import symbolicgen.DependencyVisualizer
 import symbolicgen.LabelConstraintGenerator
@@ -7,21 +10,43 @@ import test.ConsTest
 import test.DictTest
 import test.HOFTest
 import test.IdTest
-import util.CVCParser
-import util.callCVC
-import util.readCVCresults
+import types.toType
+import util.*
 
 const val ROUNDS = 4
 const val RUN_SKETCH = true
 
 fun main() {
+    // Handwritten tests
     val idtest = IdTest
     val constest = ConsTest
     val hoftest = HOFTest
     val dicttest = DictTest
     val test = dicttest
 
-    val (query, oracle) = (test.query to test.oracle)
+    // Generated tests
+    val groundTruth = listOf(
+        "(i)", "(b)",
+        "(d (i) (b))",
+        "(d (b) (i))",
+        "(d (i) (i))",
+        "(d (b) (b))",
+        "(-> (d k v) (-> k (-> v (d k v))))"
+    )
+    val (generatedQuery, context) = ExampleGenerator(1,
+        2,
+        200,
+        groundTruth.map { SExprParser(it).parse().toType() }).examples()
+    println("Context:")
+    println(context.toList().joinToString(separator = "\n"))
+    println("Positive examples: ${generatedQuery.posExamples.size}")
+    println(printInvertDummies(generatedQuery.posExamples.map { it.flatten() }, context))
+    println("Negative examples: ${generatedQuery.negExamples.size}")
+    val generatedOracle = CheckingOracle(context)
+
+//    val (query, oracle) = (test.query to test.oracle)
+    val (query, oracle) = (generatedQuery to generatedOracle)
+
     val b = SymTypeABuilder(query).make
     b.printState()
     println()
@@ -42,14 +67,13 @@ fun main() {
     // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to num params)
     val deps = skeletonSizes.values.associateWith { DependencyAnalysis(query, sizeToCandidate[it]!!, oracle) }
     deps.values.forEachIndexed { i, it ->
-        DependencyVisualizer.viz(it.graphs["put"]!!, "$i")
+        DependencyVisualizer.viz(it.graphs["6"]!!, "$i")
     }
 
     val constrGenerators = projections.associateWith { LabelConstraintGenerator(it, deps[skeletonSizes[it]!!]!!) }
-    val write = true
+    val write = false
     val callcvc = false
     projections.forEachIndexed { i, it ->
-        println("$i\t$it")
         if (write) {
             callCVC(constrGenerators[it]!!.gen(), "$i", actuallyCall = callcvc)
         }
