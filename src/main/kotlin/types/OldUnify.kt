@@ -69,7 +69,7 @@ object OldUnify {
                         outerContext  // If unifying inputs of (a->a)->a and (int->int)->int, need to store a:=int
                     )
                 }  // TODO think about variable shadowing. I think a->(a->a) is fine! what about unifying a-> (a->b) if they have diff names. should each type just have disjoint sets of variables?
-                is LabelNode -> Pair(Error(b, a, ErrorCategory.NODE_FUNCTION), map)
+                is LabelNode -> Pair(Error(b, a, ErrorCategory.PASSED_LABEL_AS_FN), map)
                 is Error -> Pair(b, map)
                 is TypeHole -> Pair(a, map)
             }
@@ -92,7 +92,7 @@ object OldUnify {
                     error ?: Pair(LabelNode(a.label, params), currMap)
                 }
             }
-            is Function -> Pair(Error(a, b, ErrorCategory.NODE_FUNCTION), map)
+            is Function -> Pair(Error(a, b, ErrorCategory.PASSED_FN_AS_LABEL), map)
             is Error -> Pair(b, map)
             is TypeHole -> Pair(a, map)
         }

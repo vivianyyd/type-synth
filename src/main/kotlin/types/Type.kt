@@ -1,11 +1,5 @@
 package types
 
-/**
- * TODO Ideally, there should be two type files: One for the notion of type which is shared across all synthesis
- *  implementations, and one which only refines the TypeHoles into Child and Siblings for enumgen.
- *  Then we would inherit from the general notion of type, and add [recursiveNumChildHoles] and [directChildHoles].
- */
-
 fun Type.numParams(): Int = when (this) {
     is LabelNode, is Variable -> 0
     is Function -> 1 + this.rite.numParams()
@@ -45,6 +39,7 @@ sealed class AbstractType : Type {
     }
 }
 
+// Example generator uses the fact that these are data classes
 data class Variable(val id: String) : AbstractType() {
     override fun toString(): String = id
     override val children = listOf<Type>()
@@ -89,7 +84,9 @@ data class Error(val t1: Type, val t2: Type, val category: ErrorCategory) : Abst
 }
 
 enum class ErrorCategory {
-    NODE_FUNCTION,
+    PASSED_FN_AS_LABEL,
+    PASSED_LABEL_AS_FN,
+    UNBOUND_VARIABLE,// TODO this will be removed if we allow L<a>
     LABEL_MISMATCH,
     PARAM_QUANTITY_MISMATCH,
     APPLIED_NON_FUNCTION,
