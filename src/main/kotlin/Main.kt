@@ -1,4 +1,5 @@
 import query.ExampleGenerator
+import query.Query
 import query.flatten
 import query.printInvertDummies
 import symbolicgen.DependencyAnalysis
@@ -16,6 +17,19 @@ import util.*
 const val ROUNDS = 4
 const val RUN_SKETCH = true
 
+fun generate(types: List<String>): Pair<Query, CheckingOracle> {
+    val (query, context) = ExampleGenerator(1,
+        2,
+        200,
+        types.map { SExprParser(it).parse().toType() }).examples()
+    println("Context:")
+    println(context.toList().joinToString(separator = "\n"))
+    println("Positive examples: ${query.posExamples.size}")
+    println(printInvertDummies(query.posExamples.map { it.flatten() }, context))
+    println("Negative examples: ${query.negExamples.size}")
+    return query to CheckingOracle(context)
+}
+
 fun main() {
     // Handwritten tests
     val idtest = IdTest
@@ -25,7 +39,7 @@ fun main() {
     val test = dicttest
 
     // Generated tests
-    val groundTruth = listOf(
+    val dictput = listOf(
         "(i)", "(b)",
         "(d (i) (b))",
         "(d (b) (i))",
@@ -33,26 +47,19 @@ fun main() {
         "(d (b) (b))",
         "(-> (d k v) (-> k (-> v (d k v))))"
     )
-    val (generatedQuery, context) = ExampleGenerator(1,
-        2,
-        200,
-        groundTruth.map { SExprParser(it).parse().toType() }).examples()
-    println("Context:")
-    println(context.toList().joinToString(separator = "\n"))
-    println("Positive examples: ${generatedQuery.posExamples.size}")
-    println(printInvertDummies(generatedQuery.posExamples.map { it.flatten() }, context))
-    println("Negative examples: ${generatedQuery.negExamples.size}")
-    val generatedOracle = CheckingOracle(context)
+
+    val dictchain = dictput + "(-> (d a b) (-> (d b c) (d a c)))"
+    val small = listOf("(i)", "(b)", "(-> a (-> b a))")
 
 //    val (query, oracle) = (test.query to test.oracle)
-    val (query, oracle) = (generatedQuery to generatedOracle)
+    val (query, oracle) = (generate(dictchain))
 
     val b = SymTypeABuilder(query).make
     b.printState()
     println()
 
     val projections = SymTypeCEnumerator(query, b, oracle).enumerateAll()
-//    println(projections.pr())
+    println(projections.pr())
 
     val skeletonSizes = projections.associateWith { proj ->
         proj.keys.associateWith {
@@ -67,19 +74,21 @@ fun main() {
     // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to num params)
     val deps = skeletonSizes.values.associateWith { DependencyAnalysis(query, sizeToCandidate[it]!!, oracle) }
     deps.values.forEachIndexed { i, it ->
-        DependencyVisualizer.viz(it.graphs["6"]!!, "$i")
+        DependencyVisualizer.viz(it.graphs["6"]!!, "put$i")
+//        DependencyVisualizer.viz(it.graphs["7"]!!, "chain$i")
     }
 
     val constrGenerators = projections.associateWith { LabelConstraintGenerator(it, deps[skeletonSizes[it]!!]!!) }
     val write = false
     val callcvc = false
+    println("Candidates: ${projections.size}")
     projections.forEachIndexed { i, it ->
         if (write) {
             callCVC(constrGenerators[it]!!.gen(), "$i", actuallyCall = callcvc)
         }
     }
 
-    readCVCresults().zip(listOf(41, 44, 48, 50)).forEach { (s, i) ->
+    readCVCresults().zip(listOf(587, 629, 685, 713)).forEach { (s, i) ->
         println(projections[i])
         CVCParser(constrGenerators[projections[i]]!!).process(s)
         println()

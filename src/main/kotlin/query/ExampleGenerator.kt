@@ -54,8 +54,7 @@ class ExampleGenerator(
                 }
             }
         }
-        val nonFnDummies =
-            typeAndDepth.keys.associateBy { freshValue() }
+        val nonFnDummies = typeAndDepth.keys.associateBy { freshValue() }
         val fnDummies = fns.filterIsInstance<Function>().associateBy { freshValue() }
         val dummies = nonFnDummies + fnDummies
 
@@ -86,13 +85,20 @@ class ExampleGenerator(
                     val (goodArgs, badArgs) = posExamples.entries.associate { (t, exs) ->
                         exs to applyOrError(currTy, t)
                     }.entries.partition { it.value !is Err }
+                    val tmp = mutableListOf<Pair<Type, Example>>()
                     goodArgs.map { it.key to (it.value as Ok).result }.forEach { (args, typeAfterArg) ->
                         args.forEach {
                             val ex = App(currEx, it)
-                            addPos(typeAfterArg, ex)
-                            if (typeAfterArg is Function) inProgress.add(ex to typeAfterArg)  // TODO there is a more efficient way probably since there are multiple examples with same fn type
+                            tmp.add(typeAfterArg to ex)
+                            // TODO there is a more efficient way probably since there are multiple examples with same fn type
+                            if (typeAfterArg is Function && ex.depth() < MAX_DEPTH)
+                                inProgress.add(ex to typeAfterArg)
                         }
                     }
+                    tmp.forEach {  // I think this avoids concurrentmodificationexcedption
+                        addPos(it.first, it.second)
+                    }
+
                     badArgs.flatMap { it.key.map { k -> k to it.value as Err } }
                         .forEach { (ex, err) -> addNeg(err.error, App(currEx, ex)) }
                 }

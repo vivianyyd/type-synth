@@ -9,6 +9,10 @@ data class App(val fn: Example, val arg: Example) : Example {
     override fun toString(): String = "$fn ${if (arg is App) "($arg)" else "$arg"}"
 }
 
+fun Example.depth(): Int = this.flatten().depth()
+
+fun FlatApp.depth(): Int = args.maxOfOrNull { it.depth() + 1 } ?: 0
+
 fun Example.size(): Int = when (this) {
     is Name -> 1
     is App -> fn.size() + arg.size()
