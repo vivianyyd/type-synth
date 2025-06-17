@@ -1,6 +1,5 @@
 package dependencyanalysis
 
-import DependencyAnalysis
 import util.DependencyGraph
 import util.ParameterNode
 import util.visualizations.FlowDotWriter

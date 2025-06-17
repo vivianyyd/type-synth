@@ -1,6 +1,6 @@
 package constraints
 
-import DependencyAnalysis
+import dependencyanalysis.DependencyAnalysis
 import stc.F
 import stc.L
 import stc.SymTypeC

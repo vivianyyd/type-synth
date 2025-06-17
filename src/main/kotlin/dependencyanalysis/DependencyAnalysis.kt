@@ -1,3 +1,5 @@
+package dependencyanalysis
+
 import query.Example
 import query.FlatApp
 import query.Query

@@ -1,9 +1,9 @@
 package concretesketcher
 
-import ContainsNoVariables
-import ContainsOnly
-import DependencyAnalysis
-import DependencyConstraint
+import dependencyanalysis.ContainsNoVariables
+import dependencyanalysis.ContainsOnly
+import dependencyanalysis.DependencyAnalysis
+import dependencyanalysis.DependencyConstraint
 import query.App
 import query.Example
 import query.Name
