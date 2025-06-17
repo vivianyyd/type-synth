@@ -15,7 +15,6 @@ class LabelConstraintGenerator(
     private val dep: DependencyAnalysis
 ) {
     private val w = PyWriter()
-    private val depInfo = dep.all()
     private val pyName = mutableMapOf<String, String>()
 
     init {
@@ -25,31 +24,17 @@ class LabelConstraintGenerator(
         w.beginMain()
 
         var pyNameFresh = 0
-        depInfo.keys.forEach { name ->
+        hyp.keys.forEach { name ->
             val n = "_${name.filter { it.isLetterOrDigit() }}"
             if (n !in pyName.values) pyName[name] = n
             else pyName[name] = n + "_${pyNameFresh++}"
         }
     }
 
-    // TODO this is duplicate code with dep analysis, factor out
-    private val nodeToType = hyp.entries.fold(mutableMapOf<ParameterNode, SymTypeC>()) { m, (name, tree) ->
-        var curr = tree
-        var count = 0
-        while (curr is F) {
-            m[ParameterNode(name, count)] = curr.left
-            count++
-            curr = curr.rite
-        }
-        m[ParameterNode(name, count)] = curr
-        m
-    }
-
-    fun pyParamToNode(p: String) =
-        ParameterNode(
-            pyName.entries.find { it.value == p.removePrefix("p").substringBeforeLast('_') }!!.key,
-            p.substringAfterLast('_').toInt()
-        )
+    fun pyParamToNode(p: String) = ParameterNode(
+        pyName.entries.find { it.value == p.removePrefix("p").substringBeforeLast('_') }!!.key,
+        p.substringAfterLast('_').toInt()
+    )
 
     fun pySizeToL(s: String) = symbolicgen.std.L.toL(s.removePrefix("size")).flatten()
 
@@ -67,6 +52,18 @@ class LabelConstraintGenerator(
     }
 
     fun gen(): String {
+        val nodeToType = hyp.entries.fold(mutableMapOf<ParameterNode, SymTypeC>()) { m, (name, tree) ->
+            var curr = tree
+            var count = 0
+            while (curr is F) {
+                m[ParameterNode(name, count)] = curr.left
+                count++
+                curr = curr.rite
+            }
+            m[ParameterNode(name, count)] = curr
+            m
+        }
+
         // Declare top-level variables, label sizes
         val vars = nodeToType.values.filterIsInstance<Var>().map { py(it) }.toSet().toList()
         val lsizes = nodeToType.values.filterIsInstance<L>().map { pySize(it) }.toSet().toList()
@@ -90,7 +87,7 @@ class LabelConstraintGenerator(
         w.constrs(varsDistinct + labelsMatchConstrs + varsAreSingletons)
 
         // Translate dependency info into set constraints
-        depInfo.forEach { (name, info) ->
+        dep.all.forEach { (name, info) ->
             val nodes = dep.nodes(name)
             w.decls(nodes.map { "${py(it)} = Const('${py(it)}', SetSort(IntSort()))" })
 

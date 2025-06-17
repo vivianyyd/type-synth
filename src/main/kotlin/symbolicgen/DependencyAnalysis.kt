@@ -63,7 +63,7 @@ class DependencyAnalysis(
         equivalenceClasses(exs.map { it.flatten() }) { e1, e2 -> e1.name == e2.name }.associateBy { it.first().name }[name]
             ?: setOf()
 
-    fun all() = query.names.associateWith { findEdges(it) }
+    val all by lazy { query.names.associateWith { findEdges(it) } }
 
     /** Requires: i is in bounds for ex. */
     private fun arg(ex: FlatApp, i: Int) = if (i == ex.args.size) ex else ex.args[i]

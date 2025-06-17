@@ -1,9 +1,5 @@
-import query.ExampleGenerator
-import query.Query
-import query.flatten
-import query.printInvertDummies
+import query.parseContextAndExamples
 import symbolicgen.DependencyAnalysis
-import symbolicgen.DependencyVisualizer
 import symbolicgen.LabelConstraintGenerator
 import symbolicgen.sta.SymTypeABuilder
 import symbolicgen.stc.*
@@ -11,55 +7,32 @@ import test.ConsTest
 import test.DictTest
 import test.HOFTest
 import test.IdTest
-import types.toType
-import util.*
+import util.CVCParser
+import util.callCVC
+import util.readCVCresults
+import util.readExamples
 
 const val ROUNDS = 4
 const val RUN_SKETCH = true
 
-fun generate(types: List<String>): Pair<Query, CheckingOracle> {
-    val (query, context) = ExampleGenerator(1,
-        2,
-        200,
-        types.map { SExprParser(it).parse().toType() }).examples()
-    println("Context:")
-    println(context.toList().joinToString(separator = "\n"))
-    println("Positive examples: ${query.posExamples.size}")
-    println(printInvertDummies(query.posExamples.map { it.flatten() }, context))
-    println("Negative examples: ${query.negExamples.size}")
-    return query to CheckingOracle(context)
-}
-
 fun main() {
-    // Handwritten tests
     val idtest = IdTest
     val constest = ConsTest
     val hoftest = HOFTest
     val dicttest = DictTest
     val test = dicttest
-
-    // Generated tests
-    val dictput = listOf(
-        "(i)", "(b)",
-        "(d (i) (b))",
-        "(d (b) (i))",
-        "(d (i) (i))",
-        "(d (b) (b))",
-        "(-> (d k v) (-> k (-> v (d k v))))"
-    )
-
-    val dictchain = dictput + "(-> (d a b) (-> (d b c) (d a c)))"
-    val small = listOf("(i)", "(b)", "(-> a (-> b a))")
-
 //    val (query, oracle) = (test.query to test.oracle)
-    val (query, oracle) = (generate(dictchain))
 
+    val (query, oracle) = parseContextAndExamples(readExamples("dictchain"))
     val b = SymTypeABuilder(query).make
     b.printState()
-    println()
-
     val projections = SymTypeCEnumerator(query, b, oracle).enumerateAll()
-    println(projections.pr())
+//    projections.forEachIndexed { i, it ->
+//        writeIntermediateOutline("${it.toSExpr()}", "$i")
+//    }
+//    val projections = (0 until 714).map { outline(readIntermediateOutline("$it")) }
+
+//    println(projections.pr())
 
     val skeletonSizes = projections.associateWith { proj ->
         proj.keys.associateWith {
@@ -73,14 +46,9 @@ fun main() {
     val sizeToCandidate = skeletonSizes.entries.associateBy({ it.value }) { it.key }
     // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to num params)
     val deps = skeletonSizes.values.associateWith { DependencyAnalysis(query, sizeToCandidate[it]!!, oracle) }
-    deps.values.forEachIndexed { i, it ->
-        DependencyVisualizer.viz(it.graphs["6"]!!, "put$i")
-//        DependencyVisualizer.viz(it.graphs["7"]!!, "chain$i")
-    }
-
     val constrGenerators = projections.associateWith { LabelConstraintGenerator(it, deps[skeletonSizes[it]!!]!!) }
-    val write = false
-    val callcvc = false
+    val write = true
+    val callcvc = true
     println("Candidates: ${projections.size}")
     projections.forEachIndexed { i, it ->
         if (write) {
@@ -95,8 +63,6 @@ fun main() {
         println()
     }
 
-    TODO("example generation from types so that I can test chain.")
-    TODO("What does cvc param varsets output look like for nonemtpy intersection, for example map chain?")
     TODO("Use CVC output for enumeration")
     TODO("Can names be observationally equal wrt where they're used but not actually due to differences in arguments they expect? It doesn't break our blind unionfind labels for values that are obs equiv, but maybe it breaks other stuff esp when we have HOFs... Actually I think it's fine bc the way we do observational equiv is we substitute one for the other for ALL occurrences including as the function in an application. That's really expensive to do with examples though)")
     TODO("When doing final enumeration, take step in each candidate")

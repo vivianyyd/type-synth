@@ -33,7 +33,13 @@ interface EqualityOracle {
  * Computes types of applications based on types of named values, given as [secret]
  */
 class CheckingOracle(private val secret: Map<String, Type>) : EqualityNewOracle {
-    override fun equal(a: Example, b: Example): Boolean = flatEqual(a.flatten(), b.flatten())
+    // flatEqual(a.flatten(), b.flatten()) works too. Idk why I did this
+    override fun equal(a: Example, b: Example): Boolean {
+        val ta = check(a, secret)
+        val tb = check(b, secret)
+        return ta != null && tb != null && ta == tb
+    }
+
     override fun flatEqual(a: FlatApp, b: FlatApp): Boolean {
         val ta = checkApplication(a, secret)
         val tb = checkApplication(b, secret)
@@ -41,6 +47,8 @@ class CheckingOracle(private val secret: Map<String, Type>) : EqualityNewOracle 
     }
 
     override fun dummy(e: Example): Int = checkApplication(e.flatten(), secret).hashCode()
+
+    fun printSecret() = println(secret.entries.joinToString(separator = "\n"))
 }
 
 /**

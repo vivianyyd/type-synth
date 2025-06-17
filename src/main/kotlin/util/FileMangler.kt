@@ -47,6 +47,21 @@ fun readCVCresults(): List<String> =
 
 fun writeProfiling(output: String, testName: String) = write(profilingResultPath(testName), output)
 
+private fun generatedTestPath(name: String) = join("src", "test", "generated", "$name.sexp")
+
+fun writeExamples(contents: String, name: String) =
+    write(generatedTestPath(name), contents)
+
+fun readExamples(name: String): Pair<String, List<String>> {
+    val lines = File(generatedTestPath(name)).readText().split('\n')
+    return lines.first() to lines.drop(1)
+}
+
+private fun intermediateOutlinePath(name: String) = join("results", "intermediate", "outline", "outline-$name.sexp")
+
+fun writeIntermediateOutline(contents: String, name: String) = write(intermediateOutlinePath(name), contents)
+fun readIntermediateOutline(name: String) = File(intermediateOutlinePath(name)).readText()
+
 // TODO can pass this in main function
 private val customCodeGenerator = join("../applications/sketch-1.7.6/sketch-frontend/customcodegen.jar")
 private fun sketchGenerationPath(task: String, inOrOutput: String, testName: String) =

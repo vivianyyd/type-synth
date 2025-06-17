@@ -23,6 +23,19 @@ fun SExpr.toType(): Type = when (this) {
 
 fun parseType(s: String) = SExprParser(s).parse().toType()
 
+fun Type.toSExpr(): SExpr = when (this) {
+    is Function -> SExpr.Lst(
+        listOf(
+            SExpr.Atm("->"),
+            left.toSExpr(),
+            rite.toSExpr()
+        )
+    )
+    is LabelNode -> SExpr.Lst(listOf(SExpr.Atm(label)) + params.map { it.toSExpr() })
+    is Variable -> SExpr.Atm(id)
+    is Error, is TypeHole -> throw Exception("Unsupported Type to SExpr")
+}
+
 /*
 Function (-> left rite)
 Variable a

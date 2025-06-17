@@ -1,9 +1,20 @@
 package query
 
+import types.toType
+import util.CheckingOracle
 import util.SExpr
 import util.SExprParser
 
 fun parseNewExamples(sexps: Collection<String>): Query = examplesFromSexps(sexps.map { SExprParser(it).parse() })
+
+fun parseContextAndExamples(contextExamples: Pair<String, List<String>>): Pair<Query, CheckingOracle> =
+    parseNewExamples(contextExamples.second.filter { it.isNotBlank() }) to CheckingOracle(assignment(contextExamples.first))
+
+private fun assignment(context: String) = context.split('\t').associate {
+    val assign = SExprParser(it).parse()
+    assert(assign is SExpr.Lst && assign.elements.size == 2 && assign.elements[0] is SExpr.Atm)
+    ((assign as SExpr.Lst).elements[0] as SExpr.Atm).value to assign.elements[1].toType()
+}
 
 private fun examplesFromSexps(sexps: Collection<SExpr>): Query {
     val exsWithNames = sexps.map { it.toSignedExample() }

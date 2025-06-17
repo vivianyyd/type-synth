@@ -27,6 +27,7 @@ fun unify(param: Type, arg: Type): List<Binding>? =
             is Error, is TypeHole -> throw Error("Illegal")
             is LabelNode, is Variable -> null
             is Function -> {
+                // TODO THE WAY WE TREAT VARIABLES IS WRONG FOR HOFS / NOT HM I THINK
                 val leftBindings = unify(param.left, arg.left)
                 val riteBindings =
                     leftBindings?.let { applyBindings(param.rite, it) }?.let { unify(it, arg.rite) }

@@ -4,8 +4,9 @@ sealed class SExpr {
     data class Atm(val value: String) : SExpr() {
         override fun toString(): String = value
     }
+
     data class Lst(val elements: List<SExpr>) : SExpr() {
-        override fun toString(): String = "(${elements.joinToString(separator=" ")})"
+        override fun toString(): String = "(${elements.joinToString(separator = " ")})"
     }
 }
 
