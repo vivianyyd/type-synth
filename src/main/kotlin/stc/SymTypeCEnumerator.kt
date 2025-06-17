@@ -1,11 +1,11 @@
-package symbolicgen.stc
+package stc
 
 import query.App
 import query.Example
 import query.Name
 import query.Query
-import symbolicgen.sta.*
-import symbolicgen.sta.Function
+import sta.Function
+import sta.State
 import util.EqualityNewOracle
 import util.UnionFind
 import util.naryCartesianProduct
@@ -69,9 +69,17 @@ class SymTypeCEnumerator(
     }
 
     private fun enumerate(
-        t: SymTypeA, vars: Int, pickedLabel: Boolean, name: String, canBeFresh: Boolean
+        t: sta.SymTypeA, vars: Int, pickedLabel: Boolean, name: String, canBeFresh: Boolean
     ): List<Triple<SymTypeC, Int, Boolean>> = when (t) {
-        is Hole -> listOf(Variable(), Label()).flatMap { enumerate(it, vars, pickedLabel, name, canBeFresh) }
+        is sta.Hole -> listOf(sta.Variable(), sta.Label()).flatMap {
+            enumerate(
+                it,
+                vars,
+                pickedLabel,
+                name,
+                canBeFresh
+            )
+        }
         is Function -> {
             val lefts = t.left.flatMap { enumerate(it, vars, pickedLabel, name, true) }
             lefts.flatMap { (left, lvs, lab) ->
@@ -79,8 +87,8 @@ class SymTypeCEnumerator(
                 rites.map { (rite, rvs, lab) -> Triple(F(left, rite), rvs, lab) }
             }
         }
-        is Label -> listOf(Triple(L(freshLabel++), vars, true))
-        is Variable -> {
+        is sta.Label -> listOf(Triple(L(freshLabel++), vars, true))
+        is sta.Variable -> {
             val variables: MutableList<Triple<SymTypeC, Int, Boolean>> =
                 (0 until vars).map { Triple(VR(it, tId(name)), vars, pickedLabel) }.toMutableList()
             if (canBeFresh) variables.add(Triple(VB(vars, tId(name)), vars + 1, pickedLabel))

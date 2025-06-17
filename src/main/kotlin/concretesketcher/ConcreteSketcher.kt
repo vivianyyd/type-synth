@@ -1,10 +1,10 @@
-package symbolicgen.concretesketcher
+package concretesketcher
 
 import query.App
 import query.Example
 import query.Name
 import query.Query
-import symbolicgen.stbold.*
+import stbold.*
 import util.EqualityNewOracle
 import util.SketchWriter
 import java.lang.Integer.max

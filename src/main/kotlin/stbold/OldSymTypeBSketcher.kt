@@ -1,11 +1,11 @@
-package symbolicgen.stbold
+package stbold
 
 import query.App
 import query.Example
 import query.Name
 import query.Query
-import symbolicgen.sta.*
-import symbolicgen.sta.Function
+import sta.Function
+import sta.State
 import util.EqualityNewOracle
 import util.SketchWriter
 import kotlin.math.roundToInt
@@ -64,7 +64,7 @@ class OldSymTypeBSketcher(val query: Query, private val state: State, private va
 
         private fun nullary(name: String): Boolean {
             val options = state.read()[name]!!
-            return options.size == 1 && options[0] is Label
+            return options.size == 1 && options[0] is sta.Label
         }
 
         private fun gen(name: String) = "${sk(name)}_gen"
@@ -80,11 +80,11 @@ class OldSymTypeBSketcher(val query: Query, private val state: State, private va
         }
 
         /** typeId is used to distinguish variables - avoids capture by making their id include which type they're part of */
-        private fun chooseFromOptions(portSketchName: String, options: List<SymTypeA>, typeId: Int) {
+        private fun chooseFromOptions(portSketchName: String, options: List<sta.SymTypeA>, typeId: Int) {
             val flag = "flag_$portSketchName"
             // TODO not sure if this is right. we didn't see anything that forced us to make this a function so anything but arrow is ok
             // TODO at the very least this should happen in a pass at the end of Tree building, not here
-            val opts = options.ifEmpty { listOf(Variable(), Label()) }
+            val opts = options.ifEmpty { listOf(sta.Variable(), sta.Label()) }
             if (opts.size == 1) {
                 pickOption(portSketchName, opts[0], typeId)  // Makes code shorter
                 return
@@ -99,22 +99,22 @@ class OldSymTypeBSketcher(val query: Query, private val state: State, private va
             }
         }
 
-        private fun pickOption(portSketchName: String, t: SymTypeA, typeId: Int): Unit = when (t) {
-            is Hole -> {
+        private fun pickOption(portSketchName: String, t: sta.SymTypeA, typeId: Int): Unit = when (t) {
+            is sta.Hole -> {
                 val hole = "${portSketchName}_hole"
                 w.line("Type $hole")
                 w.line("bit ${hole}_flag = ??")
-                w.block("if (${hole}_flag)") { pickOption(hole, Label(), typeId) }
-                w.block("else") { pickOption(hole, Variable(), typeId) }
+                w.block("if (${hole}_flag)") { pickOption(hole, sta.Label(), typeId) }
+                w.block("else") { pickOption(hole, sta.Variable(), typeId) }
                 w.line("$portSketchName = $hole")
                 // TODO test me!
             }
-            is Label -> w.lines(
+            is sta.Label -> w.lines(
                 listOf(
                     "$portSketchName = new Label()", "canBeBoundInLabel = true"
                 )
             )
-            is Variable -> {
+            is sta.Variable -> {
                 val vFlag = "v_$portSketchName"
                 w.lines(
                     listOf(

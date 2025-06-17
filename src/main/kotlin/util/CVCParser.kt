@@ -1,7 +1,7 @@
 package util
 
-import symbolicgen.LabelConstraintGenerator
-import symbolicgen.std.Var
+import constraints.LabelConstraintGenerator
+import std.Var
 
 class CVCParser(val constrGen: LabelConstraintGenerator) {
     private fun split(input: String): List<String> {

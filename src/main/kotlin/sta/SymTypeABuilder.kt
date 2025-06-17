@@ -1,4 +1,4 @@
-package symbolicgen.sta
+package sta
 
 import query.*
 import util.*
@@ -248,7 +248,7 @@ fun main() {
         "(- (cons tr (cons 0 []i)))" to null,
     )
 
-    val query = parseNewExamples(consExamples.keys)
+    val query = parseExamples(consExamples.keys)
 
     println(SymTypeABuilder(query).make.printState())
 }

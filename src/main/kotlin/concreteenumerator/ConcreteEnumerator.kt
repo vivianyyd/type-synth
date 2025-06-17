@@ -1,11 +1,11 @@
-package symbolicgen.concreteenumerator
+package concreteenumerator
 
+import ContainsNoVariables
+import ContainsOnly
+import DependencyAnalysis
+import DependencyConstraint
 import query.*
-import symbolicgen.ContainsNoVariables
-import symbolicgen.ContainsOnly
-import symbolicgen.DependencyAnalysis
-import symbolicgen.DependencyConstraint
-import symbolicgen.std.SymTypeDFlat
+import std.SymTypeDFlat
 import util.*
 
 sealed interface Node {
@@ -66,31 +66,31 @@ class ConcreteEnumerator(
             val constraints = dependencies.constraints(name)
 
             fun SymTypeDFlat.toNode(constraint: DependencyConstraint?): Node = when (this) {
-                is symbolicgen.std.F ->
+                is std.F ->
                     F(
                         (this.args + this.rite).map { mutableListOf(it.toNode(constraint)) },
                         constraint
                     )
-                is symbolicgen.std.L -> {
+                is std.L -> {
                     L(this.label, labels[this.label]!!, constraints[0])
                 }
-                is symbolicgen.std.Var -> Var(this.vId, this.tId, constraint)
+                is std.Var -> Var(this.vId, this.tId, constraint)
             }
 
             state[name] = when (outline) {
-                is symbolicgen.std.F ->
+                is std.F ->
                     F(
                         (outline.args + outline.rite).mapIndexed { i, a -> mutableListOf(a.toNode(constraints[i])) },
                         null
                     )
-                is symbolicgen.std.L, is symbolicgen.std.Var ->
+                is std.L, is std.Var ->
                     outline.toNode(constraints[0])
             }
 
             fun variables(outline: SymTypeDFlat): Set<Pair<Int, Int>> = when (outline) {
-                is symbolicgen.std.F -> (outline.args.flatMap { variables(it) } + variables(outline.rite)).toSet()
-                is symbolicgen.std.L -> setOf()
-                is symbolicgen.std.Var -> setOf(outline.vId to outline.tId)
+                is std.F -> (outline.args.flatMap { variables(it) } + variables(outline.rite)).toSet()
+                is std.L -> setOf()
+                is std.Var -> setOf(outline.vId to outline.tId)
             }
             variablesInScope[name]!!.addAll(variables(outline))
         }

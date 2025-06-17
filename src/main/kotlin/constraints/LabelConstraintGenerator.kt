@@ -1,10 +1,11 @@
-package symbolicgen
+package constraints
 
-import symbolicgen.stc.F
-import symbolicgen.stc.L
-import symbolicgen.stc.SymTypeC
-import symbolicgen.stc.Var
-import symbolicgen.std.flatten
+import DependencyAnalysis
+import stc.F
+import stc.L
+import stc.SymTypeC
+import stc.Var
+import std.flatten
 import util.DependencyEdge
 import util.ParameterNode
 import util.PyWriter
@@ -36,9 +37,9 @@ class LabelConstraintGenerator(
         p.substringAfterLast('_').toInt()
     )
 
-    fun pySizeToL(s: String) = symbolicgen.std.L.toL(s.removePrefix("size")).flatten()
+    fun pySizeToL(s: String) = std.L.toL(s.removePrefix("size")).flatten()
 
-    fun pyVarToIds(s: String) = symbolicgen.std.Var.toIds(s.removePrefix("v"))
+    fun pyVarToIds(s: String) = std.Var.toIds(s.removePrefix("v"))
 
     fun py(node: ParameterNode) = "p${pyName[node.f]!!}_${node.i}"
     private fun py(v: Var) = "v$v"

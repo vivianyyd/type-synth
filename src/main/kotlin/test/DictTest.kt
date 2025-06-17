@@ -1,7 +1,7 @@
 package test
 
 import query.Query
-import query.parseNewExamples
+import query.parseExamples
 import types.parseType
 import util.CheckingOracle
 
@@ -80,7 +80,7 @@ object DictTest {
 
     val examples = basics + put
 
-    val query: Query = parseNewExamples(examples)
+    val query: Query = parseExamples(examples)
     val oracle = CheckingOracle(mapOf(
         "0" to "(i)",
         "1" to "(i)",

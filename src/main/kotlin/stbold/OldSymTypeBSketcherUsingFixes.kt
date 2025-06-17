@@ -1,11 +1,11 @@
-package symbolicgen.stbold
+package stbold
 
 import query.App
 import query.Example
 import query.Name
 import query.Query
-import symbolicgen.sta.*
-import symbolicgen.sta.Function
+import sta.Function
+import sta.State
 import util.EqualityNewOracle
 import kotlin.math.roundToInt
 
@@ -43,11 +43,11 @@ class OldSymTypeBSketcherUsingFixes(
         private val rounds: Int by lazy {
             if (rounds != null) rounds else {
                 fun <T> List<T>.mapSum(f: (T) -> Int) = this.map(f).fold(0) { a, b -> a + b }
-                fun bound(t: SymTypeA): Int = when (t) {
+                fun bound(t: sta.SymTypeA): Int = when (t) {
                     is Function -> t.left.mapSum(::bound) * t.rite.mapSum(::bound)
-                    is Label -> 1
-                    is Variable -> 3
-                    is Hole -> 4
+                    is sta.Label -> 1
+                    is sta.Variable -> 3
+                    is sta.Hole -> 4
                 }
                 query.names.map { state.read()[it]!!.mapSum(::bound) }.fold(1) { a, b -> a * b }
             }
@@ -66,7 +66,7 @@ class OldSymTypeBSketcherUsingFixes(
 
         private fun nullary(name: String): Boolean {
             val options = state.read()[name]!!
-            return options.size == 1 && options[0] is Label
+            return options.size == 1 && options[0] is sta.Label
         }
 
         private fun header() {
@@ -104,7 +104,7 @@ class OldSymTypeBSketcherUsingFixes(
         }
 
         /** typeId is used to distinguish variables - avoids capture by making their id include which type they're part of */
-        private fun chooseFromOptions(portSketchName: String, options: List<SymTypeA>, typeId: Int) {
+        private fun chooseFromOptions(portSketchName: String, options: List<sta.SymTypeA>, typeId: Int) {
             val flag = "flag_$portSketchName"
             if (options.size == 1) {
                 pickOption(portSketchName, options[0], typeId)  // Makes code shorter
@@ -121,22 +121,22 @@ class OldSymTypeBSketcherUsingFixes(
             }
         }
 
-        private fun pickOption(portSketchName: String, t: SymTypeA, typeId: Int): Unit = when (t) {
-            is Hole -> {
+        private fun pickOption(portSketchName: String, t: sta.SymTypeA, typeId: Int): Unit = when (t) {
+            is sta.Hole -> {
                 val hole = "${portSketchName}_hole"
                 w.line("Type $hole")
                 w.line("bit ${hole}_flag = ??")
-                w.block("if (${hole}_flag)") { pickOption(hole, Label(), typeId) }
-                w.block("else") { pickOption(hole, Variable(), typeId) }
+                w.block("if (${hole}_flag)") { pickOption(hole, sta.Label(), typeId) }
+                w.block("else") { pickOption(hole, sta.Variable(), typeId) }
                 w.line("$portSketchName = $hole")
                 // TODO test me!
             }
-            is Label -> w.lines(
+            is sta.Label -> w.lines(
                 listOf(
                     "$portSketchName = new Label()", "canBeBoundInLabel = true"
                 )
             )
-            is Variable -> {
+            is sta.Variable -> {
                 val vFlag = "v_$portSketchName"
                 w.lines(
                     listOf(

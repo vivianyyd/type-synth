@@ -1,14 +1,14 @@
-package symbolicgen.concretesketcher
+package concretesketcher
 
+import ContainsNoVariables
+import ContainsOnly
+import DependencyAnalysis
+import DependencyConstraint
 import query.App
 import query.Example
 import query.Name
 import query.Query
-import symbolicgen.ContainsNoVariables
-import symbolicgen.ContainsOnly
-import symbolicgen.DependencyAnalysis
-import symbolicgen.DependencyConstraint
-import symbolicgen.stc.*
+import stc.*
 import util.EqualityNewOracle
 import util.SketchWriter
 import java.lang.Integer.max

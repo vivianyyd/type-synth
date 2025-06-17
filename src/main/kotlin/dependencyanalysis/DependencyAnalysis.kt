@@ -1,12 +1,10 @@
-package symbolicgen
-
 import query.Example
 import query.FlatApp
 import query.Query
 import query.flatten
-import symbolicgen.stc.F
-import symbolicgen.stc.SymTypeC
-import symbolicgen.stc.Var
+import stc.F
+import stc.SymTypeC
+import stc.Var
 import util.*
 import java.lang.Integer.max
 

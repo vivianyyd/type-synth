@@ -1,4 +1,4 @@
-package symbolicgen.stc
+package stc
 
 import util.SExpr
 import util.SExprParser

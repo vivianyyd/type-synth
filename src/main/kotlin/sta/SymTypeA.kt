@@ -1,4 +1,4 @@
-package symbolicgen.sta
+package sta
 
 typealias PortContents = MutableList<SymTypeA>
 
