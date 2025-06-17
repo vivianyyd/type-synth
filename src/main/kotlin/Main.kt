@@ -12,7 +12,6 @@ import util.*
 
 const val ROUNDS = 4
 const val MAKE_OUTLINES = true
-const val WRITE_CVC_CONSTRS = true
 const val CALL_CVC = true
 
 fun main() {
@@ -36,17 +35,17 @@ fun main() {
     val deps = projections.map { it.arities }.toSet().associateWith { DependencyAnalysis(query, it, oracle) }
     val constrGenerators = projections.associateWith { LabelConstraintGenerator(it, deps[it.arities]!!) }
     projections.forEachIndexed { i, it ->
-        if (WRITE_CVC_CONSTRS) {
-            callCVC(constrGenerators[it]!!.gen(), "$i", actuallyCall = CALL_CVC)
+        if (CALL_CVC) {
+            callCVC(constrGenerators[it]!!.gen(), "$i")
         }
     }
 
-    readCVCresults().forEach { (n, s) ->
-        val i = n.toInt()
+    readCVCresults().forEach { (testName, s) ->
+        val i = testName.toInt()
         println(projections[i].outline)
-        CVCParser(constrGenerators[projections[i]]!!).process(s)
-        println()
-        println()
+        CVCParser(s, constrGenerators[projections[i]]!!).print()
+        TODO("Request a smaller answer from CVC")
+
     }
 
     TODO("Use CVC output for enumeration")
