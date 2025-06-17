@@ -1,9 +1,6 @@
 package concretesketcher
 
-import dependencyanalysis.ContainsNoVariables
-import dependencyanalysis.ContainsOnly
-import dependencyanalysis.DependencyAnalysis
-import dependencyanalysis.DependencyConstraint
+import dependencyanalysis.*
 import query.App
 import query.Example
 import query.Name
@@ -15,7 +12,7 @@ import java.lang.Integer.max
 
 class DepLabConcreteSketcher(
     val query: Query,
-    private val contextOutline: Map<String, SymTypeC>,
+    private val contextOutline: Projection,
     private val dependencies: DependencyAnalysis,
     private val varTypeIds: Map<String, Int>,
     private val oracle: EqualityNewOracle
@@ -50,7 +47,8 @@ class DepLabConcreteSketcher(
             w.include("/home/vivianyyd/type-synth/src/main/sketch/concretize/concretetypesgivenlabels_bindingslist.sk")
             w.comment(
                 listOf(
-                    contextOutline.entries.joinToString(separator = "\n", postfix = "\n"), "NAME\t\tSKETCHNAME\t\tDUMMY"
+                    contextOutline.outline.entries.joinToString(separator = "\n", postfix = "\n"),
+                    "NAME\t\tSKETCHNAME\t\tDUMMY"
                 )
 //                    + sketchNames.map { (k, v) ->
 //                "$k\t\t\t$v\t\t\t${
@@ -112,7 +110,7 @@ class DepLabConcreteSketcher(
                 w.line("Type root")
                 // TODO If all our params have constraints, we don't need to call this
                 /*if (!nullary(name)) */w.line("int labelVars = makeLabelVars()")
-                codeFor(outline, tid, groundVars, "root", dependencies.constraints(name), 0)
+                codeFor(outline, tid, groundVars, "root", constraints(name, contextOutline, dependencies), 0)
                 w.line("return root")
             }
         }
@@ -259,6 +257,6 @@ class DepLabConcreteSketcher(
 
     /** Use me wisely */
     private fun sk(name: String) = sketchNames[name]!!
-    private fun outline(name: String) = contextOutline[name]!!
+    private fun outline(name: String) = contextOutline.outline[name]!!
     private fun tId(name: String) = varTypeIds[name]!!
 }

@@ -1,9 +1,8 @@
 package constraints
 
 import dependencyanalysis.DependencyAnalysis
-import stc.F
 import stc.L
-import stc.SymTypeC
+import stc.Projection
 import stc.Var
 import std.flatten
 import util.DependencyEdge
@@ -12,7 +11,7 @@ import util.PyWriter
 import util.SelfLoop
 
 class LabelConstraintGenerator(
-    private val hyp: Map<String, SymTypeC>,
+    private val hyp: Projection,
     private val dep: DependencyAnalysis
 ) {
     private val w = PyWriter()
@@ -25,7 +24,7 @@ class LabelConstraintGenerator(
         w.beginMain()
 
         var pyNameFresh = 0
-        hyp.keys.forEach { name ->
+        hyp.outline.keys.forEach { name ->
             val n = "_${name.filter { it.isLetterOrDigit() }}"
             if (n !in pyName.values) pyName[name] = n
             else pyName[name] = n + "_${pyNameFresh++}"
@@ -53,17 +52,7 @@ class LabelConstraintGenerator(
     }
 
     fun gen(): String {
-        val nodeToType = hyp.entries.fold(mutableMapOf<ParameterNode, SymTypeC>()) { m, (name, tree) ->
-            var curr = tree
-            var count = 0
-            while (curr is F) {
-                m[ParameterNode(name, count)] = curr.left
-                count++
-                curr = curr.rite
-            }
-            m[ParameterNode(name, count)] = curr
-            m
-        }
+        val nodeToType = hyp.parameterToType
 
         // Declare top-level variables, label sizes
         val vars = nodeToType.values.filterIsInstance<Var>().map { py(it) }.toSet().toList()

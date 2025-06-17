@@ -3,14 +3,17 @@ package stc
 import util.SExpr
 import util.SExprParser
 
-fun Map<String, SymTypeC>.toSExpr() = this.entries.joinToString(separator = "\t") {
-    "${SExpr.Lst(listOf(SExpr.Atm(it.key), it.value.toSExpr()))}"
-}
+fun Map<String, SymTypeC>.toSExpr() = SExpr.Lst(this.entries.map {
+    SExpr.Lst(listOf(SExpr.Atm(it.key), it.value.toSExpr()))
+})
 
-fun outline(context: String) = context.split('\t').associate {
-    val assign = SExprParser(it).parse()
-    assert(assign is SExpr.Lst && assign.elements.size == 2 && assign.elements[0] is SExpr.Atm)
-    ((assign as SExpr.Lst).elements[0] as SExpr.Atm).value to assign.elements[1].toSTC()
+fun outline(context: String): Projection {
+    val s = SExprParser(context).parse()
+    assert(s is SExpr.Lst)
+    return Projection((s as SExpr.Lst).elements.associate {
+        assert(it is SExpr.Lst && it.elements.size == 2 && it.elements[0] is SExpr.Atm)
+        ((it as SExpr.Lst).elements[0] as SExpr.Atm).value to it.elements[1].toSTC()
+    })
 }
 
 fun SExpr.toSTC(): SymTypeC = when (this) {

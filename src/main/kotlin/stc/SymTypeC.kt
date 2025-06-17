@@ -30,6 +30,11 @@ data class VL(override val vId: Int, override val tId: Int) : Var(vId, tId) {
     override fun toString(): String = "${tId}_$vId"
 }
 
+fun SymTypeC.params(): Int = when (this) {
+    is F -> 1 + this.rite.params()
+    is L, is Var -> 1
+}
+
 typealias Binding = Triple<Int, Int, SymTypeC>
 
 fun applyBinding(

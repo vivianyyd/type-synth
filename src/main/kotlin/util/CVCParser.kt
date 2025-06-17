@@ -4,6 +4,22 @@ import constraints.LabelConstraintGenerator
 import std.Var
 
 class CVCParser(val constrGen: LabelConstraintGenerator) {
+    fun process(input: String) {
+        val (paramSetsE, rest) = map(input).entries.partition { it.key.startsWith('p') }
+        val (sizesE, varsE) = rest.partition { it.key.startsWith("size") }
+
+        val paramSets = paramSetsE.associate { constrGen.pyParamToNode(it.key) to parseSet(it.value) }
+        val sizes = sizesE.associate { constrGen.pySizeToL(it.key) to it.value.toInt() }
+        val varDummies = varsE.associate { Var(constrGen.pyVarToIds(it.key)) to it.value.toInt() }
+
+        println(paramSets)
+        println(sizes)
+        println(varDummies)
+    }
+
+    private fun map(input: String): Map<String, String> =
+        split(input).map { it.split("=") }.filter { it.size == 2 }.map { it[0].trim() to it[1].trim() }.toMap()
+
     private fun split(input: String): List<String> {
         val trimmed = input.trim().removePrefix("[").removeSuffix("]")
         val result = mutableListOf<String>()
@@ -32,23 +48,7 @@ class CVCParser(val constrGen: LabelConstraintGenerator) {
         return result
     }
 
-    private fun map(input: String): Map<String, String> =
-        split(input).map { it.split("=") }.filter { it.size == 2 }.map { it[0].trim() to it[1].trim() }.toMap()
-
-    fun process(input: String) {
-        val (paramSetsE, rest) = map(input).entries.partition { it.key.startsWith('p') }
-        val (sizesE, varsE) = rest.partition { it.key.startsWith("size") }
-
-        val paramSets = paramSetsE.associate { constrGen.pyParamToNode(it.key) to parseSet(it.value) }
-        val sizes = sizesE.associate { constrGen.pySizeToL(it.key) to it.value.toInt() }
-        val varDummies = varsE.associate { Var(constrGen.pyVarToIds(it.key)) to it.value.toInt() }
-
-        println(paramSets)
-        println(sizes)
-        println(varDummies)
-    }
-
-    fun parseSet(expr: String): Set<Int> {
+    private fun parseSet(expr: String): Set<Int> {
         fun splitTopLevelComma(s: String): Pair<String, String> {
             var depth = 0
             for (i in s.indices) {

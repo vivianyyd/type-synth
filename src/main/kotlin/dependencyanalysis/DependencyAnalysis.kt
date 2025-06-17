@@ -4,9 +4,7 @@ import query.Example
 import query.FlatApp
 import query.Query
 import query.flatten
-import stc.F
-import stc.SymTypeC
-import stc.Var
+import stc.Projection
 import util.*
 import java.lang.Integer.max
 
@@ -17,46 +15,31 @@ sealed interface DependencyConstraint
 object ContainsNoVariables : DependencyConstraint
 data class ContainsOnly(val vId: Int, val tId: Int) : DependencyConstraint
 
-/*
- * TODO:
- *  Inputs are functions and arities (manually write for now, then write analysis for this)
- *  Visualizer for dep graphs
- */
-class DependencyAnalysis(
-    private val query: Query, outline: Map<String, SymTypeC>, private val oracle: EqualityNewOracle
-) {
-    private val nodeToType = outline.entries.fold(mutableMapOf<ParameterNode, SymTypeC>()) { m, (name, tree) ->
-        var curr = tree
-        var count = 0
-        while (curr is F) {
-            m[ParameterNode(name, count)] = curr.left
-            count++
-            curr = curr.rite
-        }
-        m[ParameterNode(name, count)] = curr
-        m
+fun constraints(name: String, outline: Projection, deps: DependencyAnalysis): Map<Int, DependencyConstraint> {
+    val graph = deps.graphs[name]!!
+    val constrs = mutableMapOf<Int, DependencyConstraint>()
+    graph.loops.forEach {
+        constrs[it.a.i] = ContainsNoVariables
     }
+    graph.deps.forEach {
+        val sup = outline.parameterToType[it.sup]!!
+        if (sup is stc.Var) constrs[it.sub.i] = ContainsOnly(sup.vId, sup.tId)
+    }
+    return constrs
+}
 
-    fun nodes(name: String) = nodeToType.keys.filter { it.f == name }
+class DependencyAnalysis(
+    private val query: Query, arities: Map<String, Int>, private val oracle: EqualityNewOracle
+) {
+    private val nodes = arities.flatMap { (name, arity) -> (0 until arity).map { ParameterNode(name, it) } }
+
+    fun nodes(name: String) = nodes.filter { it.f == name }
 
     val graphs: Map<String, DependencyGraph> by lazy {
         query.names.associateWith { name ->
             val (deps, loops) = findEdges(name)
             DependencyGraph(name, nodes(name).toSet(), deps, loops)
         }
-    }
-
-    fun constraints(name: String): Map<Int, DependencyConstraint> {
-        val graph = graphs[name]!!
-        val constrs = mutableMapOf<Int, DependencyConstraint>()
-        graph.loops.forEach {
-            constrs[it.a.i] = ContainsNoVariables
-        }
-        graph.deps.forEach {
-            val sup = nodeToType[it.sup]!!
-            if (sup is Var) constrs[it.sub.i] = ContainsOnly(sup.vId, sup.tId)
-        }
-        return constrs
     }
 
     private fun flatExs(name: String, exs: Collection<Example>) =

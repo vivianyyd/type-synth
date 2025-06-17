@@ -4,3 +4,4 @@ build
 *generated/
 *results/
 *__pycache__/
+*output/

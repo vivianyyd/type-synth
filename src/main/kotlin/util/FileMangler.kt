@@ -1,5 +1,6 @@
 package util
 
+import stc.outline
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -28,7 +29,7 @@ fun String.runCommand(
 }
 
 fun callCVC(content: String, testName: String, actuallyCall: Boolean): String {
-    val inPath = join("src", "main", "python", "input", "cvc-$testName.py")
+    val inPath = join("src", "main", "python", "input", "generated", "cvc-$testName.py")
     val outPath = join("src", "main", "python", "output", "cvc-$testName.py")
     write(inPath, content)
     if (actuallyCall) {
@@ -39,10 +40,11 @@ fun callCVC(content: String, testName: String, actuallyCall: Boolean): String {
     return ""
 }
 
-fun readCVCresults(): List<String> =
+fun readCVCresults(): List<Pair<String, String>> =
     File(join("src", "main", "python", "output")).listFiles()!!.filter { it.isFile }.sortedBy { it.name }
-        .mapNotNull { file ->
-            if (file.isFile) file.readText() else null
+        .mapNotNull {
+            if (it.isFile) it.name.substringAfter("cvc-").substringBeforeLast(".py") to it.readText()
+            else null
         }
 
 fun writeProfiling(output: String, testName: String) = write(profilingResultPath(testName), output)
@@ -60,7 +62,11 @@ fun readExamples(name: String): Pair<String, List<String>> {
 private fun intermediateOutlinePath(name: String) = join("results", "intermediate", "outline", "outline-$name.sexp")
 
 fun writeIntermediateOutline(contents: String, name: String) = write(intermediateOutlinePath(name), contents)
-fun readIntermediateOutline(name: String) = File(intermediateOutlinePath(name)).readText()
+fun readIntermediateOutlines() =
+    File(join("results", "intermediate", "outline")).listFiles()!!.filter { it.isFile }.sortedBy { it.name }
+        .mapNotNull { file ->
+            if (file.isFile) outline(file.readText()) else null
+        }
 
 // TODO can pass this in main function
 private val customCodeGenerator = join("../applications/sketch-1.7.6/sketch-frontend/customcodegen.jar")

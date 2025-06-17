@@ -1,11 +1,10 @@
 package concreteenumerator
 
-import dependencyanalysis.ContainsNoVariables
-import dependencyanalysis.ContainsOnly
-import dependencyanalysis.DependencyAnalysis
-import dependencyanalysis.DependencyConstraint
+import dependencyanalysis.*
 import query.*
+import stc.Projection
 import std.SymTypeDFlat
+import std.flatten
 import util.*
 
 sealed interface Node {
@@ -49,7 +48,7 @@ fun Node.concretizations(): List<Node> = when (this) {
 
 class ConcreteEnumerator(
     val query: Query,
-    contextOutline: Map<String, SymTypeDFlat>,
+    contextOutline: Projection,
     /** Map from label ids to number of parameters */
     private val labels: Map<Int, Int>,
     private val dependencies: DependencyAnalysis,
@@ -62,29 +61,26 @@ class ConcreteEnumerator(
     private val frontier: MutableList<Node> = mutableListOf()
 
     init {
-        contextOutline.forEach { (name, outline) ->
-            val constraints = dependencies.constraints(name)
+        contextOutline.outline.forEach { (name, ty) ->
+            val constraints = constraints(name, contextOutline, dependencies)
 
             fun SymTypeDFlat.toNode(constraint: DependencyConstraint?): Node = when (this) {
-                is std.F ->
-                    F(
-                        (this.args + this.rite).map { mutableListOf(it.toNode(constraint)) },
-                        constraint
-                    )
-                is std.L -> {
-                    L(this.label, labels[this.label]!!, constraints[0])
-                }
+                is std.F -> F(
+                    (this.args + this.rite).map { mutableListOf(it.toNode(constraint)) },
+                    constraint
+                )
+                is std.L -> L(this.label, labels[this.label]!!, constraints[0])
+
                 is std.Var -> Var(this.vId, this.tId, constraint)
             }
 
+            val outline = ty.flatten()
             state[name] = when (outline) {
-                is std.F ->
-                    F(
-                        (outline.args + outline.rite).mapIndexed { i, a -> mutableListOf(a.toNode(constraints[i])) },
-                        null
-                    )
-                is std.L, is std.Var ->
-                    outline.toNode(constraints[0])
+                is std.F -> F(
+                    (outline.args + outline.rite).mapIndexed { i, a -> mutableListOf(a.toNode(constraints[i])) },
+                    null
+                )
+                is std.L, is std.Var -> outline.toNode(constraints[0])
             }
 
             fun variables(outline: SymTypeDFlat): Set<Pair<Int, Int>> = when (outline) {

@@ -22,11 +22,11 @@ class SymTypeCEnumerator(
     val varTypeIds = query.names.withIndex().associate { (i, n) -> n to i }
     private fun tId(name: String) = varTypeIds[name]!!
 
-    fun enumerateAll(): List<Map<String, SymTypeC>> {
+    fun enumerateAll(): List<Projection> {
         val all = state.mapValues { (n, options) ->
             options.flatMap { enumerate(it, 0, false, n, false).map { it.first } }
         }.contexts().map { it.toMutableMap() }
-        return all.filter(::checkPosExsAndMergeLabels)
+        return all.filter(::checkPosExsAndMergeLabels).map { Projection(it) }
     }
 
     /**
