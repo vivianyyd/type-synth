@@ -1,5 +1,5 @@
-import enumgen.Assignment
 import query.*
+import types.Assignment
 import types.toSExpr
 import types.toType
 import util.SExpr

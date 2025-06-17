@@ -1,10 +1,8 @@
-package enumgen
+package oldenumgen
 
 import query.FlatQuery
 import types.*
 import types.Function
-
-typealias Assignment = Map<String, Type>
 
 class Enumerator(
     val query: FlatQuery

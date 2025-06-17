@@ -1,4 +1,4 @@
-package enumgen
+package oldenumgen
 
 import query.FlatApp
 import query.FlatQuery

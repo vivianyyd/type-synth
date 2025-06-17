@@ -1,4 +1,4 @@
-package enumgen
+package oldenumgen
 
 import types.ChildHole
 import types.Function

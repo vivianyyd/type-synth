@@ -1,6 +1,5 @@
 package query
 
-import enumgen.Assignment
 import types.*
 import types.Function
 

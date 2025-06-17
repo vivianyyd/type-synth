@@ -1,4 +1,4 @@
-package enumgen
+package oldenumgen
 
 import types.*
 import types.Function

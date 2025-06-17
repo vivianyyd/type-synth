@@ -1,6 +1,5 @@
 package types
 
-import enumgen.Assignment
 import query.FlatApp
 
 typealias Context = MutableMap<Variable, Type>

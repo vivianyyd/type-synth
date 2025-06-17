@@ -1,5 +1,7 @@
 package types
 
+typealias Assignment = Map<String, Type>
+
 fun Type.numParams(): Int = when (this) {
     is LabelNode, is Variable -> 0
     is Function -> 1 + this.rite.numParams()
