@@ -4,7 +4,6 @@ import constraints.LabelConstraintGenerator
 import dependencyanalysis.DependencyAnalysis
 import query.parseContextAndExamples
 import sta.SymTypeABuilder
-import stc.L
 import stc.SymTypeCEnumerator
 import stc.toSExpr
 import test.ConsTest

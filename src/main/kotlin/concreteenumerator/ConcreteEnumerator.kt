@@ -49,9 +49,11 @@ class Var(val vid: Int, val tid: Int) : Node {
 
 fun Node.concretizations(): Sequence<Node> = when (this) {
     is F -> if (params.isEmpty()) sequenceOf(this)
+    else if (params.any { it.any { it is Hole } }) emptySequence()
     else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
         .map { F(it.map { mutableListOf(it) }, constraint) }
     is L -> if (params.isEmpty()) sequenceOf(this)
+    else if (params.any { it.any { it is Hole } }) emptySequence()
     else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
         .map { L(this.label, it.map { mutableListOf(it) }, constraint) }
     is Var -> sequenceOf(this)
@@ -80,6 +82,9 @@ class ConcreteEnumerator(
     private val labels = inLabels.mapKeys { (l, _) -> std.L(l.label) }
     private val frontier: MutableList<Node> = mutableListOf()
     private val constraints = constraints(contextOutline, dependencies)
+    private val mayHaveFresh = dependencies.all.mapValues {
+        it.value.third.map { it.i }
+    }
 
     init {
         contextOutline.outline.forEach { (name, ty) ->
@@ -116,12 +121,14 @@ class ConcreteEnumerator(
     }
 
     /** While we start with all functions flattened, we might enumerate functions with functions as outputs */
-    private fun filler(name: String, constraint: DependencyConstraint?) = when (constraint) {
+    private fun filler(name: String, param: Int, constraint: DependencyConstraint?) = when (constraint) {
         null, is MustContainVariables -> {
-            val new = nextVar[name]!!
-            variablesInScope[name]!!.add(new)
-            nextVar[name] = Var(new.vid + 1, new.tid)
-            variablesInScope[name]!! + new
+            if (param in mayHaveFresh[name]!!) {
+                val new = nextVar[name]!!
+                variablesInScope[name]!!.add(new)
+                nextVar[name] = Var(new.vid + 1, new.tid)
+            }
+            variablesInScope[name]!!
         }
         ContainsNoVariables -> listOf()
         is ContainsOnly -> listOf(Var(constraint.vId, constraint.tId))
@@ -130,19 +137,43 @@ class ConcreteEnumerator(
 
     fun callMe(maxIterations: Int): Set<Map<String, Node>> {
         for (i in 1..maxIterations) {
-            println("Depth $i")
-            state.forEach { (f, root) -> root.enumerate(f) }
+            state.forEach { (f, root) ->
+                if (root is F) root.params.forEachIndexed { i, options ->
+                    options.forEach { it.enumerate(f, i) }  // assumes no top-level holes, a fair assumption...
+                }
+                else root.enumerate(f, 0)
+            }
             val contexts = contexts()
             if (contexts.isNotEmpty()) return contexts
         }
         return setOf()
     }
 
+    private fun Node.cantConcretize(): Boolean = when (this) {
+        is Hole -> true
+        is Var -> false
+        is F -> params.any { it.all { it.cantConcretize() } }
+        is L -> params.any { it.all { it.cantConcretize() } }
+    }
+
+    private fun Node.holelessCopy(): Node? = when (this) {
+        is F -> F(params.map {
+            it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
+        }, constraint)
+        is Hole -> null
+        is L -> L(label, params.map {
+            it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
+        }, constraint)
+        is Var -> this
+    }
+
     private fun contexts(): Set<Map<String, Node>> {
         // TODO skip fresh variables if they can't be there.
         //  Tricky bc rightmost param of F might be in a HOF, so we it can also be fresh if parent allows
         //  If last param is a label L<a->b> don't want to erroneously say a can be fresh
-        val possTys = state.map { (n, t) ->
+        val concreteOptions = state.mapValues { it.value.holelessCopy() }
+        if (concreteOptions.values.any { it == null }) return emptySet()
+        val possTys = (concreteOptions as Map<String, Node>).map { (n, t) ->
             when (t) {
                 is F -> {
                     if (t.params.isEmpty()) sequenceOf(t)
@@ -161,20 +192,20 @@ class ConcreteEnumerator(
         return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }.filter { check(it) }.toSet()
     }
 
-    fun Node.enumerate(name: String): Unit = when (this) {
+    fun Node.enumerate(name: String, param: Int): Unit = when (this) {
         is Hole -> throw Exception("Should be handled by parent")
         is F -> params.forEachIndexed { i, options ->
             if (options.removeAll { it is Hole }) {
-                options.addAll(filler(name, this.constraint))
+                options.addAll(filler(name, param, this.constraint))
             } else {
-                options.forEach { it.enumerate(name) }
+                options.forEach { it.enumerate(name, param) }
             }
         }
         is L -> params.forEach { options ->
             if (options.removeAll { it is Hole }) {
-                options.addAll(filler(name, this.constraint))
+                options.addAll(filler(name, param, this.constraint))
             } else {
-                options.forEach { it.enumerate(name) }
+                options.forEach { it.enumerate(name, param) }
             }
         }
         is Var -> {}
