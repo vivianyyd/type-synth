@@ -26,7 +26,7 @@ object DependencyVisualizer {
         dw.startGraph()
         val nodeLabels = graph.nodes.associateWith { it.display() }
         dw.writeEdges(graph.deps.map { Pair(nodeLabels[it.sub]!!, nodeLabels[it.sup]!!) }, true, "deps")
-        dw.writeEdges(graph.loops.map { Pair(nodeLabels[it.a]!!, nodeLabels[it.a]!!) }, true, "loops")
+        dw.writeEdges(graph.loops.map { Pair(nodeLabels[it.node]!!, nodeLabels[it.node]!!) }, true, "loops")
         dw.finishGraph()
         val out = dw.output()
         dw.restart()

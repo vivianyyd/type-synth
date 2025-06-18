@@ -4,7 +4,6 @@ import dependencyanalysis.DependencyAnalysis
 import stc.L
 import stc.Projection
 import stc.Var
-import std.flatten
 import util.DependencyEdge
 import util.ParameterNode
 import util.PyWriter
@@ -14,48 +13,23 @@ class LabelConstraintGenerator(
     private val hyp: Projection,
     private val dep: DependencyAnalysis
 ) {
-    private val w = PyWriter()
     private val pyName = mutableMapOf<String, String>()
+    private val decls = mutableListOf<String>()
+    private val constrs = mutableListOf<String>()
 
     init {
-        w.comment("$hyp")
-        w.import("cvc5.pythonic")
-        w.import("cardinality")
-        w.beginMain()
-
         var pyNameFresh = 0
         hyp.outline.keys.forEach { name ->
             val n = "_${name.filter { it.isLetterOrDigit() }}"
             if (n !in pyName.values) pyName[name] = n
             else pyName[name] = n + "_${pyNameFresh++}"
         }
-    }
 
-    fun pyParamToNode(p: String) = ParameterNode(
-        pyName.entries.find { it.value == p.removePrefix("p").substringBeforeLast('_') }!!.key,
-        p.substringAfterLast('_').toInt()
-    )
-
-    fun pySizeToL(s: String) = std.L.toL(s.removePrefix("size")).flatten()
-
-    fun pyVarToIds(s: String) = std.Var.toIds(s.removePrefix("v"))
-
-    fun py(node: ParameterNode) = "p${pyName[node.f]!!}_${node.i}"
-    private fun py(v: Var) = "v$v"
-    private fun pySize(l: L) = "size$l"
-
-    private fun declareInts(names: List<String>) {
-        if (names.isEmpty()) return
-        val py = names.joinToString(separator = ", ")
-        val cvc5 = names.joinToString(separator = " ")
-        w.decls(listOf("$py = Int${if (names.size == 1) "" else "s"}('$cvc5')"))
-    }
-
-    fun gen(): String {
         val nodeToType = hyp.parameterToType
 
         // Declare top-level variables, label sizes
         val vars = nodeToType.values.filterIsInstance<Var>().map { py(it) }.toSet().toList()
+//        TODO("need to look inside functions for labels")
         val lsizes = nodeToType.values.filterIsInstance<L>().map { pySize(it) }.toSet().toList()
         declareInts(vars)
         declareInts(lsizes)
@@ -74,12 +48,12 @@ class LabelConstraintGenerator(
             "${py(n)} == Singleton(${py(t as Var)})"
         }
 
-        w.constrs(varsDistinct + labelsMatchConstrs + varsAreSingletons)
+        constrs.addAll(varsDistinct + labelsMatchConstrs + varsAreSingletons)
 
         // Translate dependency info into set constraints
         dep.all.forEach { (name, info) ->
             val nodes = dep.nodes(name)
-            w.decls(nodes.map { "${py(it)} = Const('${py(it)}', SetSort(IntSort()))" })
+            decls.addAll(nodes.map { "${py(it)} = Const('${py(it)}', SetSort(IntSort()))" })
 
             val (deps, primitives, fresh) = info
             val edgeConstrs = nodes.map {
@@ -115,9 +89,38 @@ class LabelConstraintGenerator(
                     if (p !in fresh) "$diffPrev == $empty" else null
                 }
             }
-            w.constrs(edgeConstrs + freshConstrs)
+            constrs.addAll(edgeConstrs + freshConstrs)
         }
+    }
 
-        return w.s()
+    fun pyParamToNode(p: String) = ParameterNode(
+        pyName.entries.find { it.value == p.removePrefix("p").substringBeforeLast('_') }!!.key,
+        p.substringAfterLast('_').toInt()
+    )
+
+    fun pySizeToL(s: String) = L.toL(s.removePrefix("size"))
+
+    fun pyVarToIds(s: String) = std.Var.toIds(s.removePrefix("v"))
+
+    fun py(node: ParameterNode) = "p${pyName[node.f]!!}_${node.i}"
+    private fun py(v: Var) = "v$v"
+    private fun pySize(l: L) = "size$l"
+
+    private fun declareInts(names: List<String>) {
+        if (names.isEmpty()) return
+        val py = names.joinToString(separator = ", ")
+        val cvc5 = names.joinToString(separator = " ")
+        decls.add("$py = Int${if (names.size == 1) "" else "s"}('$cvc5')")
+    }
+
+    fun initialQuery(): String = PyWriter().query("$hyp", decls, constrs)
+
+    fun smallerQuery(sizes: Map<L, Int>): String {
+        fun or(args: List<String>): String {
+            if (args.size == 1) return args.single()
+            return "Or(${args.first()},${or(args.drop(1))})"
+        }
+        constrs.add(or(sizes.entries.map { "${pySize(it.key)} < ${it.value}" }))
+        return PyWriter().query("$hyp", decls, constrs)
     }
 }

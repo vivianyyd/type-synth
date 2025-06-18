@@ -12,6 +12,10 @@ sealed class Var(open val vId: Int, open val tId: Int) : SymTypeC {
 // TODO This used to be normal, not data class, I forget why...
 data class L(val label: Int) : SymTypeC {
     override fun toString(): String = "L$label"
+
+    companion object {
+        fun toL(s: String) = L(s.removePrefix("L").toInt())
+    }
 }
 
 data class F(val left: SymTypeC, val rite: SymTypeC) : SymTypeC {

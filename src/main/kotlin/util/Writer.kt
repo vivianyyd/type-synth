@@ -19,9 +19,6 @@ sealed class Writer {
 }
 
 class PyWriter : Writer() {
-    private val decls = mutableListOf<String>()
-    private val constrs = mutableListOf<String>()
-
     override fun line(l: String) = lineNoSemi(l)
 
     override fun lines(l: Collection<String>) = l.forEach { line(it) }
@@ -37,11 +34,12 @@ class PyWriter : Writer() {
         indent()
     }
 
-    fun decls(d: List<String>) = decls.addAll(d)
+    fun query(header: String, decls: List<String>, constrs: List<String>): String {
+        comment(header)
+        import("cvc5.pythonic")
+        import("cardinality")
+        beginMain()
 
-    fun constrs(c: List<String>) = constrs.addAll(c)
-
-    fun s(): String {
         decls.forEach { line(it) }
         line("solve(")
         indent()

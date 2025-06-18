@@ -1,12 +1,12 @@
 package util
 
 import constraints.LabelConstraintGenerator
-import std.SymTypeDFlat
+import stc.L
 import std.Var
 
 class CVCParser(input: String, constrGen: LabelConstraintGenerator) {
     val paramSets: Map<ParameterNode, Set<Int>>
-    val sizes: Map<SymTypeDFlat, Int>
+    val sizes: Map<L, Int>
     val varDummies: Map<Var, Int>
 
     init {
@@ -24,7 +24,7 @@ class CVCParser(input: String, constrGen: LabelConstraintGenerator) {
         println(sizes)
         println(varDummies)
     }
-    
+
     private fun map(input: String): Map<String, String> =
         split(input).map { it.split("=") }.filter { it.size == 2 }.map { it[0].trim() to it[1].trim() }.toMap()
 

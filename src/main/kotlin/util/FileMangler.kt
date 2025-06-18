@@ -28,21 +28,26 @@ fun String.runCommand(
     }
 }
 
-fun callCVC(content: String, testName: String): String {
+fun callCVC(content: String, testName: String): Boolean {
     val inPath = join("src", "main", "python", "input", "generated", "cvc-$testName.py")
     val outPath = join("src", "main", "python", "output", "cvc-$testName.py")
     write(inPath, content)
     val out = "python3 $inPath".runCommand() ?: throw Exception("I'm sad")
-    if ("no solution" !in out) write(outPath, out)
-    return out
+    if ("no solution" !in out) {
+        write(outPath, out)
+        return true
+    }
+    return false
 }
 
-fun readCVCresults(): List<Pair<String, String>> =
-    File(join("src", "main", "python", "output")).listFiles()!!.filter { it.isFile }.sortedBy { it.name }
+fun readCVCresults(): List<Pair<Int, String>> =
+    File(join("src", "main", "python", "output")).listFiles()!!.filter { it.isFile && "smaller" !in it.name }
         .mapNotNull {
-            if (it.isFile) it.name.substringAfter("cvc-").substringBeforeLast(".py") to it.readText()
+            if (it.isFile) it.name.substringAfter("cvc-").substringBeforeLast(".py").toInt() to it.readText()
             else null
-        }
+        }.sortedBy { it.first }
+
+fun readCVC(name: String): String = File(join("src", "main", "python", "output", "cvc-$name.py")).readText()
 
 fun writeProfiling(output: String, testName: String) = write(profilingResultPath(testName), output)
 
@@ -60,10 +65,11 @@ private fun intermediateOutlinePath(name: String) = join("results", "intermediat
 
 fun writeIntermediateOutline(contents: String, name: String) = write(intermediateOutlinePath(name), contents)
 fun readIntermediateOutlines() =
-    File(join("results", "intermediate", "outline")).listFiles()!!.filter { it.isFile }.sortedBy { it.name }
+    File(join("results", "intermediate", "outline")).listFiles()!!.filter { it.isFile }
         .mapNotNull { file ->
-            if (file.isFile) outline(file.readText()) else null
-        }
+            if (file.isFile) file.name.substringAfter("outline-").substringBeforeLast(".sexp")
+                .toInt() to outline(file.readText()) else null
+        }.sortedBy { it.first }
 
 // TODO can pass this in main function
 private val customCodeGenerator = join("../applications/sketch-1.7.6/sketch-frontend/customcodegen.jar")

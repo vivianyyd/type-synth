@@ -17,15 +17,28 @@ fun <T> equivalenceClasses(elems: Collection<T>, equals: (T, T) -> Boolean): Set
 }
 
 fun main() {
-    val s = listOf(0, 1, 2, 3)
-    val repetitions = 3
-    val seq = reflexiveNaryProduct(s, repetitions)
-    println("Total: ${seq.toList().size}")
-    println("Total: ${seq.toSet().size}")
-    val slowGroundTruth = naryCartesianProduct((1..repetitions).map { s }).toSet()
-    assert(seq.toSet() == slowGroundTruth)
-    println(seq.toSet().size)
-    println(seq.toList().map { it.reversed() })
+//    val s = listOf(0, 1, 2, 3)
+//    val repetitions = 3
+//    val seq = reflexiveNaryProduct(s, repetitions)
+//    println("Total: ${seq.toList().size}")
+//    println("Total: ${seq.toSet().size}")
+//    val slowGroundTruth = naryCartesianProduct((1..repetitions).map { s }).toSet()
+//    assert(seq.toSet() == slowGroundTruth)
+//    println(seq.toSet().size)
+//    println(seq.toList().map { it.reversed() })
+
+    /*
+    [1, 3, 5]
+    [1, 4, 5]
+    [2, 3, 5]
+    [2, 4, 5]
+     */
+    val sets = listOf(listOf(1, 2), listOf(3, 4), listOf(5))
+    val product = lazyCartesianProduct(sets)
+    for (item in product) {
+        println(item)
+    }
+
 }
 
 fun <T> reflexiveNaryProduct(set: List<T>, n: Int): Sequence<List<T>> = sequence {
@@ -60,8 +73,20 @@ fun <T> reflexiveNaryProduct(set: List<T>, n: Int): Sequence<List<T>> = sequence
     }
 }
 
+
+fun <T> lazyCartesianProduct(sets: List<List<T>>): Sequence<List<T>> =
+    lazySeqCartesianProduct(sets.map { it.asSequence() })
+
+fun <T> lazySeqCartesianProduct(sets: List<Sequence<T>>): Sequence<List<T>> {
+    if (!sets.iterator().hasNext()) return emptySequence()
+    return sets.fold(sequenceOf(emptyList())) { acc, set ->
+        acc.flatMap { partial ->
+            set.map { element -> partial + element }
+        }
+    }
+}
+
 fun <T> naryCartesianProduct(sets: List<List<T>>): Set<List<T>> {
-    // TODO Make me lazy
     if (sets.isEmpty()) return setOf()
     var result = sets[0].map { listOf(it) }.toSet()
     var rest = sets.drop(1)

@@ -8,7 +8,7 @@ import sta.Function
 import sta.State
 import util.EqualityNewOracle
 import util.UnionFind
-import util.naryCartesianProduct
+import util.lazyCartesianProduct
 
 class SymTypeCEnumerator(
     val query: Query,
@@ -100,6 +100,7 @@ class SymTypeCEnumerator(
 
     private fun Map<String, List<SymTypeC>>.contexts(): List<Map<String, SymTypeC>> {
         val m = LinkedHashMap(this)
-        return naryCartesianProduct(m.values.toList()).map { this.keys.zip(it).toMap() }
+        // TODO make me lazy!
+        return lazyCartesianProduct(m.values.toList()).toList().map { this.keys.zip(it).toMap() }
     }
 }

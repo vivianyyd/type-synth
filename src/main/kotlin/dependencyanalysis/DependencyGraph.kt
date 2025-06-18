@@ -15,7 +15,7 @@ data class DependencyEdge(val sub: ParameterNode, val sup: ParameterNode) : Edge
     override fun toString(): String = "$sub -> $sup"
 }
 
-data class SelfLoop(val a: ParameterNode) : Edge
+data class SelfLoop(val node: ParameterNode) : Edge
 
 // TODO decide if nodes/edges should be constructed in init block or by DepAnalysis class and only stored here
 class DependencyGraph(

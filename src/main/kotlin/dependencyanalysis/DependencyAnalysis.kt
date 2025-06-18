@@ -5,6 +5,7 @@ import query.FlatApp
 import query.Query
 import query.flatten
 import stc.Projection
+import stc.Var
 import util.*
 import java.lang.Integer.max
 
@@ -14,19 +15,30 @@ sealed interface DependencyConstraint
 //   so not implemented yet
 object ContainsNoVariables : DependencyConstraint
 data class ContainsOnly(val vId: Int, val tId: Int) : DependencyConstraint
+data class MustContainVariables(val vars: List<Pair<Int, Int>>) : DependencyConstraint
 
-fun constraints(name: String, outline: Projection, deps: DependencyAnalysis): Map<Int, DependencyConstraint> {
-    val graph = deps.graphs[name]!!
-    val constrs = mutableMapOf<Int, DependencyConstraint>()
-    graph.loops.forEach {
-        constrs[it.a.i] = ContainsNoVariables
+// TODO make it map from ParameterNodes
+fun constraints(outline: Projection, deps: DependencyAnalysis) =
+    outline.outline.keys.associateWith { name ->
+        val graph = deps.graphs[name]!!
+        val constrs = mutableMapOf<Int, DependencyConstraint>()
+        graph.loops.forEach {
+            constrs[it.node.i] = ContainsNoVariables
+        }
+        graph.deps.forEach {
+            val sup = outline.parameterToType[it.sup]!!
+            if (sup is Var) constrs[it.sub.i] = ContainsOnly(sup.vId, sup.tId)
+        }
+        equivalenceClasses(graph.deps) { e1, e2 -> e1.sup == e2.sup }.forEach {
+            val sink = it.first().sup
+            val containedVars =
+                it.map { outline.parameterToType[it.sub]!! }.filterIsInstance<Var>().map { it.vId to it.tId }
+            if (outline.parameterToType[sink]!! !is Var && containedVars.isNotEmpty()) {
+                if (sink.i !in constrs) constrs[sink.i] = MustContainVariables(containedVars)
+            }
+        }
+        constrs
     }
-    graph.deps.forEach {
-        val sup = outline.parameterToType[it.sup]!!
-        if (sup is stc.Var) constrs[it.sub.i] = ContainsOnly(sup.vId, sup.tId)
-    }
-    return constrs
-}
 
 class DependencyAnalysis(
     private val query: Query, arities: Map<String, Int>, private val oracle: EqualityNewOracle

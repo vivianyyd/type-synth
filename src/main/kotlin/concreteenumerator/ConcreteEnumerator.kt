@@ -33,86 +33,137 @@ class F(
     override fun toString(): String = params.joinToString(separator = "->")
 }
 
-class Var(val vid: Int, val tid: Int, override val constraint: DependencyConstraint?) : Node {
+class Var(val vid: Int, val tid: Int) : Node {
+    override val constraint: DependencyConstraint? = null
     override fun toString(): String = "${tid}_$vid"
 }
 
-fun Node.concretizations(): List<Node> = when (this) {
-    is F -> if (params.isEmpty()) listOf(this) else naryCartesianProduct(params.map { it.flatMap { it.concretizations() } })
+//fun Node.concretizations(): List<Node> = when (this) {
+//    is F -> if (params.isEmpty()) listOf(this) else naryCartesianProduct(params.map { it.flatMap { it.concretizations() } })
+//        .map { F(it.map { mutableListOf(it) }, constraint) }
+//    is L -> if (params.isEmpty()) listOf(this) else naryCartesianProduct(params.map { it.flatMap { it.concretizations() } })
+//        .map { L(this.label, it.map { mutableListOf(it) }, constraint) }
+//    is Var -> listOf(this)
+//    is Hole -> listOf()
+//}
+
+fun Node.concretizations(): Sequence<Node> = when (this) {
+    is F -> if (params.isEmpty()) sequenceOf(this)
+    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
         .map { F(it.map { mutableListOf(it) }, constraint) }
-    is L -> if (params.isEmpty()) listOf(this) else naryCartesianProduct(params.map { it.flatMap { it.concretizations() } })
+    is L -> if (params.isEmpty()) sequenceOf(this)
+    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
         .map { L(this.label, it.map { mutableListOf(it) }, constraint) }
-    is Var -> listOf(this)
-    is Hole -> listOf()
+    is Var -> sequenceOf(this)
+    is Hole -> emptySequence()
+}
+
+fun Node.vars(): Set<Pair<Int, Int>> = when (this) {
+    is Var -> setOf(vid to tid)
+    is F -> params.flatMap { it.flatMap { it.vars() }.toSet() }.toSet()
+    is L -> params.flatMap { it.flatMap { it.vars() }.toSet() }.toSet()
+    is Hole -> setOf()
 }
 
 class ConcreteEnumerator(
     val query: Query,
     contextOutline: Projection,
     /** Map from label ids to number of parameters */
-    private val labels: Map<Int, Int>,
+    inLabels: Map<stc.L, Int>,
     private val dependencies: DependencyAnalysis,
     private val oracle: EqualityNewOracle
 ) {
     private val state: MutableMap<String, Node> = mutableMapOf()
-    private val variablesInScope: Map<String, MutableList<Pair<Int, Int>>> =
+    private val variablesInScope: Map<String, MutableList<Var>> =
         query.names.associateWith { mutableListOf() }
-
+    private val nextVar = mutableMapOf<String, Var>()
+    private val labels = inLabels.mapKeys { (l, _) -> std.L(l.label) }
     private val frontier: MutableList<Node> = mutableListOf()
+    private val constraints = constraints(contextOutline, dependencies)
 
     init {
         contextOutline.outline.forEach { (name, ty) ->
-            val constraints = constraints(name, contextOutline, dependencies)
+            val constrs = constraints[name]!!
 
             fun SymTypeDFlat.toNode(constraint: DependencyConstraint?): Node = when (this) {
                 is std.F -> F(
                     (this.args + this.rite).map { mutableListOf(it.toNode(constraint)) },
                     constraint
                 )
-                is std.L -> L(this.label, labels[this.label]!!, constraints[0])
+                is std.L -> L(this.label, labels[this]!!, constraint)
 
-                is std.Var -> Var(this.vId, this.tId, constraint)
+                is std.Var -> Var(this.vId, this.tId)
             }
 
             val outline = ty.flatten()
             state[name] = when (outline) {
                 is std.F -> F(
-                    (outline.args + outline.rite).mapIndexed { i, a -> mutableListOf(a.toNode(constraints[i])) },
+                    (outline.args + outline.rite).mapIndexed { i, a -> mutableListOf(a.toNode(constrs[i])) },
                     null
                 )
-                is std.L, is std.Var -> outline.toNode(constraints[0])
+                is std.L, is std.Var -> outline.toNode(constrs[0])
             }
 
-            fun variables(outline: SymTypeDFlat): Set<Pair<Int, Int>> = when (outline) {
+            fun variables(outline: SymTypeDFlat): Set<Var> = when (outline) {
                 is std.F -> (outline.args.flatMap { variables(it) } + variables(outline.rite)).toSet()
                 is std.L -> setOf()
-                is std.Var -> setOf(outline.vId to outline.tId)
+                is std.Var -> setOf(Var(outline.vId, outline.tId))
             }
             variablesInScope[name]!!.addAll(variables(outline))
+            val maxVar = variablesInScope[name]!!.maxByOrNull { it.vid } ?: Var(-1, query.names.indexOf(name))
+            nextVar[name] = Var(maxVar.vid + 1, maxVar.tid)
         }
     }
 
     /** While we start with all functions flattened, we might enumerate functions with functions as outputs */
     private fun filler(name: String, constraint: DependencyConstraint?) = when (constraint) {
-        null -> variablesInScope[name]!!.map { Var(it.first, it.second, null) }
+        null, is MustContainVariables -> {
+            val new = nextVar[name]!!
+            variablesInScope[name]!!.add(new)
+            nextVar[name] = Var(new.vid + 1, new.tid)
+            variablesInScope[name]!! + new
+        }
         ContainsNoVariables -> listOf()
-        is ContainsOnly -> listOf(Var(constraint.vId, constraint.tId, null))
-    } + labels.map { L(it.key, it.value, constraint) } +
+        is ContainsOnly -> listOf(Var(constraint.vId, constraint.tId))
+    } + labels.map { L(it.key.label, it.value, constraint) } +
             F(listOf(mutableListOf(Hole(constraint)), mutableListOf(Hole(constraint))), constraint)
 
-    fun callMe(iterations: Int): Map<String, Node> {
-        repeat(iterations) { state.forEach { (f, root) -> root.enumerate(f) } }
-        return state
+    fun callMe(maxIterations: Int): Set<Map<String, Node>> {
+        for (i in 1..maxIterations) {
+            println("Depth $i")
+            state.forEach { (f, root) -> root.enumerate(f) }
+            val contexts = contexts()
+            if (contexts.isNotEmpty()) return contexts
+        }
+        return setOf()
     }
 
-    fun contexts(): Set<Map<String, Node>> {
-        val possTys = state.map { it.value.concretizations() }
-        return naryCartesianProduct(possTys).map { query.names.zip(it).toMap() }.toSet()
+    private fun contexts(): Set<Map<String, Node>> {
+        // TODO skip fresh variables if they can't be there.
+        //  Tricky bc rightmost param of F might be in a HOF, so we it can also be fresh if parent allows
+        //  If last param is a label L<a->b> don't want to erroneously say a can be fresh
+        val possTys = state.map { (n, t) ->
+            when (t) {
+                is F -> {
+                    if (t.params.isEmpty()) sequenceOf(t)
+                    else lazyCartesianProduct(t.params.mapIndexed { i, options ->
+                        options.flatMap { it.concretizations() }.filter { node ->
+                            if (constraints[n]!![i] is MustContainVariables)
+                                (constraints[n]!![i] as MustContainVariables).vars.all { it in node.vars() }
+                            else true
+                        }
+                    }).map { F(it.map { mutableListOf(it) }, t.constraint) }
+                }
+                is L, is Var -> t.concretizations()
+                is Hole -> throw Exception("Can't happen")
+            }
+        }
+        return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }.filter { check(it) }.toSet()
     }
 
     fun Node.enumerate(name: String): Unit = when (this) {
         is Hole -> throw Exception("Should be handled by parent")
-        is F -> params.forEach { options ->
+        is F -> params.forEachIndexed { i, options ->
             if (options.removeAll { it is Hole }) {
                 options.addAll(filler(name, this.constraint))
             } else {

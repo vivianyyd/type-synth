@@ -71,6 +71,7 @@ class DepLabConcreteSketcher(
                 null -> "null"
                 is ContainsNoVariables -> "new NoVars()"
                 is ContainsOnly -> "new OnlyVariable(tid=${c.tId}, vid=${c.vId})"
+                is MustContainVariables -> TODO()
             }
             val vars = when (c) {
                 is ContainsOnly -> "$groundVars"
@@ -110,7 +111,8 @@ class DepLabConcreteSketcher(
                 w.line("Type root")
                 // TODO If all our params have constraints, we don't need to call this
                 /*if (!nullary(name)) */w.line("int labelVars = makeLabelVars()")
-                codeFor(outline, tid, groundVars, "root", constraints(name, contextOutline, dependencies), 0)
+                TODO("Changed constraints() fn, update this line later")
+//                codeFor(outline, tid, groundVars, "root", constraints(name, contextOutline, dependencies), 0)
                 w.line("return root")
             }
         }

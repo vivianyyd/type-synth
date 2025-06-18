@@ -2,7 +2,7 @@ package oldenumgen
 
 import types.*
 import types.Function
-import util.naryCartesianProduct
+import util.lazyCartesianProduct
 import util.zip
 
 fun SearchNode.types(root: Boolean): Set<Type> {
@@ -21,7 +21,7 @@ fun SearchNode.types(root: Boolean): Set<Type> {
             acc.union(portOption.types(root = false))
         }.toList()
     }
-    naryCartesianProduct(expandedPorts).forEach { selection ->
+    lazyCartesianProduct(expandedPorts).forEach { selection ->
         result.add(merge(selection))  // TODO Make me lazy
     }
     return result
@@ -41,7 +41,7 @@ fun SearchState.partialContexts(): Set<Map<String, Type>> {
         if (this.tree(f).ports[0].isEmpty()) throw Exception("Can't find a type!")
         else this.tree(f).leaves().toList()
     }
-    return naryCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()  // TODO Make me lazy
+    return lazyCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()  // TODO Make me lazy
 }
 
 fun SearchState.contexts(): Set<Map<String, Type>> {
@@ -49,7 +49,7 @@ fun SearchState.contexts(): Set<Map<String, Type>> {
         if (this.tree(f).ports[0].isEmpty()) throw Exception("Can't find a type!")
         else this.tree(f).types(root = true).toList()
     }
-    return naryCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()  // TODO Make me lazy
+    return lazyCartesianProduct(possTys).map { this.names.zip(it).toMap() }.toSet()  // TODO Make me lazy
 }
 
 object MergeException : Exception("Merged mismatched types")

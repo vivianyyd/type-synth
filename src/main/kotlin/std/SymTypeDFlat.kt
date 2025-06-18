@@ -25,12 +25,8 @@ data class F(val args: List<SymTypeDFlat>, val rite: NotF) : SymTypeDFlat {
         "${args.joinToString(separator = "->") { if (it is F) "($it)" else "$it" }} -> $rite"
 }
 
-class L(val label: Int) : NotF {
+data class L(val label: Int) : NotF {
     override fun toString(): String = "L$label"
-
-    companion object {
-        fun toL(s: String) = stc.L(s.removePrefix("L").toInt())
-    }
 }
 
 data class Var(val vId: Int, val tId: Int) : NotF {
