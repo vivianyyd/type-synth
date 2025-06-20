@@ -7,7 +7,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintWriter
 
-fun viz(name: String, da: DependencyAnalysis) = DependencyVisualizer.viz(da.graphs[name]!!, name)
+fun viz(name: String, da: DependencyAnalysis, fileName: String = name) =
+    DependencyVisualizer.viz(da.graphs[name]!!, fileName)
 
 object DependencyVisualizer {
     private var ctr = 0

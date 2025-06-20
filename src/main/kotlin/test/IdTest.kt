@@ -16,6 +16,7 @@ object IdTest {
         "(+ id)" to "a -> a",
         "(+ n)" to "int",
         "(+ (inc n))" to "int",
+        "(+ (inc (inc n)))" to "int",
         "(+ (id inc))" to "int -> int",
         "(+ (id n))" to "int",
         "(- (inc id))" to null,
