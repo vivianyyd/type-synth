@@ -169,8 +169,8 @@ class ConcreteEnumerator(
 
     private fun contexts(): Set<Map<String, Node>> {
         // TODO skip fresh variables if they can't be there.
-        //  Tricky bc rightmost param of F might be in a HOF, so we it can also be fresh if parent allows
-        //  If last param is a label L<a->b> don't want to erroneously say a can be fresh
+        //  Rightmost param of F can't be fresh even if it's a HOF and parent allows - think about this more
+        //  If last param is a label L<a->b> don't want to erroneously say a can be fresh just bc it's on the left
         val concreteOptions = state.mapValues { it.value.holelessCopy() }
         if (concreteOptions.values.any { it == null }) return emptySet()
         val possTys = (concreteOptions as Map<String, Node>).map { (n, t) ->

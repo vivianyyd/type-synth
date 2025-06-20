@@ -81,6 +81,8 @@ class SymTypeCEnumerator(
             )
         }
         is Function -> {
+            // TODO Think about this harder: The RHS of a function could be "fresh" if that fn is itself a parameter,
+            //   since 'a -> bool is a subtype of 'a -> 'b. However, this is not HM... Only matters when we have subtyping
             val lefts = t.left.flatMap { enumerate(it, vars, pickedLabel, name, true) }
             lefts.flatMap { (left, lvs, lab) ->
                 val rites = t.rite.flatMap { enumerate(it, lvs, lab, name, false) }

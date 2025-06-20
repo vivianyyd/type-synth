@@ -99,3 +99,26 @@ fun writeConcretizeInput(content: String, testName: String) =
     write(sketchGenerationPath("concretize", "input", testName), content)
 
 fun readSymSketchOutput(testName: String) = File(skSymOutput(testName)).readText()
+
+private fun deleteAll(path: String, and: (File) -> Boolean = { true }) {
+    val directory = File(path)
+    if (!directory.exists() || !directory.isDirectory) {
+        return
+    }
+    directory.listFiles()?.forEach { file ->
+        if (file.isFile && and(file)) {
+            if (!file.delete()) {
+                println("Failed to delete: ${file.name}")
+            }
+        }
+    }
+}
+
+fun clearCVC() {
+    deleteAll(join("src", "main", "python", "output"))
+    deleteAll(join("src", "main", "python", "input", "generated")) { it.name != "cardinality.py" }
+}
+
+fun clearOutlines() {
+    deleteAll(join("results", "intermediate", "outline"))
+}
