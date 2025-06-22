@@ -2,7 +2,6 @@ import concreteenumerator.ConcreteEnumerator
 import concreteenumerator.Node
 import constraints.LabelConstraintGenerator
 import dependencyanalysis.DependencyAnalysis
-import dependencyanalysis.viz
 import sta.SymTypeABuilder
 import stc.SymTypeCEnumerator
 import stc.toSExpr
@@ -22,7 +21,7 @@ fun main() {
     val constest = ConsTest
     val hoftest = HOFTest
     val dicttest = DictTest
-    val test = idtest
+    val test = constest
 
 //    val examplesFromFile = parseContextAndExamples(readExamples("dictchain"))
 
@@ -43,11 +42,11 @@ fun main() {
 
     // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to num params)
     val deps = projections.map { it.arities }.toSet().associateWith { DependencyAnalysis(query, it, oracle) }
-    println(deps)
-    deps.entries.mapIndexed { i, it ->
-        viz("inc", it.value, "inc$i")
-        viz("id", it.value, "id$i")
-    }
+//    println(deps)
+//    deps.entries.mapIndexed { i, it ->
+//        viz("inc", it.value, "inc$i")
+//        viz("id", it.value, "id$i")
+//    }
     val constrGenerators = projections.associateWith { LabelConstraintGenerator(it, deps[it.arities]!!) }
     projections.forEachIndexed { i, it ->
         if (CALL_INIT_CVC) {

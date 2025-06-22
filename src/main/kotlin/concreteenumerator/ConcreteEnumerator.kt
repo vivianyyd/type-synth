@@ -11,11 +11,17 @@ sealed interface Node {
     val constraint: DependencyConstraint?
 }
 
-class Hole(override val constraint: DependencyConstraint?) : Node {
+// These used to be classes instead of data classes but I don't really remember why
+data class Hole(override val constraint: DependencyConstraint?) : Node {
     override fun toString(): String = "_"
+
+    companion object {
+        override fun equals(other: Any?): Boolean = other is Hole
+        override fun hashCode(): Int = toString().hashCode()
+    }
 }
 
-class L(
+data class L(
     val label: Int,
     val params: List<MutableList<Node>>,
     override val constraint: DependencyConstraint?
@@ -24,16 +30,22 @@ class L(
             this(label, (0 until numParams).map { mutableListOf(Hole(constraint)) }, constraint)
 
     override fun toString(): String = "L$label(${params.joinToString(separator = ",")})"
+    override fun equals(other: Any?): Boolean = other is L && other.label == label && other.params == params
+    private val hc = toString().hashCode()
+    override fun hashCode(): Int = hc
 }
 
-class F(
+data class F(
     val params: List<MutableList<Node>>,
     override val constraint: DependencyConstraint?
 ) : Node {
     override fun toString(): String = params.joinToString(separator = "->")
+    override fun equals(other: Any?): Boolean = other is F && other.params == params
+    private val hc = toString().hashCode()
+    override fun hashCode(): Int = hc
 }
 
-class Var(val vid: Int, val tid: Int) : Node {
+data class Var(val vid: Int, val tid: Int) : Node {
     override val constraint: DependencyConstraint? = null
     override fun toString(): String = "${tid}_$vid"
 }
@@ -47,24 +59,30 @@ class Var(val vid: Int, val tid: Int) : Node {
 //    is Hole -> listOf()
 //}
 
-fun Node.concretizations(): Sequence<Node> = when (this) {
-    is F -> if (params.isEmpty()) sequenceOf(this)
-    else if (params.any { it.any { it is Hole } }) emptySequence()
-    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-        .map { F(it.map { mutableListOf(it) }, constraint) }
-    is L -> if (params.isEmpty()) sequenceOf(this)
-    else if (params.any { it.any { it is Hole } }) emptySequence()
-    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-        .map { L(this.label, it.map { mutableListOf(it) }, constraint) }
-    is Var -> sequenceOf(this)
-    is Hole -> emptySequence()
+val concretizations = mutableMapOf<Node, Sequence<Node>>()
+fun Node.concretizations(): Sequence<Node> = concretizations.getOrPut(this) {
+    when (this) {
+        is F -> if (params.isEmpty()) sequenceOf(this)
+        else if (params.any { it.any { it is Hole } }) emptySequence()
+        else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
+            .map { F(it.map { mutableListOf(it) }, constraint) }
+        is L -> if (params.isEmpty()) sequenceOf(this)
+        else if (params.any { it.any { it is Hole } }) emptySequence()
+        else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
+            .map { L(this.label, it.map { mutableListOf(it) }, constraint) }
+        is Var -> sequenceOf(this)
+        is Hole -> emptySequence()
+    }
 }
 
-fun Node.vars(): Set<Pair<Int, Int>> = when (this) {
-    is Var -> setOf(vid to tid)
-    is F -> params.flatMap { it.flatMap { it.vars() }.toSet() }.toSet()
-    is L -> params.flatMap { it.flatMap { it.vars() }.toSet() }.toSet()
-    is Hole -> setOf()
+val vars = mutableMapOf<Node, Set<Pair<Int, Int>>>()
+fun Node.vars(): Set<Pair<Int, Int>> = vars.getOrPut(this) {
+    when (this) {
+        is Var -> setOf(vid to tid)
+        is F -> params.flatMap { it.flatMap { it.vars() }.toSet() }.toSet()
+        is L -> params.flatMap { it.flatMap { it.vars() }.toSet() }.toSet()
+        is Hole -> setOf()
+    }
 }
 
 class ConcreteEnumerator(
@@ -121,6 +139,7 @@ class ConcreteEnumerator(
     }
 
     /** While we start with all functions flattened, we might enumerate functions with functions as outputs */
+    // Don't memoize this once, since we want to create new objects
     private fun filler(name: String, param: Int, constraint: DependencyConstraint?) = when (constraint) {
         null, is MustContainVariables -> {
             if (param in mayHaveFresh[name]!!) {
@@ -149,22 +168,34 @@ class ConcreteEnumerator(
         return setOf()
     }
 
-    private fun Node.cantConcretize(): Boolean = when (this) {
-        is Hole -> true
-        is Var -> false
-        is F -> params.any { it.all { it.cantConcretize() } }
-        is L -> params.any { it.all { it.cantConcretize() } }
+    private val cantConcretize = mutableMapOf<Node, Boolean>()
+    private fun Node.cantConcretize(): Boolean = cantConcretize.getOrPut(this) {
+        when (this) {
+            is Hole -> true
+            is Var -> false
+            is F -> params.any { it.all { it.cantConcretize() } }
+            is L -> params.any { it.all { it.cantConcretize() } }
+        }
     }
 
-    private fun Node.holelessCopy(): Node? = when (this) {
-        is F -> F(params.map {
-            it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
-        }, constraint)
-        is Hole -> null
-        is L -> L(label, params.map {
-            it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
-        }, constraint)
-        is Var -> this
+    // TODO we make duplicate computations whenever the computation returned null, since getOrPut runs initialization if map has null as value
+    private val holelessCopy = mutableMapOf<Node, Node?>()
+    private fun Node.holelessCopy(): Node? {
+        // Since output can be null, can't use getOrPut
+        if (this in holelessCopy) return holelessCopy[this]!!
+        val result =
+            when (this) {
+                is F -> F(params.map {
+                    it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
+                }, constraint)
+                is Hole -> null
+                is L -> L(label, params.map {
+                    it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
+                }, constraint)
+                is Var -> this
+            }
+        holelessCopy[this] = result
+        return result
     }
 
     private fun contexts(): Set<Map<String, Node>> {
@@ -211,22 +242,30 @@ class ConcreteEnumerator(
         is Var -> {}
     }
 
-
+    private val applyBinding = mutableMapOf<Triple<Node, Pair<Int, Int>, Node>, Node>()
     fun applyBinding(
         t: Node,
         varId: Int,
         tId: Int,
         sub: Node
     ): Node =
-        when (t) {
-            is Hole -> throw Exception("Hole in concrete type")
-            is L -> L(t.label, t.params.map { mutableListOf(applyBinding(it.first(), varId, tId, sub)) }, t.constraint)
-            is F -> F(t.params.map { mutableListOf(applyBinding(it.first(), varId, tId, sub)) }, t.constraint)
-            is Var -> if (t.vid == varId && t.tid == tId) sub else t  // TODO t should never be a binding variable and hit this case; reason about it a bit more
+        applyBinding.getOrPut(Triple(t, (varId to tId), sub)) {
+            when (t) {
+                is Hole -> throw Exception("Hole in concrete type")
+                is L -> L(
+                    t.label,
+                    t.params.map { mutableListOf(applyBinding(it.first(), varId, tId, sub)) },
+                    t.constraint
+                )
+                is F -> F(t.params.map { mutableListOf(applyBinding(it.first(), varId, tId, sub)) }, t.constraint)
+                is Var -> if (t.vid == varId && t.tid == tId) sub else t  // TODO t should never be a binding variable and hit this case; reason about it a bit more
+            }
         }
 
-    fun applyBindings(t: Node, bindings: List<Binding>): Node =
+    val applyBindings = mutableMapOf<Pair<Node, List<Binding>>, Node>()
+    fun applyBindings(t: Node, bindings: List<Binding>): Node = applyBindings.getOrPut(t to bindings) {
         bindings.fold(t) { acc, (vId, tId, sub) -> applyBinding(acc, vId, tId, sub) }
+    }
 
     /*
     TODO {f=0_0 -> 0_0, g=1_0 -> 1_0, h=(2_0 -> 2_0) -> 2_0, a=L} with example (h f)
@@ -237,8 +276,13 @@ class ConcreteEnumerator(
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible.
      * @modifies [labelClasses]
      * */
-    fun unify(param: Node, arg: Node): List<Binding>? =
-        when (param) {
+
+    private val unify = mutableMapOf<Pair<Node, Node>, List<Binding>?>()
+    fun unify(param: Node, arg: Node): List<Binding>? {
+        // We can't simply call getOrPut, since getOrPut runs code if map has null as value.
+        // Then we'd do duplicate computations for all bad parameter-argument pairs
+        if ((param to arg) in unify) return unify[param to arg]
+        val result = when (param) {
             is Var -> listOf(Binding(param.vid, param.tid, arg))
             is L -> when (arg) {
                 is L -> {
@@ -275,24 +319,40 @@ class ConcreteEnumerator(
             }
             is Hole -> throw Exception("Invariant broken")
         }
+        unify[param to arg] = result
+        return result
+    }
+
+    private val apply = mutableMapOf<Pair<F, Node>, Node?>()
 
     /**
      * Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
      * @modifies [labelClasses]
      */
-    fun apply(fn: F, arg: Node): Node? =
-        unify(fn.params.first().first(), arg)?.let {
+    fun apply(fn: F, arg: Node): Node? {
+        // Not using getOrPut for same reason as others
+        if (fn to arg in apply) return apply[fn to arg]
+        val result = unify(fn.params.first().first(), arg)?.let {
             val out = if (fn.params.size == 2) fn.params[1].first() else F(fn.params.drop(1), fn.constraint)
             applyBindings(out, it)
         }
+        apply[fn to arg] = result
+        return result
+    }
 
-    fun type(context: Map<String, Node>, example: Example): Node? = when (example) {
-        is Name -> context[example.name]
-        is App -> type(context, example.fn).let { f ->
-            type(context, example.arg)?.let { arg ->
-                if (f is F) apply(f, arg) else null
+    private val type = mutableMapOf<Pair<Map<String, Node>, Example>, Node?>()
+    fun type(context: Map<String, Node>, example: Example): Node? {
+        if (context to example in type) return type[context to example]
+        val result = when (example) {
+            is Name -> context[example.name]
+            is App -> type(context, example.fn).let { f ->
+                type(context, example.arg)?.let { arg ->
+                    if (f is F) apply(f, arg) else null
+                }
             }
         }
+        type[context to example] = result
+        return result
     }
 
     fun check(context: Map<String, Node>): Boolean =
