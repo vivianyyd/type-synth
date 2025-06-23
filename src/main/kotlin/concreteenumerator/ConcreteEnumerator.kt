@@ -6,6 +6,8 @@ import stc.Projection
 import std.SymTypeDFlat
 import std.flatten
 import util.*
+import java.util.*
+import kotlin.random.Random
 
 sealed interface Node {
     val constraint: DependencyConstraint?
@@ -155,6 +157,12 @@ class ConcreteEnumerator(
             F(listOf(mutableListOf(Hole(constraint)), mutableListOf(Hole(constraint))), constraint)
 
     fun callMe(maxIterations: Int): Set<Map<String, Node>> {
+        // TODO Decide how to pick how many examples
+        val pos = query.posExamples.fold(listOf<Example>()) { a, e -> if (Random.Default.nextInt(5) < 1) a + e else a }
+            .toMutableList()
+        val neg = query.posExamples.fold(listOf<Example>()) { a, e -> if (Random.Default.nextInt(5) < 1) a + e else a }
+            .toMutableList()
+
         for (i in 1..maxIterations) {
             println("Depth $i")
             state.forEach { (f, root) ->
@@ -163,8 +171,15 @@ class ConcreteEnumerator(
                 }
                 else root.enumerate(f, 0)
             }
-            val contexts = contexts()
-            if (contexts.isNotEmpty()) return contexts
+            val contexts = contexts(pos, neg)
+            if (contexts.isNotEmpty()) {
+                contexts.fold(listOf<Pair<Example?, Example?>>()) { acc, cont ->
+                    val (failedPos, failedNeg) = checkAll(cont)
+                    if (failedPos == null && failedNeg == null) return contexts
+                    else acc + (failedPos to failedNeg)
+                }
+                // TODO make it pair of two listss
+            }
         }
         return setOf()
     }
@@ -199,7 +214,7 @@ class ConcreteEnumerator(
         return result
     }
 
-    private fun contexts(): Set<Map<String, Node>> {
+    private fun contexts(pos: List<Example>, neg: List<Example>): Set<Map<String, Node>> {
         // TODO skip fresh variables if they can't be there.
         //  Rightmost param of F can't be fresh even if it's a HOF and parent allows - think about this more
         //  If last param is a label L<a->b> don't want to erroneously say a can be fresh just bc it's on the left
@@ -221,7 +236,8 @@ class ConcreteEnumerator(
                 is Hole -> throw Exception("Can't happen")
             }
         }
-        return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }.filter { check(it) }.toSet()
+        return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }.filter { checkOnly(it, pos, neg) }
+            .toSet()
     }
 
     fun Node.enumerate(name: String, param: Int): Unit = when (this) {
@@ -361,36 +377,15 @@ class ConcreteEnumerator(
         return result
     }
 
+    private fun checkAll(context: Map<String, Node>): Example? =
+        query.posExamples.firstOrNull { type(mask(context, it.names), it) == null }?:
+                query.negExamples.firstOrNull { type(mask(context, it.names), it) != null }
+
+    private fun checkOnly(context: Map<String, Node>, pos: Collection<Example>, neg: Collection<Example>): Boolean =
+        pos.all { type(mask(context, it.names), it) != null } && neg.all { type(mask(context, it.names), it) == null }
+
     private fun mask(context: Map<String, Node>, names: Set<String>): Map<String, Node> =
         context.filter { it.key in names }
-
-    fun check(context: Map<String, Node>): Boolean {
-        /*
-        Instead of partitioning upfront, only pick out relevant choices (name or param) in context as we go
-
-        "Map examples to parameters they involve; we have similar code already in SymTypeCEnumerator since we find the options/port for particular argument
-
-        Partition examples by the subset of parameters involved
-        For each set P of involved parameters (in order of number of functions involved) == equivalence class of examples
-            Partition candidates by their type assignments to only those *parameters* (need to be a little careful bc different arities too. Might partition by those first)
-            **** Granularity of parameters might not work since variable bindings affect across diff parameters. But maybe it's OK b/c we have partial application! So if pi involved then p1..i-1 are all involved too. So things should work out since all binding locations and variables need to match up too within the assignment eqclass
-            Test a canonical element from the eqclass of assignments on eqclass of all examples that satisfy P
-            If it fails, we can prune an entire class of hypotheses.
-            Does this work for both neg and posexs? It's good for negexs to be small, we get more signal that way. "
-        */
-
-        /*
-        TODO I think this can be faster if instead we loop over every example
-        TODO try testing all negexs first. will it make a difference?
-        */
-        return query.posExamples.all {
-//            type(context, it) != null
-            type(mask(context, it.names), it) != null
-        } && query.negExamples.all {
-//            type(context, it) == null
-            type(mask(context, it.names), it) == null
-        }
-    }
 }
 
 typealias Binding = Triple<Int, Int, Node>
