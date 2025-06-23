@@ -6,6 +6,8 @@ import stc.Projection
 import std.SymTypeDFlat
 import std.flatten
 import util.*
+import java.util.*
+import kotlin.random.Random
 
 sealed interface Node {
     val constraint: DependencyConstraint?
@@ -155,6 +157,12 @@ class ConcreteEnumerator(
             F(listOf(mutableListOf(Hole(constraint)), mutableListOf(Hole(constraint))), constraint)
 
     fun callMe(maxIterations: Int): Set<Map<String, Node>> {
+        // TODO Decide how to pick how many examples
+        val pos = query.posExamples.fold(listOf<Example>()) { a, e -> if (Random.Default.nextInt(5) < 1) a + e else a }
+            .toMutableList()
+        val neg = query.posExamples.fold(listOf<Example>()) { a, e -> if (Random.Default.nextInt(5) < 1) a + e else a }
+            .toMutableList()
+
         for (i in 1..maxIterations) {
             state.forEach { (f, root) ->
                 if (root is F) root.params.forEachIndexed { i, options ->
@@ -162,8 +170,15 @@ class ConcreteEnumerator(
                 }
                 else root.enumerate(f, 0)
             }
-            val contexts = contexts()
-            if (contexts.isNotEmpty()) return contexts
+            val contexts = contexts(pos, neg)
+            if (contexts.isNotEmpty()) {
+                contexts.fold(listOf<Pair<Example?, Example?>>()) { acc, cont ->
+                    val (failedPos, failedNeg) = checkAll(cont)
+                    if (failedPos == null && failedNeg == null) return contexts
+                    else acc + (failedPos to failedNeg)
+                }
+                // TODO make it pair of two listss
+            }
         }
         return setOf()
     }
@@ -198,7 +213,7 @@ class ConcreteEnumerator(
         return result
     }
 
-    private fun contexts(): Set<Map<String, Node>> {
+    private fun contexts(pos: List<Example>, neg: List<Example>): Set<Map<String, Node>> {
         // TODO skip fresh variables if they can't be there.
         //  Rightmost param of F can't be fresh even if it's a HOF and parent allows - think about this more
         //  If last param is a label L<a->b> don't want to erroneously say a can be fresh just bc it's on the left
@@ -220,7 +235,8 @@ class ConcreteEnumerator(
                 is Hole -> throw Exception("Can't happen")
             }
         }
-        return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }.filter { check(it) }.toSet()
+        return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }.filter { checkOnly(it, pos, neg) }
+            .toSet()
     }
 
     fun Node.enumerate(name: String, param: Int): Unit = when (this) {
@@ -346,17 +362,21 @@ class ConcreteEnumerator(
         val result = when (example) {
             is Name -> context[example.name]
             is App -> type(context, example.fn).let { f ->
-                type(context, example.arg)?.let { arg ->
-                    if (f is F) apply(f, arg) else null
-                }
+                if (f is F) type(context, example.arg)?.let { arg ->
+                    apply(f, arg)
+                } else null
             }
         }
         type[context to example] = result
         return result
     }
 
-    fun check(context: Map<String, Node>): Boolean =
-        query.posExamples.all { type(context, it) != null } && query.negExamples.all { type(context, it) == null }
+    private fun checkAll(context: Map<String, Node>): Pair<Example?, Example?> =
+        query.posExamples.firstOrNull { type(context, it) == null } to
+                query.negExamples.firstOrNull { type(context, it) != null }
+
+    private fun checkOnly(context: Map<String, Node>, pos: Collection<Example>, neg: Collection<Example>): Boolean =
+        pos.all { type(context, it) != null } && neg.all { type(context, it) == null }
 }
 
 typealias Binding = Triple<Int, Int, Node>
