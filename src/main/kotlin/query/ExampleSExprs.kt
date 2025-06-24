@@ -28,7 +28,7 @@ private fun examplesFromSexps(sexps: Collection<SExpr>): Query {
     val exs = exsWithNames.map { Pair(it.second, it.first) }
     val names = exsWithNames.map { it.third }.fold(setOf<String>()) { a, b -> a.union(b) }
     val (pos, neg) = splitExamples(exs)
-    return Query(pos, neg, names.toList())
+    return Query(pos, neg, names.toList(), true)
 }
 
 /**

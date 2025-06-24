@@ -1,3 +1,30 @@
+Dict chain
+- OOM naive memoize
+
+2:21 no memoize 36s
+2:23 no memoize 37s
+
+
+masked memoize OOM with mask memoized
+
+2:29 masked memoize with mask NOT memoized
+   55s
+(i think apply was memoized here)
+
+2:36 55s masked memoize with mask NOT memoized, apply memoized
+type is slower
+
+2:33 masked memoize, mask not memoized, apply not memoized
+54s
+
+2:43 50s mask and small fix for maps with null in codomains
+2:48 48s most efficient memoized so far.. mask and small fix for maps with null in codomains, and faster map by replacing null outputs with OK monad so we don't have to access map twice
+
+
+fixed a bug in L that makes memoizing faster: compute hashcode lazily
+
+whether or not we memoize apply doesn't really make a diff
+
 DICT CHAIN
 
 (0, L0())

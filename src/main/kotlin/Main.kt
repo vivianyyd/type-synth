@@ -2,31 +2,29 @@ import concreteenumerator.ConcreteEnumerator
 import concreteenumerator.Node
 import constraints.LabelConstraintGenerator
 import dependencyanalysis.DependencyAnalysis
+import query.parseContextAndExamples
 import sta.SymTypeABuilder
 import stc.SymTypeCEnumerator
 import stc.toSExpr
-import test.ConsTest
-import test.DictTest
-import test.HOFTest
-import test.IdTest
 import util.*
 
 const val ROUNDS = 4
-const val MAKE_OUTLINES = true
-const val CALL_INIT_CVC = true
-const val CALL_SMALLER_CVC = true
+const val WRITE_INTERMEDIATE = false
+const val MAKE_OUTLINES = false
+const val CALL_INIT_CVC = false
+const val CALL_SMALLER_CVC = false
 
 fun main() {
-    val idtest = IdTest
-    val constest = ConsTest
-    val hoftest = HOFTest
-    val dicttest = DictTest
-    val test = constest
+//    val idtest = IdTest
+//    val constest = ConsTest
+//    val hoftest = HOFTest
+//    val dicttest = DictTest
+//    val test = dicttest
 
-//    val examplesFromFile = parseContextAndExamples(readExamples("dictchain"))
+    val examplesFromFile = parseContextAndExamples(readExamples("dictchain"))
 
-    val (query, oracle) = (test.query to test.oracle)
-//    val (query, oracle) = examplesFromFile
+//    val (query, oracle) = (test.query to test.oracle)
+    val (query, oracle) = examplesFromFile
     if (MAKE_OUTLINES) clearOutlines()
     if (CALL_INIT_CVC || CALL_SMALLER_CVC) clearCVC()
 
@@ -35,11 +33,12 @@ fun main() {
     val projections =
         if (MAKE_OUTLINES) SymTypeCEnumerator(query, SymTypeABuilder(query).make, oracle).enumerateAll()
         else readIntermediateOutlines().map { it.second }
-    if (MAKE_OUTLINES) projections.forEachIndexed { i, it ->
+    if (MAKE_OUTLINES && WRITE_INTERMEDIATE) projections.forEachIndexed { i, it ->
         writeIntermediateOutline("${it.outline.toSExpr()}", "$i")
     }
     println(projections.joinToString(separator = "\n") { "${it.outline}" })
 
+    println("Starting dep analysis")
     // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to num params)
     val deps = projections.map { it.arities }.toSet().associateWith { DependencyAnalysis(query, it, oracle) }
 //    println(deps)
@@ -47,6 +46,7 @@ fun main() {
 //        viz("inc", it.value, "inc$i")
 //        viz("id", it.value, "id$i")
 //    }
+    println("Calling CVC")
     val constrGenerators = projections.associateWith { LabelConstraintGenerator(it, deps[it.arities]!!) }
     projections.forEachIndexed { i, it ->
         if (CALL_INIT_CVC) {
@@ -63,13 +63,13 @@ fun main() {
         var previousSolution = contents
         var lastSuccessful = -1
         do {
+            println("Getting smaller CVC results")
             val parser = CVCParser(previousSolution, cvcGen)
             val testName = "$i-smaller${counter++}"
-//                parser.print()
-//                println(projections[i].parameterToType.values.filterIsInstance<L>().toSet())
-            val cont = if (CALL_SMALLER_CVC && parser.sizes.isNotEmpty())
-                callCVC(cvcGen.smallerQuery(parser.sizes), testName)
-            else false
+            val cont =
+                if (/*CALL_SMALLER_CVC && */parser.sizes.isNotEmpty()) // TODO FIXME if the flag is off we don't read previous results properly
+                    callCVC(cvcGen.smallerQuery(parser.sizes), testName)
+                else false
             if (cont) {
                 lastSuccessful = counter - 1
                 previousSolution = readCVC(testName)
@@ -78,7 +78,7 @@ fun main() {
 
         val finalSuccessfulOutput = if (lastSuccessful == -1) "$i" else "$i-smaller$lastSuccessful"
         val result = CVCParser(readCVC(finalSuccessfulOutput), cvcGen)
-//        result.print()
+        result.print()
         val concEnum = ConcreteEnumerator(
             query,
             projections[i],
@@ -86,6 +86,7 @@ fun main() {
             deps[projections[i].arities]!!,
             oracle
         )
+        println("Enumerating")
         val contexts = concEnum.callMe(2)
         OK.addAll(contexts)
 

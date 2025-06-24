@@ -1,12 +1,17 @@
 package query
 
-sealed interface Example
+sealed interface Example {
+    val names: Set<String>
+}
+
 data class Name(val name: String) : Example {
     override fun toString() = name
+    override val names by lazy { setOf(name) }
 }
 
 data class App(val fn: Example, val arg: Example) : Example {
     override fun toString(): String = "$fn ${if (arg is App) "($arg)" else "$arg"}"
+    override val names by lazy { fn.names + arg.names }
 }
 
 fun Example.depth(): Int = this.flatten().depth()
