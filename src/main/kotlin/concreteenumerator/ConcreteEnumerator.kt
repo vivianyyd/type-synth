@@ -158,9 +158,9 @@ class ConcreteEnumerator(
 
     fun callMe(maxIterations: Int): Set<Map<String, Node>> {
         // TODO Decide how to pick how many examples
-        val pos = query.posExamples.fold(listOf<Example>()) { a, e -> if (Random.Default.nextInt(5) < 1) a + e else a }
+        val pos = query.posExamples.fold(listOf<Example>()) { a, e -> if (Random.Default.nextInt(3) < 1) a + e else a }
             .toMutableList()
-        val neg = query.posExamples.fold(listOf<Example>()) { a, e -> if (Random.Default.nextInt(5) < 1) a + e else a }
+        val neg = query.posExamples.fold(listOf<Example>()) { a, e -> if (Random.Default.nextInt(3) < 1) a + e else a }
             .toMutableList()
 
         for (i in 1..maxIterations) {
@@ -173,12 +173,12 @@ class ConcreteEnumerator(
             }
             val contexts = contexts(pos, neg)
             if (contexts.isNotEmpty()) {
-                contexts.fold(listOf<Pair<Example?, Example?>>()) { acc, cont ->
-                    val (failedPos, failedNeg) = checkAll(cont)
-                    if (failedPos == null && failedNeg == null) return contexts
-                    else acc + (failedPos to failedNeg)
+                contexts.forEach {
+                    val failed = checkAll(it)
+                    println(if (failed != null && failed.second) "Pos counter example" else "Neg counter example")
+                    if (failed == null) return setOf(it)//goodContexts.add(it)
+                    else (if (failed.second) pos else neg).add(failed.first)
                 }
-                // TODO make it pair of two listss
             }
         }
         return setOf()
@@ -377,9 +377,13 @@ class ConcreteEnumerator(
         return result
     }
 
-    private fun checkAll(context: Map<String, Node>): Example? =
-        query.posExamples.firstOrNull { type(mask(context, it.names), it) == null }?:
-                query.negExamples.firstOrNull { type(mask(context, it.names), it) != null }
+    private fun checkAll(context: Map<String, Node>): Pair<Example, Boolean>? {
+        val ctrPosEx = query.posExamples.firstOrNull { type(mask(context, it.names), it) == null }
+        if (ctrPosEx != null) return ctrPosEx to true
+        val ctrNegEx = query.negExamples.firstOrNull { type(mask(context, it.names), it) != null }
+        if (ctrNegEx != null) return ctrNegEx to false
+        return null
+    }
 
     private fun checkOnly(context: Map<String, Node>, pos: Collection<Example>, neg: Collection<Example>): Boolean =
         pos.all { type(mask(context, it.names), it) != null } && neg.all { type(mask(context, it.names), it) == null }
