@@ -179,9 +179,9 @@ class ConcreteEnumerator(
         }
     }
 
-    // TODO we make duplicate computations whenever the computation returned null, since getOrPut runs initialization if map has null as value
-    private val holelessCopy = mutableMapOf<Node, Node?>()
+    private val holelessCopy = mutableMapOf<Node, Node>()
     private fun Node.holelessCopy(): Node? {
+        if (this is Hole) return null
         // Since output can be null, can't use getOrPut
         if (this in holelessCopy) return holelessCopy[this]!!
         val result =
@@ -189,11 +189,11 @@ class ConcreteEnumerator(
                 is F -> F(params.map {
                     it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
                 }, constraint)
-                is Hole -> null
                 is L -> L(label, params.map {
                     it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
                 }, constraint)
                 is Var -> this
+                is Hole -> throw Exception("Can't happen")
             }
         holelessCopy[this] = result
         return result
@@ -276,8 +276,7 @@ class ConcreteEnumerator(
      */
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible.
      * @modifies [labelClasses]
-     * */
-
+     */
     private val unify = mutableMapOf<Pair<Node, Node>, List<Binding>?>()
     fun unify(param: Node, arg: Node): List<Binding>? {
         // We can't simply call getOrPut, since getOrPut runs code if map has null as value.
@@ -341,15 +340,15 @@ class ConcreteEnumerator(
         return result
     }
 
-    interface Tmp
-    data class R(val n: Node) : Tmp
-    object N : Tmp
+    interface Result
+    data class OK(val n: Node) : Result
+    object None : Result
 
     // TODO does this do anything
-    private val type = mutableMapOf<Pair<Map<String, Node>, Example>, Tmp>()
+    private val type = mutableMapOf<Pair<Map<String, Node>, Example>, Result>()
     fun type(context: Map<String, Node>, example: Example): Node? {
         val tmp = type[context to example]
-        if (tmp != null) return if (tmp is R) tmp.n else null
+        if (tmp != null) return if (tmp is OK) tmp.n else null
         val result = when (example) {
             is Name -> context[example.name]
             is App -> type(context, example.fn).let { f ->
@@ -358,19 +357,18 @@ class ConcreteEnumerator(
                 }
             }
         }
-        type[context to example] = if (result == null) N else R(result)
+        type[context to example] = if (result == null) None else OK(result)
         return result
     }
 
-    fun mask(context: Map<String, Node>, names: Set<String>): Map<String, Node> =
+    private fun mask(context: Map<String, Node>, names: Set<String>): Map<String, Node> =
         context.filter { it.key in names }
 
     fun check(context: Map<String, Node>): Boolean {
         /*
         Instead of partitioning upfront, only pick out relevant choices (name or param) in context as we go
 
-        "(Originally instead of parameters we went by subset of names involved, but I think the higher granularity the better)
-        Map examples to parameters they involve; we have similar code already in SymTypeCEnumerator since we find the options/port for particular argument
+        "Map examples to parameters they involve; we have similar code already in SymTypeCEnumerator since we find the options/port for particular argument
 
         Partition examples by the subset of parameters involved
         For each set P of involved parameters (in order of number of functions involved) == equivalence class of examples
@@ -379,7 +377,12 @@ class ConcreteEnumerator(
             Test a canonical element from the eqclass of assignments on eqclass of all examples that satisfy P
             If it fails, we can prune an entire class of hypotheses.
             Does this work for both neg and posexs? It's good for negexs to be small, we get more signal that way. "
-         */
+        */
+
+        /*
+        TODO I think this can be faster if instead we loop over every example
+        TODO try testing all negexs first. will it make a difference?
+        */
         return query.posExamples.all {
 //            type(context, it) != null
             type(mask(context, it.names), it) != null

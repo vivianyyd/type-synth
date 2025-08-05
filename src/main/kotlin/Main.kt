@@ -19,7 +19,7 @@ fun main() {
 //    val constest = ConsTest
 //    val hoftest = HOFTest
 //    val dicttest = DictTest
-//    val test = dicttest
+//    val test = constest
 
     val examplesFromFile = parseContextAndExamples(readExamples("dictchain"))
 
