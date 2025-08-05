@@ -50,15 +50,6 @@ data class Var(val vid: Int, val tid: Int) : Node {
     override fun toString(): String = "${tid}_$vid"
 }
 
-//fun Node.concretizations(): List<Node> = when (this) {
-//    is F -> if (params.isEmpty()) listOf(this) else naryCartesianProduct(params.map { it.flatMap { it.concretizations() } })
-//        .map { F(it.map { mutableListOf(it) }, constraint) }
-//    is L -> if (params.isEmpty()) listOf(this) else naryCartesianProduct(params.map { it.flatMap { it.concretizations() } })
-//        .map { L(this.label, it.map { mutableListOf(it) }, constraint) }
-//    is Var -> listOf(this)
-//    is Hole -> listOf()
-//}
-
 val concretizations = mutableMapOf<Node, Sequence<Node>>()
 fun Node.concretizations(): Sequence<Node> = concretizations.getOrPut(this) {
     when (this) {
@@ -268,12 +259,6 @@ class ConcreteEnumerator(
         bindings.fold(t) { acc, (vId, tId, sub) -> applyBinding(acc, vId, tId, sub) }
     }
 
-    /*
-    TODO {f=0_0 -> 0_0, g=1_0 -> 1_0, h=(2_0 -> 2_0) -> 2_0, a=L} with example (h f)
-     Under current impl, the second 2_0 gets bound to VB(0_0), although we want it to be a reference.
-     Do we need VB/VR separation at all?
-     Once we fix this, make sure to copy to the sketch version of unify
-     */
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible.
      * @modifies [labelClasses]
      */
@@ -365,29 +350,9 @@ class ConcreteEnumerator(
         context.filter { it.key in names }
 
     fun check(context: Map<String, Node>): Boolean {
-        /*
-        Instead of partitioning upfront, only pick out relevant choices (name or param) in context as we go
-
-        "Map examples to parameters they involve; we have similar code already in SymTypeCEnumerator since we find the options/port for particular argument
-
-        Partition examples by the subset of parameters involved
-        For each set P of involved parameters (in order of number of functions involved) == equivalence class of examples
-            Partition candidates by their type assignments to only those *parameters* (need to be a little careful bc different arities too. Might partition by those first)
-            **** Granularity of parameters might not work since variable bindings affect across diff parameters. But maybe it's OK b/c we have partial application! So if pi involved then p1..i-1 are all involved too. So things should work out since all binding locations and variables need to match up too within the assignment eqclass
-            Test a canonical element from the eqclass of assignments on eqclass of all examples that satisfy P
-            If it fails, we can prune an entire class of hypotheses.
-            Does this work for both neg and posexs? It's good for negexs to be small, we get more signal that way. "
-        */
-
-        /*
-        TODO I think this can be faster if instead we loop over every example
-        TODO try testing all negexs first. will it make a difference?
-        */
         return query.posExamples.all {
-//            type(context, it) != null
             type(mask(context, it.names), it) != null
         } && query.negExamples.all {
-//            type(context, it) == null
             type(mask(context, it.names), it) == null
         }
     }

@@ -9,10 +9,11 @@ import stc.toSExpr
 import util.*
 
 const val ROUNDS = 4
-const val WRITE_INTERMEDIATE = false
-const val MAKE_OUTLINES = false
-const val CALL_INIT_CVC = false
-const val CALL_SMALLER_CVC = false
+const val REDO_ALL = false
+const val WRITE_INTERMEDIATE = REDO_ALL
+const val MAKE_OUTLINES = REDO_ALL
+const val CALL_INIT_CVC = REDO_ALL
+const val CALL_SMALLER_CVC = REDO_ALL
 
 fun main() {
 //    val idtest = IdTest
@@ -21,7 +22,7 @@ fun main() {
 //    val dicttest = DictTest
 //    val test = constest
 
-    val examplesFromFile = parseContextAndExamples(readExamples("dictchain"))
+    val examplesFromFile = parseContextAndExamples(readExamples("dictchain-renamed"))
 
 //    val (query, oracle) = (test.query to test.oracle)
     val (query, oracle) = examplesFromFile
@@ -36,7 +37,7 @@ fun main() {
     if (MAKE_OUTLINES && WRITE_INTERMEDIATE) projections.forEachIndexed { i, it ->
         writeIntermediateOutline("${it.outline.toSExpr()}", "$i")
     }
-    println(projections.joinToString(separator = "\n") { "${it.outline}" })
+//    println(projections.joinToString(separator = "\n") { "${it.outline}" })
 
     println("Starting dep analysis")
     // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to num params)
@@ -99,11 +100,8 @@ fun main() {
     println("${OK.size} satisfying contexts")
     println("TIME: ${System.currentTimeMillis() - TIME}")
 
-    TODO("Use dependency info for enumeration")
     // is it guaranteed that space of type assignments with only minimal satisfying label sizes contain the solution? YES, *IF* WE SEE ALL DATA CONSTRUCTORS
-    TODO("Can names be observationally equal wrt where they're used but not actually due to differences in arguments they expect? It doesn't break our blind unionfind labels for values that are obs equiv, but maybe it breaks other stuff esp when we have HOFs... Actually I think it's fine bc the way we do observational equiv is we substitute one for the other for ALL occurrences including as the function in an application. That's really expensive to do with examples though)")
     TODO("When doing final enumeration, take step in each candidate")
-
 
 //    val gener = constraints.LabelConstraintGenerator(depAnalysis)
 //    println(gener.gen())
