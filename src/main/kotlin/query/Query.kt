@@ -1,5 +1,7 @@
 package query
 
+import util.equivalenceClasses
+
 sealed interface Example {
     val names: Set<String>
 }
@@ -60,6 +62,18 @@ class Query(
         }
         acc + names(ex)
     }).toList()
+
+    private fun Collection<Example>.byNameSet() = equivalenceClasses(this) { e1, e2 -> e1.names == e2.names }
+
+    val posExamplesByNameSet = this.posExamples.byNameSet()
+    val negExamplesByNameSet = negExamples.byNameSet()
+
+    init {
+        println("${posExamples.size} positive examples")
+        println("${negExamples.size} negative examples")
+        println("${posExamplesByNameSet.size} posex equiv classes")
+        println("${negExamplesByNameSet.size} negex equiv classes")
+    }
 }
 
 /** Produce all subexpressions of [this] and [this] TODO for some reason before, I didn't want to include Names? why

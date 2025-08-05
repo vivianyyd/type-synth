@@ -383,12 +383,12 @@ class ConcreteEnumerator(
         TODO I think this can be faster if instead we loop over every example
         TODO try testing all negexs first. will it make a difference?
         */
-        return query.posExamples.all {
-//            type(context, it) != null
-            type(mask(context, it.names), it) != null
-        } && query.negExamples.all {
-//            type(context, it) == null
-            type(mask(context, it.names), it) == null
+        return query.posExamplesByNameSet.all { eqClass ->
+            val mask = mask(context, eqClass.first().names)
+            eqClass.all { ex -> type(mask, ex) != null }
+        } && query.negExamplesByNameSet.all { eqClass ->
+            val mask = mask(context, eqClass.first().names)
+            eqClass.all { ex -> type(mask, ex) == null }
         }
     }
 }
