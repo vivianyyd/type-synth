@@ -10,10 +10,11 @@ class ExampleGenerator(
     private val MAX_TYPE_DEPTH: Int,
     private val MAX_DEPTH: Int,  // todo assert this is at least the max depth of any parameter type!
     private val ERROR_COVERAGE_CAPACITY: Int,
-    private val fns: List<Type>
+    private val namedFns: List<Pair<Type, String?>>
 ) {
     private var name = 0
     private fun freshValue() = "${name++}"
+    private val fns = namedFns.map { it.first }
 
     /**
      * A type is observable as long as it is a function, or it is *not* only ever seen as the output of a function.
@@ -128,7 +129,7 @@ fun main() {
     val (query, context) = ExampleGenerator(2,
         2,
         200,
-        groundTruth.map { SExprParser(it).parse().toType() }).examples()
+        groundTruth.map { SExprParser(it).parse().toType() to null }).examples()
     println(context.toList().joinToString(separator = "\n"))
     println("Positive examples:")
     println(query.posExamples.size)
