@@ -308,7 +308,7 @@ class ConcreteEnumerator(
         return result
     }
 
-//    private val apply = mutableMapOf<Pair<F, Node>, Node?>()
+    private val apply = mutableMapOf<Pair<F, Node>, Node?>()
 
     /**
      * Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
@@ -316,44 +316,29 @@ class ConcreteEnumerator(
      */
     fun apply(fn: F, arg: Node): Node? {
         // Not using getOrPut for same reason as others
-//        if (fn to arg in apply) return apply[fn to arg]
+        if (fn to arg in apply) return apply[fn to arg]
         val result = unify(fn.params.first().first(), arg)?.let {
             val out = if (fn.params.size == 2) fn.params[1].first() else F(fn.params.drop(1), fn.constraint)
             applyBindings(out, it)
         }
-//        apply[fn to arg] = result
+        apply[fn to arg] = result
         return result
     }
 
-    interface Result
-    data class OK(val n: Node) : Result
-    object None : Result
-
-    // TODO does this do anything
-    private val type = mutableMapOf<Pair<Map<String, Node>, Example>, Result>()
-    fun type(context: Map<String, Node>, example: Example): Node? {
-        val tmp = type[context to example]
-        if (tmp != null) return if (tmp is OK) tmp.n else null
-        val result = when (example) {
-            is Name -> context[example.name]
-            is App -> type(context, example.fn).let { f ->
-                type(context, example.arg)?.let { arg ->
-                    if (f is F) apply(f, arg) else null
-                }
+    fun type(context: Map<String, Node>, example: Example): Node? = when (example) {
+        is Name -> context[example.name]
+        is App -> type(context, example.fn).let { f ->
+            type(context, example.arg)?.let { arg ->
+                if (f is F) apply(f, arg) else null
             }
         }
-        type[context to example] = if (result == null) None else OK(result)
-        return result
     }
-
-    private fun mask(context: Map<String, Node>, names: Set<String>): Map<String, Node> =
-        context.filter { it.key in names }
 
     fun check(context: Map<String, Node>): Boolean {
         return query.posExamples.all {
-            type(mask(context, it.names), it) != null
+            type(context, it) != null
         } && query.negExamples.all {
-            type(mask(context, it.names), it) == null
+            type(context, it) == null
         }
     }
 }
