@@ -1,4 +1,6 @@
-import query.*
+import query.ExampleGenerator
+import query.Query
+import query.sexpsFromExamples
 import types.Assignment
 import types.toSExpr
 import types.toType
@@ -41,12 +43,9 @@ fun main() {
 fun generate(types: List<String>): Pair<Query, Assignment> {
     val (query, context) = ExampleGenerator(1,
         2,
-        200,
+        500,
         types.map { SExprParser(it).parse().toType() }).examples()
-    println("Context:")
-    println(context.toList().joinToString(separator = "\n"))
     println("Positive examples: ${query.posExamples.size}")
-    println(printInvertDummies(query.posExamples.map { it.flatten() }, context))
     println("Negative examples: ${query.negExamples.size}")
     return query to context
 }

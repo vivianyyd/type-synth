@@ -43,7 +43,8 @@ class ExampleGenerator(
             for (label in parameterized) {
                 // TODO Bug: We generate small examples many times - we want to product big new exprs w small ones,
                 //  so we keep smaller ones in the pool, but then we frequently make products which only contain small ones
-                //  need to enforce output is SxSx...xS - sxsx...xs where s subset S
+                //  need to enforce output is SxSx...xS - sxsx...xs where s subset S.
+                //  Solution: doesn't matter until last index, at which point if we've only picked from s we can only pick S.
                 val paramAssignments = reflexiveNaryProduct(
                     typeAndDepth.filter { (_, v) -> v + 1 <= d }.keys.toList(), label.params.size
                 )
@@ -67,7 +68,6 @@ class ExampleGenerator(
         }
         nonFnDummies.forEach { (n, t) -> addPos(t, Name(n) as Example) }
         val negExamples = EnumMap(ErrorCategory.values().associateWith { mutableSetOf<Example>() })
-//        val negExamples = mutableListOf<Example>()
 
         fun addNeg(err: ErrorCategory, ex: Example) {
             if (err in negExamples) {
@@ -82,15 +82,15 @@ class ExampleGenerator(
                     val (currEx, currTy) = inProgress.removeFirst()
 
                     val (goodArgs, badArgs) = posExamples.entries.associate { (t, exs) ->
-                        exs to applyOrError(currTy, t)
-                    }.entries.partition { it.value !is Err }
+                        exs.filter { it.depth() < MAX_DEPTH } to applyOrError(currTy, t)
+                    }.filterKeys { it.isNotEmpty() }.entries.partition { it.value !is Err }
                     val tmp = mutableListOf<Pair<Type, Example>>()
                     goodArgs.map { it.key to (it.value as Ok).result }.forEach { (args, typeAfterArg) ->
                         args.forEach {
                             val ex = App(currEx, it)
                             tmp.add(typeAfterArg to ex)
                             // TODO there is a more efficient way probably since there are multiple examples with same fn type
-                            if (typeAfterArg is Function && ex.depth() < MAX_DEPTH)
+                            if (typeAfterArg is Function)
                                 inProgress.add(ex to typeAfterArg)
                         }
                     }
