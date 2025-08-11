@@ -90,7 +90,13 @@ class Parser(private val tokens: List<Token>) {
             val part = when (val token = peek()) {
                 is Token.Ident -> {
                     consume()
-                    Variable(token.value)
+                    if (token.value.first().isUpperCase()) {
+                        // Capitalized word — treat as LabelNode with no parameters
+                        LabelNode(token.value, listOf())
+                    } else {
+                        // Lowercase — treat as variable
+                        Variable(token.value)
+                    }
                 }
                 Token.LParen -> {
                     consume()
@@ -127,6 +133,10 @@ class Parser(private val tokens: List<Token>) {
             parts[0] is Variable -> {
                 val label = (parts[0] as Variable).id
                 LabelNode(label, parts.drop(1))
+            }
+            parts[0] is LabelNode -> {
+                val head = parts[0] as LabelNode
+                LabelNode(head.label, head.params + parts.drop(1))
             }
             else -> throw IllegalStateException("Invalid label node")
         }

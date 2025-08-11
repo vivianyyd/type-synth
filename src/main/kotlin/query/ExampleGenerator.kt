@@ -14,18 +14,18 @@ class ExampleGenerator(
 ) {
     private var name = 0
     private fun freshValue() = "${name++}"
-    private val fns = namedFns.map { it.first }
+    private val types = namedFns.map { it.first }
 
     /**
      * A type is observable as long as it is a function, or it is *not* only ever seen as the output of a function.
      * We unwrap functions to get arguments, but we don't include results of partial application to avoid blowup.
      */
-    private val observableNonFunctionTypes: List<Type> = fns.fold(listOf()) { a, it ->
+    private val observableNonFunctionTypes: Set<Type> = types.fold(setOf()) { a, it ->
         when (it) {
             is Function -> {
-                fun args(f: Function): List<Type> =
-                    listOf(f.left) + (if (f.rite is Function) args(f.rite) else listOf())
-                a + listOf(it) + args(it)
+                fun args(f: Function): Set<Type> =
+                    setOf(f.left) + (if (f.rite is Function) args(f.rite) else setOf())
+                a + setOf(it) + args(it)
             }
             is Variable, is LabelNode -> a + it
             is TypeHole, is Error -> throw Exception("no way")
@@ -33,7 +33,7 @@ class ExampleGenerator(
     }
 
     fun examples(): Pair<Query, Assignment> {
-        if (fns.isEmpty()) return Pair(Query(), mapOf())
+        if (types.isEmpty()) return Pair(Query(), mapOf())
 
         // Explode parameterized labelled types into concrete types and give them dummies, skip functions for now
         val (primitives, parameterized) = observableNonFunctionTypes.filterIsInstance<LabelNode>()
@@ -55,9 +55,13 @@ class ExampleGenerator(
                 }
             }
         }
-        val nonFnDummies = typeAndDepth.keys.associateBy { freshValue() }
-        val fnDummies = fns.filterIsInstance<Function>().associateBy { freshValue() }
-        val dummies = nonFnDummies + fnDummies
+        val namedFnsMap =
+            namedFns.filter { it.second != null }.map { it.second!!.filter { it != '(' && it != ')' } to it.first }
+                .toMap()
+
+        val nonFns = typeAndDepth.keys
+        val fns = types.filterIsInstance<Function>()
+        val dummies = namedFnsMap + (nonFns + fns).filter { it !in namedFnsMap.values }.associateBy { freshValue() }
 
         // We don't want functions to be subexprs in expressions yet, so only add nonFns when initializing posExamples
         //  fn dummies are added as positive examples at the end
@@ -67,7 +71,7 @@ class ExampleGenerator(
         fun addPos(t: Type, ex: Example) {
             if (t in posExamples) posExamples[t]!!.add(ex) else posExamples[t] = mutableListOf(ex)
         }
-        nonFnDummies.forEach { (n, t) -> addPos(t, Name(n) as Example) }
+        dummies.filter { it.value is LabelNode }.forEach { (n, t) -> addPos(t, Name(n) as Example) }
         val negExamples = EnumMap(ErrorCategory.values().associateWith { mutableSetOf<Example>() })
 
         fun addNeg(err: ErrorCategory, ex: Example) {
@@ -106,7 +110,7 @@ class ExampleGenerator(
             // TODO we can purposefully add some negative examples where we apply too many arguments, although
             //  it shouldn't be necessary}
         }
-        fnDummies.forEach { (n, t) -> addPos(t, Name(n)) }
+        dummies.filter { it.value is Function }.forEach { (n, t) -> addPos(t, Name(n)) }
 
         println(negExamples.entries.map { "${it.key}\t${it.value.size}" })
 
