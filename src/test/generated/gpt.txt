@@ -1,0 +1,26 @@
+examples =
+    [ (:) 0 IL
+    , null IL
+    , length IL
+    , and BL
+    , or BL
+    , any isEven IL
+    , all isEven (filter isEven IL)
+    , concat ((:) IL ((:) IL []))
+    , (++) IL ((:) 0 IL)
+    , take 5 (iterate inc 0)
+    , take 3 (repeat 0)
+    , replicate 4 0
+    , take 2 IL
+    , drop 1 IL
+    , splitAt 2 IL
+    , map inc IL
+    , filter isEven IL
+    , takeWhile isEven (filter isEven IL)
+    , dropWhile isEven (filter isEven IL)
+    , span isEven IL
+    , break isEven IL
+    , reverse IL
+    , id 0
+    , not True
+    ]

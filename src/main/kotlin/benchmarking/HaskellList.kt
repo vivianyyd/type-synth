@@ -38,9 +38,6 @@ id :: a -> a
 isEven :: Int -> Bool
  */
 
-val prompt =
-    "Use only prefix notation. Parentheses are used around function names which consist of symbols when used as prefix operators."
-
 val seedPositives = listOf(
     ""
 )

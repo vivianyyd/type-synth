@@ -113,7 +113,7 @@ class LabelConstraintGenerator(
         decls.add("$py = Int${if (names.size == 1) "" else "s"}('$cvc5')")
     }
 
-    fun initialQuery(): String = PyWriter().query("$hyp", decls, constrs)
+    fun initialQuery(): String = PyWriter().query("${hyp.outline}", decls, constrs)
 
     fun smallerQuery(sizes: Map<L, Int>): String {
         fun or(args: List<String>): String {

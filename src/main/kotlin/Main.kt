@@ -9,7 +9,7 @@ import stc.toSExpr
 import util.*
 
 const val ROUNDS = 4
-const val REDO_ALL = false
+const val REDO_ALL = true
 const val WRITE_INTERMEDIATE = REDO_ALL
 const val MAKE_OUTLINES = REDO_ALL
 const val CALL_INIT_CVC = REDO_ALL
@@ -22,7 +22,7 @@ fun main() {
 //    val dicttest = DictTest
 //    val test = constest
 
-    val examplesFromFile = parseContextAndExamples(readExamples("dictchain-renamed"))
+    val examplesFromFile = parseContextAndExamples(readExamples("toy"))
 
 //    val (query, oracle) = (test.query to test.oracle)
     val (query, oracle) = examplesFromFile
@@ -31,13 +31,17 @@ fun main() {
 
     val TIME = System.currentTimeMillis()
 
+//    viz(query)
+
+//    TODO("Skip")
+
     val projections =
         if (MAKE_OUTLINES) SymTypeCEnumerator(query, SymTypeABuilder(query).make, oracle).enumerateAll()
         else readIntermediateOutlines().map { it.second }
     if (MAKE_OUTLINES && WRITE_INTERMEDIATE) projections.forEachIndexed { i, it ->
         writeIntermediateOutline("${it.outline.toSExpr()}", "$i")
     }
-//    println(projections.joinToString(separator = "\n") { "${it.outline}" })
+    println(projections.joinToString(separator = "\n") { "${it.outline}" })
 
     println("Starting dep analysis")
     // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to num params)

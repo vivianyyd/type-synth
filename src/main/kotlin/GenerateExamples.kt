@@ -15,12 +15,12 @@ private fun Assignment.toSExprStrs() = this.entries.joinToString(separator = "\t
 }
 
 fun main() {
-    val test = haskellEither
+    val test = toy
     val (query, context) = generate(test)
     val generatedExs =
         (sexpsFromExamples(query.posExamples, true) + sexpsFromExamples(query.negExamples, false))
             .joinToString(separator = "\n")
-    writeExamples("${context.toSExprStrs()}\n$generatedExs", "haskell-either")
+    writeExamples("${context.toSExprStrs()}\n$generatedExs", "intlists")
 }
 
 fun generate(types: List<Pair<Type, String?>>): Pair<Query, Assignment> {
@@ -33,11 +33,24 @@ fun generate(types: List<Pair<Type, String?>>): Pair<Query, Assignment> {
 fun generateFromSExpr(types: List<Pair<String, String?>>): Pair<Query, Assignment> =
     generate(types.map { SExprParser(it.first).parse().toType() to it.second })
 
+val toy = parseHaskellTypes(
+    listOf(
+        "cons :: a -> [a] -> [a]",
+        "hd :: [a] -> a",
+        "tl :: [a] -> [a]",
+//        "single :: a -> [a]",
+        "0 :: Int",
+        "IL :: [Int]",
+//        "FL :: List (a -> b)",
+        "inc :: Int -> Int",
+    )
+)
+
 val haskellList = parseHaskellTypes(
     listOf(
         "(:) :: a -> [a] -> [a]",
-        "foldr :: (a -> b -> b) -> b -> [a] -> b",
-        "foldl :: (b -> a -> b) -> b -> [a] -> b", // TODO there was a forall here?
+//        "foldr :: (a -> b -> b) -> b -> [a] -> b",
+//        "foldl :: (b -> a -> b) -> b -> [a] -> b", // TODO there was a forall here?
         "null :: [a] -> Bool",
         "length :: [a] -> Int",
         "and :: [Bool] -> Bool",
@@ -45,13 +58,13 @@ val haskellList = parseHaskellTypes(
         "any :: (a -> Bool) -> [a] -> Bool",
         "all :: (a -> Bool) -> [a] -> Bool",
         "concat :: [[a]] -> [a]",
-        "concatMap :: (a -> [b]) -> [a] -> [b]",
+//        "concatMap :: (a -> [b]) -> [a] -> [b]",
         "map :: (a -> b) -> [a] -> [b]",
         "(++) :: [a] -> [a] -> [a]",
         "filter :: (a -> Bool) -> [a] -> [a]",
-        "uncons :: [a] -> Maybe (a, [a])",
-        "unsnoc :: [a] -> Maybe ([a], a)",
-        "(!?) :: [a] -> Int -> Maybe a",
+//        "uncons :: [a] -> Maybe (a, [a])",
+//        "unsnoc :: [a] -> Maybe ([a], a)",
+//        "(!?) :: [a] -> Int -> Maybe a",
         "iterate :: (a -> a) -> a -> [a]",
         "repeat :: a -> [a]",
         "replicate :: Int -> a -> [a]",
@@ -63,9 +76,18 @@ val haskellList = parseHaskellTypes(
         "span :: (a -> Bool) -> [a] -> ([a], [a])",
         "break :: (a -> Bool) -> [a] -> ([a], [a])",
         "reverse :: [a] -> [a]",
-        "zip :: [a] -> [b] -> [(a, b)]",
-        "zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]",
-        "unzip :: [(a, b)] -> ([a], [b])",
+//        "zip :: [a] -> [b] -> [(a, b)]",
+//        "zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]",
+//        "unzip :: [(a, b)] -> ([a], [b])",
+    ) + listOf(
+        "0 :: Int",
+        "True :: Bool",
+        "IL :: [Int]",
+        "BL :: [Bool]",
+        "inc :: Int -> Int",
+        "not :: Bool -> Bool",
+//        "id :: a -> a",
+        "isEven :: Int -> Bool"
     )
 )
 

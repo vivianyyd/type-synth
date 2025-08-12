@@ -71,7 +71,8 @@ class ExampleGenerator(
         fun addPos(t: Type, ex: Example) {
             if (t in posExamples) posExamples[t]!!.add(ex) else posExamples[t] = mutableListOf(ex)
         }
-        dummies.filter { it.value is LabelNode }.forEach { (n, t) -> addPos(t, Name(n) as Example) }
+        dummies.forEach { (n, t) -> addPos(t, Name(n)) }
+//        dummies.filter { it.value is LabelNode }.forEach { (n, t) -> addPos(t, Name(n) as Example) }
         val negExamples = EnumMap(ErrorCategory.values().associateWith { mutableSetOf<Example>() })
 
         fun addNeg(err: ErrorCategory, ex: Example) {
@@ -86,7 +87,15 @@ class ExampleGenerator(
                 while (inProgress.isNotEmpty()) {
                     val (currEx, currTy) = inProgress.removeFirst()
 
-                    val (goodArgs, badArgs) = posExamples.entries.associate { (t, exs) ->
+                    // TODO I make this restriction to produce fewer negative examples and speed up generation, but
+                    //  this change eliminates an entire class of negative examples and I should next implement
+                    //  a deliberate adding back of these negexs
+                    val funcDummies =
+                        dummies.mapNotNull { (n, t) -> if (t is Function) t to listOf(Name(n)) else null }.toMap()
+                    // This forces that we can't pass partially applied stuff as an argument
+                    val possArgs =
+                        if (currTy.left is LabelNode) posExamples.filter { (t, _) -> t is LabelNode && currTy.left.label == t.label } else if (currTy.left is Function) funcDummies else funcDummies + posExamples.filterKeys { it !is Function }
+                    val (goodArgs, badArgs) = possArgs.entries.associate { (t, exs) ->
                         exs.filter { it.depth() < MAX_DEPTH } to applyOrError(currTy, t)
                     }.filterKeys { it.isNotEmpty() }.entries.partition { it.value !is Err }
                     val tmp = mutableListOf<Pair<Type, Example>>()
@@ -100,6 +109,7 @@ class ExampleGenerator(
                         }
                     }
                     tmp.forEach {  // I think this avoids concurrentmodificationexcedption
+                        println("Posex ${it.second}")
                         addPos(it.first, it.second)
                     }
 
@@ -110,7 +120,7 @@ class ExampleGenerator(
             // TODO we can purposefully add some negative examples where we apply too many arguments, although
             //  it shouldn't be necessary}
         }
-        dummies.filter { it.value is Function }.forEach { (n, t) -> addPos(t, Name(n)) }
+//        dummies.filter { it.value is Function }.forEach { (n, t) -> addPos(t, Name(n)) }
 
         println(negExamples.entries.map { "${it.key}\t${it.value.size}" })
 

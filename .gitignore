@@ -1,7 +1,7 @@
 .gradle/
 .idea/
 build
-*python/input/generated/
+src/main/python/input/generated/
 *results/
 *__pycache__/
 *output/
