@@ -77,8 +77,9 @@ class DependencyAnalysis(
         for (pi in parameters) {
             val i = pi.i
 
-            fun relevantExs(args: Int, exs: Collection<FlatApp>) =
-                if (args < nodes.size - 1) exs.filter { it.args.size > args } else exs.filter { it.args.size >= args }
+            fun relevantExs(paramIndex: Int, exs: Collection<FlatApp>) =
+                if (paramIndex < nodes.size - 1) exs.filter { it.args.size > paramIndex && it.args.size < nodes.size }
+                else exs.filter { it.args.size == paramIndex }
 
             val pos = relevantExs(i, posExs)
             val neg = relevantExs(i, negExs)
