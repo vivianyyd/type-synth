@@ -2,113 +2,130 @@ import concreteenumerator.ConcreteEnumerator
 import concreteenumerator.Node
 import constraints.LabelConstraintGenerator
 import dependencyanalysis.DependencyAnalysis
+import dependencyanalysis.viz
+import query.Query
 import query.parseContextAndExamples
 import sta.SymTypeABuilder
-import stc.SymTypeCEnumerator
-import stc.toSExpr
+import stc.*
+import test.ConsTest
+import test.DictTest
+import test.HOFTest
+import test.IdTest
 import util.*
 
 const val ROUNDS = 4
-const val REDO_ALL = true
+const val REDO_ALL = false
 const val WRITE_INTERMEDIATE = REDO_ALL
 const val MAKE_OUTLINES = REDO_ALL
 const val CALL_INIT_CVC = REDO_ALL
 const val CALL_SMALLER_CVC = REDO_ALL
 
 fun main() {
-//    val idtest = IdTest
-//    val constest = ConsTest
-//    val hoftest = HOFTest
-//    val dicttest = DictTest
-//    val test = constest
+    val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest)
+    val smallTest = ConsTest
+    val testFromFile = parseContextAndExamples(readExamples("toy"))
 
-    val examplesFromFile = parseContextAndExamples(readExamples("toy"))
-
-//    val (query, oracle) = (test.query to test.oracle)
-    val (query, oracle) = examplesFromFile
-    if (MAKE_OUTLINES) clearOutlines()
-    if (CALL_INIT_CVC || CALL_SMALLER_CVC) clearCVC()
-
-    val TIME = System.currentTimeMillis()
-
+    val (query, oracle) = (smallTest.query to smallTest.oracle)
+//    val (query, oracle) = testFromFile
 //    viz(query)
 
-//    TODO("Skip")
+    if (MAKE_OUTLINES) clearOutlines()
+    if (CALL_INIT_CVC || CALL_SMALLER_CVC) clearCVC()
+    val TIME = System.currentTimeMillis()
 
-    val projections =
-        if (MAKE_OUTLINES) SymTypeCEnumerator(query, SymTypeABuilder(query).make, oracle).enumerateAll()
-        else readIntermediateOutlines().map { it.second }
+    val outlines = outlines(query, oracle)
+
+    println("Starting dependency analysis")
+    val aritiesToDeps = aritiesToDeps(query, oracle, outlines)
+    vizDeps(listOf("cons"), aritiesToDeps)
+
+    println("Searching for label sizes with CVC")
+    val nodeSizes = assignLabelSizes(outlines, aritiesToDeps)
+
+    println("Enumerating")
+    val OK = mutableListOf<Map<String, Node>>()
+    nodeSizes.map { (i, labelSizes) ->
+        println("\n\n")
+        printSearchSeed(labelSizes, outlines[i])
+        OK.addAll(
+            ConcreteEnumerator(
+                query,
+                outlines[i],
+                labelSizes,
+                aritiesToDeps[outlines[i].arities]!!,
+                oracle
+            ).callMe(3)
+        )
+    }
+    println("Solutions:")
+    OK.forEach { println(it.toList().joinToString(separator = "\n", postfix = "\n---\n")) }
+    println("${OK.size} satisfying contexts")
+    println("TIME: ${System.currentTimeMillis() - TIME}")
+}
+
+private fun outlines(query: Query, oracle: EqualityNewOracle): List<Projection> {
+    val projections = if (MAKE_OUTLINES) SymTypeCEnumerator(query, SymTypeABuilder(query).make, oracle).enumerateAll()
+    else readIntermediateOutlines().map { it.second }
     if (MAKE_OUTLINES && WRITE_INTERMEDIATE) projections.forEachIndexed { i, it ->
         writeIntermediateOutline("${it.outline.toSExpr()}", "$i")
     }
-    println(projections.joinToString(separator = "\n") { "${it.outline}" })
+    return projections
+}
 
-    println("Starting dep analysis")
-    // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to num params)
-    val deps = projections.map { it.arities }.toSet().associateWith { DependencyAnalysis(query, it, oracle) }
-//    println(deps)
-//    deps.entries.mapIndexed { i, it ->
-//        viz("inc", it.value, "inc$i")
-//        viz("id", it.value, "id$i")
-//    }
-    println("Calling CVC")
-    val constrGenerators = projections.associateWith { LabelConstraintGenerator(it, deps[it.arities]!!) }
-    projections.forEachIndexed { i, it ->
-        if (CALL_INIT_CVC) {
-            callCVC(constrGenerators[it]!!.initialQuery(), "$i")
+// No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to arity)
+private fun aritiesToDeps(
+    query: Query,
+    oracle: EqualityNewOracle,
+    outlines: List<Projection>
+): Map<Map<String, Int>, DependencyAnalysis> =
+    outlines.map { it.arities }.toSet().associateWith { DependencyAnalysis(query, it, oracle) }
+
+private fun vizDeps(components: List<String>, aritiesToDeps: Map<Map<String, Int>, DependencyAnalysis>) =
+    aritiesToDeps.entries.mapIndexed { i, it -> components.map { f -> viz(f, it.value, "$f$i") } }
+
+private fun assignLabelSizes(
+    outlines: List<Projection>,
+    aritiesToDeps: Map<Map<String, Int>, DependencyAnalysis>
+): Map<Int, Map<L, Int>> {
+    val cvcGens = outlines.withIndex()
+        .associate { (i, outline) -> i to LabelConstraintGenerator(outline, aritiesToDeps[outline.arities]!!) }
+    cvcGens.forEach { (i, gen) -> if (CALL_INIT_CVC) callCVC(gen.initialQuery(), "$i") }
+    return readInitialCVCresults().associate { (i, contents) -> i to minLabelSizes(i, contents, cvcGens[i]!!) }
+}
+
+private fun minLabelSizes(testId: Int, prevSol: String, cvcGenerator: LabelConstraintGenerator): Map<L, Int> {
+    var counter = 0
+    var previousSolution = prevSol
+    var lastSuccessful = -1
+    do {
+        println("Getting smaller CVC results")
+        val parser = CVCParser(previousSolution, cvcGenerator)
+        val testName = "$testId-smaller${counter++}"
+        val cont =
+            if (/*CALL_SMALLER_CVC && */parser.sizes.isNotEmpty()) // TODO FIXME if the flag is off we don't read previous results properly
+                callCVC(cvcGenerator.smallerQuery(parser.sizes), testName)
+            else false
+        if (cont) {
+            lastSuccessful = counter - 1
+            previousSolution = readCVC(testName)
         }
+    } while (cont)
+    val finalSuccessfulOutput = if (lastSuccessful == -1) "$testId" else "$testId-smaller$lastSuccessful"
+    return CVCParser(readCVC(finalSuccessfulOutput), cvcGenerator).sizes
+}
+
+private fun printSearchSeed(labelSizes: Map<L, Int>, outline: Projection) {
+    fun SymTypeC.toStringWithSizes(): String = when (this) {
+        is L -> "$this[${List(labelSizes[this]!!) { "_" }.joinToString(separator = ",")}]"
+        is Var -> this.toString()
+        is F -> "${if (left is F) "(${left.toStringWithSizes()})" else "${left.toStringWithSizes()}"} -> ${rite.toStringWithSizes()}"
     }
-
-    val OK = mutableListOf<Map<String, Node>>()
-
-    readCVCresults().map { (name, contents) ->
-        val i = name.toInt()
-        val cvcGen = constrGenerators[projections[i]]!!
-        var counter = 0
-        var previousSolution = contents
-        var lastSuccessful = -1
-        do {
-            println("Getting smaller CVC results")
-            val parser = CVCParser(previousSolution, cvcGen)
-            val testName = "$i-smaller${counter++}"
-            val cont =
-                if (/*CALL_SMALLER_CVC && */parser.sizes.isNotEmpty()) // TODO FIXME if the flag is off we don't read previous results properly
-                    callCVC(cvcGen.smallerQuery(parser.sizes), testName)
-                else false
-            if (cont) {
-                lastSuccessful = counter - 1
-                previousSolution = readCVC(testName)
-            }
-        } while (cont)
-
-        val finalSuccessfulOutput = if (lastSuccessful == -1) "$i" else "$i-smaller$lastSuccessful"
-        val result = CVCParser(readCVC(finalSuccessfulOutput), cvcGen)
-        result.print()
-        val concEnum = ConcreteEnumerator(
-            query,
-            projections[i],
-            result.sizes,
-            deps[projections[i].arities]!!,
-            oracle
-        )
-        println("Enumerating")
-        val contexts = concEnum.callMe(2)
-        OK.addAll(contexts)
-
-    }
-
-    OK.forEach {
-        println(it.toList().joinToString(separator = "\n", postfix = "\n---\n"))
-    }
-
-    println("${OK.size} satisfying contexts")
-    println("TIME: ${System.currentTimeMillis() - TIME}")
-
-    // is it guaranteed that space of type assignments with only minimal satisfying label sizes contain the solution? YES, *IF* WE SEE ALL DATA CONSTRUCTORS
-    TODO("When doing final enumeration, take step in each candidate")
-
-//    val gener = constraints.LabelConstraintGenerator(depAnalysis)
-//    println(gener.gen())
+    println(
+        outline.outline.entries.joinToString(
+            prefix = "{",
+            postfix = "}",
+            separator = ", "
+        ) { (component, type) -> "$component: ${type.toStringWithSizes()}" })
 
 }
 

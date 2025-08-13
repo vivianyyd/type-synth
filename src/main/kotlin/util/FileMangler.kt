@@ -40,7 +40,7 @@ fun callCVC(content: String, testName: String): Boolean {
     return false
 }
 
-fun readCVCresults(): List<Pair<Int, String>> =
+fun readInitialCVCresults(): List<Pair<Int, String>> =
     File(join("src", "main", "python", "output")).listFiles()!!.filter { it.isFile && "smaller" !in it.name }
         .mapNotNull {
             if (it.isFile) it.name.substringAfter("cvc-").substringBeforeLast(".py").toInt() to it.readText()
