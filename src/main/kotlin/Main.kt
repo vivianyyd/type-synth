@@ -1,5 +1,5 @@
 import concreteenumerator.ConcreteEnumerator
-import concreteenumerator.Node
+import concreteenumerator.ConcreteNode
 import constraints.LabelConstraintGenerator
 import dependencyanalysis.DependencyAnalysis
 import dependencyanalysis.viz
@@ -43,7 +43,7 @@ fun main() {
     val nodeSizes = assignLabelSizes(outlines, aritiesToDeps)
 
     println("Enumerating")
-    val OK = mutableListOf<Map<String, Node>>()
+    val OK = mutableListOf<Map<String, ConcreteNode>>()
     nodeSizes.map { (i, labelSizes) ->
         println("\n\n")
         printSearchSeed(labelSizes, outlines[i])

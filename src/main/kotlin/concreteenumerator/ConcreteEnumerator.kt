@@ -14,11 +14,6 @@ sealed interface Node {
 // These used to be classes instead of data classes but I don't really remember why
 data class Hole(override val constraint: DependencyConstraint?) : Node {
     override fun toString(): String = "_"
-
-    companion object {
-        override fun equals(other: Any?): Boolean = other is Hole
-        override fun hashCode(): Int = toString().hashCode()
-    }
 }
 
 data class L(
@@ -30,9 +25,6 @@ data class L(
             this(label, (0 until numParams).map { mutableListOf(Hole(constraint)) }, constraint)
 
     override fun toString(): String = "L$label(${params.joinToString(separator = ",")})"
-    override fun equals(other: Any?): Boolean = other is L && other.label == label && other.params == params
-    private val hc by lazy { toString().hashCode() }
-    override fun hashCode(): Int = hc
 }
 
 data class F(
@@ -40,9 +32,6 @@ data class F(
     override val constraint: DependencyConstraint?
 ) : Node {
     override fun toString(): String = params.joinToString(separator = "->")
-    override fun equals(other: Any?): Boolean = other is F && other.params == params
-    private val hc by lazy { toString().hashCode() }
-    override fun hashCode(): Int = hc
 }
 
 data class Var(val vid: Int, val tid: Int) : Node {
@@ -50,29 +39,57 @@ data class Var(val vid: Int, val tid: Int) : Node {
     override fun toString(): String = "${tid}_$vid"
 }
 
-val concretizations = mutableMapOf<Node, Sequence<Node>>()
-fun Node.concretizations(): Sequence<Node> = concretizations.getOrPut(this) {
+/** Immutable copy of a Node which can be used as a key in a memo table. */
+sealed interface NodeSnapshot
+
+// These used to be classes instead of data classes but I don't really remember why
+object HoleSnapshot : NodeSnapshot {
+    override fun toString(): String = "_"
+}
+
+data class LSnapshot(val label: Int, val params: List<List<NodeSnapshot>>) : NodeSnapshot {
+    override fun toString(): String = "L$label(${params.joinToString(separator = ",")})"
+}
+
+data class FSnapshot(val params: List<List<NodeSnapshot>>) : NodeSnapshot {
+    override fun toString(): String = params.joinToString(separator = "->")
+}
+
+data class VarSnapshot(val vid: Int, val tid: Int) : NodeSnapshot {
+    override fun toString(): String = "${tid}_$vid"
+}
+
+private fun List<MutableList<Node>>.snapshot(): List<List<NodeSnapshot>> = this.map { it.map { it.snapshot() } }
+
+private fun Node.snapshot(): NodeSnapshot = when (this) {
+    is L -> LSnapshot(this.label, this.params.snapshot())
+    is F -> FSnapshot(this.params.snapshot())
+    is Hole -> HoleSnapshot
+    is Var -> VarSnapshot(this.vid, this.tid)
+}
+
+val concretizations = mutableMapOf<NodeSnapshot, Sequence<ConcreteNode>>()
+fun NodeSnapshot.concretizations(): Sequence<ConcreteNode> = concretizations.getOrPut(this) {
     when (this) {
-        is F -> if (params.isEmpty()) sequenceOf(this)
-        else if (params.any { it.any { it is Hole } }) emptySequence()
+        is FSnapshot -> if (params.isEmpty()) sequenceOf(ConcreteF(listOf()))
+        else if (params.any { it.any { it is HoleSnapshot } }) emptySequence()
         else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-            .map { F(it.map { mutableListOf(it) }, constraint) }
-        is L -> if (params.isEmpty()) sequenceOf(this)
-        else if (params.any { it.any { it is Hole } }) emptySequence()
+            .map { ConcreteF(it.map { it }) }
+        is LSnapshot -> if (params.isEmpty()) sequenceOf(ConcreteL(this.label, listOf()))
+        else if (params.any { it.any { it is HoleSnapshot } }) emptySequence()
         else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-            .map { L(this.label, it.map { mutableListOf(it) }, constraint) }
-        is Var -> sequenceOf(this)
-        is Hole -> emptySequence()
+            .map { ConcreteL(this.label, it.map { it }) }
+        is VarSnapshot -> sequenceOf(ConcreteVar(this.vid, this.tid))
+        is HoleSnapshot -> emptySequence()
     }
 }
 
-val vars = mutableMapOf<Node, Set<Pair<Int, Int>>>()
-fun Node.vars(): Set<Pair<Int, Int>> = vars.getOrPut(this) {
+val vars = mutableMapOf<ConcreteNode, Set<Pair<Int, Int>>>()
+fun ConcreteNode.vars(): Set<Pair<Int, Int>> = vars.getOrPut(this) {
     when (this) {
-        is Var -> setOf(vid to tid)
-        is F -> params.flatMap { it.flatMap { it.vars() }.toSet() }.toSet()
-        is L -> params.flatMap { it.flatMap { it.vars() }.toSet() }.toSet()
-        is Hole -> setOf()
+        is ConcreteVar -> setOf(vid to tid)
+        is ConcreteF -> params.flatMap { it.vars() }.toSet()
+        is ConcreteL -> params.flatMap { it.vars() }.toSet()
     }
 }
 
@@ -145,7 +162,7 @@ class ConcreteEnumerator(
     } + labels.map { L(it.key.label, it.value, constraint) } +
             F(listOf(mutableListOf(Hole(constraint)), mutableListOf(Hole(constraint))), constraint)
 
-    fun callMe(maxIterations: Int): Set<Map<String, Node>> {
+    fun callMe(maxIterations: Int): Set<Map<String, ConcreteNode>> {
         for (i in 1..maxIterations) {
             println("Depth $i")
             state.forEach { (f, root) ->
@@ -160,8 +177,8 @@ class ConcreteEnumerator(
         return setOf()
     }
 
-    private val cantConcretize = mutableMapOf<Node, Boolean>()
-    private fun Node.cantConcretize(): Boolean = cantConcretize.getOrPut(this) {
+    private val cantConcretize = mutableMapOf<NodeSnapshot, Boolean>()
+    private fun Node.cantConcretize(): Boolean = cantConcretize.getOrPut(this.snapshot()) {
         when (this) {
             is Hole -> true
             is Var -> false
@@ -170,46 +187,40 @@ class ConcreteEnumerator(
         }
     }
 
-    private val holelessCopy = mutableMapOf<Node, Node>()
-    private fun Node.holelessCopy(): Node? {
-        if (this is Hole) return null
-        // Since output can be null, can't use getOrPut
-        if (this in holelessCopy) return holelessCopy[this]!!
-        val result =
-            when (this) {
-                is F -> F(params.map {
-                    it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
-                }, constraint)
-                is L -> L(label, params.map {
-                    it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
-                }, constraint)
-                is Var -> this
-                is Hole -> throw Exception("Can't happen")
-            }
-        holelessCopy[this] = result
-        return result
+    private val holelessCopy = mutableMapOf<NodeSnapshot, NodeSnapshot>()
+    private fun Node.holelessCopy(): NodeSnapshot? = holelessCopy.getOrPut(this.snapshot()) {
+        when (this) {
+            is F -> FSnapshot(params.map {
+                it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }
+            })
+            is L -> LSnapshot(label, params.map {
+                it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }
+            })
+            is Var -> this.snapshot()
+            is Hole -> return null
+        }
     }
 
-    private fun contexts(): Set<Map<String, Node>> {
+    private fun contexts(): Set<Map<String, ConcreteNode>> {
         // TODO skip fresh variables if they can't be there.
         //  Rightmost param of F can't be fresh even if it's a HOF and parent allows - think about this more
         //  If last param is a label L<a->b> don't want to erroneously say a can be fresh just bc it's on the left
         val concreteOptions = state.mapValues { it.value.holelessCopy() }
         if (concreteOptions.values.any { it == null }) return emptySet()
-        val possTys = (concreteOptions as Map<String, Node>).map { (n, t) ->
+        val possTys = (concreteOptions as Map<String, NodeSnapshot>).map { (n, t) ->
             when (t) {
-                is F -> {
-                    if (t.params.isEmpty()) sequenceOf(t)
+                is FSnapshot -> {
+                    if (t.params.isEmpty()) t.concretizations()
                     else lazyCartesianProduct(t.params.mapIndexed { i, options ->
                         options.flatMap { it.concretizations() }.filter { node ->
                             if (constraints[n]!![i] is MustContainVariables)
                                 (constraints[n]!![i] as MustContainVariables).vars.all { it in node.vars() }
                             else true
                         }
-                    }).map { F(it.map { mutableListOf(it) }, t.constraint) }
+                    }).map { ConcreteF(it.map { it }) }
                 }
-                is L, is Var -> t.concretizations()
-                is Hole -> throw Exception("Can't happen")
+                is LSnapshot, is VarSnapshot -> t.concretizations()
+                is HoleSnapshot -> throw Exception("Can't happen")
             }
         }
         return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }.filter { check(it) }.toSet()
@@ -234,50 +245,45 @@ class ConcreteEnumerator(
         is Var -> {}
     }
 
-    private val applyBinding = mutableMapOf<Triple<Node, Pair<Int, Int>, Node>, Node>()
+    private val applyBinding = mutableMapOf<Triple<ConcreteNode, Pair<Int, Int>, ConcreteNode>, ConcreteNode>()
     fun applyBinding(
-        t: Node,
+        t: ConcreteNode,
         varId: Int,
         tId: Int,
-        sub: Node
-    ): Node =
+        sub: ConcreteNode
+    ): ConcreteNode =
         applyBinding.getOrPut(Triple(t, (varId to tId), sub)) {
             when (t) {
-                is Hole -> throw Exception("Hole in concrete type")
-                is L -> L(
-                    t.label,
-                    t.params.map { mutableListOf(applyBinding(it.first(), varId, tId, sub)) },
-                    t.constraint
-                )
-                is F -> F(t.params.map { mutableListOf(applyBinding(it.first(), varId, tId, sub)) }, t.constraint)
-                is Var -> if (t.vid == varId && t.tid == tId) sub else t  // TODO t should never be a binding variable and hit this case; reason about it a bit more
+                is ConcreteL -> ConcreteL(t.label, t.params.map { applyBinding(it, varId, tId, sub) })
+                is ConcreteF -> ConcreteF(t.params.map { applyBinding(it, varId, tId, sub) })
+                is ConcreteVar -> if (t.vid == varId && t.tid == tId) sub else t  // TODO t should never be a binding variable and hit this case; reason about it a bit more
             }
         }
 
-    val applyBindings = mutableMapOf<Pair<Node, List<Binding>>, Node>()
-    fun applyBindings(t: Node, bindings: List<Binding>): Node = applyBindings.getOrPut(t to bindings) {
+    val applyBindings = mutableMapOf<Pair<ConcreteNode, List<Binding>>, ConcreteNode>()
+    fun applyBindings(t: ConcreteNode, bindings: List<Binding>): ConcreteNode = applyBindings.getOrPut(t to bindings) {
         bindings.fold(t) { acc, (vId, tId, sub) -> applyBinding(acc, vId, tId, sub) }
     }
 
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible.
      * @modifies [labelClasses]
      */
-    private val unify = mutableMapOf<Pair<Node, Node>, List<Binding>?>()
-    fun unify(param: Node, arg: Node): List<Binding>? {
+    private val unify = mutableMapOf<Pair<ConcreteNode, ConcreteNode>, List<Binding>?>()
+    fun unify(param: ConcreteNode, arg: ConcreteNode): List<Binding>? {
         // We can't simply call getOrPut, since getOrPut runs code if map has null as value.
         // Then we'd do duplicate computations for all bad parameter-argument pairs
         if ((param to arg) in unify) return unify[param to arg]
         val result = when (param) {
-            is Var -> listOf(Binding(param.vid, param.tid, arg))
-            is L -> when (arg) {
-                is L -> {
+            is ConcreteVar -> listOf(Binding(param.vid, param.tid, arg))
+            is ConcreteL -> when (arg) {
+                is ConcreteL -> {
                     if (param.label != arg.label) null
                     else {
                         var bindings: MutableList<Binding>? = mutableListOf()
                         param.params.indices.forEach {
                             if (bindings != null) {
-                                val p = applyBindings(param.params[it].first(), bindings!!)
-                                val a = applyBindings(arg.params[it].first(), bindings!!)
+                                val p = applyBindings(param.params[it], bindings!!)
+                                val a = applyBindings(arg.params[it], bindings!!)
                                 val u = unify(p, a)
                                 if (u == null) bindings = null else bindings!!.addAll(u)
                             }
@@ -285,16 +291,16 @@ class ConcreteEnumerator(
                         bindings
                     }
                 }
-                is F, is Var, is Hole -> null
+                is ConcreteF, is ConcreteVar -> null
             }
-            is F -> when (arg) {
-                is L, is Var, is Hole -> null
-                is F -> {
+            is ConcreteF -> when (arg) {
+                is ConcreteL, is ConcreteVar -> null
+                is ConcreteF -> {
                     var bindings: MutableList<Binding>? = mutableListOf()
                     param.params.indices.forEach {
                         if (bindings != null) {
-                            val p = applyBindings(param.params[it].first(), bindings!!)
-                            val a = applyBindings(arg.params[it].first(), bindings!!)
+                            val p = applyBindings(param.params[it], bindings!!)
+                            val a = applyBindings(arg.params[it], bindings!!)
                             val u = unify(p, a)
                             if (u == null) bindings = null else bindings!!.addAll(u)
                         }
@@ -302,39 +308,39 @@ class ConcreteEnumerator(
                     bindings
                 }
             }
-            is Hole -> throw Exception("Invariant broken")
         }
         unify[param to arg] = result
         return result
     }
 
-    private val apply = mutableMapOf<Pair<F, Node>, Node?>()
+    private val apply = mutableMapOf<Pair<ConcreteF, ConcreteNode>, ConcreteNode?>()
 
     /**
      * Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
      * @modifies [labelClasses]
      */
-    fun apply(fn: F, arg: Node): Node? {
+    fun apply(fn: ConcreteF, arg: ConcreteNode): ConcreteNode? {
         // Not using getOrPut for same reason as others
         if (fn to arg in apply) return apply[fn to arg]
-        val result = unify(fn.params.first().first(), arg)?.let {
-            val out = if (fn.params.size == 2) fn.params[1].first() else F(fn.params.drop(1), fn.constraint)
+        if (fn.params.isEmpty()) return null
+        val result = unify(fn.params.first(), arg)?.let {
+            val out = if (fn.params.size == 2) fn.params[1] else ConcreteF(fn.params.drop(1))
             applyBindings(out, it)
         }
         apply[fn to arg] = result
         return result
     }
 
-    fun type(context: Map<String, Node>, example: Example): Node? = when (example) {
+    fun type(context: Map<String, ConcreteNode>, example: Example): ConcreteNode? = when (example) {
         is Name -> context[example.name]
         is App -> type(context, example.fn).let { f ->
             type(context, example.arg)?.let { arg ->
-                if (f is F) apply(f, arg) else null
+                if (f is ConcreteF) apply(f, arg) else null
             }
         }
     }
 
-    fun check(context: Map<String, Node>): Boolean {
+    fun check(context: Map<String, ConcreteNode>): Boolean {
         return query.posExamples.all {
             type(context, it) != null
         } && query.negExamples.all {
@@ -343,4 +349,19 @@ class ConcreteEnumerator(
     }
 }
 
-typealias Binding = Triple<Int, Int, Node>
+typealias Binding = Triple<Int, Int, ConcreteNode>
+
+/** A concrete type. */
+sealed interface ConcreteNode
+
+data class ConcreteL(val label: Int, val params: List<ConcreteNode>) : ConcreteNode {
+    override fun toString(): String = "L$label(${params.joinToString(separator = ",")})"
+}
+
+data class ConcreteF(val params: List<ConcreteNode>) : ConcreteNode {
+    override fun toString(): String = params.joinToString(separator = "->")
+}
+
+data class ConcreteVar(val vid: Int, val tid: Int) : ConcreteNode {
+    override fun toString(): String = "${tid}_$vid"
+}
