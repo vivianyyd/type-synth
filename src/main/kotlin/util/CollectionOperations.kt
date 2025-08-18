@@ -78,7 +78,7 @@ fun <T> lazyCartesianProduct(sets: List<List<T>>): Sequence<List<T>> =
     lazySeqCartesianProduct(sets.map { it.asSequence() })
 
 fun <T> lazySeqCartesianProduct(sets: List<Sequence<T>>): Sequence<List<T>> {
-    if (!sets.iterator().hasNext()) return emptySequence()
+    if (sets.isEmpty()) return emptySequence()
     return sets.fold(sequenceOf(emptyList())) { acc, set ->
         acc.flatMap { partial ->
             set.map { element -> partial + element }

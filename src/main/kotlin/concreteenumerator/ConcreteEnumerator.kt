@@ -45,49 +45,17 @@ data class Var(val varId: Int, override val id: Int) : Node {
     override fun toString(): String = "$varId"
 }
 
-/** Immutable copy of a Node which can be used as a key in a memo table. */
-sealed interface NodeSnapshot
-
-// These used to be classes instead of data classes but I don't really remember why
-object HoleSnapshot : NodeSnapshot {
-    override fun toString(): String = "_"
-}
-
-data class LSnapshot(val label: Int, val params: List<List<NodeSnapshot>>) : NodeSnapshot {
-    override fun toString(): String = "L$label(${params.joinToString(separator = ",")})"
-}
-
-data class FSnapshot(val params: List<List<NodeSnapshot>>) : NodeSnapshot {
-    override fun toString(): String = params.joinToString(separator = "->")
-}
-
-data class VarSnapshot(val varId: Int) : NodeSnapshot {
-    override fun toString(): String = "$varId"
-}
-
-private fun List<MutableList<Node>>.snapshot(): List<List<NodeSnapshot>> = this.map { it.map { it.snapshot() } }
-
-private fun Node.snapshot(): NodeSnapshot = when (this) {
-    is L -> LSnapshot(this.label, this.params.snapshot())
-    is F -> FSnapshot(this.params.snapshot())
-    is Hole -> HoleSnapshot
-    is Var -> VarSnapshot(this.varId)
-}
-
-val concretizations = mutableMapOf<NodeSnapshot, Sequence<ConcreteNode>>()
-fun NodeSnapshot.concretizations(): Sequence<ConcreteNode> = concretizations.getOrPut(this) {
-    when (this) {
-        is FSnapshot -> if (params.isEmpty()) sequenceOf(ConcreteF(listOf()))
-        else if (params.any { it.any { it is HoleSnapshot } }) emptySequence()
-        else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-            .map { ConcreteF(it.map { it }) }
-        is LSnapshot -> if (params.isEmpty()) sequenceOf(ConcreteL(this.label, listOf()))
-        else if (params.any { it.any { it is HoleSnapshot } }) emptySequence()
-        else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-            .map { ConcreteL(this.label, it.map { it }) }
-        is VarSnapshot -> sequenceOf(ConcreteVar(this.varId))
-        is HoleSnapshot -> emptySequence()
-    }
+fun Node.concretizations(): Sequence<ConcreteNode> = when (this) {
+    is F -> if (params.isEmpty()) sequenceOf(ConcreteF(listOf()))
+    else if (params.any { it.any { it is Hole } }) emptySequence()
+    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
+        .map { ConcreteF(it.map { it }) }
+    is L -> if (params.isEmpty()) sequenceOf(ConcreteL(this.label, listOf()))
+    else if (params.any { it.any { it is Hole } }) emptySequence()
+    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
+        .map { ConcreteL(this.label, it.map { it }) }
+    is Var -> sequenceOf(ConcreteVar(this.varId))
+    is Hole -> emptySequence()
 }
 
 val vars = mutableMapOf<ConcreteNode, Set<Int>>()
@@ -190,14 +158,14 @@ class ConcreteEnumerator(
         is L -> params.all { it.any { it.canConcretize() } }
     }
 
-    private fun Node.holelessCopy(): NodeSnapshot? = when (this) {
-        is F -> FSnapshot(params.map {
-            it.filter { it.canConcretize() }.mapNotNull { it.holelessCopy() }
-        })
-        is L -> LSnapshot(label, params.map {
-            it.filter { it.canConcretize() }.mapNotNull { it.holelessCopy() }
-        })
-        is Var -> this.snapshot()
+    private fun Node.holelessCopy(): Node? = when (this) {
+        is F -> F(params.map {
+            it.filter { it.canConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
+        }, this.id, this.constraint)
+        is L -> L(label, params.map {
+            it.filter { it.canConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
+        }, this.id, this.constraint)
+        is Var -> this
         is Hole -> null
     }
 
@@ -207,9 +175,9 @@ class ConcreteEnumerator(
         //  If last param is a label L<a->b> don't want to erroneously say a can be fresh just bc it's on the left
         val concreteOptions = state.mapValues { it.value.holelessCopy() }
         if (concreteOptions.values.any { it == null }) return emptySet()
-        val possTys = (concreteOptions as Map<String, NodeSnapshot>).map { (n, t) ->
+        val possTys = (concreteOptions as Map<String, Node>).map { (n, t) ->
             when (t) {
-                is FSnapshot -> {
+                is F -> {
                     if (t.params.isEmpty()) t.concretizations()
                     // TODO simplify this with concretizations()
                     else lazyCartesianProduct(t.params.mapIndexed { i, options ->
@@ -222,8 +190,8 @@ class ConcreteEnumerator(
                         }
                     }).map { ConcreteF(it.map { it }) }
                 }
-                is LSnapshot, is VarSnapshot -> t.concretizations()
-                is HoleSnapshot -> throw Exception("Can't happen")
+                is L, is Var -> t.concretizations()
+                is Hole -> throw Exception("Can't happen")
             }
         }
         return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }.filter { check(it) }.toSet()
@@ -271,8 +239,22 @@ class ConcreteEnumerator(
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible.
      * @modifies [labelClasses]
      */
+    private var unifyTotal = 0
+    private var unifyHit = 0
+    var unifyKeyHit = mutableMapOf<Pair<ConcreteNode, ConcreteNode>, Int>()
     private val unify = mutableMapOf<Pair<ConcreteNode, ConcreteNode>, List<Binding>?>()
     fun unify(param: ConcreteNode, arg: ConcreteNode): List<Binding>? {
+//        unifyTotal++
+//        if ((param to arg) in unify) {
+//            unifyHit++
+//            unifyKeyHit[param to arg] = unifyKeyHit[param to arg]!! + 1
+//        } else unifyKeyHit[param to arg] = 0
+//        if (unifyTotal == 10000000) {
+//            println("Unify total $unifyTotal, hit $unifyHit, hit rate ${(unifyHit + 0.0) / unifyTotal}, size ${unify.size}")
+//            println("Num keys not hit at all: ${unifyKeyHit.count { it.value == 0 }}")
+//            println("Hit frequencies:")
+//            println(unifyKeyHit.entries.sortedByDescending { it.value }.joinToString(separator = "\n"))
+//        }
         // We can't simply call getOrPut, since getOrPut runs code if map has null as value.
         // Then we'd do duplicate computations for all bad parameter-argument pairs
         if ((param to arg) in unify) return unify[param to arg]
@@ -325,19 +307,32 @@ class ConcreteEnumerator(
         applyBindings(out, it)
     }
 
+    fun newApply(fn: ConcreteF, arg: ConcreteNode): ConcreteNode? {
+        val result = unify(fn.params.first(), arg)?.let {
+            val out = if (fn.params.size == 2) fn.params[1] else ConcreteF(fn.params.drop(1))
+            applyBindings(out, it)
+        }
+        return result
+    }
+
     fun type(context: Map<String, ConcreteNode>, example: Example): ConcreteNode? = when (example) {
         is Name -> context[example.name]
         is App -> type(context, example.fn).let { f ->
             type(context, example.arg)?.let { arg ->
-                if (f is ConcreteF) apply(f, arg) else null
+                if (f is ConcreteF) newApply(f, arg) else null
             }
         }
     }
 
+    private var checked = 0
     fun check(context: Map<String, ConcreteNode>): Boolean {
         return query.posExamples.all {
+            checked++
+            if (checked == 30000000) TODO()
             type(context, it) != null
         } && query.negExamples.all {
+            checked++
+            if (checked == 30000000) TODO()
             type(context, it) == null
         }
     }
