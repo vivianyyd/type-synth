@@ -1,26 +1,25 @@
 import benchmarking.parseHaskellTypes
 import query.ExampleGenerator
 import query.Query
-import query.sexpsFromExamples
 import types.Assignment
 import types.Type
 import types.toSExpr
 import types.toType
 import util.SExpr
 import util.SExprParser
-import util.writeExamples
 
-private fun Assignment.toSExprStrs() = this.entries.joinToString(separator = "\t") {
+fun Assignment.toSExprStrs() = this.entries.joinToString(separator = "\t") {
     "${SExpr.Lst(listOf(SExpr.Atm(it.key), it.value.toSExpr()))}"
 }
 
 fun main() {
-    val test = toy
-    val (query, context) = generate(test)
-    val generatedExs =
-        (sexpsFromExamples(query.posExamples, true) + sexpsFromExamples(query.negExamples, false))
-            .joinToString(separator = "\n")
-    writeExamples("${context.toSExprStrs()}\n$generatedExs", "intlists")
+    println((haskellList + haskellEither + haskellMaybe).joinToString(separator = "\n") { (ty, name) -> "$name :: $ty" })
+//    val test = toy
+//    val (query, context) = generate(test)
+//    val generatedExs =
+//        (sexpsFromExamples(query.posExamples, true) + sexpsFromExamples(query.negExamples, false))
+//            .joinToString(separator = "\n")
+//    writeExamples("${context.toSExprStrs()}\n$generatedExs", "intlists")
 }
 
 fun generate(types: List<Pair<Type, String?>>): Pair<Query, Assignment> {
@@ -58,13 +57,13 @@ val haskellList = parseHaskellTypes(
         "any :: (a -> Bool) -> [a] -> Bool",
         "all :: (a -> Bool) -> [a] -> Bool",
         "concat :: [[a]] -> [a]",
-//        "concatMap :: (a -> [b]) -> [a] -> [b]",
+        "concatMap :: (a -> [b]) -> [a] -> [b]",
         "map :: (a -> b) -> [a] -> [b]",
         "(++) :: [a] -> [a] -> [a]",
         "filter :: (a -> Bool) -> [a] -> [a]",
-//        "uncons :: [a] -> Maybe (a, [a])",
-//        "unsnoc :: [a] -> Maybe ([a], a)",
-//        "(!?) :: [a] -> Int -> Maybe a",
+        "uncons :: [a] -> Maybe (a, [a])",
+        "unsnoc :: [a] -> Maybe ([a], a)",
+        "(!?) :: [a] -> Int -> Maybe a",
         "iterate :: (a -> a) -> a -> [a]",
         "repeat :: a -> [a]",
         "replicate :: Int -> a -> [a]",
@@ -76,9 +75,9 @@ val haskellList = parseHaskellTypes(
         "span :: (a -> Bool) -> [a] -> ([a], [a])",
         "break :: (a -> Bool) -> [a] -> ([a], [a])",
         "reverse :: [a] -> [a]",
-//        "zip :: [a] -> [b] -> [(a, b)]",
-//        "zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]",
-//        "unzip :: [(a, b)] -> ([a], [b])",
+        "zip :: [a] -> [b] -> [(a, b)]",
+        "zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]",
+        "unzip :: [(a, b)] -> ([a], [b])",
     ) + listOf(
         "0 :: Int",
         "True :: Bool",
@@ -86,7 +85,7 @@ val haskellList = parseHaskellTypes(
         "BL :: [Bool]",
         "inc :: Int -> Int",
         "not :: Bool -> Bool",
-//        "id :: a -> a",
+        "id :: a -> a",
         "isEven :: Int -> Bool"
     )
 )
@@ -109,14 +108,14 @@ val haskellEither = parseHaskellTypes(
     "(List (b))" to "NilBool", // Nil Bool
 ).map { SExprParser(it.first).parse().toType() to it.second }
 
-val haskellMaybe = listOf(
+val haskellMaybe = (listOf(
     "(-> b (-> (-> a b) (-> (Maybe a) b)))" to "maybe", // maybe :: b -> (a -> b) -> Maybe a -> b
-    "(-> (Maybe a) (b))" to "isJust", // isJust :: Maybe a -> Bool
-    "(-> (Maybe a) (b))" to "isNothing", // isNothing :: Maybe a -> Bool
-    "(-> a (-> (Maybe a) a))" to "fromMaybe", // fromMaybe :: a -> Maybe a -> a
-    "(-> (List a) (Maybe a))" to "listToMaybe", // listToMaybe :: [a] -> Maybe a
-    "(-> (Maybe a) (List a))" to "maybeToList", // maybeToList :: Maybe a -> [a]
-    "(-> (List (Maybe a)) (List a))" to "catMaybes", // catMaybes :: [Maybe a] -> [a]
+    "(-> (Maybe a) (b))" to "isJust",                   // isJust :: Maybe a -> Bool
+    "(-> (Maybe a) (b))" to "isNothing",                // isNothing :: Maybe a -> Bool
+    "(-> a (-> (Maybe a) a))" to "fromMaybe",           // fromMaybe :: a -> Maybe a -> a
+    "(-> (List a) (Maybe a))" to "listToMaybe",         // listToMaybe :: [a] -> Maybe a
+    "(-> (Maybe a) (List a))" to "maybeToList",         // maybeToList :: Maybe a -> [a]
+    "(-> (List (Maybe a)) (List a))" to "catMaybes",    // catMaybes :: [Maybe a] -> [a]
     "(-> (-> a (Maybe b)) (-> (List a) (List b)))" to "mapMaybe", // mapMaybe :: (a -> Maybe b) -> [a] -> [b]
 ) + listOf(
     "(i)" to "0",
@@ -125,7 +124,7 @@ val haskellMaybe = listOf(
     "(Maybe (b))" to "NothingBool", // Nothing Bool
     "(List (i))" to "NilInt", // Nil Int
     "(List (b))" to "NilBool", // Nil Bool
-)
+)).map { SExprParser(it.first).parse().toType() to it.second }
 
 val dict = listOf(
     "(i)", "(b)",

@@ -1,5 +1,7 @@
 package util
 
+import concreteenumerator.ConcreteNode
+
 fun <T> equivalenceClasses(elems: Collection<T>, equals: (T, T) -> Boolean): Set<Set<T>> {
     val result = mutableSetOf<MutableSet<T>>()  // Invariant: No element of the set is empty
     elems.forEach { elem ->
@@ -33,17 +35,15 @@ fun main() {
     [2, 3, 5]
     [2, 4, 5]
      */
-    val sets = listOf(listOf(1, 2), listOf(3, 4), listOf(5))
-    val product = lazyCartesianProduct(sets)
-    for (item in product) {
-        println(item)
-    }
+    val sets = listOf(sequenceOf(1, 2), sequenceOf(3, 4), sequenceOf(5, 6, 7))
 
+    lazySeqCartesianProduct(sets).forEach { println(it) }
 }
 
-fun <T> reflexiveNaryProduct(set: List<T>, n: Int): Sequence<List<T>> = sequence {
+
+fun <T> reflexiveNaryProduct(elems: List<T>, n: Int): Sequence<List<T>> = sequence {
     val indices = Array(n) { 0 }
-    val set = set.toSet().toList()
+    val set = elems.toSet().toList()
     yield(indices.map { set[it] })
     for (base in 2..set.size) {
         for (i in 0 until n) indices[i] = 0
@@ -77,11 +77,33 @@ fun <T> reflexiveNaryProduct(set: List<T>, n: Int): Sequence<List<T>> = sequence
 fun <T> lazyCartesianProduct(sets: List<List<T>>): Sequence<List<T>> =
     lazySeqCartesianProduct(sets.map { it.asSequence() })
 
-fun <T> lazySeqCartesianProduct(sets: List<Sequence<T>>): Sequence<List<T>> {
-    if (sets.isEmpty()) return emptySequence()
-    return sets.fold(sequenceOf(emptyList())) { acc, set ->
+fun <T> lazySeqCartesianProduct(choices: List<Sequence<T>>): Sequence<List<T>> {
+    if (choices.isEmpty()) return emptySequence()
+    return choices.fold(sequenceOf(emptyList())) { acc, choice ->
         acc.flatMap { partial ->
-            set.map { element -> partial + element }
+            choice.map { option -> partial + option }
+        }
+    }
+}
+
+/** [trace]: The ids of nodes from root to this product.
+ * @yields pairs of child choices and the traces associated with them
+ * */
+fun nodeProduct(
+    ports: List<Sequence<ConcreteNode>>,
+    trace: List<Int>,
+    conflicts: List<List<Int>>
+): Sequence<Pair<List<ConcreteNode>, List<Int>>> {
+    fun conflict(trace: List<Int>, conflicts: List<List<Int>>) = conflicts.any { it.all { it in trace } }
+
+    if (ports.isEmpty() || conflict(trace, conflicts)) return emptySequence()
+    return ports.fold(sequenceOf(emptyList<ConcreteNode>() to trace)) { acc, port ->
+        acc.flatMap { (prevSiblings, tr) ->
+            port.mapNotNull { option ->
+                val tra = (tr + option.ids).toSet().toList()
+                if (conflict(tra, conflicts)) null
+                else (prevSiblings + option) to tra
+            }
         }
     }
 }
