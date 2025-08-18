@@ -188,28 +188,22 @@ class ConcreteEnumerator(
         return setOf()
     }
 
-    private val cantConcretize = mutableMapOf<NodeSnapshot, Boolean>()
-    private fun Node.cantConcretize(): Boolean = cantConcretize.getOrPut(this.snapshot()) {
-        when (this) {
-            is Hole -> true
-            is Var -> false
-            is F -> params.any { it.all { it.cantConcretize() } }
-            is L -> params.any { it.all { it.cantConcretize() } }
-        }
+    private fun Node.canConcretize(): Boolean = when (this) {
+        is Hole -> false
+        is Var -> true
+        is F -> params.all { it.any { it.canConcretize() } }
+        is L -> params.all { it.any { it.canConcretize() } }
     }
 
-    private val holelessCopy = mutableMapOf<NodeSnapshot, NodeSnapshot>()
-    private fun Node.holelessCopy(): NodeSnapshot? = holelessCopy.getOrPut(this.snapshot()) {
-        when (this) {
-            is F -> FSnapshot(params.map {
-                it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }
-            })
-            is L -> LSnapshot(label, params.map {
-                it.filter { !it.cantConcretize() }.mapNotNull { it.holelessCopy() }
-            })
-            is Var -> this.snapshot()
-            is Hole -> return null
-        }
+    private fun Node.holelessCopy(): NodeSnapshot? = when (this) {
+        is F -> FSnapshot(params.map {
+            it.filter { it.canConcretize() }.mapNotNull { it.holelessCopy() }
+        })
+        is L -> LSnapshot(label, params.map {
+            it.filter { it.canConcretize() }.mapNotNull { it.holelessCopy() }
+        })
+        is Var -> this.snapshot()
+        is Hole -> null
     }
 
     private fun contexts(): Set<Map<String, ConcreteNode>> {
@@ -264,14 +258,16 @@ class ConcreteEnumerator(
         varId: Int,
         tId: Int,
         sub: ConcreteNode
-    ): ConcreteNode =
-        applyBinding.getOrPut(Triple(t, (varId to tId), sub)) {
+    ): ConcreteNode {
+        if (!t.hasVar) return t
+        return applyBinding.getOrPut(Triple(t, (varId to tId), sub)) {
             when (t) {
                 is ConcreteL -> ConcreteL(t.label, t.params.map { applyBinding(it, varId, tId, sub) })
                 is ConcreteF -> ConcreteF(t.params.map { applyBinding(it, varId, tId, sub) })
                 is ConcreteVar -> if (t.vid == varId && t.tid == tId) sub else t  // TODO t should never be a binding variable and hit this case; reason about it a bit more
             }
         }
+    }
 
     fun applyBindings(t: ConcreteNode, bindings: List<Binding>): ConcreteNode =
         bindings.fold(t) { acc, (vId, tId, sub) -> applyBinding(acc, vId, tId, sub) }
@@ -354,16 +350,21 @@ class ConcreteEnumerator(
 typealias Binding = Triple<Int, Int, ConcreteNode>
 
 /** A concrete type. */
-sealed interface ConcreteNode
+sealed interface ConcreteNode {
+    val hasVar: Boolean
+}
 
 data class ConcreteL(val label: Int, val params: List<ConcreteNode>) : ConcreteNode {
-    override fun toString(): String = "L$label(${params.joinToString(separator = ",")})"
+    override val hasVar = params.any { it.hasVar }
+    override fun toString(): String = "L$label[${params.joinToString(separator = ",")}]"
 }
 
 data class ConcreteF(val params: List<ConcreteNode>) : ConcreteNode {
-    override fun toString(): String = params.joinToString(separator = "->")
+    override val hasVar = params.any { it.hasVar }
+    override fun toString(): String = params.joinToString(separator = "->") { if (it is ConcreteF) "($it)" else "$it" }
 }
 
 data class ConcreteVar(val vid: Int, val tid: Int) : ConcreteNode {
+    override val hasVar = true
     override fun toString(): String = "${tid}_$vid"
 }
