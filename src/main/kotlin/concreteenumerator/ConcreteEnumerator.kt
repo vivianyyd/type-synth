@@ -9,32 +9,38 @@ import util.*
 
 sealed interface Node {
     val constraint: DependencyConstraint?
+    val id: Int
 }
 
 // These used to be classes instead of data classes but I don't really remember why
 data class Hole(override val constraint: DependencyConstraint?) : Node {
+    override val id = Int.MAX_VALUE  // Not sure about this
     override fun toString(): String = "_"
 }
 
 data class L(
     val label: Int,
     val params: List<MutableList<Node>>,
+    override val id: Int,
     override val constraint: DependencyConstraint?
 ) : Node {
-    constructor(label: Int, numParams: Int, constraint: DependencyConstraint? = null) :
-            this(label, (0 until numParams).map { mutableListOf(Hole(constraint)) }, constraint)
+    constructor(label: Int, numParams: Int, id: Int, constraint: DependencyConstraint? = null) : this(
+        label,
+        (0 until numParams).map { mutableListOf(Hole(constraint)) },
+        id,
+        constraint
+    )
 
     override fun toString(): String = "L$label(${params.joinToString(separator = ",")})"
 }
 
 data class F(
-    val params: List<MutableList<Node>>,
-    override val constraint: DependencyConstraint?
+    val params: List<MutableList<Node>>, override val id: Int, override val constraint: DependencyConstraint?
 ) : Node {
     override fun toString(): String = params.joinToString(separator = "->")
 }
 
-data class Var(val vid: Int, val tid: Int) : Node {
+data class Var(val vid: Int, val tid: Int, override val id: Int) : Node {
     override val constraint: DependencyConstraint? = null
     override fun toString(): String = "${tid}_$vid"
 }
@@ -107,6 +113,7 @@ class ConcreteEnumerator(
     private val nextVar = mutableMapOf<String, Var>()
     private val labels = inLabels.mapKeys { (l, _) -> std.L(l.label) }
     private val frontier: MutableList<Node> = mutableListOf()
+    private var nextId = 0
     private val constraints = constraints(contextOutline, dependencies)
     private val mayHaveFresh = dependencies.all.mapValues {
         it.value.third.map { it.i }
@@ -118,18 +125,18 @@ class ConcreteEnumerator(
 
             fun SymTypeDFlat.toNode(constraint: DependencyConstraint?): Node = when (this) {
                 is std.F -> F(
-                    (this.args + this.rite).map { mutableListOf(it.toNode(constraint)) },
-                    constraint
+                    (this.args + this.rite).map { mutableListOf(it.toNode(constraint)) }, nextId++, constraint
                 )
-                is std.L -> L(this.label, labels[this]!!, constraint)
+                is std.L -> L(this.label, labels[this]!!, nextId++, constraint)
 
-                is std.Var -> Var(this.vId, this.tId)
+                is std.Var -> Var(this.vId, this.tId, nextId++)
             }
 
             val outline = ty.flatten()
             state[name] = when (outline) {
                 is std.F -> F(
                     (outline.args + outline.rite).mapIndexed { i, a -> mutableListOf(a.toNode(constrs[i])) },
+                    nextId++,
                     null
                 )
                 is std.L, is std.Var -> outline.toNode(constrs[0])
@@ -138,11 +145,11 @@ class ConcreteEnumerator(
             fun variables(outline: SymTypeDFlat): Set<Var> = when (outline) {
                 is std.F -> (outline.args.flatMap { variables(it) } + variables(outline.rite)).toSet()
                 is std.L -> setOf()
-                is std.Var -> setOf(Var(outline.vId, outline.tId))
+                is std.Var -> setOf(Var(outline.vId, outline.tId, nextId++))
             }
             variablesInScope[name]!!.addAll(variables(outline))
-            val maxVar = variablesInScope[name]!!.maxByOrNull { it.vid } ?: Var(-1, query.names.indexOf(name))
-            nextVar[name] = Var(maxVar.vid + 1, maxVar.tid)
+            val maxVar = variablesInScope[name]!!.maxByOrNull { it.vid } ?: Var(-1, query.names.indexOf(name), nextId++)
+            nextVar[name] = Var(maxVar.vid + 1, maxVar.tid, nextId++)
         }
     }
 
@@ -153,14 +160,18 @@ class ConcreteEnumerator(
             if (param in mayHaveFresh[name]!!) {
                 val new = nextVar[name]!!
                 variablesInScope[name]!!.add(new)
-                nextVar[name] = Var(new.vid + 1, new.tid)
+                nextVar[name] = Var(new.vid + 1, new.tid, nextId++)
             }
             variablesInScope[name]!!
         }
         ContainsNoVariables -> listOf()
-        is ContainsOnly -> listOf(Var(constraint.vId, constraint.tId))
-    } + labels.map { L(it.key.label, it.value, constraint) } +
-            F(listOf(mutableListOf(Hole(constraint)), mutableListOf(Hole(constraint))), constraint)
+        is ContainsOnly -> listOf(Var(constraint.vId, constraint.tId, nextId++))
+    } + labels.map { L(it.key.label, it.value, nextId++, constraint) } + F(
+        listOf(
+            mutableListOf(Hole(constraint)),
+            mutableListOf(Hole(constraint))
+        ), nextId++, constraint
+    )
 
     fun callMe(maxIterations: Int): Set<Map<String, ConcreteNode>> {
         for (i in 1..maxIterations) {
@@ -211,6 +222,7 @@ class ConcreteEnumerator(
             when (t) {
                 is FSnapshot -> {
                     if (t.params.isEmpty()) t.concretizations()
+                    // TODO simplify this with concretizations()
                     else lazyCartesianProduct(t.params.mapIndexed { i, options ->
                         options.flatMap { it.concretizations() }.filter { node ->
                             if (constraints[n]!![i] is MustContainVariables)
@@ -226,6 +238,7 @@ class ConcreteEnumerator(
         return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }.filter { check(it) }.toSet()
     }
 
+    // TODO will this be faster if we store a frontier instead of iterating down the tree every round?
     fun Node.enumerate(name: String, param: Int): Unit = when (this) {
         is Hole -> throw Exception("Should be handled by parent")
         is F -> params.forEachIndexed { i, options ->
@@ -260,10 +273,8 @@ class ConcreteEnumerator(
             }
         }
 
-    val applyBindings = mutableMapOf<Pair<ConcreteNode, List<Binding>>, ConcreteNode>()
-    fun applyBindings(t: ConcreteNode, bindings: List<Binding>): ConcreteNode = applyBindings.getOrPut(t to bindings) {
+    fun applyBindings(t: ConcreteNode, bindings: List<Binding>): ConcreteNode =
         bindings.fold(t) { acc, (vId, tId, sub) -> applyBinding(acc, vId, tId, sub) }
-    }
 
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible.
      * @modifies [labelClasses]
@@ -313,22 +324,13 @@ class ConcreteEnumerator(
         return result
     }
 
-    private val apply = mutableMapOf<Pair<ConcreteF, ConcreteNode>, ConcreteNode?>()
-
     /**
      * Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
      * @modifies [labelClasses]
      */
-    fun apply(fn: ConcreteF, arg: ConcreteNode): ConcreteNode? {
-        // Not using getOrPut for same reason as others
-        if (fn to arg in apply) return apply[fn to arg]
-        if (fn.params.isEmpty()) return null
-        val result = unify(fn.params.first(), arg)?.let {
-            val out = if (fn.params.size == 2) fn.params[1] else ConcreteF(fn.params.drop(1))
-            applyBindings(out, it)
-        }
-        apply[fn to arg] = result
-        return result
+    fun apply(fn: ConcreteF, arg: ConcreteNode): ConcreteNode? = unify(fn.params.first(), arg)?.let {
+        val out = if (fn.params.size == 2) fn.params[1] else ConcreteF(fn.params.drop(1))
+        applyBindings(out, it)
     }
 
     fun type(context: Map<String, ConcreteNode>, example: Example): ConcreteNode? = when (example) {
