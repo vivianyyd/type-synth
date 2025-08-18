@@ -13,7 +13,8 @@ class FlowDotWriter {
         listOf(
             "splines=true;",
             "rankdir=LR; ordering=out;",
-            "node [shape = record, height=.1];"
+            "node [shape = record, height=.1];",
+            "graph [ratio=0.7]"
         ).forEach { sb.append("\t$it\n") }
     }
 

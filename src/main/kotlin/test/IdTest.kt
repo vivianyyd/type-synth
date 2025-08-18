@@ -7,8 +7,8 @@ import util.ScrappyNewOracle
 
 object IdTest {
     /*
-     f: int -> int
-     a: int
+     inc: int -> int
+     n: int
      id: a -> a
      */
     val examples = mapOf(
@@ -19,6 +19,7 @@ object IdTest {
         "(+ (inc (inc n)))" to "int",
         "(+ (id inc))" to "int -> int",
         "(+ (id n))" to "int",
+//        "(+ (id (inc n)))" to "int", // not necessary
         "(- (inc id))" to null,
         // 8 contexts from above, 36 if add below since we add option that id output is fn explicitly.
         //   But we can do something clever - try to eliminate those additional 28 contexts by saying,

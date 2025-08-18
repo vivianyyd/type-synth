@@ -3,8 +3,12 @@ SUBDIR="persist"
 
 # Check if the directory exists
 if [ -d "$DIR" ]; then
-    # Find and delete all files in d, but exclude subdirectory s
-    find "$DIR" -mindepth 1 -maxdepth 1 \! -name "$SUBDIR" -type f -delete
+    # Find and delete all files in d that begin with dep-, but exclude subdirectory s
+    find "$DIR" -mindepth 1 -maxdepth 1 \
+        -type f \
+        -name 'dep-*' \
+        ! -name "$SUBDIR" \
+        -delete
 else
     echo "Directory $DIR does not exist."
 fi

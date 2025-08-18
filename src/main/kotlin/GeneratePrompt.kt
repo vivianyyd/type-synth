@@ -14,9 +14,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 data class ChatCompletionResponse(
     val choices: List<Choice>
@@ -25,9 +24,55 @@ data class ChatCompletionResponse(
     data class Message(val role: String, val content: String)
 }
 
+val seeds = listOf(
+    "(++) (repeat True) (singleton True)",
+    "all isEven (cons 0 (cons 0 NilInt))",
+    "and (cons True NilBool)",
+    "any not (cons True (cons (not True) NilBool)",
+    "catMaybes (cons NothingInt (repeat (listToMaybe NilInt)))",
+    "concatMap maybeToList (repeat NothingBool)",
+    "cons (hd (cons 0 NilInt)) NilInt",
+    "cons 0 (singleton 0)",
+    "cons True (replicate 0 True)",
+    "dropWhile null (singleton NilInt)",
+    "filter not (cons True NilBool)",
+    "id 0",
+    "id cons",
+    "id NilInt",
+    "inc (fromMaybe 0 NothingInt)",
+    "inc (hd (filter isEven (cons 0 NilInt)))",
+    "inc (length (cons True NilBool))",
+    "inc 0",
+    "isJust NothingBool",
+    "isNothing ((!?) (replicate 0 0) 0)",
+    "iterate id 0",
+    "iterate inc 0",
+    "iterate not True",
+    "length NilInt",
+    "map isEven (cons 0 NilInt)",
+    "mapMaybe ((!?) (cons 0 NilInt)) (repeat 0)",
+    "maybeToList NothingBool",
+    "not True",
+    "null (cons 0 NilInt)",
+    "null NilBool",
+    "null NilInt",
+    "or (cons True NilBool)",
+    "take 0 ((++) (reverse (cons True NilBool)) (repeat True))",
+    "takeWhile isEven NilInt",
+    "tl (cons True NilBool)",
+    "True isEven (listToMaybe (cons 0 NilInt))",
+    "uncons (cons 0 (cons 0 NilInt))",
+    "unsnoc (repeat True)",
+)
+
 fun main() {
     val apiKey = System.getenv("OPENAI_API_KEY") ?: error("OPENAI_API_KEY not set")
-    val client = OkHttpClient()
+//    val client = OkHttpClient()  // Default client has 10s timeout
+    val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)  // time to connect
+        .readTimeout(2, TimeUnit.MINUTES)      // time waiting for response body
+        .writeTimeout(2, TimeUnit.MINUTES)     // time sending request body
+        .build()
 
     val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
@@ -35,16 +80,27 @@ fun main() {
 
     val prompt =
         "Use only prefix notation. Parentheses are used around function names which consist of symbols when used as prefix operators." +
-                "Do not provide explanation. Generate text that is a sequence of S-expressions separated by newlines"
+                "You may only use the names/functions which appear in the examples provided." +
+                "Generate text that is in the same format as the examples given. Your response should include only" +
+                "the words that appear in the seed examples, parentheses, spaces, and each example separated by a newline." +
+                "Do not use any characters which do not appear in the examples; not even numbers nor list literals which use brackets []."
+
 
     val requestBodyJson = mapOf(
         "model" to "gpt-4o-mini",
         "messages" to listOf(
             mapOf(
                 "role" to "system",
-                "content" to "Regardless of user input, respond only with a single asterisk symbol."
+                "content" to "Respond with only the text requested and no explanation."
             ),
-            mapOf("role" to "user", "content" to "Hello.")
+            mapOf(
+                "role" to "user", "content" to "Below are a list of example programs, which apply a fixed set of " +
+                        "functions and values. Generate 100 additional examples which are similarly reasonable, that is, " +
+                        "they seem they might type check given the examples you've seen. They should be separated by " +
+                        "newlines. Then add an extra newline, then provide 100 examples which do NOT seem reasonable, " +
+                        "that is, they might perform an application which is ill-typed." + prompt +
+                        seeds.joinToString(prefix = "\n", separator = "\n")
+            )
             // TODO
         )
     )

@@ -15,7 +15,9 @@ private fun FlatApp.toSExpr(): SExpr =
 fun parseExamples(sexps: Collection<String>): Query = examplesFromSexps(sexps.map { SExprParser(it).parse() })
 
 fun parseContextAndExamples(contextExamples: Pair<String, List<String>>): Pair<Query, CheckingOracle> =
-    parseExamples(contextExamples.second.filter { it.isNotBlank() }) to CheckingOracle(assignment(contextExamples.first))
+    parseExamples(contextExamples.second.filter { it.isNotBlank() }) to oracleFromAssignment(contextExamples.first)
+
+fun oracleFromAssignment(context: String) = CheckingOracle(assignment(context))
 
 private fun assignment(context: String) = context.split('\t').associate {
     val assign = SExprParser(it).parse()
@@ -56,7 +58,7 @@ private fun SExpr.toSignedExample(): Triple<Boolean, Example, Set<String>> = whe
     }
 }
 
-private fun SExpr.toExpression(): Pair<Example, Set<String>> = when (this) {
+fun SExpr.toExpression(): Pair<Example, Set<String>> = when (this) {
     is SExpr.Atm -> {
         Pair(Name(this.value), setOf(this.value))
     }

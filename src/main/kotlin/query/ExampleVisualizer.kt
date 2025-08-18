@@ -6,7 +6,7 @@ import java.io.FileOutputStream
 import java.io.PrintWriter
 
 fun viz(query: Query, fileName: String = "examples") = ExampleVisualizer(query).viz(fileName)
-
+fun vizUndir(query: Query, fileName: String = "examples") = ExampleVisualizer(query).vizUndir(fileName)
 
 class ExampleVisualizer(val query: Query) {
     // TODO Wanna graph examples with subexprs or without?
@@ -23,6 +23,7 @@ class ExampleVisualizer(val query: Query) {
 
     private val inDegrees: MutableMap<String, Int> = query.names.associateWith { 0 }.toMutableMap()
     private val outDegrees: MutableMap<String, Int> = query.names.associateWith { 0 }.toMutableMap()
+    private val degrees: MutableMap<String, Int> = query.names.associateWith { 0 }.toMutableMap()
 
     private fun visualize(): String {
         dw.startGraph()
@@ -57,6 +58,34 @@ class ExampleVisualizer(val query: Query) {
         return out
     }
 
+    private fun visualizeUndirected(): String {
+        dw.startGraph()
+        val nodeLabels = query.names.associateWith { it.display() }
+
+        fun edges(app: App): List<Pair<String, String>> {
+            return app.names.flatMap { l ->
+                app.names.map { r ->
+                    degrees[l] = degrees[l]!! + 1
+                    degrees[r] = degrees[r]!! + 1
+                    Pair(nodeLabels[l]!!, nodeLabels[r]!!)
+                }
+            }
+        }
+
+        val allEdges = query.posExsBeforeSubexprs.filterIsInstance<App>().flatMap { edges(it) }.toSet().toList()
+        dw.writeEdges(allEdges, false, "uses")
+        dw.finishGraph()
+        val out = dw.output()
+        dw.restart()
+
+
+        degrees.entries.sortedByDescending { it.value }.forEach { (k, v) -> println("$k -> $v") }
+
+
+
+        return out
+    }
+
     fun writeDotOutput(contents: String, id: String) {
         val out = PrintWriter(FileOutputStream("results${File.separator}$id.dot"))
         out.println(contents)
@@ -64,4 +93,5 @@ class ExampleVisualizer(val query: Query) {
     }
 
     fun viz(fileID: String) = writeDotOutput(visualize(), fileID)
+    fun vizUndir(fileID: String) = writeDotOutput(visualizeUndirected(), fileID)
 }

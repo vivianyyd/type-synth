@@ -7,13 +7,11 @@ import query.Query
 import query.parseContextAndExamples
 import sta.SymTypeABuilder
 import stc.*
-import test.ConsTest
-import test.DictTest
-import test.HOFTest
-import test.IdTest
+import stc.Var
+import test.*
 import util.*
 
-const val ROUNDS = 4
+const val ROUNDS = 2
 const val REDO_ALL = false
 const val WRITE_INTERMEDIATE = REDO_ALL
 const val MAKE_OUTLINES = REDO_ALL
@@ -21,12 +19,12 @@ const val CALL_INIT_CVC = REDO_ALL
 const val CALL_SMALLER_CVC = REDO_ALL
 
 fun main() {
-    val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest)
+    val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
     val smallTest = ConsTest
-    val testFromFile = parseContextAndExamples(readExamples("toy"))
+    val testFromFile = parseContextAndExamples(readExamples("dictchain-renamed"))
 
-    val (query, oracle) = (smallTest.query to smallTest.oracle)
-//    val (query, oracle) = testFromFile
+//    val (query, oracle) = (smallTest.query to smallTest.oracle)
+    val (query, oracle) = testFromFile
 //    viz(query)
 
     if (MAKE_OUTLINES) clearOutlines()
@@ -34,13 +32,20 @@ fun main() {
     val TIME = System.currentTimeMillis()
 
     val outlines = outlines(query, oracle)
+//    println(outlines.joinToString(prefix = "Outlines: ", separator = "\n") { "${it.outline}" })
 
     println("Starting dependency analysis")
     val aritiesToDeps = aritiesToDeps(query, oracle, outlines)
-    vizDeps(listOf("cons"), aritiesToDeps)
+//    vizDeps(listOf("put", "chain"), aritiesToDeps)
 
     println("Searching for label sizes with CVC")
     val nodeSizes = assignLabelSizes(outlines, aritiesToDeps)
+
+    println("Search seeds:")
+    nodeSizes.map { (i, labelSizes) ->
+        print("$i")
+        printSearchSeed(labelSizes, outlines[i])
+    }
 
     println("Enumerating")
     val OK = mutableListOf<Map<String, ConcreteNode>>()
@@ -54,7 +59,7 @@ fun main() {
                 labelSizes,
                 aritiesToDeps[outlines[i].arities]!!,
                 oracle
-            ).callMe(3)
+            ).callMe(ROUNDS)
         )
     }
     println("Solutions:")
