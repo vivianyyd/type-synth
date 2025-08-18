@@ -55,9 +55,11 @@ class SymTypeCEnumerator(
         }
 
         val pass = query.posExamples.all { check(it) != null }
+        val canonicalized = mutableMapOf<Int, Int>()
+        var freshLabel = 0
         fun updateLs(t: SymTypeC): SymTypeC = when (t) {
             is F -> F(updateLs(t.left), updateLs(t.rite))
-            is L -> L(labelClasses.find(t.label))
+            is L -> L(canonicalized.getOrPut(labelClasses.find(t.label)) { freshLabel++ })
             is Var -> t
         }
 
