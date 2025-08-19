@@ -45,46 +45,46 @@ data class Var(val varId: Int, override val id: Int) : Node {
     override fun toString(): String = "$varId"
 }
 
-//fun Node.concretizations(): Sequence<ConcreteNode> = when (this) {
-//    is F -> if (params.isEmpty()) sequenceOf(ConcreteF(listOf(), listOf(this.id)))
-//    else if (params.any { it.any { it is Hole } }) emptySequence()
-//    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-//        .map { ConcreteF(it.map { it }, listOf()) }
-//    is L -> if (params.isEmpty()) sequenceOf(ConcreteL(this.label, listOf(), listOf(this.id)))
-//    else if (params.any { it.any { it is Hole } }) emptySequence()
-//    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-//        .map { ConcreteL(this.label, it.map { it }, listOf(this.id)) }
-//    is Var -> sequenceOf(ConcreteVar(this.varId, listOf(this.id)))
-//    is Hole -> emptySequence()
-//}
-
-fun Node.concretizations(trace: List<Int>, conflicts: List<List<Int>>): Sequence<ConcreteNode> = when (this) {
-    is F -> {
-        if (params.isEmpty()) sequenceOf(ConcreteF(listOf(), trace + this.id))
-        else if (params.any { it.any { it is Hole } }) emptySequence()
-        else nodeProduct(
-            params.map { it.asSequence().flatMap { it.concretizations(trace + this.id, conflicts) } },
-            trace + this.id,
-            conflicts
-        ).map { (children, tr) ->
-            ConcreteF(
-                children.toList(),
-                tr + this.id
-            )
-        }  // TODO traces in concrete nodes seem meaningless
-    }
-    is L -> {
-        if (params.isEmpty()) sequenceOf(ConcreteL(this.label, listOf(), trace + this.id))
-        else if (params.any { it.any { it is Hole } }) emptySequence()
-        else nodeProduct(
-            params.map { it.asSequence().flatMap { it.concretizations(trace + this.id, conflicts) } },
-            trace + this.id,
-            conflicts
-        ).map { (children, tr) -> ConcreteL(this.label, children.toList(), tr + this.id) }
-    }
-    is Var -> sequenceOf(ConcreteVar(this.varId, trace + this.id))
+fun Node.concretizations(): Sequence<ConcreteNode> = when (this) {
+    is F -> if (params.isEmpty()) sequenceOf(ConcreteF(listOf()))
+    else if (params.any { it.any { it is Hole } }) emptySequence()
+    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
+        .map { ConcreteF(it.map { it }) }
+    is L -> if (params.isEmpty()) sequenceOf(ConcreteL(this.label, listOf()))
+    else if (params.any { it.any { it is Hole } }) emptySequence()
+    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
+        .map { ConcreteL(this.label, it.map { it }) }
+    is Var -> sequenceOf(ConcreteVar(this.varId))
     is Hole -> emptySequence()
 }
+
+//fun Node.concretizations(trace: List<Int>, conflicts: List<List<Int>>): Sequence<ConcreteNode> = when (this) {
+//    is F -> {
+//        if (params.isEmpty()) sequenceOf(ConcreteF(listOf(), trace + this.id))
+//        else if (params.any { it.any { it is Hole } }) emptySequence()
+//        else nodeProduct(
+//            params.map { it.asSequence().flatMap { it.concretizations(trace + this.id, conflicts) } },
+//            trace + this.id,
+//            conflicts
+//        ).map { (children, tr) ->
+//            ConcreteF(
+//                children.toList(),
+//                tr + this.id
+//            )
+//        }  // TODO traces in concrete nodes seem meaningless
+//    }
+//    is L -> {
+//        if (params.isEmpty()) sequenceOf(ConcreteL(this.label, listOf(), trace + this.id))
+//        else if (params.any { it.any { it is Hole } }) emptySequence()
+//        else nodeProduct(
+//            params.map { it.asSequence().flatMap { it.concretizations(trace + this.id, conflicts) } },
+//            trace + this.id,
+//            conflicts
+//        ).map { (children, tr) -> ConcreteL(this.label, children.toList(), tr + this.id) }
+//    }
+//    is Var -> sequenceOf(ConcreteVar(this.varId, trace + this.id))
+//    is Hole -> emptySequence()
+//}
 
 val vars = mutableMapOf<ConcreteNode, Set<Int>>()
 fun ConcreteNode.vars(): Set<Int> = vars.getOrPut(this) {
@@ -209,26 +209,26 @@ class ConcreteEnumerator(
         val possTys = (concreteOptions as Map<String, Node>).map { (n, t) ->
             when (t) {
                 is F -> {
-                    if (t.params.isEmpty()) t.concretizations(listOf(t.id), conflicts)
+                    if (t.params.isEmpty()) t.concretizations()//(listOf(t.id), conflicts)
                     // TODO simplify this with concretizations()
                     else lazyCartesianProduct(t.params.mapIndexed { i, options ->
-                        options.flatMap { it.concretizations(listOf(t.id), conflicts) }.filter { node ->
+                        options.flatMap { it.concretizations()/*(listOf(t.id), conflicts)*/ }.filter { node ->
                             if (constraints[n]!![i] is MustContainVariables)
                                 (constraints[n]!![i] as MustContainVariables).vars.all {
                                     (oldVarToNewVar(n, it.first, it.second)) in node.vars()
                                 }
                             else true
                         }
-                    }).map { ConcreteF(it.toList(), it.flatMap { it.ids }) }
+                    }).map { ConcreteF(it.toList()) }
                 }
-                is L, is Var -> t.concretizations(listOf(t.id), conflicts)
+                is L, is Var -> t.concretizations()//(listOf(t.id), conflicts)
                 is Hole -> throw Exception("Can't happen")
             }
         }
-//        return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }
-//            .filter { check(it, mutableListOf()) }.toSet()
-        return nodeProduct(possTys, listOf(), conflicts).map { query.names.zip(it.first).toMap() }
-            .filter { check(it, conflicts) }.toSet()
+        return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }
+            .filter { check(it/*, mutableListOf()*/) }.toSet()
+//        return nodeProduct(possTys, listOf(), conflicts).map { query.names.zip(it.first).toMap() }
+//            .filter { check(it, conflicts) }.toSet()
     }
 
     // TODO will this be faster if we store a frontier instead of iterating down the tree every round?
@@ -260,8 +260,8 @@ class ConcreteEnumerator(
         if (!t.hasVar) return t
         return applyBinding.getOrPut(Triple(t, varId, sub)) {
             when (t) {
-                is ConcreteL -> ConcreteL(t.label, t.params.map { applyBinding(it, varId, sub) }, t.ids)
-                is ConcreteF -> ConcreteF(t.params.map { applyBinding(it, varId, sub) }, t.ids)
+                is ConcreteL -> ConcreteL(t.label, t.params.map { applyBinding(it, varId, sub) })
+                is ConcreteF -> ConcreteF(t.params.map { applyBinding(it, varId, sub) })
                 is ConcreteVar -> if (t.varId == varId) sub else t  // TODO t should never be a binding variable and hit this case; reason about it a bit more
             }
         }
@@ -337,13 +337,13 @@ class ConcreteEnumerator(
      * @modifies [labelClasses]
      */
     fun apply(fn: ConcreteF, arg: ConcreteNode): ConcreteNode? = unify(fn.params.first(), arg)?.let {
-        val out = if (fn.params.size == 2) fn.params[1] else ConcreteF(fn.params.drop(1), fn.ids)
+        val out = if (fn.params.size == 2) fn.params[1] else ConcreteF(fn.params.drop(1))
         applyBindings(out, it)
     }
 
     fun newApply(fn: ConcreteF, arg: ConcreteNode): ConcreteNode? {
         val result = unify(fn.params.first(), arg)?.let {
-            val out = if (fn.params.size == 2) fn.params[1] else ConcreteF(fn.params.drop(1), fn.ids)
+            val out = if (fn.params.size == 2) fn.params[1] else ConcreteF(fn.params.drop(1))
             applyBindings(out, it)
         }
         return result
@@ -359,22 +359,22 @@ class ConcreteEnumerator(
     }
 
     private var checked = 0
-    fun check(context: Map<String, ConcreteNode>, conflicts: MutableList<List<Int>>): Boolean {
-        fun fail(example: Example) {
-            conflicts.add(context.filter { it.key in example.names }.values.flatMap { it.ids }.toSet().toList())
-        }
+    fun check(context: Map<String, ConcreteNode>/*, conflicts: MutableList<List<Int>>*/): Boolean {
+//        fun fail(example: Example) {
+//            conflicts.add(context.filter { it.key in example.names }.values.flatMap { it.ids }.toSet().toList())
+//        }
 
         return query.posExamples.all {
             checked++
             if (checked == 30000000) TODO()
             val ty = type(context, it)
-            if (ty == null) fail(it)
+//            if (ty == null) fail(it)
             ty != null
         } && query.negExamples.all {
             checked++
             if (checked == 30000000) TODO()
             val ty = type(context, it)
-            if (ty != null) fail(it)
+//            if (ty != null) fail(it)
             ty == null
         }
     }
@@ -385,20 +385,20 @@ typealias Binding = Pair<Int, ConcreteNode>
 /** A concrete type. */
 sealed interface ConcreteNode {
     val hasVar: Boolean
-    val ids: List<Int>
+//    val ids: List<Int>
 }
 
-data class ConcreteL(val label: Int, val params: List<ConcreteNode>, override val ids: List<Int>) : ConcreteNode {
+data class ConcreteL(val label: Int, val params: List<ConcreteNode>) : ConcreteNode {
     override val hasVar = params.any { it.hasVar }
     override fun toString(): String = "L$label[${params.joinToString(separator = ",")}]"
 }
 
-data class ConcreteF(val params: List<ConcreteNode>, override val ids: List<Int>) : ConcreteNode {
+data class ConcreteF(val params: List<ConcreteNode>) : ConcreteNode {
     override val hasVar = params.any { it.hasVar }
     override fun toString(): String = params.joinToString(separator = "->") { if (it is ConcreteF) "($it)" else "$it" }
 }
 
-data class ConcreteVar(val varId: Int, override val ids: List<Int>) : ConcreteNode {
+data class ConcreteVar(val varId: Int) : ConcreteNode {
     override val hasVar = true
     override fun toString(): String = "$varId"
 }

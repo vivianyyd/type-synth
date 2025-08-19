@@ -1,7 +1,5 @@
 package util
 
-import concreteenumerator.ConcreteNode
-
 fun <T> equivalenceClasses(elems: Collection<T>, equals: (T, T) -> Boolean): Set<Set<T>> {
     val result = mutableSetOf<MutableSet<T>>()  // Invariant: No element of the set is empty
     elems.forEach { elem ->
@@ -89,24 +87,24 @@ fun <T> lazySeqCartesianProduct(choices: List<Sequence<T>>): Sequence<List<T>> {
 /** [trace]: The ids of nodes from root to this product.
  * @yields pairs of child choices and the traces associated with them
  * */
-fun nodeProduct(
-    ports: List<Sequence<ConcreteNode>>,
-    trace: List<Int>,
-    conflicts: List<List<Int>>
-): Sequence<Pair<List<ConcreteNode>, List<Int>>> {
-    fun conflict(trace: List<Int>, conflicts: List<List<Int>>) = conflicts.any { it.all { it in trace } }
-
-    if (ports.isEmpty() || conflict(trace, conflicts)) return emptySequence()
-    return ports.fold(sequenceOf(emptyList<ConcreteNode>() to trace)) { acc, port ->
-        acc.flatMap { (prevSiblings, tr) ->
-            port.mapNotNull { option ->
-                val tra = (tr + option.ids).toSet().toList()
-                if (conflict(tra, conflicts)) null
-                else (prevSiblings + option) to tra
-            }
-        }
-    }
-}
+//fun nodeProduct(
+//    ports: List<Sequence<ConcreteNode>>,
+//    trace: List<Int>,
+//    conflicts: List<List<Int>>
+//): Sequence<Pair<List<ConcreteNode>, List<Int>>> {
+//    fun conflict(trace: List<Int>, conflicts: List<List<Int>>) = conflicts.any { it.all { it in trace } }
+//
+//    if (ports.isEmpty() || conflict(trace, conflicts)) return emptySequence()
+//    return ports.fold(sequenceOf(emptyList<ConcreteNode>() to trace)) { acc, port ->
+//        acc.flatMap { (prevSiblings, tr) ->
+//            port.mapNotNull { option ->
+//                val tra = (tr + option.ids).toSet().toList()
+//                if (conflict(tra, conflicts)) null
+//                else (prevSiblings + option) to tra
+//            }
+//        }
+//    }
+//}
 
 fun <T> naryCartesianProduct(sets: List<List<T>>): Set<List<T>> {
     if (sets.isEmpty()) return setOf()
