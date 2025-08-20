@@ -165,41 +165,39 @@ class ConcreteEnumerator(
         ), nextId++, constraint
     )
 
-    fun callMe(maxIterations: Int): List<Map<String, ConcreteNode>> {
-        // TODO Decide how to pick how many examples. 1/5? 20?
-        fun random(l: List<Example>) = l.shuffled().subList(0, min(10 + query.names.size, l.size)).toMutableList()
-        fun smallest(l: List<Example>) =
-            l.sortedBy { it.size() }.subList(0, min(10 + query.names.size, l.size)).toMutableList()
+    // TODO How to pick number of examples. 1/5? 20?
+    private fun firstN(l: List<Example>) = l.subList(0, min(10 + query.names.size, l.size)).toMutableList()
+    private fun random(l: Collection<Example>) = firstN(l.shuffled())
+    private fun smallest(l: Collection<Example>) = firstN(l.sortedBy { it.size() })
 
-        val pos = smallest(query.posExamples.toList())
-        val neg = smallest(query.negExamples.toList())
+    private val pos = smallest(query.posExamples)
+    private val neg = smallest(query.negExamples)
 
+    fun step(): List<Map<String, ConcreteNode>> {
         val solutions = mutableListOf<Map<String, ConcreteNode>>()
-        for (i in 1..maxIterations) {
-            if (solutions.isNotEmpty()) break  // Don't need any deeper solutions
-            println("Depth $i")
-            state.forEach { (f, root) ->
-                if (root is F) root.params.forEachIndexed { i, options ->
-                    options.forEach { it.enumerate(f, i) }  // assumes no top-level holes, a fair assumption...
-                }
-                else root.enumerate(f, 0)
+
+        state.forEach { (f, root) ->
+            if (root is F) root.params.forEachIndexed { i, options ->
+                options.forEach { it.enumerate(f, i) }  // assumes no top-level holes, a fair assumption...
             }
-            // Original, no CEGIS
+            else root.enumerate(f, 0)
+        }
+        // Original, no CEGIS
 //            val contexts = contexts(listOf(), listOf())
 //            if (contexts.isNotEmpty()) return contexts
 //            println(state)
 
-            val contexts = contexts(pos, neg)
-            if (contexts.isNotEmpty()) {
-                contexts.forEach {
-                    println("Passed subset of examples: $it")
-                    val failed = checkAll(it)
-                    println(if (failed == null) "It's perfect" else if (failed.second) "Pos counter example" else "Neg counter example")
-                    if (failed == null) solutions.add(it)  // accumulate all valid contexts of this depth
-                    else (if (failed.second) pos else neg).add(failed.first)
-                }
+        val contexts = contexts(pos, neg)
+        if (contexts.isNotEmpty()) {
+            contexts.forEach {
+//                println("Passed subset of examples: $it")
+                val failed = checkAll(it)
+//                println(if (failed == null) "It's perfect" else if (failed.second) "Pos counter example" else "Neg counter example")
+                if (failed == null) solutions.add(it)  // accumulate all valid contexts of this depth
+                else (if (failed.second) pos else neg).add(failed.first)
             }
         }
+
         return solutions
     }
 

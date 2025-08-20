@@ -11,8 +11,8 @@ import stc.Var
 import test.*
 import util.*
 
-const val ROUNDS = 2
-const val REDO_ALL = true
+const val MAX_ITERATIONS = 2
+const val REDO_ALL = false
 const val WRITE_INTERMEDIATE = REDO_ALL
 const val MAKE_OUTLINES = REDO_ALL
 const val CALL_CVC = REDO_ALL
@@ -22,8 +22,8 @@ fun main() {
     val smallTest = DictTest
     val testFromFile = parseContextAndExamples(readExamples("dictchain-nosubexprs"))
 
-    val (query, oracle) = (smallTest.query to smallTest.oracle)
-//    val (query, oracle) = testFromFile
+//    val (query, oracle) = (smallTest.query to smallTest.oracle)
+    val (query, oracle) = testFromFile
 //    viz(query)
 
     if (MAKE_OUTLINES) clearOutlines()
@@ -37,29 +37,34 @@ fun main() {
 //    vizDeps(listOf("put", "chain"), aritiesToDeps)
 
     println("Searching for label sizes with CVC")
-    val nodeSizes = assignLabelSizes(outlines, aritiesToDeps)
+    val candidateToLabelSizes = assignLabelSizes(outlines, aritiesToDeps)
 
     println("Search seeds:")
-    nodeSizes.map { (i, labelSizes) ->
-        print("$i")
-        printSearchSeed(labelSizes, outlines[i])
+    candidateToLabelSizes.map { (candidate, lSizes) ->
+        print("$candidate")
+        printSearchSeed(lSizes, outlines[candidate])
     }
 
     println("Enumerating")
     val OK = mutableListOf<Map<String, ConcreteNode>>()
-    nodeSizes.map { (i, labelSizes) ->
+
+    val enumerators = candidateToLabelSizes.map { (candidate, lSizes) ->
         println("\n\n")
-        printSearchSeed(labelSizes, outlines[i])
-        OK.addAll(
-            ConcreteEnumerator(
-                query,
-                outlines[i],
-                labelSizes,
-                aritiesToDeps[outlines[i].arities]!!,
-                oracle
-            ).callMe(ROUNDS)
+        printSearchSeed(lSizes, outlines[candidate])
+        ConcreteEnumerator(
+            query,
+            outlines[candidate],
+            lSizes,
+            aritiesToDeps[outlines[candidate].arities]!!,
+            oracle
         )
     }
+    for (i in 1..MAX_ITERATIONS) {
+        if (OK.isNotEmpty()) break
+        println("Depth $i")
+        enumerators.forEach { OK.addAll(it.step()) }
+    }
+
     println("Solutions:")
     OK.forEach { println(it.toList().joinToString(separator = "\n", postfix = "\n---\n")) }
     println("${OK.size} satisfying contexts")
