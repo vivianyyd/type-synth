@@ -6,6 +6,7 @@ import stc.Projection
 import std.SymTypeDFlat
 import std.flatten
 import util.*
+import kotlin.math.min
 
 sealed interface Node {
     val constraint: DependencyConstraint?
@@ -107,7 +108,7 @@ class ConcreteEnumerator(
     private val state: MutableMap<String, Node> = mutableMapOf()
     private val variablesInScope: Map<String, MutableList<Int>> = query.names.associateWith { mutableListOf() }
     private var nextVariable = 0
-    private val labels = inLabels.mapKeys { (l, _) -> std.L(l.label) }
+    private val labels = inLabels.mapKeys { (l, _) -> l.label }
     private var nextId = 0
     private val constraints = constraints(contextOutline, dependencies)
     private val mayHaveFresh = dependencies.all.mapValues {
@@ -124,7 +125,7 @@ class ConcreteEnumerator(
                 is std.F -> F(
                     (this.args + this.rite).map { mutableListOf(it.toNode(constraint)) }, nextId++, constraint
                 )
-                is std.L -> L(this.label, labels[this]!!, nextId++, constraint)
+                is std.L -> L(this.label, labels[this.label]!!, nextId++, constraint)
 
                 is std.Var -> Var(oldVarsToNewIds.getOrPut(this.vId to this.tId) { nextVariable++ }, nextId++)
             }
@@ -157,7 +158,7 @@ class ConcreteEnumerator(
         }
         ContainsNoVariables -> listOf()
         is ContainsOnly -> listOf(Var(oldVarToNewVar(name, constraint.vId, constraint.tId), nextId++))
-    } + labels.map { L(it.key.label, it.value, nextId++, constraint) } + F(
+    } + labels.map { L(it.key, it.value, nextId++, constraint) } + F(
         listOf(
             mutableListOf(Hole(constraint)),
             mutableListOf(Hole(constraint))
@@ -166,13 +167,16 @@ class ConcreteEnumerator(
 
     fun callMe(maxIterations: Int): List<Map<String, ConcreteNode>> {
         // TODO Decide how to pick how many examples. 1/5? 20?
-        fun random(l: List<Example>) = l.shuffled().subList(0, l.size / 5).toMutableList()
-        fun smallest(l: List<Example>) = l.sortedBy { it.size() }.subList(0, 10 + query.names.size).toMutableList()
+        fun random(l: List<Example>) = l.shuffled().subList(0, min(10 + query.names.size, l.size)).toMutableList()
+        fun smallest(l: List<Example>) =
+            l.sortedBy { it.size() }.subList(0, min(10 + query.names.size, l.size)).toMutableList()
+
         val pos = smallest(query.posExamples.toList())
         val neg = smallest(query.negExamples.toList())
 
         val solutions = mutableListOf<Map<String, ConcreteNode>>()
         for (i in 1..maxIterations) {
+            if (solutions.isNotEmpty()) break  // Don't need any deeper solutions
             println("Depth $i")
             state.forEach { (f, root) ->
                 if (root is F) root.params.forEachIndexed { i, options ->
@@ -191,7 +195,7 @@ class ConcreteEnumerator(
                     println("Passed subset of examples: $it")
                     val failed = checkAll(it)
                     println(if (failed == null) "It's perfect" else if (failed.second) "Pos counter example" else "Neg counter example")
-                    if (failed == null) solutions.add(it)  // TODO accumulate all valid contexts
+                    if (failed == null) solutions.add(it)  // accumulate all valid contexts of this depth
                     else (if (failed.second) pos else neg).add(failed.first)
                 }
             }
