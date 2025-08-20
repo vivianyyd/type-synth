@@ -47,6 +47,23 @@ fun readInitialCVCresults(): List<Pair<Int, String>> =
             else null
         }.sortedBy { it.first }
 
+fun readSmallestCVCresults(): List<Pair<Int, String>> {
+    val initOutputs = readInitialCVCresults()
+    val smallerOutputs =
+        File(join("src", "main", "python", "output")).listFiles()!!.filter { it.isFile && "smaller" in it.name }
+            .eqClasses() { f1, f2 ->
+                f1.name.substringBeforeLast("-smaller") == f2.name.substringBeforeLast("-smaller")
+            }.mapNotNull {
+                val bestSoln = it.maxByOrNull {
+                    it.name.substringAfterLast("-smaller").substringBeforeLast(".py").toInt()
+                }!! // equivalenceClasses() guarantees nonemptiness of returned classes
+                if (bestSoln.isFile) bestSoln.name.substringAfter("cvc-").substringBeforeLast("-smaller")
+                    .toInt() to bestSoln.readText()
+                else null
+            }.sortedBy { it.first }
+    return (smallerOutputs + initOutputs.filter { init -> smallerOutputs.none { smaller -> init.first == smaller.first } }).sortedBy { it.first }
+}
+
 fun readCVC(name: String): String = File(join("src", "main", "python", "output", "cvc-$name.py")).readText()
 
 fun writeProfiling(output: String, testName: String) = write(profilingResultPath(testName), output)

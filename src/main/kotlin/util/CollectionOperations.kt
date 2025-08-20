@@ -16,6 +16,8 @@ fun <T> equivalenceClasses(elems: Collection<T>, equals: (T, T) -> Boolean): Set
     return result
 }
 
+fun <T> Collection<T>.eqClasses(equals: (T, T) -> Boolean) = equivalenceClasses(this, equals)
+
 fun main() {
 //    val s = listOf(0, 1, 2, 3)
 //    val repetitions = 3

@@ -15,24 +15,22 @@ const val ROUNDS = 2
 const val REDO_ALL = false
 const val WRITE_INTERMEDIATE = REDO_ALL
 const val MAKE_OUTLINES = REDO_ALL
-const val CALL_INIT_CVC = REDO_ALL
-const val CALL_SMALLER_CVC = REDO_ALL
+const val CALL_CVC = REDO_ALL
 
 fun main() {
     val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
     val smallTest = ConsTest
-    val testFromFile = parseContextAndExamples(readExamples("dictchain-renamed"))
+    val testFromFile = parseContextAndExamples(readExamples("dictchain-nosubexprs"))
 
 //    val (query, oracle) = (smallTest.query to smallTest.oracle)
     val (query, oracle) = testFromFile
 //    viz(query)
 
     if (MAKE_OUTLINES) clearOutlines()
-    if (CALL_INIT_CVC || CALL_SMALLER_CVC) clearCVC()
+    if (CALL_CVC) clearCVC()
     val TIME = System.currentTimeMillis()
 
     val outlines = outlines(query, oracle)
-//    println(outlines.joinToString(prefix = "Outlines: ", separator = "\n") { "${it.outline}" })
 
     println("Starting dependency analysis")
     val aritiesToDeps = aritiesToDeps(query, oracle, outlines)
@@ -94,8 +92,12 @@ private fun assignLabelSizes(
 ): Map<Int, Map<L, Int>> {
     val cvcGens = outlines.withIndex()
         .associate { (i, outline) -> i to LabelConstraintGenerator(outline, aritiesToDeps[outline.arities]!!) }
-    cvcGens.forEach { (i, gen) -> if (CALL_INIT_CVC) callCVC(gen.initialQuery(), "$i") }
-    return readInitialCVCresults().associate { (i, contents) -> i to minLabelSizes(i, contents, cvcGens[i]!!) }
+    if (CALL_CVC) {
+        cvcGens.forEach { (i, gen) -> callCVC(gen.initialQuery(), "$i") }
+        return readInitialCVCresults().associate { (i, contents) -> i to minLabelSizes(i, contents, cvcGens[i]!!) }
+    } else {
+        return readSmallestCVCresults().associate { (i, contents) -> i to CVCParser(contents, cvcGens[i]!!).sizes }
+    }
 }
 
 private fun minLabelSizes(testId: Int, prevSol: String, cvcGenerator: LabelConstraintGenerator): Map<L, Int> {
@@ -107,7 +109,7 @@ private fun minLabelSizes(testId: Int, prevSol: String, cvcGenerator: LabelConst
         val parser = CVCParser(previousSolution, cvcGenerator)
         val testName = "$testId-smaller${counter++}"
         val cont =
-            if (/*CALL_SMALLER_CVC && */parser.sizes.isNotEmpty()) // TODO FIXME if the flag is off we don't read previous results properly
+            if (parser.sizes.isNotEmpty()) // TODO FIXME if the flag is off we don't read previous results properly
                 callCVC(cvcGenerator.smallerQuery(parser.sizes), testName)
             else false
         if (cont) {
