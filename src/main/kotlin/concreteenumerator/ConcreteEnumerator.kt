@@ -37,6 +37,7 @@ data class L(
 data class F(
     val params: List<MutableList<Node>>, override val id: Int, override val constraint: DependencyConstraint?
 ) : Node {
+    var hit = false
     override fun toString(): String = params.joinToString(separator = "->")
 }
 
@@ -49,11 +50,11 @@ fun Node.concretizations(): Sequence<ConcreteNode> = when (this) {
     is F -> if (params.isEmpty()) sequenceOf(ConcreteF(listOf()))
     else if (params.any { it.any { it is Hole } }) emptySequence()
     else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-        .map { ConcreteF(it.map { it }) }
+        .map { ConcreteF(it.toList()) }
     is L -> if (params.isEmpty()) sequenceOf(ConcreteL(this.label, listOf()))
     else if (params.any { it.any { it is Hole } }) emptySequence()
     else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-        .map { ConcreteL(this.label, it.map { it }) }
+        .map { ConcreteL(this.label, it.toList()) }
     is Var -> sequenceOf(ConcreteVar(this.varId))
     is Hole -> emptySequence()
 }
@@ -107,7 +108,6 @@ class ConcreteEnumerator(
     private val variablesInScope: Map<String, MutableList<Int>> = query.names.associateWith { mutableListOf() }
     private var nextVariable = 0
     private val labels = inLabels.mapKeys { (l, _) -> std.L(l.label) }
-    private val frontier: MutableList<Node> = mutableListOf()
     private var nextId = 0
     private val constraints = constraints(contextOutline, dependencies)
     private val mayHaveFresh = dependencies.all.mapValues {
@@ -164,7 +164,14 @@ class ConcreteEnumerator(
         ), nextId++, constraint
     )
 
-    fun callMe(maxIterations: Int): Set<Map<String, ConcreteNode>> {
+    fun callMe(maxIterations: Int): List<Map<String, ConcreteNode>> {
+        // TODO Decide how to pick how many examples. 1/5? 20?
+        fun random(l: List<Example>) = l.shuffled().subList(0, l.size / 5).toMutableList()
+        fun smallest(l: List<Example>) = l.sortedBy { it.size() }.subList(0, 10 + query.names.size).toMutableList()
+        val pos = smallest(query.posExamples.toList())
+        val neg = smallest(query.negExamples.toList())
+
+        val solutions = mutableListOf<Map<String, ConcreteNode>>()
         for (i in 1..maxIterations) {
             println("Depth $i")
             state.forEach { (f, root) ->
@@ -173,10 +180,23 @@ class ConcreteEnumerator(
                 }
                 else root.enumerate(f, 0)
             }
-            val contexts = contexts()
-            if (contexts.isNotEmpty()) return contexts
+            // Original, no CEGIS
+//            val contexts = contexts(listOf(), listOf())
+//            if (contexts.isNotEmpty()) return contexts
+//            println(state)
+
+            val contexts = contexts(pos, neg)
+            if (contexts.isNotEmpty()) {
+                contexts.forEach {
+                    println("Passed subset of examples: $it")
+                    val failed = checkAll(it)
+                    println(if (failed == null) "It's perfect" else if (failed.second) "Pos counter example" else "Neg counter example")
+                    if (failed == null) solutions.add(it)  // TODO accumulate all valid contexts
+                    else (if (failed.second) pos else neg).add(failed.first)
+                }
+            }
         }
-        return setOf()
+        return solutions
     }
 
     private fun Node.canConcretize(): Boolean = when (this) {
@@ -197,14 +217,16 @@ class ConcreteEnumerator(
         is Hole -> null
     }
 
-    private fun contexts(): Set<Map<String, ConcreteNode>> {
+    private fun contexts(pos: List<Example>, neg: List<Example>): Set<Map<String, ConcreteNode>> {
         // TODO skip fresh variables if they can't be there.
         //  Rightmost param of F can't be fresh even if it's a HOF and parent allows - think about this more
         //  If last param is a label L<a->b> don't want to erroneously say a can be fresh just bc it's on the left
         val concreteOptions = state.mapValues { it.value.holelessCopy() }
         if (concreteOptions.values.any { it == null }) return emptySet()
 
-        val conflicts = mutableListOf<List<Int>>()
+//        println("Concrete: $concreteOptions")
+//        println(query.names)  // TODO WHY ARE THESE IN A DIFFERENT ORDER
+//        val conflicts = mutableListOf<List<Int>>()
 
         val possTys = (concreteOptions as Map<String, Node>).map { (n, t) ->
             when (t) {
@@ -225,27 +247,35 @@ class ConcreteEnumerator(
                 is Hole -> throw Exception("Can't happen")
             }
         }
-        return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }
-            .filter { check(it/*, mutableListOf()*/) }.toSet()
+//        return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }
+//            .filter { check(it/*, mutableListOf()*/) }.toSet()  // original, no CEGIS
+
+        return lazySeqCartesianProduct(possTys).map { concreteOptions.keys.zip(it).toMap() }.filter {
+            checkOnly(it, pos, neg)
+        }.toSet()
+
 //        return nodeProduct(possTys, listOf(), conflicts).map { query.names.zip(it.first).toMap() }
-//            .filter { check(it, conflicts) }.toSet()
+//            .filter { check(it, conflicts) }.toSet()  // attempt at skipping conflicts
     }
 
-    // TODO will this be faster if we store a frontier instead of iterating down the tree every round?
-    fun Node.enumerate(name: String, param: Int): Unit = when (this) {
+    fun Node.enumerate(name: String, param: Int, inLabel: Boolean = false): Unit = when (this) {
         is Hole -> throw Exception("Should be handled by parent")
-        is F -> params.forEachIndexed { i, options ->
-            if (options.removeAll { it is Hole }) {
-                options.addAll(filler(name, param, this.constraint))
+        is F -> params.forEach { options ->
+            if (!inLabel || this.hit) {  // Hacky way to delay functions under labels
+                if (options.removeAll { it is Hole }) {
+                    options.addAll(filler(name, param, this.constraint))
+                } else {
+                    options.forEach { it.enumerate(name, param) }
+                }
             } else {
-                options.forEach { it.enumerate(name, param) }
+                this.hit = true
             }
         }
         is L -> params.forEach { options ->
             if (options.removeAll { it is Hole }) {
                 options.addAll(filler(name, param, this.constraint))
             } else {
-                options.forEach { it.enumerate(name, param) }
+                options.forEach { it.enumerate(name, param, true) }
             }
         }
         is Var -> {}
@@ -358,21 +388,29 @@ class ConcreteEnumerator(
         }
     }
 
-    private var checked = 0
+    private fun checkAll(context: Map<String, ConcreteNode>): Pair<Example, Boolean>? {
+        val ctrPosEx = query.posExamples.firstOrNull { type(context, it) == null }
+        if (ctrPosEx != null) return ctrPosEx to true
+        val ctrNegEx = query.negExamples.firstOrNull { type(context, it) != null }
+        if (ctrNegEx != null) return ctrNegEx to false
+        return null
+    }
+
+    private fun checkOnly(
+        context: Map<String, ConcreteNode>,
+        pos: Collection<Example>,
+        neg: Collection<Example>
+    ): Boolean = pos.all { type(context, it) != null } && neg.all { type(context, it) == null }
+
     fun check(context: Map<String, ConcreteNode>/*, conflicts: MutableList<List<Int>>*/): Boolean {
 //        fun fail(example: Example) {
 //            conflicts.add(context.filter { it.key in example.names }.values.flatMap { it.ids }.toSet().toList())
 //        }
-
         return query.posExamples.all {
-            checked++
-            if (checked == 30000000) TODO()
             val ty = type(context, it)
 //            if (ty == null) fail(it)
             ty != null
         } && query.negExamples.all {
-            checked++
-            if (checked == 30000000) TODO()
             val ty = type(context, it)
 //            if (ty != null) fail(it)
             ty == null
