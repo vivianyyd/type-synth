@@ -1,4 +1,4 @@
-package stbold
+package stbsketchout
 
 /** Symbolic types with annotations on variables: L/F/VB/VR/VL */
 sealed interface OldSymTypeB {

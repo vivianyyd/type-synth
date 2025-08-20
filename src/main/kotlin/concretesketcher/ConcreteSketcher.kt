@@ -4,7 +4,7 @@ import query.App
 import query.Example
 import query.Name
 import query.Query
-import stbold.*
+import stbsketchout.*
 import util.EqualityNewOracle
 import util.SketchWriter
 import java.lang.Integer.max

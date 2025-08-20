@@ -1,4 +1,4 @@
-package stbold
+package stbsketchout
 
 import query.App
 import query.Example

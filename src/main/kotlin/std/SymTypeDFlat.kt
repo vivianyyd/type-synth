@@ -2,7 +2,7 @@ package std
 
 import stc.SymTypeC
 
-/** Symbolic types with annotations on variables and labels: F/L with label/VB/VR/VL */
+/** Symbolic types with annotations on variables and labels: F/L with label/Var */
 sealed interface SymTypeDFlat
 sealed interface NotF : SymTypeDFlat
 
