@@ -11,10 +11,20 @@ import kotlin.math.min
 sealed interface Node {
     val constraint: DependencyConstraint?
     val id: Int
+
+    /** parent in the tree, unless we are at the root of a *parameter*. */
+    val parent: Node?
+
+    /** The type of the parameter containing this node is not uniquely determined by concretizing this node */
+    val paramInvolvesOtherChoices: Boolean
 }
 
 // These used to be classes instead of data classes but I don't really remember why
-data class Hole(override val constraint: DependencyConstraint?) : Node {
+data class Hole(
+    override val parent: Node?,
+    override val constraint: DependencyConstraint?,
+    override val paramInvolvesOtherChoices: Boolean
+) : Node {
     override val id = Int.MAX_VALUE  // Not sure about this
     override fun toString(): String = "_"
 }
@@ -22,27 +32,50 @@ data class Hole(override val constraint: DependencyConstraint?) : Node {
 data class L(
     val label: Int,
     val params: List<MutableList<Node>>,
+    override val parent: Node?,
     override val id: Int,
-    override val constraint: DependencyConstraint?
+    override val constraint: DependencyConstraint?,
+    override val paramInvolvesOtherChoices: Boolean
 ) : Node {
-    constructor(label: Int, numParams: Int, id: Int, constraint: DependencyConstraint? = null) : this(
+    constructor(
+        label: Int,
+        numParams: Int,
+        parent: Node?,
+        id: Int,
+        constraint: DependencyConstraint? = null,
+        otherChoices: Boolean
+    ) : this(
         label,
-        (0 until numParams).map { mutableListOf(Hole(constraint)) },
+        (0 until numParams).map { mutableListOf() },
+        parent,
         id,
-        constraint
-    )
+        constraint,
+        otherChoices
+    ) {
+        params.forEach { it.add(Hole(this, constraint, otherChoices || numParams > 1)) }
+    }
 
-    override fun toString(): String = "L$label(${params.joinToString(separator = ",")})"
+    override fun toString(): String =
+        "${if (!paramInvolvesOtherChoices) "***" else ""}L$label(${params.joinToString(separator = ",")})"
 }
 
 data class F(
-    val params: List<MutableList<Node>>, override val id: Int, override val constraint: DependencyConstraint?
+    val params: List<MutableList<Node>>,
+    override val parent: Node?,
+    override val id: Int,
+    override val constraint: DependencyConstraint?,
+    override val paramInvolvesOtherChoices: Boolean
 ) : Node {
     var hit = false
     override fun toString(): String = params.joinToString(separator = "->")
 }
 
-data class Var(val varId: Int, override val id: Int) : Node {
+data class Var(
+    val varId: Int,
+    override val parent: Node?,
+    override val id: Int,
+    override val paramInvolvesOtherChoices: Boolean
+) : Node {
     override val constraint: DependencyConstraint? = null
     override fun toString(): String = "$varId"
 }
@@ -71,23 +104,48 @@ class ConcreteEnumerator(
             val constrs = constraints[name]!!
 
             val oldVarsToNewIds = mutableMapOf<Pair<Int, Int>, Int>()
-            fun SymTypeDFlat.toNode(constraint: DependencyConstraint?): Node = when (this) {
-                is std.F -> F(
-                    (this.args + this.rite).map { mutableListOf(it.toNode(constraint)) }, nextId++, constraint
-                )
-                is std.L -> L(this.label, labels[this.label]!!, nextId++, constraint)
+            fun SymTypeDFlat.toNode(parent: Node?, constraint: DependencyConstraint?, otherChoices: Boolean): Node =
+                when (this) {
+                    is std.F -> {
+                        val newNode = F(
+                            (this.args + this.rite).map { mutableListOf() },
+                            parent,
+                            nextId++,
+                            constraint,
+                            otherChoices
+                        )
+                        (this.args + this.rite).zip(newNode.params)
+                            .forEach { (arg, newParams) -> newParams.add(arg.toNode(newNode, constraint, true)) }
+                        newNode
+                    }
+                    is std.L -> L(this.label, labels[this.label]!!, parent, nextId++, constraint, otherChoices)
 
-                is std.Var -> Var(oldVarsToNewIds.getOrPut(this.vId to this.tId) { nextVariable++ }, nextId++)
-            }
+                    is std.Var -> Var(
+                        oldVarsToNewIds.getOrPut(this.vId to this.tId) { nextVariable++ },
+                        parent,
+                        nextId++,
+                        otherChoices
+                    )
+                }
 
             val outline = ty.flatten()
             state[name] = when (outline) {
                 is std.F -> F(
-                    (outline.args + outline.rite).mapIndexed { i, a -> mutableListOf(a.toNode(constrs[i])) },
+                    (outline.args + outline.rite).mapIndexed { i, a ->
+                        mutableListOf(
+                            a.toNode(
+                                null,
+                                constrs[i],
+                                false
+                            )
+                        )
+                    },
+                    null,
                     nextId++,
-                    null
+                    null,
+                    false
                 )
-                is std.L, is std.Var -> outline.toNode(constrs[0])
+                is std.L, is std.Var -> outline.toNode(null, constrs[0], false)
             }
             variablesInScope[name]!!.addAll(oldVarsToNewIds.values)
             oldVarsToNewVars[name] = oldVarsToNewIds
@@ -102,31 +160,28 @@ class ConcreteEnumerator(
 
 
     /** While we start with all functions flattened, we might enumerate functions with functions as outputs */
-    // Don't memoize this once, since we want to create new objects
-    private fun filler(name: String, param: Int, constraint: DependencyConstraint?) = when (constraint) {
-        null, is MustContainVariables -> {
-            if (param in mayHaveFresh[name]!!) {
-                val new = nextVariable++
-                variablesInScope[name]!!.add(new)
+    private fun filler(
+        parent: Node,
+        name: String,
+        param: Int,
+        constraint: DependencyConstraint?,
+        otherChoices: Boolean
+    ) =
+        when (constraint) {
+            null, is MustContainVariables -> {
+                if (dependencies.mayHaveFresh(name, param)) {
+                    val new = nextVariable++
+                    variablesInScope[name]!!.add(new)
+                }
+                variablesInScope[name]!!.map { Var(it, parent, nextId++, otherChoices) }
             }
-            variablesInScope[name]!!.map { Var(it, nextId++) }
-        }
-        ContainsNoVariables -> listOf()
-        is ContainsOnly -> listOf(Var(oldVarToNewVar(name, constraint.vId, constraint.tId), nextId++))
-    } + labels.map { L(it.key, it.value, nextId++, constraint) } + F(
-        listOf(
-            mutableListOf(Hole(constraint)),
-            mutableListOf(Hole(constraint))
-        ), nextId++, constraint
-    )
-
-    // TODO How to pick number of examples. 1/5? 20?
-    private fun firstN(l: List<Example>) = l.subList(0, min(10 + query.names.size, l.size)).toMutableList()
-    private fun random(l: Collection<Example>) = firstN(l.shuffled())
-    private fun smallest(l: Collection<Example>) = firstN(l.sortedBy { it.size() })
-
-    private val pos = smallest(query.posExamples)
-    private val neg = smallest(query.negExamples)
+            ContainsNoVariables -> listOf()
+            is ContainsOnly -> listOf(Var(varId(name, constraint.vId, constraint.tId), parent, nextId++, otherChoices))
+        } + labels.map { L(it.key, it.value, parent, nextId++, constraint, otherChoices) } + F(
+            listOf(
+                mutableListOf(Hole(parent, constraint, true)), mutableListOf(Hole(parent, constraint, true))
+            ), parent, nextId++, constraint, otherChoices
+        )
 
     fun step(): List<Map<String, ConcreteNode>> {
         val solutions = mutableListOf<Map<String, ConcreteNode>>()
@@ -175,22 +230,37 @@ class ConcreteEnumerator(
         }
     }
 
-    private fun Node.canConcretize(): Boolean = when (this) {
-        is Hole -> false
-        is Var -> true
-        is F -> params.all { it.any { it.canConcretize() } }
-        is L -> params.all { it.any { it.canConcretize() } }
-    }
-
     private fun Node.holelessCopy(): Node? = when (this) {
-        is F -> F(params.map {
-            it.filter { it.canConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
-        }, this.id, this.constraint)
-        is L -> L(label, params.map {
-            it.filter { it.canConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
-        }, this.id, this.constraint)
+        is F -> {
+            val p = params.map { it.mapNotNull { it.holelessCopy() }.toMutableList() }
+            if (p.any { it.isEmpty() }) null
+            else F(p, this.parent, this.id, this.constraint, this.paramInvolvesOtherChoices)
+        }
+        is L -> {
+            val p = params.map { it.mapNotNull { it.holelessCopy() }.toMutableList() }
+            if (p.any { it.isEmpty() }) null
+            else L(label, p, this.parent, this.id, this.constraint, this.paramInvolvesOtherChoices)
+        }
         is Var -> this
         is Hole -> null
+    }
+
+    private fun paramFromLeaf(node: Node): ConcreteNode = when (val p = node.parent) {
+        null -> node.concretizations().toList().single()
+        is F, is Hole, is Var -> throw Exception("Invariant broken")
+        is L -> {
+            if (p.params.size > 1) throw Exception("Invariant broken")
+            paramFromLeaf(
+                L(
+                    p.label,
+                    listOf(mutableListOf(node)),
+                    p.parent,
+                    p.id,
+                    p.constraint,
+                    p.paramInvolvesOtherChoices
+                )
+            )
+        }
     }
 
     private fun contexts(pos: List<Example>, neg: List<Example>): Set<Map<String, ConcreteNode>> {
@@ -232,20 +302,32 @@ class ConcreteEnumerator(
         is F -> if (!inLabel || this.hit) {  // Hacky way to delay functions under labels
             params.forEach { options ->
                 if (options.removeAll { it is Hole }) {
-                    options.addAll(filler(name, param, this.constraint))
-                } else {
-                    options.forEach { it.enumerate(name, param) }
-                }
-            } else {
-                this.hit = true
+                    options.addAll(filler(this, name, param, this.constraint, true).filter {
+                        if (it.paramInvolvesOtherChoices) true
+                        else {
+                            val vars = paramFromLeaf(it).vars()
+                            if (this.constraint is MustContainVariables)
+                                (this.constraint as MustContainVariables).vars.all {
+                                    varId(name, it.first, it.second) in vars
+                                }
+                            else true
+                        }
+                    })
+                } else options.forEach { it.enumerate(name, param, inLabel) }
             }
         } else this.hit = true
         is L -> params.forEach { options ->
-            if (options.removeAll { it is Hole }) {
-                options.addAll(filler(name, param, this.constraint))
-            } else {
-                options.forEach { it.enumerate(name, param, true) }
-            }
+            if (options.removeAll { it is Hole })
+                options.addAll(
+                    filler(
+                        this,
+                        name,
+                        param,
+                        this.constraint,
+                        this.paramInvolvesOtherChoices || this.params.size > 1
+                    )
+                )
+            else options.forEach { it.enumerate(name, param, true) }
         }
         is Var -> {}
     }
