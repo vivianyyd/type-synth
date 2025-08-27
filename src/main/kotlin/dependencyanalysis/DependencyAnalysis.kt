@@ -60,6 +60,8 @@ class DependencyAnalysis(
 
     val all by lazy { query.names.associateWith { findEdges(it) } }
 
+    fun mayHaveFresh(name: String, param: Int) = ParameterNode(name, param) in all[name]!!.third
+
     /** Requires: i is in bounds for ex. */
     private fun arg(ex: FlatApp, i: Int) = if (i == ex.args.size) ex else ex.args[i]
 

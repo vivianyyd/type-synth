@@ -47,76 +47,26 @@ data class Var(val varId: Int, override val id: Int) : Node {
     override fun toString(): String = "$varId"
 }
 
-fun Node.concretizations(): Sequence<ConcreteNode> = when (this) {
-    is F -> if (params.isEmpty()) sequenceOf(ConcreteF(listOf()))
-    else if (params.any { it.any { it is Hole } }) emptySequence()
-    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-        .map { ConcreteF(it.toList()) }
-    is L -> if (params.isEmpty()) sequenceOf(ConcreteL(this.label, listOf()))
-    else if (params.any { it.any { it is Hole } }) emptySequence()
-    else lazySeqCartesianProduct(params.map { it.asSequence().flatMap { it.concretizations() } })
-        .map { ConcreteL(this.label, it.toList()) }
-    is Var -> sequenceOf(ConcreteVar(this.varId))
-    is Hole -> emptySequence()
-}
-
-//fun Node.concretizations(trace: List<Int>, conflicts: List<List<Int>>): Sequence<ConcreteNode> = when (this) {
-//    is F -> {
-//        if (params.isEmpty()) sequenceOf(ConcreteF(listOf(), trace + this.id))
-//        else if (params.any { it.any { it is Hole } }) emptySequence()
-//        else nodeProduct(
-//            params.map { it.asSequence().flatMap { it.concretizations(trace + this.id, conflicts) } },
-//            trace + this.id,
-//            conflicts
-//        ).map { (children, tr) ->
-//            ConcreteF(
-//                children.toList(),
-//                tr + this.id
-//            )
-//        }  // TODO traces in concrete nodes seem meaningless
-//    }
-//    is L -> {
-//        if (params.isEmpty()) sequenceOf(ConcreteL(this.label, listOf(), trace + this.id))
-//        else if (params.any { it.any { it is Hole } }) emptySequence()
-//        else nodeProduct(
-//            params.map { it.asSequence().flatMap { it.concretizations(trace + this.id, conflicts) } },
-//            trace + this.id,
-//            conflicts
-//        ).map { (children, tr) -> ConcreteL(this.label, children.toList(), tr + this.id) }
-//    }
-//    is Var -> sequenceOf(ConcreteVar(this.varId, trace + this.id))
-//    is Hole -> emptySequence()
-//}
-
-val vars = mutableMapOf<ConcreteNode, Set<Int>>()
-fun ConcreteNode.vars(): Set<Int> = vars.getOrPut(this) {
-    when (this) {
-        is ConcreteVar -> setOf(varId)
-        is ConcreteF -> params.flatMap { it.vars() }.toSet()
-        is ConcreteL -> params.flatMap { it.vars() }.toSet()
-    }
-}
-
 class ConcreteEnumerator(
-    val query: Query,
-    contextOutline: Projection,
+    val query: Query, contextOutline: Projection,
     /** Map from label ids to number of parameters */
-    inLabels: Map<stc.L, Int>,
-    private val dependencies: DependencyAnalysis,
-    private val oracle: EqualityNewOracle
+    inLabels: Map<stc.L, Int>, private val dependencies: DependencyAnalysis, private val oracle: EqualityNewOracle
 ) {
     private val state: MutableMap<String, Node> = mutableMapOf()
     private val variablesInScope: Map<String, MutableList<Int>> = query.names.associateWith { mutableListOf() }
-    private var nextVariable = 0
     private val labels = inLabels.mapKeys { (l, _) -> l.label }
+
+    private var nextVariable = 0
     private var nextId = 0
-    private val constraints = constraints(contextOutline, dependencies)
-    private val mayHaveFresh = dependencies.all.mapValues {
-        it.value.third.map { it.i }
-    }
+
+    private val pos: MutableList<Example>
+    private val neg: MutableList<Example>
+
     private val oldVarsToNewVars = mutableMapOf<String, Map<Pair<Int, Int>, Int>>()
+    private fun varId(name: String, vid: Int, tid: Int) = oldVarsToNewVars[name]!![vid to tid]!!
 
     init {
+        val constraints = constraints(contextOutline, dependencies)
         contextOutline.outline.forEach { (name, ty) ->
             val constrs = constraints[name]!!
 
@@ -142,22 +92,27 @@ class ConcreteEnumerator(
             variablesInScope[name]!!.addAll(oldVarsToNewIds.values)
             oldVarsToNewVars[name] = oldVarsToNewIds
         }
+
+        fun firstN(l: List<Example>) = l.subList(0, min(10 + query.names.size, l.size)).toMutableList()
+        fun random(l: Collection<Example>) = firstN(l.shuffled())
+        fun smallest(l: Collection<Example>) = firstN(l.sortedBy { it.size() })
+        pos = smallest(query.posExamples)
+        neg = smallest(query.negExamples)
     }
 
-    private fun oldVarToNewVar(name: String, vid: Int, tid: Int) = oldVarsToNewVars[name]!![vid to tid]!!
 
     /** While we start with all functions flattened, we might enumerate functions with functions as outputs */
     // Don't memoize this once, since we want to create new objects
     private fun filler(name: String, param: Int, constraint: DependencyConstraint?) = when (constraint) {
         null, is MustContainVariables -> {
-            if (param in mayHaveFresh[name]!!) {
+            if (dependencies.mayHaveFresh(name, param)) {
                 val new = nextVariable++
                 variablesInScope[name]!!.add(new)
             }
             variablesInScope[name]!!.map { Var(it, nextId++) }
         }
         ContainsNoVariables -> listOf()
-        is ContainsOnly -> listOf(Var(oldVarToNewVar(name, constraint.vId, constraint.tId), nextId++))
+        is ContainsOnly -> listOf(Var(varId(name, constraint.vId, constraint.tId), nextId++))
     } + labels.map { L(it.key, it.value, nextId++, constraint) } + F(
         listOf(
             mutableListOf(Hole(constraint)),
@@ -170,9 +125,6 @@ class ConcreteEnumerator(
     private fun random(l: Collection<Example>) = firstN(l.shuffled())
     private fun smallest(l: Collection<Example>) = firstN(l.sortedBy { it.size() })
 
-    private val pos = smallest(query.posExamples)
-    private val neg = smallest(query.negExamples)
-
     fun step(): List<Map<String, ConcreteNode>> {
         val solutions = mutableListOf<Map<String, ConcreteNode>>()
 
@@ -182,17 +134,12 @@ class ConcreteEnumerator(
             }
             else root.enumerate(f, 0)
         }
-        // Original, no CEGIS
-//            val contexts = contexts(listOf(), listOf())
-//            if (contexts.isNotEmpty()) return contexts
-//            println(state)
+        println(state)
 
         val contexts = contexts(pos, neg)
         if (contexts.isNotEmpty()) {
             contexts.forEach {
-//                println("Passed subset of examples: $it")
                 val failed = checkAll(it)
-//                println(if (failed == null) "It's perfect" else if (failed.second) "Pos counter example" else "Neg counter example")
                 if (failed == null) solutions.add(it)  // accumulate all valid contexts of this depth
                 else (if (failed.second) pos else neg).add(failed.first)
             }
@@ -201,20 +148,41 @@ class ConcreteEnumerator(
         return solutions
     }
 
-    private fun Node.canConcretize(): Boolean = when (this) {
-        is Hole -> false
-        is Var -> true
-        is F -> params.all { it.any { it.canConcretize() } }
-        is L -> params.all { it.any { it.canConcretize() } }
+    fun Node.concretizations(): Sequence<ConcreteNode> = when (this) {
+        is F -> if (params.isEmpty()) sequenceOf(ConcreteF(listOf()))
+        else if (params.any { it.any { it is Hole } }) emptySequence()
+        else lazySeqCartesianProduct(params.map {
+            it.asSequence().flatMap { it.concretizations() }
+        }).map { ConcreteF(it.toList()) }
+        is L -> if (params.isEmpty()) sequenceOf(ConcreteL(this.label, listOf()))
+        else if (params.any { it.any { it is Hole } }) emptySequence()
+        else lazySeqCartesianProduct(params.map {
+            it.asSequence().flatMap { it.concretizations() }
+        }).map { ConcreteL(this.label, it.toList()) }
+        is Var -> sequenceOf(ConcreteVar(this.varId))
+        is Hole -> emptySequence()
+    }
+
+    val vars = mutableMapOf<ConcreteNode, Set<Int>>()
+    fun ConcreteNode.vars(): Set<Int> = vars.getOrPut(this) {
+        when (this) {
+            is ConcreteVar -> setOf(varId)
+            is ConcreteF -> params.flatMap { it.vars() }.toSet()
+            is ConcreteL -> params.flatMap { it.vars() }.toSet()
+        }
     }
 
     private fun Node.holelessCopy(): Node? = when (this) {
-        is F -> F(params.map {
-            it.filter { it.canConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
-        }, this.id, this.constraint)
-        is L -> L(label, params.map {
-            it.filter { it.canConcretize() }.mapNotNull { it.holelessCopy() }.toMutableList()
-        }, this.id, this.constraint)
+        is F -> {
+            val p = params.map { it.mapNotNull { it.holelessCopy() }.toMutableList() }
+            if (p.any { it.isEmpty() }) null
+            else F(p, this.id, this.constraint)
+        }
+        is L -> {
+            val p = params.map { it.mapNotNull { it.holelessCopy() }.toMutableList() }
+            if (p.any { it.isEmpty() }) null
+            else L(label, p, this.id, this.constraint)
+        }
         is Var -> this
         is Hole -> null
     }
@@ -233,46 +201,37 @@ class ConcreteEnumerator(
         val possTys = (concreteOptions as Map<String, Node>).map { (n, t) ->
             when (t) {
                 is F -> {
-                    if (t.params.isEmpty()) t.concretizations()//(listOf(t.id), conflicts)
+                    if (t.params.isEmpty()) t.concretizations()
                     // TODO simplify this with concretizations()
                     else lazyCartesianProduct(t.params.mapIndexed { i, options ->
-                        options.flatMap { it.concretizations()/*(listOf(t.id), conflicts)*/ }.filter { node ->
-                            if (constraints[n]!![i] is MustContainVariables)
-                                (constraints[n]!![i] as MustContainVariables).vars.all {
-                                    (oldVarToNewVar(n, it.first, it.second)) in node.vars()
-                                }
+                        options.flatMap { it.concretizations() }.filter { node ->
+                            val constraint = options.first().constraint
+                            if (constraint is MustContainVariables)
+                                constraint.vars.all { (varId(n, it.first, it.second)) in node.vars() }
                             else true
                         }
                     }).map { ConcreteF(it.toList()) }
                 }
-                is L, is Var -> t.concretizations()//(listOf(t.id), conflicts)
+                is L, is Var -> t.concretizations()
                 is Hole -> throw Exception("Can't happen")
             }
         }
-//        return lazySeqCartesianProduct(possTys).map { query.names.zip(it).toMap() }
-//            .filter { check(it/*, mutableListOf()*/) }.toSet()  // original, no CEGIS
-
         return lazySeqCartesianProduct(possTys).map { concreteOptions.keys.zip(it).toMap() }.filter {
             checkOnly(it, pos, neg)
         }.toSet()
-
-//        return nodeProduct(possTys, listOf(), conflicts).map { query.names.zip(it.first).toMap() }
-//            .filter { check(it, conflicts) }.toSet()  // attempt at skipping conflicts
     }
 
     fun Node.enumerate(name: String, param: Int, inLabel: Boolean = false): Unit = when (this) {
         is Hole -> throw Exception("Should be handled by parent")
-        is F -> params.forEach { options ->
-            if (!inLabel || this.hit) {  // Hacky way to delay functions under labels
+        is F -> if (!inLabel || this.hit) {  // Hacky way to delay functions under labels
+            params.forEach { options ->
                 if (options.removeAll { it is Hole }) {
                     options.addAll(filler(name, param, this.constraint))
                 } else {
                     options.forEach { it.enumerate(name, param) }
                 }
-            } else {
-                this.hit = true
             }
-        }
+        } else this.hit = true
         is L -> params.forEach { options ->
             if (options.removeAll { it is Hole }) {
                 options.addAll(filler(name, param, this.constraint))
@@ -305,24 +264,8 @@ class ConcreteEnumerator(
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible.
      * @modifies [labelClasses]
      */
-    private var unifyTotal = 0
-    private var unifyHit = 0
-    var unifyKeyHit = mutableMapOf<Pair<ConcreteNode, ConcreteNode>, Int>()
     private val unify = mutableMapOf<Pair<ConcreteNode, ConcreteNode>, List<Binding>?>()
     fun unify(param: ConcreteNode, arg: ConcreteNode): List<Binding>? {
-//        unifyTotal++
-//        if ((param to arg) in unify) {
-//            unifyHit++
-//            unifyKeyHit[param to arg] = unifyKeyHit[param to arg]!! + 1
-//        } else unifyKeyHit[param to arg] = 0
-//        if (unifyTotal == 10000000) {
-//            println("Unify total $unifyTotal, hit $unifyHit, hit rate ${(unifyHit + 0.0) / unifyTotal}, size ${unify.size}")
-//            println("Num keys not hit at all: ${unifyKeyHit.count { it.value == 0 }}")
-//            println("Hit frequencies:")
-//            println(unifyKeyHit.entries.sortedByDescending { it.value }.joinToString(separator = "\n"))
-//        }
-        // We can't simply call getOrPut, since getOrPut runs code if map has null as value.
-        // Then we'd do duplicate computations for all bad parameter-argument pairs
         if ((param to arg) in unify) return unify[param to arg]
         val result = when (param) {
             is ConcreteVar -> listOf(Binding(param.varId, arg))
@@ -405,17 +348,10 @@ class ConcreteEnumerator(
     ): Boolean = pos.all { type(context, it) != null } && neg.all { type(context, it) == null }
 
     fun check(context: Map<String, ConcreteNode>/*, conflicts: MutableList<List<Int>>*/): Boolean {
-//        fun fail(example: Example) {
-//            conflicts.add(context.filter { it.key in example.names }.values.flatMap { it.ids }.toSet().toList())
-//        }
         return query.posExamples.all {
-            val ty = type(context, it)
-//            if (ty == null) fail(it)
-            ty != null
+            type(context, it) != null
         } && query.negExamples.all {
-            val ty = type(context, it)
-//            if (ty != null) fail(it)
-            ty == null
+            type(context, it) == null
         }
     }
 }
