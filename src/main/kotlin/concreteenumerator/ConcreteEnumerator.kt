@@ -194,7 +194,7 @@ class ConcreteEnumerator(
         val concreteOptions = state.mapValues { it.value.holelessCopy() }
         if (concreteOptions.values.any { it == null }) return emptySet()
 
-//        println("Concrete: $concreteOptions")
+        println("Concrete: $concreteOptions")
 //        println(query.names)  // TODO WHY ARE THESE IN A DIFFERENT ORDER
 //        val conflicts = mutableListOf<List<Int>>()
 
@@ -205,10 +205,17 @@ class ConcreteEnumerator(
                     // TODO simplify this with concretizations()
                     else lazyCartesianProduct(t.params.mapIndexed { i, options ->
                         options.flatMap { it.concretizations() }.filter { node ->
-                            val constraint = options.first().constraint
-                            if (constraint is MustContainVariables)
-                                constraint.vars.all { (varId(n, it.first, it.second)) in node.vars() }
-                            else true
+                            when (val c = options.first().constraint) {
+                                is MustContainVariables -> {
+                                    val vars = node.vars()
+                                    c.vars.all { (varId(n, it.first, it.second)) in vars }
+                                }
+                                is ContainsOnly -> {
+                                    val vars = node.vars()
+                                    vars.size == 1 && vars.single() == varId(n, c.vId, c.tId)
+                                }
+                                else -> true
+                            }
                         }
                     }).map { ConcreteF(it.toList()) }
                 }
