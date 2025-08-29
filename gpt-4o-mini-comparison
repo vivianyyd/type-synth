@@ -1,0 +1,66 @@
+Below are a list of example programs, which apply a fixed set of  
+functions and values.  
+Some of them are well-typed under Hindley-Milner typing rules; they are prefixed with a .  
+Others are ill-typed, and are prefixed with a -. 
+Determine the Hindley-Milner types of all program components that appear in the examples,  
+that is, all of the unique symbols other than whitespace and parentheses. 
+
+put: (a -> b -> c)  
+chain: (a -> a -> b)  
+dii: a  
+dib: b  
+dbb: c  
+dbi: d  
+i: e  
+b: f  
+
+
+
+Below are a list of example programs, which apply a fixed set of  
+functions and values.  
+Some of them are well-typed under Hindley-Milner typing rules; they are prefixed with a .  
+Others are ill-typed, and are prefixed with a -. 
+Determine the Hindley-Milner types of all program components that appear in the examples,  
+that is, all of the unique symbols other than whitespace and parentheses.  
+Some of the types may be parameterized: For instance, they may be of the form L<a>  
+where a is a type variable, or L<Int> where Int is a primitive type. In this example, these 
+types could represent lists.  
+You may need to invent and assign appropriate type constructors like the ones in that example.  
+- `put` : L<a> -> L<b> -> a
+- `chain` : L<a> -> L<a> -> L<a>
+- `dib` : L<a>
+- `dbb` : L<a>
+- `dii` : L<a>
+- `dbi` : L<a>
+- `i` : Int
+- `b` : Bool
+
+
+
+Below are a list of example programs, which apply a fixed set of  
+functions and values.  
+Some of them are well-typed under Hindley-Milner typing rules; they are prefixed with a .  
+Others are ill-typed, and are prefixed with a -. 
+Determine the Hindley-Milner types of all program components that appear in the examples,  
+that is, all of the unique symbols other than whitespace and parentheses.  
+Some of the types may be parameterized: For instance, they may be of the form L<a>  
+where a is a type variable, or L<Int> where Int is a primitive type. In this example, these 
+types could represent lists.  
+You may need to invent and assign appropriate type constructors like the ones in that example.  
+However, they might have any name or have any number of type parameters. 
+- put : L<a> -> L<b> -> L<a>
+- chain : L<a> -> L<a> -> L<a>
+- dib : L<a>
+- dbb : L<b>
+- dii : L<c>
+- dbi : L<d>
+- i : Int
+- b : Bool
+
+
+
+Li : L<Int>
+LLi : L<L<Int>>
+tr : a
+Lb : L<a>
+cons : a -> L<a> -> L<a>
