@@ -2,7 +2,9 @@ package core
 
 sealed interface ConstraintType<L : Language>
 sealed class CTypeConstructor<L : Language>(open val params: MutableList<ConstraintType<L>>) : ConstraintType<L> {
-    abstract fun lineup(other: CTypeConstructor<*>): List<Constraint<L>>
+    abstract fun match(other: CTypeConstructor<L>): Boolean
+    fun lineup(other: CTypeConstructor<L>): List<Constraint<L>>? =
+        if (match(other)) params.zip(other.params).map { (a, b) -> Constraint(a, b) } else null
 }
 
 sealed interface CVariable<L : Language> : ConstraintType<L>
@@ -12,12 +14,7 @@ data class CArrow<L : Language> private constructor(override val params: Mutable
     CTypeConstructor<L>(params) {
     constructor(l: ConstraintType<L>, r: ConstraintType<L>) : this(mutableListOf(l, r))
 
-    override fun lineup(other: CTypeConstructor<*>): List<Constraint<L>> {
-        if (other is CArrow<*>) {
-            if (this.javaClass == other.javaClass) params.map { }
-            else TODO()
-        } else TODO()
-    }
+    override fun match(other: CTypeConstructor<L>) = other is CArrow<L>
 }
 
 data class Instantiation<L : Language>(val n: SearchNode) : CVariable<L> // TODO node or an id?
@@ -57,11 +54,20 @@ class Unification<L : Language>(constraints: List<Constraint<L>>) {
     }
 
     fun splits() {
-        val newConstrs = constraints.filter { it.l is CTypeConstructor<*> && it.r is CTypeConstructor<*> }.flatMap {
-            (it.l as CTypeConstructor<*>).lineup(it.r as CTypeConstructor<*>)
+        var success = true
+        val newConstrs = mutableListOf<Constraint<L>>()
+        for (constr in constraints.filter { it.l is CTypeConstructor<L> && it.r is CTypeConstructor<L> }) {
+            val result = (constr.l as CTypeConstructor<L>).lineup(constr.r as CTypeConstructor<L>)
+            if (result == null) {
+                success = false
+                break
+            }
+            newConstrs.addAll(result)
         }
-        // TODO: When constraints have matching type constructors, split them up appropriately
+        if (!success) TODO()
+        constraints.removeAll { it.l is CTypeConstructor<L> && it.r is CTypeConstructor<L> }
+        constraints.addAll(newConstrs)
     }
 }
 
-object CInitVar : CVariable<Init>
+//object CInitVar : CVariable<Init>
