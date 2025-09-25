@@ -51,11 +51,11 @@ class Query(
     names: List<String> = listOf(),
     includesSubexprs: Boolean = false
 ) {
-    val posExsBeforeSubexprs = posExamples
+    val posExsBeforeSubexprs = posExamples.toList()
 
     val posExamples: Set<Example> = (posExamples + names.map { Name(it) }).toSet()
         .let { if (includesSubexprs) it else it.flatMap { it.subexprs() }.toSet() }
-    val names: List<String> = names.union(posExamples.fold(setOf()) { acc, ex -> acc + ex.names }).toList()
+    val names: List<String> = names.union(posExamples.fold(setOf()) { acc, ex -> acc + ex.names }).toList().sorted()
 }
 
 /** Produce all subexpressions of [this] and [this] TODO for some reason before, I didn't want to include Names? why

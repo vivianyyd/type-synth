@@ -1,12 +1,27 @@
 package util
 
-class UnionFind(size: Int) {
-    private val parent = Array(size) { it }
+class UnionFind(initialSize: Int = 0) {
+    private val parent = mutableListOf<Int>()
 
-    // Find the representative (root) of the set that includes element i
-    fun find(i: Int): Int = if (parent[i] == i) i else find(parent[i])
+    init {
+        repeat(initialSize) { parent.add(it) }
+    }
 
-    // Merge the set that includes element  i and the set that includes element j
+    val size = parent.size
+
+    fun add(): Int {
+        val newIndex = parent.size
+        parent.add(newIndex)
+        return newIndex
+    }
+
+    fun find(i: Int): Int {
+        if (parent[i] != i) {
+            parent[i] = find(parent[i]) // Path compression
+        }
+        return parent[i]
+    }
+
     fun union(i: Int, j: Int) {
         val irep = find(i)
         val jrep = find(j)
