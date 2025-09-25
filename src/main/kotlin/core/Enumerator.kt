@@ -52,6 +52,11 @@ fun main() {
         e.enumerate(3)
     }
     println(answers.toList().joinToString(separator = "\n"))
+
+
+    // TODO: Now that we have a sequence of candidate Inits, translate them into
+    //       seeds for the next round, then do enum on those. How to express that the variables are
+    //       specializing? Maybe it's a hole...
 }
 
 object Init : Language
@@ -91,6 +96,7 @@ data class ElabL(val label: Int) : Leaf<Elab> {
 // TODO Does it make sense for holes to be objects?
 object ElabHole : Hole<Elab>(listOf()) {  // TODO This constructor call is dubious
     override fun expansions(): List<SearchNode<Elab>> {
+        return listOf(this)
         TODO("Not yet implemented. I think we don't even do any expansions at this step")
         TODO(
             "In the next step, should we allow new labels to be introduced in expansions? " +
