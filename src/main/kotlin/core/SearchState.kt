@@ -109,6 +109,8 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
                 println("Checking commitment helped here!")
                 null
             }
+            // TODO something is wrong here, we should accept cons: L -> V -> V but we don't
+//            Candidate(names, types)  // Originally
         }
     }
 }
