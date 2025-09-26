@@ -31,8 +31,7 @@ class Enumerator<L : Language>(val query: Query, seedCandidate: Candidate<L>) {
             // TODO We will often rediscover the same constraints even if two candidates are not identical...
             //      also, refinements of simpler candidates inherit their constraints, but we don't keep that state
             if (constrs != null) {
-                println("size, depth: ${curr.size}, ${curr.depth}")
-
+                println(curr)
                 val exp = curr.expansions(constrs).filter {
                     eCandidateCount++
                     val unseen = it !in seen
@@ -83,12 +82,8 @@ fun main() {
     println(answers.toList().joinToString(separator = "\n"))
 
 
-    // TODO: Now that we have a sequence of candidate Inits, translate them into
-    //       seeds for the next round, then do enum on those. How to express that the variables are
-    //       specializing? Maybe it's a hole...
-
-    TODO("When we compile Init to Elab, that's were we can figure out what vars in scope")
-
+    // TODO: Now that we have a sequence of candidate Inits, translate them into seeds for the next round, then
+    //   do enum on those. When we compile Init to Elab, that's were we can figure out what vars in scope
 
     TODO(
         "In the next step, should we allow new labels to be introduced in expansions? " + "Will there ever be problems where a label type only occurs within other label types as a param?"
