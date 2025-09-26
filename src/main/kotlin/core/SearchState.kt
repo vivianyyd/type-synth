@@ -102,15 +102,16 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
 
             it.expansions()
         }).mapNotNull {
-            val (types, commitments) = it.unzip()
-            if (Unification(constrs).commitAndCheckValid(commitments.filterNotNull()))
-                Candidate(names, types)
-            else {
-                println("Checking commitment helped here!")
-                null
-            }
+//            val (types, commitments) = it.unzip()
+//            if (Unification(constrs).commitAndCheckValid(commitments.filterNotNull()))
+//                Candidate(names, types)
+//            else {
+//                println("Checking commitment helped here! Pruned ${Candidate(names, types)}")
+//                null
+//            }
             // TODO something is wrong here, we should accept cons: L -> V -> V but we don't
-//            Candidate(names, types)  // Originally
+
+            Candidate(names, types)  // Originally
         }
     }
 }
