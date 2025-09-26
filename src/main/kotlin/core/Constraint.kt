@@ -5,6 +5,7 @@ import query.Example
 import query.Name
 import util.Counter
 
+/** ConstraintTypes are mutable */
 sealed interface ConstraintType<L : Language>
 sealed class CTypeConstructor<L : Language>(open val params: MutableList<ConstraintType<L>>) : ConstraintType<L> {
     abstract fun match(other: CTypeConstructor<L>): Boolean
@@ -24,7 +25,12 @@ data class CArrow<L : Language> private constructor(override val params: Mutable
     override fun toString() = "${if (params[0] is CArrow) "(${params[0]})" else "${params[0]}"} -> ${params[1]}"
 }
 
-data class Instantiation<L : Language>(val n: SearchNode<L>, val id: Int) : CVariable<L> {
+/**
+ * It is this class's job to instantiate its children once a commitment is made.
+ * inst denotes _which_ instantiation we are in. This matters bc if we fill a hole with a variable,
+ * that variable needs to know where it is so it matches the others in the same instantiation call. */
+data class Instantiation<L : Language>(val n: SearchNode<L>, val id: Int, val inst: Int, val instVarId: Counter) :
+    CVariable<L> {
     override fun toString() = "inst$id"
 }
 
@@ -37,14 +43,20 @@ data class EqualityConstraint<L : Language>(val l: ConstraintType<L>, val r: Con
     override fun toString() = "$l = $r"
 }
 
-class Unification<L : Language>(candidate: Candidate<L>, exs: List<Example>) {
+typealias Commitment<L> = Pair<Hole<L>, SearchNode<L>>?
+
+class Unification<L : Language> {
     private val constraints = mutableListOf<Constraint<L>>()
     private var instVarId = Counter()
     private var proofVarId = Counter()
     private var error = false
     private var insts = Counter()  // Number of times any top-level type has been instantiated
 
-    init {
+    constructor(constraints: List<Constraint<L>>) {
+        this.constraints.addAll(constraints)
+    }
+
+    constructor(candidate: Candidate<L>, exs: List<Example>) : this(listOf()) {
         fun constrainType(ex: Example): ConstraintType<L> = when (ex) {
             is Name -> candidate.searchNodeOf(ex.name).instantiate(instVarId, insts.get())
             is App -> {
@@ -60,28 +72,58 @@ class Unification<L : Language>(candidate: Candidate<L>, exs: List<Example>) {
 
     fun get(): List<Constraint<L>>? = if (error) null else constraints
 
-//    /** Precondition: constraints are simplified.
-//     * @return [true] if the commitment produces no errors.
-//     * Micro-opt later: Don't bother committing if running commit with those changes doesn't do anything */
-//    fun commit(instantiationsToCommitments: List<Pair<Instantiation<L>, ConstraintType<L>>>): Boolean {
-//        val change = instantiationsToCommitments.fold(false) { changed, (inst, ty) ->
-//            var changedCurr = changed
-//            for (j in constraints.indices) {
-//                if (constraints[j] is EqualityConstraint<L>) {
-//                    val constr = constraints[j] as EqualityConstraint<L>
-//                    val newL = if (constr.l == inst) ty else constr.l
-//                    val newR = if (constr.r == inst) ty else constr.r
-//                    constraints[j] = EqualityConstraint(newL, newR)
-//                    changedCurr = changedCurr || constr.l == inst || constr.r == inst
-//                }
-//            }
-//            changedCurr
-//        }
-//        simplify()
-//        return !error
-//    }
+    fun commitAndCheckValid(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
+        betterCommit(refinements)
+        return !error
+    }
 
-    fun simplify() {
+    private fun betterCommit(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
+        val change = refinements.fold(false) { changed, (hole, node) ->
+            var changedCurr = changed
+            for (j in constraints.indices) {
+                if (constraints[j] is EqualityConstraint<L>) {
+                    val constr = constraints[j] as EqualityConstraint<L>
+
+                    fun newGuy(n: ConstraintType<L>) =
+                        if (n is Instantiation && n in hole.instantiations())
+                            node.instantiate(
+                                n.instVarId,
+                                n.inst
+                            ) else n
+
+                    val newL = newGuy(constr.l)
+                    val newR = newGuy(constr.r)
+                    constraints[j] = EqualityConstraint(newL, newR)
+                    changedCurr = changedCurr || constr.l != newL || constr.r != newR
+                }
+            }
+            changedCurr
+        }
+        simplify()
+        return change
+    }
+
+    /** Precondition: constraints are simplified.
+     * Micro-opt later: Don't bother committing if running commit with those changes doesn't do anything */
+    private fun commit(refinedInstantiations: List<Pair<Instantiation<L>, ConstraintType<L>>>): Boolean {
+        val change = refinedInstantiations.fold(false) { changed, (inst, ty) ->
+            var changedCurr = changed
+            for (j in constraints.indices) {
+                if (constraints[j] is EqualityConstraint<L>) {
+                    val constr = constraints[j] as EqualityConstraint<L>
+                    val newL = if (constr.l == inst) ty else constr.l
+                    val newR = if (constr.r == inst) ty else constr.r
+                    constraints[j] = EqualityConstraint(newL, newR)
+                    changedCurr = changedCurr || constr.l == inst || constr.r == inst
+                }
+            }
+            changedCurr
+        }
+        simplify()
+        return change
+    }
+
+    private fun simplify() {
         while (substs() || splits()) {
             constraints.removeAll { it is EqualityConstraint && it.l == it.r }
 //            println(constraints.joinToString(separator = "\n", postfix = "\n============="))
