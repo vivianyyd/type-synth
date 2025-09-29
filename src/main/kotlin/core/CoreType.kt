@@ -13,10 +13,10 @@ data class Arrow<L : Language> private constructor(override val params: List<Cor
     override fun toString(): String = "${if (params[0] is Arrow) "(${params[0]})" else "${params[0]}"} -> ${params[1]}"
 }
 
-object Init : Language
-object InitVariable : Variable<Init>
-object InitLabel : TypeConstructor<Init>(listOf())
-
-fun main() {
-    val a = Arrow(InitVariable, InitLabel)
-}
+//object Init : Language
+//object InitVariable : Variable<Init>
+//object InitLabel : TypeConstructor<Init>(listOf())
+//
+//fun main() {
+//    val a = Arrow(InitVariable, InitLabel)
+//}
