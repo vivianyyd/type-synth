@@ -29,7 +29,7 @@ data class CArrow<L : Language> private constructor(override val params: Mutable
  * It is this class's job to instantiate its children once a commitment is made.
  * inst denotes _which_ instantiation we are in. This matters bc if we fill a hole with a variable,
  * that variable needs to know where it is so it matches the others in the same instantiation call. */
-data class Instantiation<L : Language>(val n: SearchNode<L>, val id: Int, val inst: Int, val instVarId: Counter) :
+data class Instantiation<L : Language>(val n: Hole<L>, val id: Int, val inst: Int, val instVarId: Counter) :
     CVariable<L> {
     override fun toString() = "inst$id"
 }
@@ -124,10 +124,12 @@ class Unification<L : Language> {
     }
 
     private fun simplify() {
-        while (substs() || splits()) {
+        do {
             constraints.removeAll { it is EqualityConstraint && it.l == it.r }
-//            println(constraints.joinToString(separator = "\n", postfix = "\n============="))
-        }
+            val cset = constraints.toSet()
+            constraints.clear()
+            constraints.addAll(cset)
+        } while (substs() || splits())
     }
 
     /** Replace [v] with [s] in [t] inplace. */
