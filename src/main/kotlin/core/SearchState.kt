@@ -12,6 +12,11 @@ sealed interface SearchNode<L : Language> {
     fun depth(): Int
     fun full(): Boolean
 
+    fun params(): Int = when (this) {
+        is NArrow -> 1 + r.params()
+        else -> 1
+    }
+
     /** Optional for correctness, but helps us recognize alpha equivalences */
     fun variableNames(): Set<Int>
     fun canonical() = variableNames().size == (variableNames().maxOrNull() ?: -1) + 1
@@ -34,7 +39,7 @@ sealed class Branch<L : Language>(open val params: List<SearchNode<L>>) : Search
 
     override fun depth() = depth
     private val depth by lazy {
-        1 + params.maxOf { it.depth() }
+        1 + (params.maxOfOrNull { it.depth() } ?: 0)
     }
 
     override fun full() = params.all { it.full() }
@@ -42,8 +47,7 @@ sealed class Branch<L : Language>(open val params: List<SearchNode<L>>) : Search
     override fun variableNames() = params.flatMap { it.variableNames() }.toSet()
 }
 
-data class NArrow<L : Language> private constructor(override val params: List<SearchNode<L>>) :
-    Branch<L>(params) {
+data class NArrow<L : Language> private constructor(override val params: List<SearchNode<L>>) : Branch<L>(params) {
     open val l = params[0]
     open val r = params[1]
 
@@ -91,8 +95,7 @@ sealed class Hole<L : Language> : SearchNode<L> {
 }
 
 data class Candidate<L : Language>(val names: List<String>, val types: List<SearchNode<L>>) {
-    override fun toString(): String =
-        names.zip(types).joinToString(separator = ", ") { "${it.first}: ${it.second}" }
+    override fun toString(): String = names.zip(types).joinToString(separator = ", ") { "${it.first}: ${it.second}" }
 
     fun searchNodeOf(name: String): SearchNode<L> = types[names.indexOf(name)]
 
@@ -103,6 +106,10 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
     val depth by lazy {
         types.maxOf { it.depth() }
     }
+
+    fun asMap() = names.zip(types).toMap()
+
+    fun arities() = types.map { it.params() }
 
     fun full() = types.all { it.full() }
 
@@ -117,9 +124,17 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
             // We also use one construction of constraints to prune many expansions
             it.expansions(constrs)
         }).mapNotNull {
+
             val (types, commitments) = it.unzip()
-            if (Unification(constrs).commitAndCheckValid(commitments.filterNotNull()))
+
+            // Micro-opt: If the commitment refines a hole to a fresh variable, no need to check validity
+            if (it.all { (ty, commit) ->
+                    commit == null ||
+                            (commit.second is ConcreteV && (commit.second as ConcreteV).v !in ty.variableNames())
+                })
                 Candidate(names, types)
+
+            if (Unification(constrs).commitAndCheckValid(commitments.filterNotNull())) Candidate(names, types)
             else null  // Could count here for eval
 //            Candidate(names, types)  // Originally
         }

@@ -103,7 +103,13 @@ private fun assignLabelSizes(
         cvcGens.forEach { (i, gen) -> callCVC(gen.initialQuery(), "$i") }
         return readInitialCVCresults().associate { (i, contents) -> i to minLabelSizes(i, contents, cvcGens[i]!!) }
     } else {
-        return readSmallestCVCresults().associate { (i, contents) -> i to CVCParser(contents, cvcGens[i]!!).sizes }
+        return readSmallestCVCresults().associate { (i, contents) ->
+            i to CVCParser(contents).sizes.mapKeys {
+                cvcGens[i]!!.pySizeToL(
+                    it.key
+                )
+            }
+        }
     }
 }
 
@@ -113,19 +119,19 @@ private fun minLabelSizes(testId: Int, prevSol: String, cvcGenerator: LabelConst
     var lastSuccessful = -1
     do {
         println("Getting smaller CVC results")
-        val parser = CVCParser(previousSolution, cvcGenerator)
+        val parser = CVCParser(previousSolution)
         val testName = "$testId-smaller${counter++}"
         val cont =
             if (parser.sizes.isNotEmpty()) // TODO FIXME if the flag is off we don't read previous results properly
-                callCVC(cvcGenerator.smallerQuery(parser.sizes), testName)
+                callCVC(cvcGenerator.smallerQuery(parser.sizes.mapKeys { cvcGenerator.pySizeToL(it.key) }), testName)
             else false
         if (cont) {
             lastSuccessful = counter - 1
-            previousSolution = readCVC(testName)
+            previousSolution = readCVC(testName)!!
         }
     } while (cont)
     val finalSuccessfulOutput = if (lastSuccessful == -1) "$testId" else "$testId-smaller$lastSuccessful"
-    return CVCParser(readCVC(finalSuccessfulOutput), cvcGenerator).sizes
+    return CVCParser(readCVC(finalSuccessfulOutput)!!).sizes.mapKeys { cvcGenerator.pySizeToL(it.key) }
 }
 
 private fun printSearchSeed(labelSizes: Map<L, Int>, outline: Projection) {
