@@ -68,14 +68,13 @@ fun main() {
 
     fun <L : Language> fromSeeds(seeds: Sequence<Candidate<L>>): Sequence<Candidate<L>> =
         seeds.flatMap {
-            println("Seed: $it")
             Enumerator(q, it).enumerate(3)
         }
 
     val initSols = fromSeeds(inits)
     val elabSols = fromSeeds(initSols.map { compileInit(it) })
-
-    val solslist = elabSols.toList()
+    val concSols = fromSeeds(elabSols.mapNotNull { compileElab(it, q, ConsTest.oracle) })
+    val solslist = concSols.toList()
 
     println(solslist.joinToString(prefix = "SOLUTIONS:\n", separator = "\n"))
 

@@ -64,7 +64,10 @@ fun readSmallestCVCresults(): List<Pair<Int, String>> {
     return (smallerOutputs + initOutputs.filter { init -> smallerOutputs.none { smaller -> init.first == smaller.first } }).sortedBy { it.first }
 }
 
-fun readCVC(name: String): String = File(join("src", "main", "python", "output", "cvc-$name.py")).readText()
+fun readCVC(name: String): String? {
+    val f = File(join("src", "main", "python", "output", "cvc-$name.py"))
+    return if (f.isFile) f.readText() else null
+}
 
 fun writeProfiling(output: String, testName: String) = write(profilingResultPath(testName), output)
 

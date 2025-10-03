@@ -1,7 +1,11 @@
 package core
 
-import util.Counter
+import dependencyanalysis.DependencyAnalysis
+import dependencyanalysis.DependencyConstraint
+import query.Query
+import util.*
 
+/** Defines locations of type constructors vs variables and function arities */
 object Init : Language
 
 object InitV : Leaf<Init> {
@@ -98,10 +102,6 @@ data class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
 //}
  */
 
-data class LabelConstraint(val a: Int, val b: Int) : Constraint<Elab> {
-    override fun toString() = "L$a == L$b"
-}
-
 /** Good style would be to hide this constructor somehow so it can only be instantiated by ElabV */
 data class ElabConstrV(val v: Int, val instId: Int) : CVariable<Elab>, Substitutable {
     override fun toString() = "V${v}_$instId"
@@ -148,21 +148,120 @@ object ElabConstrL : CTypeConstructor<Elab>(mutableListOf()) {
 //    override fun match(other: CTypeConstructor<Elab>): Boolean = other is ElabConstrL && other.label == label
 //}
 */
+private fun compileElabIntermediate(seed: Candidate<Elab>): Candidate<Elaborated> {
+    ElaboratedL.reset()
+    fun compile(seed: SearchNode<Elab>): SearchNode<Elaborated> = when (seed) {
+        is ElabV -> ElaboratedV(seed.v)
+        ElabL -> ElaboratedL.fresh()
+        is NArrow -> NArrow(compile(seed.l), compile(seed.r))
+        is Hole -> throw Exception("Invariant broken")
+        else -> throw Exception("Will never happen due to types")
+    }
+    return Candidate(seed.names, seed.types.map { compile(it) })
+}
 
-fun compileElab(seed: Candidate<Elab>): Candidate<Concrete> {
-    TODO()
-//    fun compile(seed: SearchNode<Init>, vars: Int): Pair<SearchNode<Elab>, Int> = when (seed) {
-//        is NArrow -> {
-//            val (leftTy, leftVars) = compile(seed.l, vars)
-//            val (rightTy, endVars) = compile(seed.r, leftVars)
-//            NArrow(leftTy, rightTy) to endVars
-//        }
-//        InitL -> ElabL to vars
-//        InitV -> ElabVarHole((0..vars).toList()) to vars + 1
-//        is InitHole -> throw Exception("Invariant broken")
-//        else -> throw Exception("Will never happen due to types")
-//    }
-//    return Candidate(seed.names, seed.types.map { compile(it, 0).first })
+object Elaborated : Language {
+    val aritiesToDeps = mutableMapOf<List<Int>, DependencyAnalysis>()
+
+    private var id = 0
+    fun freshCandidateId() = id++
+}
+
+data class ElaboratedV(val v: Int) : Leaf<Elaborated> {
+    override fun toString() = "V$v"
+    override fun instantiate(i: Counter, insts: Int): ConstraintType<Elaborated> = ElaboratedConstrV(v, insts)
+    override fun variableNames() = setOf(v)
+}
+
+data class ElaboratedL(val label: Int) : Leaf<Elaborated> {
+    companion object {
+        private var lab = 0
+        fun reset() {
+            lab = 0
+        }
+
+        fun fresh() = ElaboratedL(lab++)
+        fun fromString(s: String) = ElaboratedL(s.removePrefix("L").toInt())
+    }
+
+    override fun toString() = "L$label"
+    override fun instantiate(i: Counter, insts: Int): ConstraintType<Elaborated> = ElaboratedConstrL(label)
+    override fun variableNames() = emptySet<Int>()
+}
+
+data class ElaboratedConstrV(val v: Int, val instId: Int) : CVariable<Elaborated>, Substitutable {
+    override fun toString() = "V${v}_$instId"
+}
+
+data class ElaboratedConstrL(val label: Int) : CTypeConstructor<Elaborated>(mutableListOf()) {
+    override fun match(other: CTypeConstructor<Elaborated>): Boolean = other is ElaboratedConstrL
+    override fun toString() = "L"
+    override fun split(other: CTypeConstructor<Elaborated>): List<Constraint<Elaborated>>? {
+        return super.split(other)?.plus(LabelConstraint(label, (other as ElaboratedConstrL).label))
+    }
+}
+
+data class LabelConstraint(val a: Int, val b: Int) : Constraint<Elaborated> {
+    override fun toString() = "L$a == L$b"
+}
+
+fun compileElab(seed: Candidate<Elab>, query: Query, oracle: EqualityNewOracle): Candidate<Concrete>? {
+    val deps = Elaborated.aritiesToDeps.getOrPut(seed.arities()) {
+        DependencyAnalysis(
+            query,
+            seed.names.zip(seed.arities()).toMap(),
+            oracle
+        )
+    }
+
+    val elaborated = compileElabIntermediate(seed)
+    val uf = TUnionFind()
+    (Unification(elaborated, query.posExsBeforeSubexprs).get()?.filterIsInstance<LabelConstraint>()
+        ?: throw Exception("Invariant broken")).forEach {
+        uf.union(it.a, it.b)
+    }
+    val elaboratedAfterEquivalences = Candidate(elaborated.names, elaborated.types.map {
+        when (it) {
+            is ElaboratedL -> ElaboratedL(uf.find(it.label))
+            else -> it
+        }
+    })
+    val gen = LabelArityConstraints(elaboratedAfterEquivalences, deps)
+    val seedId = Elaborated.freshCandidateId()
+    callCVC(gen.initialQuery(), "$seedId")
+
+    var counter = 0
+    var previousSolution = readCVC("$seedId") ?: return null
+    var lastSuccessful = -1
+    do {
+        println("Getting smaller CVC results")
+        val parser = CVCParser(previousSolution)
+        val testName = "$seedId-smaller${counter++}"
+        val cont = if (parser.sizes.isNotEmpty()) callCVC(
+            gen.smallerQuery(parser.sizes.mapKeys { gen.pySizeToL(it.key).label }),
+            testName
+        ) else false
+        if (cont) {
+            lastSuccessful = counter - 1
+            previousSolution = readCVC(testName)!!  // callCVC returns success code stored in cont
+        }
+    } while (cont)
+    val finalSuccessfulOutput = if (lastSuccessful == -1) "$seedId" else "$seedId-smaller$lastSuccessful"
+
+    val labelArities: Map<Int, Int> =
+        CVCParser(readCVC(finalSuccessfulOutput)!!).sizes.mapKeys { gen.pySizeToL(it.key).label }
+
+    println(elaboratedAfterEquivalences)
+    println(labelArities)
+
+    fun compile(seed: SearchNode<Elaborated>): SearchNode<Concrete> = when (seed) {
+        is ElaboratedV -> ConcreteV(seed.v)
+        is ElaboratedL -> ConcreteL(List(labelArities[seed.label]!!) { ConcreteHole(TODO(), TODO(), labelArities) })
+        is NArrow -> NArrow(compile(seed.l), compile(seed.r))
+        is Hole -> throw Exception("Invariant broken")
+        else -> throw Exception("Will never happen due to types")
+    }
+    return Candidate(elaboratedAfterEquivalences.names, elaboratedAfterEquivalences.types.map { compile(it) })
 }
 
 object Concrete : Language
@@ -187,16 +286,20 @@ data class ConcreteL(override val params: List<SearchNode<Concrete>>) : Branch<C
         }
 }
 
-class ConcreteHole : Hole<Concrete>() {
-    companion object {
-        val labels = mutableMapOf<Int, Int>()  // label to arity
-    }
+class ConcreteHole(
+    private val param: ParameterNode,
+    private val constraint: DependencyConstraint?,
+    private val labelArities: Map<Int, Int>
+) : Hole<Concrete>() {
+    override fun equals(other: Any?): Boolean = other is ConcreteHole
+    override fun hashCode() = 0
 
+    private fun hole() = ConcreteHole(param, constraint, labelArities)
     override fun expansions(constrs: List<Constraint<Concrete>>): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
         (listOf(
-            NArrow(ConcreteHole(), ConcreteHole()),
-            ConcreteV(TODO())
-        ) + labels.map { (label, arity) -> ConcreteL(List(arity) { ConcreteHole() }) })
+            NArrow(hole(), hole()),
+            ConcreteV(TODO("refer to ConcreteEnumerator.filler"))
+        ) + labelArities.map { (label, arity) -> ConcreteL(List(arity) { hole() }) })
             .map { it to (this to it) }
 }
 
