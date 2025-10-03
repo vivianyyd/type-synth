@@ -64,7 +64,9 @@ data class NArrow<L : Language> private constructor(override val params: List<Se
 }
 
 sealed interface Leaf<L : Language> : SearchNode<L> {
-    override fun expansions(constrs: List<Constraint<L>>) = listOf(this to null)
+    override fun expansions(constrs: List<Constraint<L>>): List<Pair<SearchNode<L>, Commitment<L>>> =
+        listOf(this to null)
+
     override fun size() = 1
     override fun depth() = 1
     override fun full() = true
