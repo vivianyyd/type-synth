@@ -23,9 +23,11 @@ object InitL : Leaf<Init> {
 class InitHole : Hole<Init>() {
     override fun expansions(
         constrs: List<Constraint<Init>>,
-        vars: Set<Int>
+        vars: Set<Int>,
+        recursionBound: Int?
     ): List<Pair<SearchNode<Init>, Commitment<Init>>> =
         listOf(NArrow(InitHole(), InitHole()), InitV, InitL).map { it to (this to it) }
+    // TODO this guy ignores the bound but it could follow it
 }
 
 object InitConstrV : CVariable<Init> {
@@ -68,13 +70,18 @@ object ElabL : Leaf<Elab> {
     override fun variableNames() = emptySet<Int>()
 }
 
-data class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
+class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
     override fun toString() = "V_"
     override fun expansions(
         constrs: List<Constraint<Elab>>,
-        vars: Set<Int>
+        vars: Set<Int>,
+        recursionBound: Int?
     ): List<Pair<SearchNode<Elab>, Commitment<Elab>>> =
         this.vars.map { ElabV(it) }.map { it to (this to it) }
+
+    // TODO Not sure if this does what I want to do.
+//    override fun equals(other: Any?) = other is ElabVarHole
+//    override fun hashCode() = 0
 }
 
 /** Good style would be to hide this constructor somehow so it can only be instantiated by ElabV */
@@ -291,16 +298,17 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
 
     override fun expansions(
         constrs: List<Constraint<Concrete>>,
-        vars: Set<Int>
+        vars: Set<Int>,
+        recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
         params.indices.flatMap { i ->
-            params[i].expansions(constrs, vars)
+            params[i].expansions(constrs, vars, recursionBound?.let { it - 1 })
                 .map { (node, commit) ->
                     ConcreteL(
                         id,
                         params.mapIndexed { j, p -> if (j == i) node else p }) to commit
                 }
-        } + (this to null)
+        } + (if (params.isEmpty()) listOf(this to null) else listOf())
 }
 
 class ConcreteHole(
@@ -309,12 +317,30 @@ class ConcreteHole(
     private val labelArities: Map<Int, Int>,
 ) : Hole<Concrete>() {
     override fun toString() = "_"
-    override fun equals(other: Any?): Boolean = other is ConcreteHole
-    override fun hashCode() = 0
+
+    // TODO We want to use the below equals when we are comparing new candidates against what we've seen before.
+    //      but we want to use built in physical equals when we are looking to replace holes!
+//    override fun equals(other: Any?): Boolean = other is ConcreteHole
+//    override fun hashCode() = 0
 
     override fun expansions(
         constrs: List<Constraint<Concrete>>,
-        vars: Set<Int>
+        vars: Set<Int>,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
+        if (recursionBound != null && recursionBound < 1) expansionsNoBound(constrs, vars).filter {
+            when (val t = it.first) {
+                is ConcreteL -> t.params.isEmpty()
+                is NArrow -> false
+                is ConcreteHole -> true
+                is ConcreteV -> true
+                else -> throw Exception("Impossible")
+            }
+        } else expansionsNoBound(constrs, vars)
+
+    private fun expansionsNoBound(
+        constrs: List<Constraint<Concrete>>,
+        vars: Set<Int>,
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
         fun hole() = ConcreteHole(mayHaveFresh, constraint, labelArities)
         fun wrap(e: List<SearchNode<Concrete>>) = e.map { it to (this to it) }
