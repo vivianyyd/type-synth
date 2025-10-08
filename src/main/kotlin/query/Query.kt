@@ -51,7 +51,18 @@ class Query(
     names: List<String> = listOf(),
     includesSubexprs: Boolean = false
 ) {
-    val posExsBeforeSubexprs = posExamples.toList()
+    val posExsBeforeSubexprs: List<Example>
+
+    init {
+        val noSubexprs = posExamples.toMutableList()
+        for (pos in posExamples) {
+            when (pos) {
+                is Name -> noSubexprs.removeAll { it == pos }
+                is App -> noSubexprs.removeAll { it == pos.fn || it == pos.arg }
+            }
+        }
+        posExsBeforeSubexprs = noSubexprs
+    }
 
     val posExamples: Set<Example> = (posExamples + names.map { Name(it) }).toSet()
         .let { if (includesSubexprs) it else it.flatMap { it.subexprs() }.toSet() }

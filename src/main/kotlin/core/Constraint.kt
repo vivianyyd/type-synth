@@ -3,6 +3,7 @@ package core
 import query.App
 import query.Example
 import query.Name
+import test.ConsTest
 import util.Counter
 
 /** ConstraintTypes are mutable */
@@ -30,7 +31,7 @@ data class CArrow<L : Language> private constructor(override val params: Mutable
  * inst denotes _which_ instantiation we are in. This matters bc if we fill a hole with a variable,
  * that variable needs to know where it is so it matches the others in the same instantiation call. */
 data class Instantiation<L : Language>(val n: Hole<L>, val id: Int, val inst: Int, val instVarId: Counter) :
-    CVariable<L> {
+    CVariable<L> {  // Not substitutable - we need these to induce choices, can't discard as we do when we substitute
     override fun toString() = "inst$id"
 }
 
@@ -38,9 +39,13 @@ data class ProofVariable<L : Language>(val id: Int) : CVariable<L>, Substitutabl
     override fun toString() = "T$id"
 }
 
-sealed interface Constraint<L : Language>
+sealed interface Constraint<L : Language> {
+    fun trivial(): Boolean
+}
+
 data class EqualityConstraint<L : Language>(val l: ConstraintType<L>, val r: ConstraintType<L>) : Constraint<L> {
     override fun toString() = "$l = $r"
+    override fun trivial() = l == r
 }
 
 typealias Commitment<L> = Pair<Hole<L>, SearchNode<L>>?
@@ -125,11 +130,14 @@ class Unification<L : Language> {
 
     private fun simplify() {
         do {
-            constraints.removeAll { it is EqualityConstraint && it.l == it.r }
+            // assign here, and check in loop guard to avoid short circuiting
+            val c1 = substs()
+            val c2 = splits()
+            val c3 = constraints.removeAll { it.trivial() }
             val cset = constraints.toSet()
             constraints.clear()
             constraints.addAll(cset)
-        } while (substs() || splits())
+        } while (c1 || c2 || c3)
     }
 
     /** Replace [v] with [s] in [t] inplace. */
@@ -182,17 +190,34 @@ class Unification<L : Language> {
     }
 }
 
-//object CInitVar : CVariable<Init>
-
-//TODO(
-//"Need to also form label equivalence classes for middle abstraction. " +
-//"Need state that L can modify / make Constraint an interface and have middle abstraction" +
-//"implement new constraint that forces label names to be the same"
-//)
-
 /*
 Handling conflicts:
 - conflict analysis - small set of assignments in DAG that separates conflict from roots (cut)
 - two literal watching - only check clauses for which the variable set is one of the two that is being watched
     I think we cannot really do this but maybe it's not so bad bc each constraint has at most two inst() nodes
  */
+
+fun main() {
+    val t = ConsTest
+    println(t.query.names)
+    val ty = Candidate(
+        t.query.names, listOf(
+            ConcreteL(0, listOf()),
+            ConcreteL(1, listOf(ConcreteL(1, listOf(ConcreteL(0, listOf()))))),
+            ConcreteL(1, listOf(ConcreteL(0, listOf()))),
+            ConcreteL(1, listOf(ConcreteL(2, listOf()))),
+            NArrow(
+                ConcreteV(0), NArrow(
+                    ConcreteL(1, listOf(ConcreteV(0))),
+                    ConcreteL(1, listOf(ConcreteHole(false, null, mapOf(0 to 0, 1 to 1, 2 to 0))))
+                )
+            ),
+            ConcreteL(2, listOf())
+        )
+    )
+
+
+    println(ty.paramDepth())
+    val constrs = Unification(ty, t.query.posExsBeforeSubexprs).get()
+    println(constrs)
+}
