@@ -7,8 +7,13 @@ import util.lazyCartesianProduct
  * Only full types are hashable */
 sealed interface SearchNode<L : Language> {
     fun instantiate(i: Counter, insts: Int): ConstraintType<L>
-    fun expansions(constrs: List<Constraint<L>> = listOf()): List<Pair<SearchNode<L>, Commitment<L>>>
+    fun expansions(
+        constrs: List<Constraint<L>> = listOf(),
+        vars: Set<Int> = setOf()
+    ): List<Pair<SearchNode<L>, Commitment<L>>>
+
     fun size(): Int
+    fun holes(): Int
     fun depth(): Int
     fun full(): Boolean
 
@@ -19,22 +24,17 @@ sealed interface SearchNode<L : Language> {
 
     /** Optional for correctness, but helps us recognize alpha equivalences */
     fun variableNames(): Set<Int>
-    fun canonical() = variableNames().size == (variableNames().maxOrNull() ?: -1) + 1
 }
 
 sealed class Branch<L : Language>(open val params: List<SearchNode<L>>) : SearchNode<L> {
-    init {
-//        TODO(
-//            "params should actually be private, and we only allow params if they have the same arity" +
-//                    "whatever. or we only support pruning operation or something idk. think of how it interacts " +
-//                    "with holes"
-//        )
-//        TODO("maybe this can be an interface w functions and no params value")
-    }
-
     override fun size() = size
     private val size by lazy {
         1 + params.sumOf { it.size() }
+    }
+
+    override fun holes() = holes
+    private val holes by lazy {
+        params.sumOf { it.holes() }
     }
 
     override fun depth() = depth
@@ -48,8 +48,8 @@ sealed class Branch<L : Language>(open val params: List<SearchNode<L>>) : Search
 }
 
 data class NArrow<L : Language> private constructor(override val params: List<SearchNode<L>>) : Branch<L>(params) {
-    open val l = params[0]
-    open val r = params[1]
+    val l = params[0]
+    val r = params[1]
 
     constructor(l: SearchNode<L>, r: SearchNode<L>) : this(listOf(l, r))
 
@@ -58,20 +58,26 @@ data class NArrow<L : Language> private constructor(override val params: List<Se
     override fun instantiate(i: Counter, insts: Int): ConstraintType<L> =
         CArrow(l.instantiate(i, insts), r.instantiate(i, insts))
 
-    override fun expansions(constrs: List<Constraint<L>>): List<Pair<SearchNode<L>, Commitment<L>>> {
+    override fun expansions(constrs: List<Constraint<L>>, vars: Set<Int>): List<Pair<SearchNode<L>, Commitment<L>>> {
         // If we use prod, hole expansion cannot include itself, or blowup is too fast...
-        // val prod = lazyCartesianProduct(listOf(params[0].expansions(), params[1].expansions())).map { NArrow(it) }
-        val one = (l.expansions(constrs).map { (node, commit) -> NArrow(node, r) to commit } + r.expansions(constrs)
-            .map { (node, commit) -> NArrow(l, node) to commit })
+        // multiple commitments made at once if we use prod
+//         val prod = lazyCartesianProduct(listOf(params[0].expansions(), params[1].expansions())).map {
+//             NArrow(it)
+//         }
+        val one = (l.expansions(constrs, vars).map { (node, commit) -> NArrow(node, r) to commit } + r.expansions(
+            constrs,
+            vars
+        ).map { (node, commit) -> NArrow(l, node) to commit })
         return one.toSet().toList()
     }
 }
 
 sealed interface Leaf<L : Language> : SearchNode<L> {
-    override fun expansions(constrs: List<Constraint<L>>): List<Pair<SearchNode<L>, Commitment<L>>> =
+    override fun expansions(constrs: List<Constraint<L>>, vars: Set<Int>): List<Pair<SearchNode<L>, Commitment<L>>> =
         listOf(this to null)
 
     override fun size() = 1
+    override fun holes() = 0
     override fun depth() = 1
     override fun full() = true
 }
@@ -88,6 +94,7 @@ sealed class Hole<L : Language> : SearchNode<L> {
     fun instantiations(): List<Instantiation<L>> = instantiations
 
     override fun size() = 1
+    override fun holes() = 1
     override fun depth() = 0
     override fun full() = false
     override fun variableNames() = emptySet<Int>()
@@ -103,8 +110,36 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
         types.sumOf { it.size() }
     }
 
-    val depth by lazy {
+    val holes by lazy {
+        types.sumOf { it.holes() }
+    }
+
+    fun paramDepth() = paramDepth
+
+    private val paramDepth by lazy {
+        types.maxOfOrNull {
+            when (it) {
+                is NArrow -> params(it).maxOfOrNull { it.depth() } ?: 0
+                else -> it.depth()
+            }
+        } ?: 0
+    }
+
+    fun depth() = depth
+
+    private val depth by lazy {
         types.maxOf { it.depth() }
+    }
+
+    private fun params(node: NArrow<L>): List<SearchNode<L>> {
+        var curr: SearchNode<L> = node
+        val p = mutableListOf<SearchNode<L>>()
+        while (curr is NArrow<L>) {
+            p.add(curr.l)
+            curr = curr.r
+        }
+        p.add(curr)
+        return p
     }
 
     fun asMap() = names.zip(types).toMap()
@@ -113,16 +148,19 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
 
     fun full() = types.all { it.full() }
 
-    fun canonical() = types.all { it.canonical() }
+    fun canonical() = types.all { it.variableNames().size == (it.variableNames().maxOrNull() ?: -1) + 1 }
 
     fun expansions(constrs: List<Constraint<L>> = listOf()): Sequence<Candidate<L>> {
         // TODO should this be product, or also one at a time?? either will work but what is better
         return lazyCartesianProduct(types.map {
+            // TODO we don't really learn from bad combinations here
+
+
             // Each expansion corresponds with concretizing one hole. We check constrs after refining corresponding inst
             // variables, this lets us check w inherited constrs from parent. If we can elim many this way, we save a
             // lot of space from not keeping around bad candidates in frontier only to find they are bad later.
             // We also use one construction of constraints to prune many expansions
-            it.expansions(constrs)
+            it.expansions(constrs, it.variableNames())
         }).mapNotNull {
 
             val (types, commitments) = it.unzip()

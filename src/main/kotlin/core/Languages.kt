@@ -1,8 +1,8 @@
 package core
 
 import dependencyanalysis.DependencyAnalysis
-import dependencyanalysis.DependencyConstraint
 import query.Query
+import stc.Var
 import util.*
 
 /** Defines locations of type constructors vs variables and function arities */
@@ -21,7 +21,10 @@ object InitL : Leaf<Init> {
 }
 
 class InitHole : Hole<Init>() {
-    override fun expansions(constrs: List<Constraint<Init>>): List<Pair<SearchNode<Init>, Commitment<Init>>> =
+    override fun expansions(
+        constrs: List<Constraint<Init>>,
+        vars: Set<Int>
+    ): List<Pair<SearchNode<Init>, Commitment<Init>>> =
         listOf(NArrow(InitHole(), InitHole()), InitV, InitL).map { it to (this to it) }
 }
 
@@ -67,8 +70,11 @@ object ElabL : Leaf<Elab> {
 
 data class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
     override fun toString() = "V_"
-    override fun expansions(constrs: List<Constraint<Elab>>): List<Pair<SearchNode<Elab>, Commitment<Elab>>> =
-        vars.map { ElabV(it) }.map { it to (this to it) }
+    override fun expansions(
+        constrs: List<Constraint<Elab>>,
+        vars: Set<Int>
+    ): List<Pair<SearchNode<Elab>, Commitment<Elab>>> =
+        this.vars.map { ElabV(it) }.map { it to (this to it) }
 }
 
 /*
@@ -203,6 +209,50 @@ data class ElaboratedConstrL(val label: Int) : CTypeConstructor<Elaborated>(muta
 
 data class LabelConstraint(val a: Int, val b: Int) : Constraint<Elaborated> {
     override fun toString() = "L$a == L$b"
+    override fun trivial() = a == b
+}
+
+/** So ugly, but here since we have a new core. Later, delete old code. */
+sealed interface Dependency
+
+object NoVariables : Dependency
+data class Only(val v: Int) : Dependency
+data class MustContain(val vars: List<Int>) : Dependency
+
+fun typeOfParam(candidate: Candidate<Elaborated>, param: ParameterNode): SearchNode<Elaborated> {
+    var curr = candidate.types[candidate.names.indexOf(param.f)]
+    var i = 0
+    while (curr is NArrow<Elaborated>) {
+        if (i == param.i) return curr.l
+        curr = curr.r
+        i++
+    }
+    assert(i == param.i)
+    return curr
+}
+
+fun constraints(candidate: Candidate<Elaborated>, deps: DependencyAnalysis): Map<ParameterNode, Dependency> {
+    val constraints = mutableMapOf<ParameterNode, Dependency>()
+    candidate.names.forEach { name ->
+        val graph = deps.graphs[name]!!
+        graph.loops.forEach {
+            constraints[ParameterNode(name, it.node.i)] = NoVariables
+        }
+        graph.deps.forEach {
+            val sup = typeOfParam(candidate, it.sup)
+            if (sup is ElaboratedV) constraints[ParameterNode(name, it.sub.i)] = Only(sup.v)
+        }
+        equivalenceClasses(graph.deps) { e1, e2 -> e1.sup == e2.sup }.forEach {
+            val sink = it.first().sup
+            val containedVars =
+                it.map { typeOfParam(candidate, it.sub) }.filterIsInstance<ElaboratedV>().map { it.v }
+            if (typeOfParam(candidate, sink) !is Var && containedVars.isNotEmpty()) {
+                val p = ParameterNode(name, sink.i)
+                if (p !in constraints) constraints[p] = MustContain(containedVars)
+            }
+        }
+    }
+    return constraints
 }
 
 fun compileElab(seed: Candidate<Elab>, query: Query, oracle: EqualityNewOracle): Candidate<Concrete>? {
@@ -220,12 +270,15 @@ fun compileElab(seed: Candidate<Elab>, query: Query, oracle: EqualityNewOracle):
         ?: throw Exception("Invariant broken")).forEach {
         uf.union(it.a, it.b)
     }
-    val elaboratedAfterEquivalences = Candidate(elaborated.names, elaborated.types.map {
-        when (it) {
-            is ElaboratedL -> ElaboratedL(uf.find(it.label))
-            else -> it
-        }
-    })
+    fun amendWithEquivs(node: SearchNode<Elaborated>): SearchNode<Elaborated> = when (node) {
+        is ElaboratedL -> ElaboratedL(uf.find(node.label) ?: node.label)
+        is NArrow -> NArrow(amendWithEquivs(node.l), amendWithEquivs(node.r))
+        is ElaboratedV -> node
+        else -> throw Exception("Impossible")
+    }
+
+    val elaboratedAfterEquivalences = Candidate(elaborated.names, elaborated.types.map { amendWithEquivs(it) })
+
     val gen = LabelArityConstraints(elaboratedAfterEquivalences, deps)
     val seedId = Elaborated.freshCandidateId()
     callCVC(gen.initialQuery(), "$seedId")
@@ -254,20 +307,42 @@ fun compileElab(seed: Candidate<Elab>, query: Query, oracle: EqualityNewOracle):
     println(elaboratedAfterEquivalences)
     println(labelArities)
 
-    fun compile(seed: SearchNode<Elaborated>): SearchNode<Concrete> = when (seed) {
-        is ElaboratedV -> ConcreteV(seed.v)
-        is ElaboratedL -> ConcreteL(List(labelArities[seed.label]!!) { ConcreteHole(TODO(), TODO(), labelArities) })
-        is NArrow -> NArrow(compile(seed.l), compile(seed.r))
+    val constraints = constraints(elaboratedAfterEquivalences, deps)
+
+    fun compileParameter(node: SearchNode<Elaborated>, parameter: ParameterNode): SearchNode<Concrete> = when (node) {
+        is ElaboratedV -> ConcreteV(node.v)
+        is ElaboratedL -> ConcreteL(
+            node.label,
+            List(labelArities[node.label]!!) {
+                ConcreteHole(deps.mayHaveFresh(parameter), constraints[parameter], labelArities)
+            })
+        is NArrow -> NArrow(compileParameter(node.l, parameter), compileParameter(node.r, parameter))
+        else -> throw Exception("Will never happen")
+    }
+
+    fun compile(name: String, paramsSoFar: Int, seed: SearchNode<Elaborated>): SearchNode<Concrete> = when (seed) {
+        is ElaboratedV, is ElaboratedL -> compileParameter(seed, ParameterNode(name, paramsSoFar))
+        is NArrow -> NArrow(
+            compileParameter(seed.l, ParameterNode(name, paramsSoFar)),
+            compile(name, paramsSoFar + 1, seed.r)
+        )
         is Hole -> throw Exception("Invariant broken")
         else -> throw Exception("Will never happen due to types")
     }
-    return Candidate(elaboratedAfterEquivalences.names, elaboratedAfterEquivalences.types.map { compile(it) })
+
+    return Candidate(
+        elaboratedAfterEquivalences.names,
+        elaboratedAfterEquivalences.names.zip(elaboratedAfterEquivalences.types)
+            .map { (name, ty) -> compile(name, 0, ty) })
 }
 
 object Concrete : Language
 
 /** ConcreteNode interface - helps maintain what variables have already been chosen in the type.
- * We need a way to check alpha equivalence */
+ * We need a way to check alpha equivalence
+ * helper function for expansions()?
+ * Each node stores numVars in the type it's in. This shouldn't affect equals since types equal implies num vars equal.
+ * */
 
 data class ConcreteV(val v: Int) : Leaf<Concrete> {
     override fun toString() = "V$v"
@@ -275,44 +350,86 @@ data class ConcreteV(val v: Int) : Leaf<Concrete> {
     override fun variableNames() = setOf(v)
 }
 
-data class ConcreteL(override val params: List<SearchNode<Concrete>>) : Branch<Concrete>(params) {
+data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>>) :
+    Branch<Concrete>(params) {
+    override fun toString() = "L$id$params"
     override fun instantiate(i: Counter, insts: Int): ConstraintType<Concrete> =
-        ConcreteConstrL.new(params.map { it.instantiate(i, insts) })
+        ConcreteConstrL.new(id, params.map { it.instantiate(i, insts) })
 
-    override fun expansions(constrs: List<Constraint<Concrete>>): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
+    override fun expansions(
+        constrs: List<Constraint<Concrete>>,
+        vars: Set<Int>
+    ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
         params.indices.flatMap { i ->
-            params[i].expansions(constrs)
-                .map { (node, commit) -> ConcreteL(params.mapIndexed { j, p -> if (j == i) node else p }) to commit }
-        }
+            params[i].expansions(constrs, vars)
+                .map { (node, commit) ->
+                    ConcreteL(
+                        id,
+                        params.mapIndexed { j, p -> if (j == i) node else p }) to commit
+                }
+        } + (this to null)
 }
 
 class ConcreteHole(
-    private val param: ParameterNode,
-    private val constraint: DependencyConstraint?,
-    private val labelArities: Map<Int, Int>
+    private val mayHaveFresh: Boolean,
+    private val constraint: Dependency?,
+    private val labelArities: Map<Int, Int>,
 ) : Hole<Concrete>() {
+    override fun toString() = "_"
     override fun equals(other: Any?): Boolean = other is ConcreteHole
     override fun hashCode() = 0
 
-    private fun hole() = ConcreteHole(param, constraint, labelArities)
-    override fun expansions(constrs: List<Constraint<Concrete>>): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
-        (listOf(
-            NArrow(hole(), hole()),
-            ConcreteV(TODO("refer to ConcreteEnumerator.filler"))
-        ) + labelArities.map { (label, arity) -> ConcreteL(List(arity) { hole() }) })
-            .map { it to (this to it) }
+    override fun expansions(
+        constrs: List<Constraint<Concrete>>,
+        vars: Set<Int>
+    ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
+        fun hole() = ConcreteHole(mayHaveFresh, constraint, labelArities)
+        fun wrap(e: List<SearchNode<Concrete>>) = e.map { it to (this to it) }
+
+        val variableExpansions = when (constraint) {
+            null, is MustContain -> (if (mayHaveFresh) vars + (vars.size + 1) else vars).map { ConcreteV(it) }
+            NoVariables -> listOf()
+            is Only -> listOf(ConcreteV(constraint.v))
+        }
+        val fnExpansion = NArrow(hole(), hole())
+
+        val mustBeCompatible = constrs.filterIsInstance<EqualityConstraint<Concrete>>().mapNotNull {
+            if (it.l is Instantiation && it.l.n == this) it.r
+            else if (it.r is Instantiation && it.r.n == this) it.l
+            else null
+        }.filterIsInstance<CTypeConstructor<Concrete>>()
+
+        if (mustBeCompatible.isNotEmpty()) {
+            if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return wrap(variableExpansions)
+            if (mustBeCompatible.all { mustBeCompatible.first().match(it) }) return wrap(
+                when (val f = mustBeCompatible.first()) {
+                    is CArrow -> listOf(fnExpansion)
+                    is ConcreteConstrL -> listOf(ConcreteL(f.label, List(labelArities[f.label]!!) { hole() }))
+                    else -> throw Exception("Cannot happen due to types")
+                }
+            )
+        }
+
+        return wrap(
+            labelArities.map { (label, arity) ->
+                ConcreteL(
+                    label,
+                    List(arity) { hole() })
+            } + variableExpansions + fnExpansion
+        )
+    }
 }
 
 data class ConcreteConstrV(val v: Int, val instId: Int) : CVariable<Concrete>, Substitutable {
     override fun toString() = "V${v}_$instId"
 }
 
-data class ConcreteConstrL(override val params: MutableList<ConstraintType<Concrete>>) :
+data class ConcreteConstrL(val label: Int, override val params: MutableList<ConstraintType<Concrete>>) :
     CTypeConstructor<Concrete>(params) {
     companion object {
-        fun new(params: List<ConstraintType<Concrete>>) = ConcreteConstrL(params.toMutableList())
+        fun new(label: Int, params: List<ConstraintType<Concrete>>) = ConcreteConstrL(label, params.toMutableList())
     }
 
-    override fun match(other: CTypeConstructor<Concrete>): Boolean = other is ConcreteConstrL
-    override fun toString() = "L"
+    override fun match(other: CTypeConstructor<Concrete>): Boolean = other is ConcreteConstrL && label == other.label
+    override fun toString() = "L$label$params"
 }
