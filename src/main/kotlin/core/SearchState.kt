@@ -9,7 +9,8 @@ sealed interface SearchNode<L : Language> {
     fun instantiate(i: Counter, insts: Int): ConstraintType<L>
     fun expansions(
         constrs: List<Constraint<L>> = listOf(),
-        vars: Set<Int> = setOf()
+        vars: Set<Int> = setOf(),
+        recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
     fun size(): Int
@@ -58,22 +59,31 @@ data class NArrow<L : Language> private constructor(override val params: List<Se
     override fun instantiate(i: Counter, insts: Int): ConstraintType<L> =
         CArrow(l.instantiate(i, insts), r.instantiate(i, insts))
 
-    override fun expansions(constrs: List<Constraint<L>>, vars: Set<Int>): List<Pair<SearchNode<L>, Commitment<L>>> {
+    override fun expansions(
+        constrs: List<Constraint<L>>,
+        vars: Set<Int>,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<L>, Commitment<L>>> {
         // If we use prod, hole expansion cannot include itself, or blowup is too fast...
         // multiple commitments made at once if we use prod
 //         val prod = lazyCartesianProduct(listOf(params[0].expansions(), params[1].expansions())).map {
 //             NArrow(it)
 //         }
-        val one = (l.expansions(constrs, vars).map { (node, commit) -> NArrow(node, r) to commit } + r.expansions(
+        val one = (l.expansions(constrs, vars, recursionBound?.let { it - 1 })
+            .map { (node, commit) -> NArrow(node, r) to commit } + r.expansions(
             constrs,
-            vars
+            vars, recursionBound?.let { it - 1 }
         ).map { (node, commit) -> NArrow(l, node) to commit })
         return one.toSet().toList()
     }
 }
 
 sealed interface Leaf<L : Language> : SearchNode<L> {
-    override fun expansions(constrs: List<Constraint<L>>, vars: Set<Int>): List<Pair<SearchNode<L>, Commitment<L>>> =
+    override fun expansions(
+        constrs: List<Constraint<L>>,
+        vars: Set<Int>,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<L>, Commitment<L>>> =
         listOf(this to null)
 
     override fun size() = 1
@@ -168,7 +178,9 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
             // Micro-opt: If the commitment refines a hole to a fresh variable, no need to check validity
             if (it.all { (ty, commit) ->
                     commit == null ||
-                            (commit.second is ConcreteV && (commit.second as ConcreteV).v !in ty.variableNames())
+                            (commit.second is ConcreteV && (commit.second as ConcreteV).v !in ty.variableNames() && TODO(
+                                "This is wrong - we check the new ty's variableNames, so the second branch will always be false!"
+                            ))
                 })
                 Candidate(names, types)
 
