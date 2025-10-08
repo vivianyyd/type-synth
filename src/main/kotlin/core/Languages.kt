@@ -77,37 +77,6 @@ data class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
         this.vars.map { ElabV(it) }.map { it to (this to it) }
 }
 
-/*
-//data class ElabLabHole(val id: Int) : Hole<Elab>() {
-//    companion object {
-//        var fresh = 0
-//
-//        fun fresh() = ElabL(fresh++)
-//    }
-//
-//    override fun toString() = "L_$id"
-//
-//    override fun expansions(constrs: List<Constraint<Elab>>): List<Pair<SearchNode<Elab>, Commitment<Elab>>> {
-//        val uf = TUnionFind()
-//        constrs.filterIsInstance<LabelConstraint>().forEach {
-//            uf.union(it.a, it.b)
-//        }
-//        label = uf.find(label)
-//        println("my label is $label and i found in UF ${uf.find(label)}")
-//        return listOf(ElabL(uf.find(label)) to null)
-//    }
-//}
-
-//data class ElabConstrL(val label: Int) : CTypeConstructor<Elab>(mutableListOf()) {
-//    override fun match(other: CTypeConstructor<Elab>): Boolean = other is ElabConstrL
-//    override fun split(other: CTypeConstructor<Elab>): List<Constraint<Elab>>? {
-//        return super.split(other)?.plus(LabelConstraint(label, (other as ElabConstrL).label))
-//    }
-//
-//    override fun toString() = "L$label"
-//}
- */
-
 /** Good style would be to hide this constructor somehow so it can only be instantiated by ElabV */
 data class ElabConstrV(val v: Int, val instId: Int) : CVariable<Elab>, Substitutable {
     override fun toString() = "V${v}_$instId"
@@ -118,42 +87,6 @@ object ElabConstrL : CTypeConstructor<Elab>(mutableListOf()) {
     override fun toString() = "L"
 }
 
-/**
- * Two options for representing label assignments:
- * 1. We can have label holes, which init to having all previously init labels as options.
- *    Then, our unification algorithm is pure and fails on two labels if they differ.
- *    I guess we also have to reset the num labels to 0 for each new candidate here (same as below)
- * 2. We have no label holes; every L from Init gets a distinct name. Then we have an effectful unification algo,
- *    which forms equivalence classes. Then we use these to produce the next round of seeds.
- *    One important thing here is that we need to reset the UnionFind data structure for each seed candidate
- *    in the Elab level... Things get messy.
- *
- *  Actually the union find DS has to be init once for each Unification instance, so it can't just be upon compilation
- *  since expansions produces new var bindings
- *
- *  For both options, the reset can be done in a translateCandidate() fn so it's not horrible either way. UF faster
- * */
-/*
-//data class ElabLabHole private constructor(val labelsBefore: Int) : Hole<Elab>() {
-//    companion object {
-//        var nLabels = 0
-//
-//        fun reset() {
-//            nLabels = 0
-//        }
-//    }
-//
-//    constructor() : this(nLabels++)
-//
-//    override fun toString() = "L_"
-//    override fun expansions(): List<Pair<SearchNode<Elab>, Commitment<Elab>>> =
-//        (0..labelsBefore).map { ElabL(it) }.map { it to (this to it) }
-//}
-//
-//data class ElabConstrL(val label: Int) : CTypeConstructor<Elab>(mutableListOf()) {
-//    override fun match(other: CTypeConstructor<Elab>): Boolean = other is ElabConstrL && other.label == label
-//}
-*/
 private fun compileElabIntermediate(seed: Candidate<Elab>): Candidate<Elaborated> {
     ElaboratedL.reset()
     fun compile(seed: SearchNode<Elab>): SearchNode<Elaborated> = when (seed) {
