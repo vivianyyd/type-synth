@@ -1,12 +1,11 @@
 package core
 
-import query.App
-import query.Name
-import query.Query
+import query.*
 import test.DictTest
 import util.clearCVC
 import util.lazyCartesianProduct
 import java.util.*
+import kotlin.math.min
 
 class Enumerator<L : Language>(
     val query: Query,
@@ -148,11 +147,11 @@ fun main() {
     //      if multiple things share structure, their antiunifier may be the conflict
 
     fun <L : Language> fromSeeds(seeds: Sequence<Candidate<L>>): Sequence<Candidate<L>> = seeds.flatMap {
-        Enumerator(q, it, false, Candidate<L>::depth).enumerate(3)
+        Enumerator(q, it, false, Candidate<L>::depth).enumerate(4)
     }
 
     fun <L : Language> fromSeeds(seeds: List<Candidate<L>>): List<Candidate<L>> = seeds.flatMap {
-        Enumerator(q, it, false, Candidate<L>::depth).enumerate(3)
+        Enumerator(q, it, false, Candidate<L>::depth).enumerate(4)
     }
 
     val initSols = fromSeeds(inits.toList())

@@ -345,8 +345,8 @@ class ConcreteHole(
         fun hole() = ConcreteHole(mayHaveFresh, constraint, labelArities)
         fun wrap(e: List<SearchNode<Concrete>>) = e.map { it to (this to it) }
 
-        val variableExpansions = when (constraint) {
-            null, is MustContain -> (if (mayHaveFresh) vars + (vars.size + 1) else vars).map { ConcreteV(it) }
+        val variableExpansions = when (constraint) {  // TODO weird that vars need to be sorted
+            null, is MustContain -> (if (mayHaveFresh) vars + (vars.size + 1) else vars).sorted().map { ConcreteV(it) }
             NoVariables -> listOf()
             is Only -> listOf(ConcreteV(constraint.v))
         }
@@ -369,12 +369,12 @@ class ConcreteHole(
             )
         }
 
-        return wrap(
-            labelArities.map { (label, arity) ->
+        return wrap(  // TODO hilariously, I think the order makes a difference here. we should sort by size tbh
+            variableExpansions + labelArities.map { (label, arity) ->
                 ConcreteL(
                     label,
                     List(arity) { hole() })
-            } + variableExpansions + fnExpansion
+            } + fnExpansion
         )
     }
 }

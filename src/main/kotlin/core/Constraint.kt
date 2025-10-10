@@ -155,28 +155,28 @@ class Unification<L : Language> {
         }
 
     private fun substs(): Boolean {
-        val eqs = constraints.filterIsInstance<EqualityConstraint<L>>()
-            .filter { it.l is Substitutable || it.r is Substitutable }
-        val removeMe = eqs.filter { eq ->
-            val v: Substitutable =
-                if (eq.l is ProofVariable) eq.l
-                else if (eq.r is ProofVariable) eq.r
-                else if (eq.l is Substitutable) eq.l
-                else (eq.r as Substitutable)
-            val s = if (eq.l == v) eq.r else eq.l
-            for (j in constraints.indices) {
-                if (constraints[j] == eq) continue  // don't replace this constraint
-                if (constraints[j] is EqualityConstraint<L>) {
+        val substs = constraints.filterIsInstance<EqualityConstraint<L>>()
+            .filter { it.l is Substitutable || it.r is Substitutable }.map { eq ->
+                val v: Substitutable =
+                    if (eq.l is ProofVariable) eq.l
+                    else if (eq.r is ProofVariable) eq.r
+                    else if (eq.l is Substitutable) eq.l
+                    else (eq.r as Substitutable)
+                val s = if (eq.l == v) eq.r else eq.l
+                Triple(eq, v, s)
+            }
+        for (j in constraints.indices) {
+            substs.forEach { (eq, v, s) ->
+                if (constraints[j] is EqualityConstraint<L> && constraints[j] != eq) {
                     constraints[j] = EqualityConstraint(
                         substitute(v, s, (constraints[j] as EqualityConstraint<L>).l),
                         substitute(v, s, (constraints[j] as EqualityConstraint<L>).r)
                     )
                 }
             }
-            v is ProofVariable<*>  // keep bindings of normal variables, since we might refer to them later
         }
-        constraints.removeAll(removeMe)
-        return eqs.isNotEmpty()
+        constraints.removeAll(substs.mapNotNull { (eq, v, _) -> if (v is ProofVariable<*>) eq else null })
+        return substs.isNotEmpty()
     }
 
     private fun splits(): Boolean {
