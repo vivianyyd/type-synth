@@ -30,9 +30,9 @@ data class CArrow<L : Language> private constructor(override val params: Mutable
  * It is this class's job to instantiate its children once a commitment is made.
  * inst denotes _which_ instantiation we are in. This matters bc if we fill a hole with a variable,
  * that variable needs to know where it is so it matches the others in the same instantiation call. */
-data class Instantiation<L : Language>(val n: Hole<L>, val id: Int, val inst: Int, val instVarId: Counter) :
+data class Instantiation<L : Language>(val n: Hole<L>, val uniqueId: Int, val inst: Int, val freshIdGen: Counter) :
     CVariable<L> {  // Not substitutable - we need these to induce choices, can't discard as we do when we substitute
-    override fun toString() = "inst$id"
+    override fun toString() = "inst$uniqueId-$inst"
 }
 
 data class ProofVariable<L : Language>(val id: Int) : CVariable<L>, Substitutable {
@@ -92,7 +92,7 @@ class Unification<L : Language> {
                     fun newGuy(n: ConstraintType<L>) =
                         if (n is Instantiation && n in hole.instantiations())
                             node.instantiate(
-                                n.instVarId,
+                                n.freshIdGen,
                                 n.inst
                             ) else n
 
@@ -129,15 +129,16 @@ class Unification<L : Language> {
     }
 
     private fun simplify() {
-        do {
-            // assign here, and check in loop guard to avoid short circuiting
-            val c1 = substs()
-            val c2 = splits()
-            val c3 = constraints.removeAll { it.trivial() }
-            val cset = constraints.toSet()
-            constraints.clear()
-            constraints.addAll(cset)
-        } while (c1 || c2 || c3)
+        var substChange = substs()
+        var splitChange = splits()
+        while (splitChange || substChange) {
+            substChange = if (splitChange) substs() else false
+            splitChange = splits()
+            constraints.removeAll { it.trivial() }
+        }
+        val cset = constraints.toSet()
+        constraints.clear()
+        constraints.addAll(cset)
     }
 
     /** Replace [v] with [s] in [t] inplace. */
@@ -156,10 +157,15 @@ class Unification<L : Language> {
     private fun substs(): Boolean {
         val eqs = constraints.filterIsInstance<EqualityConstraint<L>>()
             .filter { it.l is Substitutable || it.r is Substitutable }
-        for (eq in eqs) {
-            val v: Substitutable = if (eq.l is Substitutable) eq.l else (eq.r as Substitutable)
-            val s = if (eq.l is Substitutable) eq.r else eq.l
+        val removeMe = eqs.filter { eq ->
+            val v: Substitutable =
+                if (eq.l is ProofVariable) eq.l
+                else if (eq.r is ProofVariable) eq.r
+                else if (eq.l is Substitutable) eq.l
+                else (eq.r as Substitutable)
+            val s = if (eq.l == v) eq.r else eq.l
             for (j in constraints.indices) {
+                if (constraints[j] == eq) continue  // don't replace this constraint
                 if (constraints[j] is EqualityConstraint<L>) {
                     constraints[j] = EqualityConstraint(
                         substitute(v, s, (constraints[j] as EqualityConstraint<L>).l),
@@ -167,8 +173,10 @@ class Unification<L : Language> {
                     )
                 }
             }
+            v is ProofVariable<*>  // keep bindings of normal variables, since we might refer to them later
         }
-        return constraints.removeAll { it in eqs }
+        constraints.removeAll(removeMe)
+        return eqs.isNotEmpty()
     }
 
     private fun splits(): Boolean {
