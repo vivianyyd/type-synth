@@ -6,7 +6,7 @@ import util.lazyCartesianProduct
 /** SearchNodes are functional and immutable... except for Holes. So they are not
  * Only full types are hashable */
 sealed interface SearchNode<L : Language> {
-    fun instantiate(i: Counter, insts: Int): ConstraintType<L>
+    fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L>
     fun expansions(
         constrs: List<Constraint<L>> = listOf(),
         vars: Set<Int> = setOf(),
@@ -56,8 +56,8 @@ data class NArrow<L : Language> private constructor(override val params: List<Se
 
     override fun toString(): String = "${if (l is NArrow) "($l)" else "$l"} -> $r"
 
-    override fun instantiate(i: Counter, insts: Int): ConstraintType<L> =
-        CArrow(l.instantiate(i, insts), r.instantiate(i, insts))
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L> =
+        CArrow(l.instantiate(freshIdGen, instId), r.instantiate(freshIdGen, instId))
 
     override fun expansions(
         constrs: List<Constraint<L>>,
@@ -95,8 +95,8 @@ sealed interface Leaf<L : Language> : SearchNode<L> {
 sealed class Hole<L : Language> : SearchNode<L> {
     private val instantiations = mutableListOf<Instantiation<L>>()
 
-    override fun instantiate(i: Counter, insts: Int): ConstraintType<L> {
-        val inst = Instantiation(this, i.get(), insts, i)
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L> {
+        val inst = Instantiation(this, freshIdGen.get(), instId, freshIdGen)
         instantiations.add(inst)
         return inst
     }

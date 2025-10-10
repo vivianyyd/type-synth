@@ -10,13 +10,13 @@ object Init : Language
 
 object InitV : Leaf<Init> {
     override fun toString() = "V"
-    override fun instantiate(i: Counter, insts: Int): ConstraintType<Init> = InitConstrV
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Init> = InitConstrV
     override fun variableNames() = emptySet<Int>()
 }
 
 object InitL : Leaf<Init> {
     override fun toString() = "L"
-    override fun instantiate(i: Counter, insts: Int): ConstraintType<Init> = InitConstrL
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Init> = InitConstrL
     override fun variableNames() = emptySet<Int>()
 }
 
@@ -60,13 +60,13 @@ object Elab : Language
 
 data class ElabV(val v: Int) : Leaf<Elab> {
     override fun toString() = "V$v"
-    override fun instantiate(i: Counter, insts: Int): ConstraintType<Elab> = ElabConstrV(v, insts)
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Elab> = ElabConstrV(v, instId)
     override fun variableNames() = setOf(v)
 }
 
 object ElabL : Leaf<Elab> {
     override fun toString() = "L"
-    override fun instantiate(i: Counter, insts: Int): ConstraintType<Elab> = ElabConstrL
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Elab> = ElabConstrL
     override fun variableNames() = emptySet<Int>()
 }
 
@@ -115,7 +115,9 @@ object Elaborated : Language {
 
 data class ElaboratedV(val v: Int) : Leaf<Elaborated> {
     override fun toString() = "V$v"
-    override fun instantiate(i: Counter, insts: Int): ConstraintType<Elaborated> = ElaboratedConstrV(v, insts)
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Elaborated> =
+        ElaboratedConstrV(v, instId)
+
     override fun variableNames() = setOf(v)
 }
 
@@ -131,7 +133,7 @@ data class ElaboratedL(val label: Int) : Leaf<Elaborated> {
     }
 
     override fun toString() = "L$label"
-    override fun instantiate(i: Counter, insts: Int): ConstraintType<Elaborated> = ElaboratedConstrL(label)
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Elaborated> = ElaboratedConstrL(label)
     override fun variableNames() = emptySet<Int>()
 }
 
@@ -286,15 +288,15 @@ object Concrete : Language
 
 data class ConcreteV(val v: Int) : Leaf<Concrete> {
     override fun toString() = "V$v"
-    override fun instantiate(i: Counter, insts: Int): ConstraintType<Concrete> = ConcreteConstrV(v, insts)
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Concrete> = ConcreteConstrV(v, instId)
     override fun variableNames() = setOf(v)
 }
 
 data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>>) :
     Branch<Concrete>(params) {
     override fun toString() = "L$id$params"
-    override fun instantiate(i: Counter, insts: Int): ConstraintType<Concrete> =
-        ConcreteConstrL.new(id, params.map { it.instantiate(i, insts) })
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Concrete> =
+        ConcreteConstrL.new(id, params.map { it.instantiate(freshIdGen, instId) })
 
     override fun expansions(
         constrs: List<Constraint<Concrete>>,
@@ -316,8 +318,6 @@ class ConcreteHole(
     private val constraint: Dependency?,
     private val labelArities: Map<Int, Int>,
 ) : Hole<Concrete>() {
-    override fun toString() = "_"
-
     // TODO We want to use the below equals when we are comparing new candidates against what we've seen before.
     //      but we want to use built in physical equals when we are looking to replace holes!
 //    override fun equals(other: Any?): Boolean = other is ConcreteHole

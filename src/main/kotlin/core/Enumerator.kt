@@ -3,7 +3,7 @@ package core
 import query.App
 import query.Name
 import query.Query
-import test.ConsTest
+import test.DictTest
 import util.clearCVC
 import util.lazyCartesianProduct
 import java.util.*
@@ -103,12 +103,13 @@ class NewEnumerator<L : Language>(
 
         return optionsForLeftmost.flatMap { (newLeftMost, commit) ->
             val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newLeftMost else p })
-            if (commit == null)
+            if (commit == null) {
+                require(newCandidate == c)
                 emptySequence() // this call made no changes, but we don't want to hit it again TODO verify this doesn't break completeness
-            else {
+            } else {
                 val u = Unification(constrs)
-                val propagate = u.commitAndCheckValid(listOf(commit))
-                if (propagate) commitLeftmost(newCandidate, u.get()!!, recursionBound)
+                if (u.commitAndCheckValid(listOf(commit)))
+                    commitLeftmost(newCandidate, u.get()!!, recursionBound)
                 else emptySequence()
             }
         }
@@ -132,61 +133,13 @@ class NewEnumerator<L : Language>(
                     } else true)
         }.toList()
     }
-
-//    fun enumerate(maxDepth: Int): List<Candidate<L>> {
-//        fun handleFull(c: Candidate<L>) {
-//            if (c.canonical() && (if (mustPassNegatives) query.negExamples.all {
-//                    Unification(
-//                        c, listOf(it)
-//                    ).get() == null
-//                } else true)
-//                && Unification(c, query.posExsBeforeSubexprs).get() != null  // TODO shouldn't need this line, but we do
-//            ) ok.add(c)
-//        }
-//
-//        do {
-//            curr = frontier.remove()
-//            val constrs = Unification(curr, query.posExsBeforeSubexprs).get()
-//            // TODO We will often rediscover the same constraints even if two candidates are not identical...
-//            if (constrs != null) {
-//                if (depth(curr) > deepestSeen + 1) seen.clear()  // micro-opt
-//
-//                // Need to prove: We will never miss a type just bc we didn't enum it in canonical form. If it exists, we will hit canonical form - completeness
-//                if (curr.full()) {
-//                    handleFull(curr)
-//                } else {
-//                    val exp = curr.expansions(constrs).filter {
-//                        eCandidateCount++
-//                        val unseen =
-//                            it !in seen  // we might be able to optimize this check away if there is a known exploration order
-//                        seen.add(it)  // TODO This is redundant
-//                        if (!unseen) eGeneratedDuplicate++
-//                        unseen// TODO && it.canonical()
-//                    }.toList()
-//                    if (exp.isNotEmpty()) deepestSeen = depth(curr) + 1  // micro-opt
-//
-//                    val (full, hasHoles) = exp.partition { it.full() }
-//                    full.forEach { handleFull(it) }
-//                    frontier.addAll(hasHoles)
-//                    seen.addAll(exp)
-//                }
-//            } else rejectedCandidate++
-//        } while (depth(curr) <= maxDepth && frontier.isNotEmpty() && (if (minimizeSize && ok.isNotEmpty()) curr.size <= ok.first().size else true))
-//
-//        println("Candidates enumerated: $eCandidateCount")
-//        println("Duplicate candidates: $eGeneratedDuplicate")
-//        println("Candidates rejected: $rejectedCandidate")
-//
-//        println("Accepted candidates: ${ok.size}")
-//        println("Frontier: ${frontier.size}")
-//        return ok
-//    }
 }
 
 fun main() {
     clearCVC()
 
-    val q = ConsTest.query
+    val t = DictTest
+    val q = t.query
     val inits = lazyCartesianProduct(q.names.map { name ->
         InitHole().expansions().map { it.first }
             .filter { it is InitL || (it is NArrow && q.posExamples.any { it is App && it.fn is Name && it.fn.name == name }) }
@@ -214,7 +167,7 @@ fun main() {
 //    }
     println("Seed: $elabSols")
 
-    val concEnumerators = elabSols.mapNotNull { compileElab(it, q, ConsTest.oracle) }
+    val concEnumerators = elabSols.mapNotNull { compileElab(it, q, t.oracle) }
         .map { NewEnumerator(q, it, true, Candidate<Concrete>::paramDepth, true) }
 
     val sol = mutableListOf<Candidate<Concrete>>()
