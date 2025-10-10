@@ -9,7 +9,7 @@ sealed interface SearchNode<L : Language> {
     fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L>
     fun expansions(
         constrs: List<Constraint<L>> = listOf(),
-        vars: Set<Int> = setOf(),
+        vars: Set<Int> = setOf(),  // TODO if we do this correctly, this can just be an int
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
