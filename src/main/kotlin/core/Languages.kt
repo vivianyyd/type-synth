@@ -85,7 +85,7 @@ class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
 }
 
 /** Good style would be to hide this constructor somehow so it can only be instantiated by ElabV */
-data class ElabConstrV(val v: Int, val instId: Int) : CVariable<Elab>, Substitutable {
+data class ElabConstrV(val v: Int, val instId: Int) : CVariable<Elab>, AbstractSubstitutable<Elab>() {
     override fun toString() = "V${v}_$instId"
 }
 
@@ -137,7 +137,7 @@ data class ElaboratedL(val label: Int) : Leaf<Elaborated> {
     override fun variableNames() = emptySet<Int>()
 }
 
-data class ElaboratedConstrV(val v: Int, val instId: Int) : CVariable<Elaborated>, Substitutable {
+data class ElaboratedConstrV(val v: Int, val instId: Int) : CVariable<Elaborated>, AbstractSubstitutable<Elaborated>() {
     override fun toString() = "V${v}_$instId"
 }
 
@@ -255,7 +255,7 @@ fun compileElab(seed: Candidate<Elab>, query: Query, oracle: EqualityNewOracle):
         is ElaboratedV -> ConcreteV(node.v)
         is ElaboratedL -> ConcreteL(
             node.label,
-            List(labelArities[node.label]!!) {
+            List(labelArities[node.label] ?: 0) {  // If arity unconstrained, assume nullary
                 ConcreteHole(deps.mayHaveFresh(parameter), constraints[parameter], labelArities)
             })
         is NArrow -> NArrow(compileParameter(node.l, parameter), compileParameter(node.r, parameter))
@@ -353,8 +353,8 @@ class ConcreteHole(
         val fnExpansion = NArrow(hole(), hole())
 
         val mustBeCompatible = constrs.filterIsInstance<EqualityConstraint<Concrete>>().mapNotNull {
-            if (it.l is Instantiation && it.l.n == this) it.r
-            else if (it.r is Instantiation && it.r.n == this) it.l
+            if (it.l() is Instantiation && (it.l() as Instantiation<Concrete>).n == this) it.r()
+            else if (it.r() is Instantiation && (it.r() as Instantiation<Concrete>).n == this) it.l()
             else null
         }.filterIsInstance<CTypeConstructor<Concrete>>()
 
@@ -379,7 +379,7 @@ class ConcreteHole(
     }
 }
 
-data class ConcreteConstrV(val v: Int, val instId: Int) : CVariable<Concrete>, Substitutable {
+data class ConcreteConstrV(val v: Int, val instId: Int) : CVariable<Concrete>, AbstractSubstitutable<Concrete>() {
     override fun toString() = "V${v}_$instId"
 }
 

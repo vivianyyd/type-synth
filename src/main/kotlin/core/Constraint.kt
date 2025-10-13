@@ -15,7 +15,36 @@ sealed class CTypeConstructor<L : Language>(open val params: MutableList<Constra
 }
 
 sealed interface CVariable<L : Language> : ConstraintType<L>
-sealed interface Substitutable  // : CVariable?
+sealed interface Substitutable<L : Language> : CVariable<L> {
+    fun addRef(c: EqualityConstraint<L>)
+    fun removeRef(c: EqualityConstraint<L>)
+    fun doSubstitution(eq: EqualityConstraint<L>, substitution: ConstraintType<L>)
+}
+
+sealed class AbstractSubstitutable<L : Language> : Substitutable<L> {
+    private val references = mutableListOf<EqualityConstraint<L>>()
+    override fun addRef(c: EqualityConstraint<L>) {
+        if (c !in references) references.add(c) // TODO needs to be set
+    }
+
+    override fun removeRef(c: EqualityConstraint<L>) {
+        references.remove(c)
+    }
+
+    override fun doSubstitution(eq: EqualityConstraint<L>, substitution: ConstraintType<L>) {
+        println("I am $this - References: $references")
+        for (i in references.indices) { // if eq is sub1 = sub2, we remove eq from references of one before we do the other?? or something??
+            println("- Now replacing in ${references[i]}")
+            if (references[i] != eq) {
+                references[i].replace(
+                    substitute(this, substitution, references[i].l()),
+                    substitute(this, substitution, references[i].r())
+                )
+            }
+        }
+        references.removeAll { it != eq }
+    }
+}
 
 data class CArrow<L : Language> private constructor(override val params: MutableList<ConstraintType<L>>) :
     CTypeConstructor<L>(params) {
@@ -35,7 +64,7 @@ data class Instantiation<L : Language>(val n: Hole<L>, val uniqueId: Int, val in
     override fun toString() = "inst$uniqueId-$inst"
 }
 
-data class ProofVariable<L : Language>(val id: Int) : CVariable<L>, Substitutable {
+data class ProofVariable<L : Language>(val id: Int) : CVariable<L>, AbstractSubstitutable<L>() {
     override fun toString() = "T$id"
 }
 
@@ -43,7 +72,43 @@ sealed interface Constraint<L : Language> {
     fun trivial(): Boolean
 }
 
-data class EqualityConstraint<L : Language>(val l: ConstraintType<L>, val r: ConstraintType<L>) : Constraint<L> {
+/** Replace [v] with [s] in [t] inplace. */
+private fun <L : Language> substitute(
+    v: Substitutable<L>,
+    s: ConstraintType<L>,
+    t: ConstraintType<L>
+): ConstraintType<L> =
+    when (t) {
+        is Substitutable<L> -> if (t == v) s else t
+        is Instantiation -> t
+        is CTypeConstructor -> {
+            t.params.replaceAll { substitute(v, s, it) }
+            t
+        }
+
+        is InitConstrV -> t
+    }
+
+data class EqualityConstraint<L : Language>(private var l: ConstraintType<L>, private var r: ConstraintType<L>) :
+    Constraint<L> {
+    init {
+        updateRefs()
+    }
+
+    private fun updateRefs() {
+        if (l is Substitutable) (l as Substitutable<L>).addRef(this)
+        if (r is Substitutable) (r as Substitutable<L>).addRef(this)
+    }
+
+    fun replace(l: ConstraintType<L>, r: ConstraintType<L>) {
+        this.l = l
+        this.r = r
+        updateRefs()
+    }
+
+    fun l() = l
+    fun r() = r
+
     override fun toString() = "$l = $r"
     override fun trivial() = l == r
 }
@@ -96,10 +161,10 @@ class Unification<L : Language> {
                                 n.inst
                             ) else n
 
-                    val newL = newGuy(constr.l)
-                    val newR = newGuy(constr.r)
+                    val newL = newGuy(constr.l())
+                    val newR = newGuy(constr.r())
                     constraints[j] = EqualityConstraint(newL, newR)
-                    changedCurr = changedCurr || constr.l != newL || constr.r != newR
+                    changedCurr = changedCurr || constr.l() != newL || constr.r() != newR
                 }
             }
             changedCurr
@@ -116,10 +181,10 @@ class Unification<L : Language> {
             for (j in constraints.indices) {
                 if (constraints[j] is EqualityConstraint<L>) {
                     val constr = constraints[j] as EqualityConstraint<L>
-                    val newL = if (constr.l == inst) ty else constr.l
-                    val newR = if (constr.r == inst) ty else constr.r
+                    val newL = if (constr.l() == inst) ty else constr.l()
+                    val newR = if (constr.r() == inst) ty else constr.r()
                     constraints[j] = EqualityConstraint(newL, newR)
-                    changedCurr = changedCurr || constr.l == inst || constr.r == inst
+                    changedCurr = changedCurr || constr.l() == inst || constr.r() == inst
                 }
             }
             changedCurr
@@ -141,50 +206,33 @@ class Unification<L : Language> {
         constraints.addAll(cset)
     }
 
-    /** Replace [v] with [s] in [t] inplace. */
-    private fun substitute(v: Substitutable, s: ConstraintType<L>, t: ConstraintType<L>): ConstraintType<L> =
-        when (t) {
-            is Substitutable -> if (t == v) s else t
-            is Instantiation -> t
-            is CTypeConstructor -> {
-                t.params.replaceAll { substitute(v, s, it) }
-                t
-            }
-
-            is InitConstrV -> t
-        }
-
     private fun substs(): Boolean {
         val substs = constraints.filterIsInstance<EqualityConstraint<L>>()
-            .filter { it.l is Substitutable || it.r is Substitutable }.map { eq ->
-                val v: Substitutable =
-                    if (eq.l is ProofVariable) eq.l
-                    else if (eq.r is ProofVariable) eq.r
-                    else if (eq.l is Substitutable) eq.l
-                    else (eq.r as Substitutable)
-                val s = if (eq.l == v) eq.r else eq.l
+            .filter { it.l() is Substitutable || it.r() is Substitutable }.map { eq ->
+                val v: Substitutable<L> =
+                    (if (eq.l() is ProofVariable) eq.l()
+                    else if (eq.r() is ProofVariable) eq.r()
+                    else if (eq.l() is Substitutable) eq.l()
+                    else eq.r()) as Substitutable<L>
+                val s = if (eq.l() == v) eq.r() else eq.l()
                 Triple(eq, v, s)
             }
-        for (j in constraints.indices) {
-            substs.forEach { (eq, v, s) ->
-                if (constraints[j] is EqualityConstraint<L> && constraints[j] != eq) {
-                    constraints[j] = EqualityConstraint(
-                        substitute(v, s, (constraints[j] as EqualityConstraint<L>).l),
-                        substitute(v, s, (constraints[j] as EqualityConstraint<L>).r)
-                    )
-                }
-            }
-        }
-        constraints.removeAll(substs.mapNotNull { (eq, v, _) -> if (v is ProofVariable<*>) eq else null })
+        substs.forEach { (eq, v, s) -> v.doSubstitution(eq, s) }
+        constraints.removeAll(substs.mapNotNull { (eq, v, _) ->
+            if (v is ProofVariable<*>) {
+                v.removeRef(eq)
+                eq
+            } else null
+        })
         return substs.isNotEmpty()
     }
 
     private fun splits(): Boolean {
         val newConstrs = mutableListOf<Constraint<L>>()
         fun splittable(c: Constraint<L>) =
-            c is EqualityConstraint<L> && c.l is CTypeConstructor<L> && c.r is CTypeConstructor<L>
+            c is EqualityConstraint<L> && c.l() is CTypeConstructor<L> && c.r() is CTypeConstructor<L>
         for (constr in constraints.filter { splittable(it) }.filterIsInstance<EqualityConstraint<L>>()) {
-            val result = (constr.l as CTypeConstructor<L>).split(constr.r as CTypeConstructor<L>)
+            val result = (constr.l() as CTypeConstructor<L>).split(constr.r() as CTypeConstructor<L>)
             if (result == null) {
                 error = true
                 break
