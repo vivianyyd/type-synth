@@ -2,16 +2,24 @@ package core
 
 import util.Counter
 import util.lazyCartesianProduct
+import java.lang.Integer.max
 
 /** SearchNodes are functional and immutable... except for Holes. So they are not
  * Only full types are hashable */
 sealed interface SearchNode<L : Language> {
     fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L>
-    fun expansions(
+    fun bfsExpansions(
         constrs: List<Constraint<L>> = listOf(),
         vars: Set<Int> = setOf(),  // TODO if we do this correctly, this can just be an int
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
+
+    fun dfsLeftExpansions(
+        constrs: List<Constraint<L>> = listOf(),
+        vars: Set<Int> = setOf(),  // TODO if we do this correctly, this can just be an int
+        recursionBound: Int? = null
+    ): List<Pair<SearchNode<L>, Commitment<L>>>
+
 
     fun size(): Int
     fun holes(): Int
@@ -48,18 +56,29 @@ sealed class Branch<L : Language>(open val params: List<SearchNode<L>>) : Search
     override fun variableNames() = params.flatMap { it.variableNames() }.toSet()
 }
 
-data class NArrow<L : Language> private constructor(override val params: List<SearchNode<L>>) : Branch<L>(params) {
+data class NArrow<L : Language> private constructor(
+    override val params: List<SearchNode<L>>,
+    private val contributesToDepth: Boolean
+) : Branch<L>(params) {
     val l = params[0]
     val r = params[1]
 
-    constructor(l: SearchNode<L>, r: SearchNode<L>) : this(listOf(l, r))
+    constructor(l: SearchNode<L>, r: SearchNode<L>, contributesToDepth: Boolean) : this(
+        listOf(l, r),
+        contributesToDepth
+    )
+
+    override fun depth() = depth
+    private val depth by lazy {
+        max(l.depth(), r.depth()) + (if (contributesToDepth) 1 else 0)
+    }
 
     override fun toString(): String = "${if (l is NArrow) "($l)" else "$l"} -> $r"
 
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L> =
         CArrow(l.instantiate(freshIdGen, instId), r.instantiate(freshIdGen, instId))
 
-    override fun expansions(
+    override fun bfsExpansions(
         constrs: List<Constraint<L>>,
         vars: Set<Int>,
         recursionBound: Int?
@@ -69,17 +88,41 @@ data class NArrow<L : Language> private constructor(override val params: List<Se
 //         val prod = lazyCartesianProduct(listOf(params[0].expansions(), params[1].expansions())).map {
 //             NArrow(it)
 //         }
-        val one = (l.expansions(constrs, vars, recursionBound?.let { it - 1 })
-            .map { (node, commit) -> NArrow(node, r) to commit } + r.expansions(
-            constrs,
-            vars, recursionBound?.let { it - 1 }
-        ).map { (node, commit) -> NArrow(l, node) to commit })
+        val nextBound = recursionBound?.let { it - (if (contributesToDepth) 1 else 0) }
+        val one = (l.bfsExpansions(constrs, vars, nextBound).map { (node, commit) ->
+            NArrow(node, r, contributesToDepth) to commit
+        } + r.bfsExpansions(constrs, vars, nextBound).map { (node, commit) ->
+            NArrow(l, node, contributesToDepth) to commit
+        })
         return one.toSet().toList()
+    }
+
+    override fun dfsLeftExpansions(
+        constrs: List<Constraint<L>>,
+        vars: Set<Int>,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<L>, Commitment<L>>> {
+        val nextBound = recursionBound?.let { it - (if (contributesToDepth) 1 else 0) }
+        val left = l.dfsLeftExpansions(constrs, vars, nextBound).map { (node, commit) ->
+            NArrow(node, r, contributesToDepth) to commit
+        }
+        val right = if (left.isEmpty() || (left.size == 1 && left.first().first.l == l))
+            r.dfsLeftExpansions(constrs, vars, nextBound).map { (node, commit) ->
+                NArrow(l, node, contributesToDepth) to commit
+            } else listOf()
+        return (left + right).toSet().toList()
     }
 }
 
 sealed interface Leaf<L : Language> : SearchNode<L> {
-    override fun expansions(
+    override fun bfsExpansions(
+        constrs: List<Constraint<L>>,
+        vars: Set<Int>,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<L>, Commitment<L>>> =
+        listOf(this to null)
+
+    override fun dfsLeftExpansions(
         constrs: List<Constraint<L>>,
         vars: Set<Int>,
         recursionBound: Int?
@@ -93,6 +136,24 @@ sealed interface Leaf<L : Language> : SearchNode<L> {
 }
 
 sealed class Hole<L : Language> : SearchNode<L> {
+    abstract fun expansions(
+        constrs: List<Constraint<L>>,
+        vars: Set<Int>,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<L>, Commitment<L>>>
+
+    override fun bfsExpansions(
+        constrs: List<Constraint<L>>,
+        vars: Set<Int>,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(constrs, vars, recursionBound)
+
+    override fun dfsLeftExpansions(
+        constrs: List<Constraint<L>>,
+        vars: Set<Int>,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(constrs, vars, recursionBound)
+
     private val instantiations = mutableListOf<Instantiation<L>>()
 
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L> {
@@ -105,7 +166,7 @@ sealed class Hole<L : Language> : SearchNode<L> {
 
     override fun size() = 1
     override fun holes() = 1
-    override fun depth() = 0
+    override fun depth() = 1  // TODO think about me
     override fun full() = false
     override fun variableNames() = emptySet<Int>()
     override fun toString() = "_"
@@ -122,17 +183,6 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
 
     val holes by lazy {
         types.sumOf { it.holes() }
-    }
-
-    fun paramDepth() = paramDepth
-
-    private val paramDepth by lazy {
-        types.maxOfOrNull {
-            when (it) {
-                is NArrow -> params(it).maxOfOrNull { it.depth() } ?: 0
-                else -> it.depth()
-            }
-        } ?: 0
     }
 
     fun depth() = depth
@@ -160,17 +210,15 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
 
     fun canonical() = types.all { it.variableNames().size == (it.variableNames().maxOrNull() ?: -1) + 1 }
 
-    fun expansions(constrs: List<Constraint<L>> = listOf()): Sequence<Candidate<L>> {
+    fun bfsExpansions(constrs: List<Constraint<L>> = listOf()): Sequence<Candidate<L>> {
         // TODO should this be product, or also one at a time?? either will work but what is better
         return lazyCartesianProduct(types.map {
             // TODO we don't really learn from bad combinations here
-
-
             // Each expansion corresponds with concretizing one hole. We check constrs after refining corresponding inst
             // variables, this lets us check w inherited constrs from parent. If we can elim many this way, we save a
             // lot of space from not keeping around bad candidates in frontier only to find they are bad later.
             // We also use one construction of constraints to prune many expansions
-            it.expansions(constrs, it.variableNames())
+            it.bfsExpansions(constrs, it.variableNames())
         }).mapNotNull {
 
             val (types, commitments) = it.unzip()

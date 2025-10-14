@@ -26,8 +26,10 @@ class InitHole : Hole<Init>() {
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<Init>, Commitment<Init>>> =
-        listOf(NArrow(InitHole(), InitHole()), InitV, InitL).map { it to (this to it) }
-    // TODO this guy ignores the bound but it could follow it
+        (listOf(InitV, InitL) + (if (recursionBound != null && recursionBound <= 1) listOf()
+        else listOf(
+            NArrow(InitHole(), InitHole(), true)
+        ))).map { it to (this to it) }
 }
 
 object InitConstrV : CVariable<Init> {
@@ -44,7 +46,7 @@ fun compileInit(seed: Candidate<Init>): Candidate<Elab> {
         is NArrow -> {
             val (leftTy, leftVars) = compile(seed.l, vars)
             val (rightTy, endVars) = compile(seed.r, leftVars)
-            NArrow(leftTy, rightTy) to endVars
+            NArrow(leftTy, rightTy, true) to endVars
         }
         InitL -> ElabL to vars
         InitV -> ElabVarHole((0..vars).toList()) to vars + 1
@@ -99,7 +101,7 @@ private fun compileElabIntermediate(seed: Candidate<Elab>): Candidate<Elaborated
     fun compile(seed: SearchNode<Elab>): SearchNode<Elaborated> = when (seed) {
         is ElabV -> ElaboratedV(seed.v)
         ElabL -> ElaboratedL.fresh()
-        is NArrow -> NArrow(compile(seed.l), compile(seed.r))
+        is NArrow -> NArrow(compile(seed.l), compile(seed.r), true)
         is Hole -> throw Exception("Invariant broken")
         else -> throw Exception("Will never happen due to types")
     }
@@ -197,7 +199,12 @@ fun constraints(candidate: Candidate<Elaborated>, deps: DependencyAnalysis): Map
     return constraints
 }
 
-fun compileElab(seed: Candidate<Elab>, query: Query, oracle: EqualityNewOracle): Candidate<Concrete>? {
+fun compileElab(
+    seed: Candidate<Elab>,
+    query: Query,
+    oracle: EqualityNewOracle,
+    callSolver: Boolean
+): Candidate<Concrete>? {
     val deps = Elaborated.aritiesToDeps.getOrPut(seed.arities()) {
         DependencyAnalysis(
             query,
@@ -214,7 +221,7 @@ fun compileElab(seed: Candidate<Elab>, query: Query, oracle: EqualityNewOracle):
     }
     fun amendWithEquivs(node: SearchNode<Elaborated>): SearchNode<Elaborated> = when (node) {
         is ElaboratedL -> ElaboratedL(uf.find(node.label) ?: node.label)
-        is NArrow -> NArrow(amendWithEquivs(node.l), amendWithEquivs(node.r))
+        is NArrow -> NArrow(amendWithEquivs(node.l), amendWithEquivs(node.r), true)
         is ElaboratedV -> node
         else -> throw Exception("Impossible")
     }
@@ -223,7 +230,7 @@ fun compileElab(seed: Candidate<Elab>, query: Query, oracle: EqualityNewOracle):
 
     val gen = LabelArityConstraints(elaboratedAfterEquivalences, deps)
     val seedId = Elaborated.freshCandidateId()
-    callCVC(gen.initialQuery(), "$seedId")
+    if (callSolver) callCVC(gen.initialQuery(), "$seedId")
 
     var counter = 0
     var previousSolution = readCVC("$seedId") ?: return null
@@ -255,10 +262,10 @@ fun compileElab(seed: Candidate<Elab>, query: Query, oracle: EqualityNewOracle):
         is ElaboratedV -> ConcreteV(node.v)
         is ElaboratedL -> ConcreteL(
             node.label,
-            List(labelArities[node.label]!!) {
+            List(labelArities[node.label]!!) {  // TODO If unconstrained, 0 params?
                 ConcreteHole(deps.mayHaveFresh(parameter), constraints[parameter], labelArities)
             })
-        is NArrow -> NArrow(compileParameter(node.l, parameter), compileParameter(node.r, parameter))
+        is NArrow -> NArrow(compileParameter(node.l, parameter), compileParameter(node.r, parameter), true)
         else -> throw Exception("Will never happen")
     }
 
@@ -266,7 +273,7 @@ fun compileElab(seed: Candidate<Elab>, query: Query, oracle: EqualityNewOracle):
         is ElaboratedV, is ElaboratedL -> compileParameter(seed, ParameterNode(name, paramsSoFar))
         is NArrow -> NArrow(
             compileParameter(seed.l, ParameterNode(name, paramsSoFar)),
-            compile(name, paramsSoFar + 1, seed.r)
+            compile(name, paramsSoFar + 1, seed.r), false
         )
         is Hole -> throw Exception("Invariant broken")
         else -> throw Exception("Will never happen due to types")
@@ -298,19 +305,35 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Concrete> =
         ConcreteConstrL.new(id, params.map { it.instantiate(freshIdGen, instId) })
 
-    override fun expansions(
+    override fun bfsExpansions(
         constrs: List<Constraint<Concrete>>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
         params.indices.flatMap { i ->
-            params[i].expansions(constrs, vars, recursionBound?.let { it - 1 })
+            params[i].bfsExpansions(constrs, vars, recursionBound?.let { it - 1 })
                 .map { (node, commit) ->
                     ConcreteL(
                         id,
                         params.mapIndexed { j, p -> if (j == i) node else p }) to commit
                 }
         } + (if (params.isEmpty()) listOf(this to null) else listOf())
+
+    override fun dfsLeftExpansions(
+        constrs: List<Constraint<Concrete>>, vars: Set<Int>, recursionBound: Int?
+    ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
+        var cont = true
+        return params.indices.flatMap { i ->
+            if (cont) {
+                val exp =
+                    params[i].dfsLeftExpansions(constrs, vars, recursionBound?.let { it - 1 }).map { (node, commit) ->
+                        ConcreteL(id, params.mapIndexed { j, p -> if (j == i) node else p }) to commit
+                    }
+                cont = exp.size <= 1
+                exp
+            } else listOf()
+        } + (if (params.isEmpty()) listOf(this to null) else listOf())
+    }
 }
 
 class ConcreteHole(
@@ -328,7 +351,7 @@ class ConcreteHole(
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
-        if (recursionBound != null && recursionBound < 1) expansionsNoBound(constrs, vars).filter {
+        if (recursionBound != null && recursionBound <= 1) expansionsNoBound(constrs, vars).filter {
             when (val t = it.first) {
                 is ConcreteL -> t.params.isEmpty()
                 is NArrow -> false
@@ -350,7 +373,7 @@ class ConcreteHole(
             NoVariables -> listOf()
             is Only -> listOf(ConcreteV(constraint.v))
         }
-        val fnExpansion = NArrow(hole(), hole())
+        val fnExpansion = NArrow(hole(), hole(), true)
 
         val mustBeCompatible = constrs.filterIsInstance<EqualityConstraint<Concrete>>().mapNotNull {
             if (it.l is Instantiation && it.l.n == this) it.r

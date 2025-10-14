@@ -217,15 +217,16 @@ fun main() {
             NArrow(
                 ConcreteV(0), NArrow(
                     ConcreteL(1, listOf(ConcreteV(0))),
-                    ConcreteL(1, listOf(ConcreteHole(false, null, mapOf(0 to 0, 1 to 1, 2 to 0))))
-                )
+                    ConcreteL(1, listOf(ConcreteHole(false, null, mapOf(0 to 0, 1 to 1, 2 to 0)))),
+                    false
+                ),
+                false
             ),
             ConcreteL(2, listOf())
         )
     )
 
 
-    println(ty.paramDepth())
     val constrs = Unification(ty, t.query.posExsBeforeSubexprs).get()
     println(constrs)
 }
