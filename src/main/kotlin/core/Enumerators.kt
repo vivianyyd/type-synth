@@ -1,6 +1,8 @@
 package core
 
-import query.*
+import query.App
+import query.Name
+import query.Query
 import test.ConsTest
 import util.clearCVC
 import util.lazyCartesianProduct
@@ -14,12 +16,11 @@ class BFSEnumerator<L : Language>(
     val query: Query,
     seedCandidate: Candidate<L>,
     private val mustPassNegatives: Boolean,
-    val depth: (Candidate<L>) -> Int,
     private val minimizeSize: Boolean = false
 ) : Enumerator<L> {
-    private val frontier = PriorityQueue<Candidate<L>>(compareBy({ depth(it) }, { it.size }))
+    private val frontier = PriorityQueue<Candidate<L>>(compareBy({ it.depth() }, { it.size }))
     private val seen = mutableSetOf<Candidate<L>>()
-    private var deepestSeen = depth(seedCandidate) + 1
+    private var deepestSeen = seedCandidate.depth() + 1
 
     init {
         frontier.add(seedCandidate)
@@ -51,13 +52,13 @@ class BFSEnumerator<L : Language>(
             val constrs = Unification(curr, query.posExsBeforeSubexprs).get()
             // TODO We will often rediscover the same constraints even if two candidates are not identical...
             if (constrs != null) {
-                if (depth(curr) > deepestSeen + 1) seen.clear()  // micro-opt
+                if (curr.depth() > deepestSeen + 1) seen.clear()  // micro-opt
 
                 // Need to prove: We will never miss a type just bc we didn't enum it in canonical form. If it exists, we will hit canonical form - completeness
                 if (curr.full()) {
                     handleFull(curr)
                 } else {
-                    val exp = curr.expansions(constrs).filter {
+                    val exp = curr.bfsExpansions(constrs).filter {
                         eCandidateCount++
                         val unseen =
                             it !in seen  // we might be able to optimize this check away if there is a known exploration order
@@ -65,7 +66,7 @@ class BFSEnumerator<L : Language>(
                         if (!unseen) eGeneratedDuplicate++
                         unseen// TODO && it.canonical()
                     }.toList()
-                    if (exp.isNotEmpty()) deepestSeen = depth(curr) + 1  // micro-opt
+                    if (exp.isNotEmpty()) deepestSeen = curr.depth() + 1  // micro-opt
 
                     val (full, hasHoles) = exp.partition { it.full() }
                     full.forEach { handleFull(it) }
@@ -73,7 +74,7 @@ class BFSEnumerator<L : Language>(
                     seen.addAll(exp)
                 }
             } else rejectedCandidate++
-        } while (depth(curr) <= maxDepth && frontier.isNotEmpty() && (if (minimizeSize && ok.isNotEmpty()) curr.size <= ok.first().size else true))
+        } while (curr.depth() <= maxDepth && frontier.isNotEmpty() && (if (minimizeSize && ok.isNotEmpty()) curr.size <= ok.first().size else true))
 
         println("Candidates enumerated: $eCandidateCount")
         println("Duplicate candidates: $eGeneratedDuplicate")
@@ -89,7 +90,6 @@ class DFSEnumerator<L : Language>(
     val query: Query,
     val seedCandidate: Candidate<L>,
     private val mustPassNegatives: Boolean,
-    val depth: (Candidate<L>) -> Int,
     private val minimizeSize: Boolean = false
 ) : Enumerator<L> {
     private fun commitLeftmost(
@@ -101,7 +101,7 @@ class DFSEnumerator<L : Language>(
             ?: return sequenceOf(c)
 
         val optionsForLeftmost =
-            leftmostNode.expansions(constrs, leftmostNode.variableNames(), recursionBound).asSequence()
+            leftmostNode.dfsLeftExpansions(constrs, leftmostNode.variableNames(), recursionBound).asSequence()
 
         return optionsForLeftmost.flatMap { (newLeftMost, commit) ->
             val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newLeftMost else p })
@@ -137,25 +137,24 @@ class DFSEnumerator<L : Language>(
     }
 }
 
+val RERUN_CVC = true
+
 fun main() {
-    clearCVC()
+    if (RERUN_CVC) clearCVC()
 
     val t = ConsTest
     val (query, oracle) = t.query to t.oracle
 
     val inits = lazyCartesianProduct(
         query.names.map { name ->
-            InitHole().expansions().map { it.first }
+            InitHole().bfsExpansions().map { it.first }
                 .filter { it is InitL || (it is NArrow && query.posExamples.any { it is App && it.fn is Name && it.fn.name == name }) }
         }).map { Candidate(query.names, it) }
 
     fun <L : Language> enum(seed: Candidate<L>, maxDepth: Int): List<Candidate<L>> =
-        DFSEnumerator(query, seed, false, Candidate<L>::depth).enumerate(maxDepth)
+        DFSEnumerator(query, seed, false).enumerate(maxDepth)
 
     fun <L : Language> fromSeeds(seeds: Sequence<Candidate<L>>, maxDepth: Int): Sequence<Candidate<L>> =
-        seeds.flatMap { enum(it, maxDepth) }
-
-    fun <L : Language> fromSeeds(seeds: List<Candidate<L>>, maxDepth: Int): List<Candidate<L>> =
         seeds.flatMap { enum(it, maxDepth) }
 
     val initSols = fromSeeds(inits, 3)
@@ -166,10 +165,14 @@ fun main() {
 //        val cons = it.types[it.names.indexOf("cons")]
 //        cons is NArrow && cons.l is ElabV && cons.r is NArrow && cons.r.l is ElabL && cons.r.r is ElabL
 //    }
-    println("Seeds: ${elabSols.joinToString(separator = "\n")}")
 
-    val concEnumerators = elabSols.mapNotNull { compileElab(it, query, oracle) }
-        .map { DFSEnumerator(query, it, true, Candidate<Concrete>::paramDepth, true) }
+    val concEnumerators = elabSols.mapNotNull {
+        compileElab(it, query, oracle, RERUN_CVC)?.let {
+            DFSEnumerator(query, it, mustPassNegatives = true, minimizeSize = true)
+        }
+    }.toList() // This needs to be a list so we don't keep calling it...
+
+    println(concEnumerators.joinToString(separator = "\n") { "${it.seedCandidate}" })
 
     val sol = mutableListOf<Candidate<Concrete>>()
     for (i in 1..4) {
