@@ -370,11 +370,7 @@ class ConcreteHole(
         }
 
         return wrap(  // TODO hilariously, I think the order makes a difference here. we should sort by size tbh
-            variableExpansions + labelArities.map { (label, arity) ->
-                ConcreteL(
-                    label,
-                    List(arity) { hole() })
-            } + fnExpansion
+            variableExpansions + labelArities.map { ConcreteL(it.key, List(it.value) { hole() }) } + fnExpansion
         )
     }
 }
