@@ -1,20 +1,22 @@
 package core
 
-import query.App
-import query.Name
-import query.Query
+import query.*
 import test.ConsTest
 import util.clearCVC
 import util.lazyCartesianProduct
 import java.util.*
 
-class Enumerator<L : Language>(
+sealed interface Enumerator<L : Language> {
+    fun enumerate(maxDepth: Int): List<Candidate<L>>
+}
+
+class BFSEnumerator<L : Language>(
     val query: Query,
     seedCandidate: Candidate<L>,
     private val mustPassNegatives: Boolean,
     val depth: (Candidate<L>) -> Int,
     private val minimizeSize: Boolean = false
-) {
+) : Enumerator<L> {
     private val frontier = PriorityQueue<Candidate<L>>(compareBy({ depth(it) }, { it.size }))
     private val seen = mutableSetOf<Candidate<L>>()
     private var deepestSeen = depth(seedCandidate) + 1
@@ -30,7 +32,7 @@ class Enumerator<L : Language>(
     var eGeneratedDuplicate = 0
     var rejectedCandidate = 0
 
-    fun enumerate(maxDepth: Int): List<Candidate<L>> {
+    override fun enumerate(maxDepth: Int): List<Candidate<L>> {
         var curr: Candidate<L>
         if (frontier.isEmpty()) return listOf()
 
@@ -83,44 +85,96 @@ class Enumerator<L : Language>(
     }
 }
 
+class DFSEnumerator<L : Language>(
+    val query: Query,
+    val seedCandidate: Candidate<L>,
+    private val mustPassNegatives: Boolean,
+    val depth: (Candidate<L>) -> Int,
+    private val minimizeSize: Boolean = false
+) : Enumerator<L> {
+    private fun commitLeftmost(
+        c: Candidate<L>,
+        constrs: List<Constraint<L>>,
+        recursionBound: Int
+    ): Sequence<Candidate<L>> {
+        val (changeInd, leftmostNode) = c.types.withIndex().firstOrNull { (_, it) -> it.holes() > 0 }
+            ?: return sequenceOf(c)
+
+        val optionsForLeftmost =
+            leftmostNode.expansions(constrs, leftmostNode.variableNames(), recursionBound).asSequence()
+
+        return optionsForLeftmost.flatMap { (newLeftMost, commit) ->
+            val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newLeftMost else p })
+            if (commit == null) {
+                require(newCandidate == c)
+                emptySequence() // this call made no changes, but we don't want to hit it again TODO verify this doesn't break completeness
+            } else {
+                val u = Unification(constrs)
+                if (u.commitAndCheckValid(listOf(commit)))
+                    commitLeftmost(newCandidate, u.get()!!, recursionBound)
+                else emptySequence()
+            }
+        }
+    }
+
+    override fun enumerate(maxDepth: Int): List<Candidate<L>> {
+        return commitLeftmost(
+            seedCandidate,
+            Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(),
+            maxDepth
+        ).filter { c ->
+            c.canonical() &&
+                    Unification(
+                        c,
+                        query.posExsBeforeSubexprs
+                    ).get() != null &&
+                    (if (mustPassNegatives) query.negExamples.all {
+                        Unification(
+                            c, listOf(it)
+                        ).get() == null
+                    } else true)
+        }.toList()
+    }
+}
+
 fun main() {
     clearCVC()
 
-    val q = ConsTest.query
-    val inits = lazyCartesianProduct(q.names.map { name ->
-        InitHole().expansions().map { it.first }
-            .filter { it is InitL || (it is NArrow && q.posExamples.any { it is App && it.fn is Name && it.fn.name == name }) }
-    }).map { Candidate(q.names, it) }
-    // TODO one optimization: We can see if our candidate is a refinement of a previously rejected one
-    //      if multiple things share structure, their antiunifier may be the conflict
+    val t = ConsTest
+    val (query, oracle) = t.query to t.oracle
 
-    fun <L : Language> fromSeeds(seeds: Sequence<Candidate<L>>): Sequence<Candidate<L>> = seeds.flatMap {
-        Enumerator(q, it, false, Candidate<L>::depth).enumerate(3)
-    }
+    val inits = lazyCartesianProduct(
+        query.names.map { name ->
+            InitHole().expansions().map { it.first }
+                .filter { it is InitL || (it is NArrow && query.posExamples.any { it is App && it.fn is Name && it.fn.name == name }) }
+        }).map { Candidate(query.names, it) }
 
-    fun <L : Language> fromSeeds(seeds: List<Candidate<L>>): List<Candidate<L>> = seeds.flatMap {
-        Enumerator(q, it, false, Candidate<L>::depth).enumerate(3)
-    }
+    fun <L : Language> enum(seed: Candidate<L>, maxDepth: Int): List<Candidate<L>> =
+        DFSEnumerator(query, seed, false, Candidate<L>::depth).enumerate(maxDepth)
 
-    val initSols = fromSeeds(inits.toList())
-    val elabSols = fromSeeds(initSols.map { compileInit(it) })
+    fun <L : Language> fromSeeds(seeds: Sequence<Candidate<L>>, maxDepth: Int): Sequence<Candidate<L>> =
+        seeds.flatMap { enum(it, maxDepth) }
 
-    println(elabSols.joinToString(prefix = "ELABORATED SOLUTIONS:\n", separator = "\n"))
+    fun <L : Language> fromSeeds(seeds: List<Candidate<L>>, maxDepth: Int): List<Candidate<L>> =
+        seeds.flatMap { enum(it, maxDepth) }
+
+    val initSols = fromSeeds(inits, 3)
+    val elabSols = fromSeeds(initSols.map { compileInit(it) }, 3)
 
     val TIME = System.currentTimeMillis()
-    val elabFILTEREDSOLS = elabSols.filter {
-        val cons = it.types[it.names.indexOf("cons")]
-        cons is NArrow && cons.l is ElabV && cons.r is NArrow && cons.r.l is ElabL && cons.r.r is ElabL
-    }
-    println("Seed: $elabFILTEREDSOLS")
+//        elabSols.filter {
+//        val cons = it.types[it.names.indexOf("cons")]
+//        cons is NArrow && cons.l is ElabV && cons.r is NArrow && cons.r.l is ElabL && cons.r.r is ElabL
+//    }
+    println("Seeds: ${elabSols.joinToString(separator = "\n")}")
 
-    val concEnumerators = elabFILTEREDSOLS.mapNotNull { compileElab(it, q, ConsTest.oracle) }
-        .map { Enumerator(q, it, true, Candidate<Concrete>::paramDepth, true) }
+    val concEnumerators = elabSols.mapNotNull { compileElab(it, query, oracle) }
+        .map { DFSEnumerator(query, it, true, Candidate<Concrete>::paramDepth, true) }
 
     val sol = mutableListOf<Candidate<Concrete>>()
-    for (i in 1..3) {
+    for (i in 1..4) {
         println("Hello $i")
-        val sols = concEnumerators.flatMap { it.enumerate(i) }
+        val sols = concEnumerators.flatMap { it.enumerate(i) }.toList()
         if (sols.isNotEmpty()) {
             sol.addAll(sols)
             break
@@ -132,21 +186,10 @@ fun main() {
 
     println("TIME: ${System.currentTimeMillis() - TIME}")
 
-
-    TODO("Turn off filtering I did to jump directly to correct outline")
-    TODO("why don't we hit cons soln??")
-
-
-    TODO("instead of sort by size after depth, do num holes?")
-
-
-    TODO("MUST PASS NEGEXS FOR LAST ROUND")
     TODO("BRING BACK CEGIS LOOP")
 //    println(solslist.joinToString(prefix = "SOLUTIONS:\n", separator = "\n"))
     TODO("Stop enumerating if we have all solutions of min size")
-    TODO("EXPLORE ALL CANDIDATES UP TO SOME DEPTH BEFORE INCREASING")
     TODO("Canonicalize wrt alpha equiv before storing in seen?")
-
     TODO(
         "In the next step, should we allow new labels to be introduced in expansions? " + "Will there ever be problems where a label type only occurs within other label types as a param?"
     )
