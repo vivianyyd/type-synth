@@ -106,7 +106,7 @@ data class NArrow<L : Language> private constructor(
         val left = l.dfsLeftExpansions(constrs, vars, nextBound).map { (node, commit) ->
             NArrow(node, r, contributesToDepth) to commit
         }
-        val right = if (left.isEmpty() || (left.size == 1 && left.first().first.l == l))
+        val right = if (left.isEmpty() || (left.toSet().size == 1 && left.first().first.l == l))
             r.dfsLeftExpansions(constrs, vars, nextBound).map { (node, commit) ->
                 NArrow(l, node, contributesToDepth) to commit
             } else listOf()
@@ -176,6 +176,10 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
     override fun toString(): String = names.zip(types).joinToString(separator = ", ") { "${it.first}: ${it.second}" }
 
     fun searchNodeOf(name: String): SearchNode<L> = types[names.indexOf(name)]
+
+    val assocList by lazy {
+        names.zip(types)
+    }
 
     val size by lazy {
         types.sumOf { it.size() }

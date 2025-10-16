@@ -3,7 +3,7 @@ package core
 import query.App
 import query.Name
 import query.Query
-import test.ConsTest
+import test.DictTest
 import util.clearCVC
 import util.lazyCartesianProduct
 import java.util.*
@@ -118,22 +118,15 @@ class DFSEnumerator<L : Language>(
     }
 
     override fun enumerate(maxDepth: Int): List<Candidate<L>> {
+        fun check(c: Candidate<L>) =
+            Unification(c, query.posExsBeforeSubexprs).get() != null &&
+                    (if (mustPassNegatives)
+                        query.negExamples.all { Unification(c, listOf(it)).get() == null }
+                    else true)
+
         return commitLeftmost(
-            seedCandidate,
-            Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(),
-            maxDepth
-        ).filter { c ->
-            c.canonical() &&
-                    Unification(
-                        c,
-                        query.posExsBeforeSubexprs
-                    ).get() != null &&
-                    (if (mustPassNegatives) query.negExamples.all {
-                        Unification(
-                            c, listOf(it)
-                        ).get() == null
-                    } else true)
-        }.toList()
+            seedCandidate, Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(), maxDepth
+        ).filter { c -> c.canonical() && check(c) }.toList()
     }
 }
 
