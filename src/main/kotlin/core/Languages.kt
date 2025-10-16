@@ -1,6 +1,7 @@
 package core
 
 import dependencyanalysis.DependencyAnalysis
+import query.Name
 import query.Query
 import stc.Var
 import util.*
@@ -219,6 +220,15 @@ fun compileElab(
         ?: throw Exception("Invariant broken")).forEach {
         uf.union(it.a, it.b)
     }
+
+    // TODO this is very hacky. Need it to collect little ones like 0 = 1
+    elaborated.assocList.forEachIndexed { i, (n1, t1) ->
+        elaborated.assocList.forEachIndexed { j, (n2, t2) ->
+            if (i < j && t1 is ElaboratedL && t2 is ElaboratedL && oracle.equal(Name(n1), Name(n2)))
+                uf.union(t1.label, t2.label)
+        }
+    }
+
     fun amendWithEquivs(node: SearchNode<Elaborated>): SearchNode<Elaborated> = when (node) {
         is ElaboratedL -> ElaboratedL(uf.find(node.label) ?: node.label)
         is NArrow -> NArrow(amendWithEquivs(node.l), amendWithEquivs(node.r), true)

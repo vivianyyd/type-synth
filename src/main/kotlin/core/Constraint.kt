@@ -82,6 +82,10 @@ class Unification<L : Language> {
         return !error
     }
 
+    /**
+    Optimization: Don't bother committing if running commit with those changes doesn't do anything.
+    e.g. If we refine a hole to a fresh variable, store a list of commitments that we are delaying until later
+     */
     private fun betterCommit(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
         val change = refinements.fold(false) { changed, (hole, node) ->
             var changedCurr = changed
@@ -100,26 +104,6 @@ class Unification<L : Language> {
                     val newR = newGuy(constr.r)
                     constraints[j] = EqualityConstraint(newL, newR)
                     changedCurr = changedCurr || constr.l != newL || constr.r != newR
-                }
-            }
-            changedCurr
-        }
-        simplify()
-        return change
-    }
-
-    /** Precondition: constraints are simplified.
-     * Micro-opt later: Don't bother committing if running commit with those changes doesn't do anything */
-    private fun commit(refinedInstantiations: List<Pair<Instantiation<L>, ConstraintType<L>>>): Boolean {
-        val change = refinedInstantiations.fold(false) { changed, (inst, ty) ->
-            var changedCurr = changed
-            for (j in constraints.indices) {
-                if (constraints[j] is EqualityConstraint<L>) {
-                    val constr = constraints[j] as EqualityConstraint<L>
-                    val newL = if (constr.l == inst) ty else constr.l
-                    val newR = if (constr.r == inst) ty else constr.r
-                    constraints[j] = EqualityConstraint(newL, newR)
-                    changedCurr = changedCurr || constr.l == inst || constr.r == inst
                 }
             }
             changedCurr
