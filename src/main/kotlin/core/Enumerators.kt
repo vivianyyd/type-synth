@@ -97,7 +97,7 @@ class DFSEnumerator<L : Language>(
         constrs: List<Constraint<L>>,
         recursionBound: Int
     ): Sequence<Candidate<L>> {
-        println("exploring $c with constrs ${constrs.joinToString { "${it to it.trivial()}" }}")
+//        println("exploring $c with constrs ${constrs.joinToString { "${it to it.trivial()}" }}")
         val (changeInd, leftmostNode) = c.types.withIndex().firstOrNull { (_, it) -> it.holes() > 0 }
             ?: return sequenceOf(c)
 
