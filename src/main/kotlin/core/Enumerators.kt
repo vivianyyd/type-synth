@@ -97,11 +97,20 @@ class DFSEnumerator<L : Language>(
         constrs: List<Constraint<L>>,
         recursionBound: Int
     ): Sequence<Candidate<L>> {
+        println("exploring $c with constrs ${constrs.joinToString { "${it to it.trivial()}" }}")
         val (changeInd, leftmostNode) = c.types.withIndex().firstOrNull { (_, it) -> it.holes() > 0 }
             ?: return sequenceOf(c)
 
         val optionsForLeftmost =
             leftmostNode.dfsLeftExpansions(constrs, leftmostNode.variableNames(), recursionBound).asSequence()
+
+//        if (c.toString()
+//                .contains("Ebi: L2[L7[], L0[]], Eib: L2[L0[], L7[]], Eii: L2[L0[], L0[]]")
+//        ) println(
+//            "Exploring $c, leftmost is $leftmostNode, options for leftmost are ${
+//                optionsForLeftmost.map { it.first }.toList()
+//            }"
+//        )
 
         return optionsForLeftmost.flatMap { (newLeftMost, commit) ->
             val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newLeftMost else p })
@@ -130,12 +139,67 @@ class DFSEnumerator<L : Language>(
     }
 }
 
+data class PortNode<L : Language>(val options: List<MutableList<PortNode<L>>>) {
+
+}
+
+class ProductEnumerator<L : Language>(
+    val query: Query,
+    val seedCandidate: Candidate<L>,
+    private val mustPassNegatives: Boolean,
+    val depth: (Candidate<L>) -> Int,
+    private val minimizeSize: Boolean = false
+) : Enumerator<L> {
+    private val state = mutableListOf<SearchNode<L>>()
+
+    init {
+        TODO()
+    }
+
+    fun step(): List<List<SearchNode<L>>> {
+        val sols = mutableListOf<List<SearchNode<L>>>()
+        state.forEach {
+            /*
+            If it's an arrow,
+                if its depth is greater than both child's depth,
+                    enumerate normally (call enumerate on this node directly; default recursion bound is fine)
+                Otherwise,
+                    call step param on left child (calls normal enumerate with default recursion bound)
+                    recurse this special casing on right child
+             */
+        }
+        TODO()
+    }
+
+    override fun enumerate(maxDepth: Int): List<Candidate<L>> {
+        TODO()
+
+
+//        // 1. Get constraints for each function from Unification
+//        val constrs = Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf()
+//        // 2. For each function, enumerate possible building blocks (expansions)
+//        val optionsPerFunction = seedCandidate.types.mapIndexed { i, node ->
+//            node.expansions(constrs, node.variableNames(), maxDepth).map { it.first }
+//        }
+//        // 3. Generate all combinations (cartesian product) of building blocks
+//        val candidates = lazyCartesianProduct(optionsPerFunction).map { Candidate(seedCandidate.names, it) }
+//        // 4. Filter candidates by constraints and examples
+//        return candidates.filter { c ->
+//            c.canonical() &&
+//                    Unification(c, query.posExsBeforeSubexprs).get() != null &&
+//                    (if (mustPassNegatives) query.negExamples.all {
+//                        Unification(c, listOf(it)).get() == null
+//                    } else true)
+//        }.toList()
+    }
+}
+
 val RERUN_CVC = true
 
 fun main() {
     if (RERUN_CVC) clearCVC()
 
-    val t = ConsTest
+    val t = DictTest
     val (query, oracle) = t.query to t.oracle
 
     val inits = lazyCartesianProduct(
@@ -150,13 +214,20 @@ fun main() {
     fun <L : Language> fromSeeds(seeds: Sequence<Candidate<L>>, maxDepth: Int): Sequence<Candidate<L>> =
         seeds.flatMap { enum(it, maxDepth) }
 
-    val initSols = fromSeeds(inits, 3)
-    val elabSols = fromSeeds(initSols.map { compileInit(it) }, 3)
+    val initSols = fromSeeds(inits, 4)
+    var elabSols = fromSeeds(initSols.map { compileInit(it) }, 4)
 
     val TIME = System.currentTimeMillis()
-//        elabSols.filter {
+
+//        elabSols = elabSols.filter {
 //        val cons = it.types[it.names.indexOf("cons")]
 //        cons is NArrow && cons.l is ElabV && cons.r is NArrow && cons.r.l is ElabL && cons.r.r is ElabL
+//    }
+
+    // TODO deleteme
+//    elabSols = elabSols.filter {
+//        val put = it.types[it.names.indexOf("put")]
+//        put is NArrow && put.l is ElabL && put.r is NArrow && put.r.l is ElabV && put.r.r is NArrow && put.r.r.l is ElabV && put.r.r.r is ElabL
 //    }
 
     val concEnumerators = elabSols.mapNotNull {

@@ -134,7 +134,7 @@ class ConcreteEnumerator(
             }
             else root.enumerate(f, 0)
         }
-        println(state)
+        println("State: $state")
 
         val contexts = contexts(pos, neg)
         if (contexts.isNotEmpty()) {

@@ -12,25 +12,27 @@ import test.*
 import util.*
 
 const val MAX_ITERATIONS = 2
-const val REDO_ALL = false
+const val REDO_ALL = true
 const val WRITE_INTERMEDIATE = REDO_ALL
 const val MAKE_OUTLINES = REDO_ALL
 const val CALL_CVC = REDO_ALL
 
 fun main() {
     val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
-    val smallTest = DictTest
-    val testFromFile = parseContextAndExamples(readExamples("dictchain-nosubexprs"))
+    val smallTest = ConsTest
+    val testFromFile = parseContextAndExamples(readExamples("dictchain-smaller"))
 
-//    val (query, oracle) = (smallTest.query to smallTest.oracle)
-    val (query, oracle) = testFromFile
+    val (query, oracle) = (smallTest.query to smallTest.oracle)
+//    val (query, oracle) = testFromFile
 //    viz(query)
+
 
     if (MAKE_OUTLINES) clearOutlines()
     if (CALL_CVC) clearCVC()
     val TIME = System.currentTimeMillis()
 
     val outlines = outlines(query, oracle)
+    outlines.map { println(it.outline) }
 
     println("Starting dependency analysis")
     val aritiesToDeps = aritiesToDeps(query, oracle, outlines)
