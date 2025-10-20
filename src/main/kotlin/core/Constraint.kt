@@ -66,7 +66,7 @@ class Unification<L : Language> {
     private var proofVarId = Counter()
     private var error = false
     private var insts = Counter()  // Number of times any top-level type has been instantiated
-    private val references = mutableMapOf<Substitutable<L>, MutableList<EqualityConstraint<L>>>()
+    private val references = mutableMapOf<Substitutable<L>, MutableSet<EqualityConstraint<L>>>()
 
     constructor(constraints: List<Constraint<L>>) {
         this.constraints.addAll(constraints)
@@ -94,7 +94,7 @@ class Unification<L : Language> {
     private fun addReferences(c: EqualityConstraint<L>) {
         val substitutables = c.substitutable()
         substitutables.forEach {
-            references.getOrPut(it) { mutableListOf() }.add(c)
+            references.getOrPut(it) { mutableSetOf() }.add(c)
         }
     }
 
@@ -161,11 +161,8 @@ class Unification<L : Language> {
         }
         trivial()
         val cset = constraints.toSet()
-        constraints.removeAll {
-            val r = it !in cset
-            if (r && it is EqualityConstraint<L>) removeReferences(it)
-            r
-        }
+        constraints.clear()
+        constraints.addAll(cset)
     }
 
     /** Replace [v] with [s] in [t] inplace. */
