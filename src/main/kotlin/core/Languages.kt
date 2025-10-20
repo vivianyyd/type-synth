@@ -88,7 +88,7 @@ class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
 }
 
 /** Good style would be to hide this constructor somehow so it can only be instantiated by ElabV */
-data class ElabConstrV(val v: Int, val instId: Int) : CVariable<Elab>, Substitutable {
+data class ElabConstrV(val v: Int, val instId: Int) : CVariable<Elab>, Substitutable<Elab> {
     override fun toString() = "V${v}_$instId"
 }
 
@@ -140,7 +140,7 @@ data class ElaboratedL(val label: Int) : Leaf<Elaborated> {
     override fun variableNames() = emptySet<Int>()
 }
 
-data class ElaboratedConstrV(val v: Int, val instId: Int) : CVariable<Elaborated>, Substitutable {
+data class ElaboratedConstrV(val v: Int, val instId: Int) : CVariable<Elaborated>, Substitutable<Elaborated> {
     override fun toString() = "V${v}_$instId"
 }
 
@@ -408,7 +408,7 @@ class ConcreteHole(
     }
 }
 
-data class ConcreteConstrV(val v: Int, val instId: Int) : CVariable<Concrete>, Substitutable {
+data class ConcreteConstrV(val v: Int, val instId: Int) : CVariable<Concrete>, Substitutable<Concrete> {
     override fun toString() = "V${v}_$instId"
 }
 
