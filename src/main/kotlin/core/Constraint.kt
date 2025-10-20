@@ -155,6 +155,9 @@ class Unification<L : Language> {
         var substChange = substs()
         var splitChange = splits()
         while (splitChange || substChange) {
+            val cset = constraints.toSet()
+            constraints.clear()
+            constraints.addAll(cset)
             substChange = if (splitChange) substs() else false
             splitChange = splits()
             trivial()
@@ -190,7 +193,7 @@ class Unification<L : Language> {
                 Triple(eq, v, s)
             }
         substs.forEach { (eq, v, s) ->
-            val refs = references[v]!!.toSet()
+            val refs = references[v]!!.toSet()  // avoids concurrentmodificationexception
             refs.forEach {
                 if (it != eq) {
                     removeReferences(it)
@@ -200,17 +203,9 @@ class Unification<L : Language> {
                 }
             }
         }
-//        for (j in constraints.indices) {
-//            if (constraints[j] is EqualityConstraint<L> && constraints[j] != eq) {
-//                removeReferences(constraints[j] as EqualityConstraint<L>)
-//                constraints[j] = EqualityConstraint(
-//                    substitute(v, s, (constraints[j] as EqualityConstraint<L>).l),
-//                    substitute(v, s, (constraints[j] as EqualityConstraint<L>).r)
-//                )
-//                addReferences(constraints[j] as EqualityConstraint<L>)
-//                }
-//        }
-        val toRemove = substs.mapNotNull { (eq, v, _) -> if (v is ProofVariable<*>) eq else null }
+        // Because we make modifications inplace, we need to check that the constraint is even the same as when we began
+        val toRemove =
+            substs.mapNotNull { (eq, v, s) -> if (v is ProofVariable<*> && ((eq.l == v && eq.r == s) || eq.r == v && eq.l == s)) eq else null }
         constraints.removeAll {
             if (it in toRemove && it is EqualityConstraint<L>) removeReferences(it)
             it in toRemove
