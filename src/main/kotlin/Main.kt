@@ -19,7 +19,7 @@ const val CALL_CVC = REDO_ALL
 
 fun main() {
     val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
-    val smallTest = ConsTest
+    val smallTest = DictTest
     val testFromFile = parseContextAndExamples(readExamples("dictchain-smaller"))
 
     val (query, oracle) = (smallTest.query to smallTest.oracle)

@@ -386,8 +386,8 @@ class ConcreteHole(
         val fnExpansion = NArrow(hole(), hole(), true)
 
         val mustBeCompatible = constrs.filterIsInstance<EqualityConstraint<Concrete>>().mapNotNull {
-            if (it.l is Instantiation && it.l.n == this) it.r
-            else if (it.r is Instantiation && it.r.n == this) it.l
+            if (it.l is Instantiation && (it.l as Instantiation<Concrete>).n == this) it.r
+            else if (it.r is Instantiation && (it.r as Instantiation<Concrete>).n == this) it.l
             else null
         }.filterIsInstance<CTypeConstructor<Concrete>>()
 

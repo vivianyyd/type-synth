@@ -7,15 +7,24 @@ import test.ConsTest
 import util.Counter
 
 /** ConstraintTypes are mutable */
-sealed interface ConstraintType<L : Language>
+sealed interface ConstraintType<L : Language> {
+    fun substitutable(): List<Substitutable<L>>
+}
+
 sealed class CTypeConstructor<L : Language>(open val params: MutableList<ConstraintType<L>>) : ConstraintType<L> {
+    override fun substitutable(): List<Substitutable<L>> = params.flatMap { it.substitutable() }
     abstract fun match(other: CTypeConstructor<L>): Boolean
     open fun split(other: CTypeConstructor<L>): List<Constraint<L>>? =
         if (match(other)) params.zip(other.params).map { (a, b) -> EqualityConstraint(a, b) } else null
 }
 
-sealed interface CVariable<L : Language> : ConstraintType<L>
-sealed interface Substitutable<L : Language> : CVariable<L>
+sealed interface CVariable<L : Language> : ConstraintType<L> {
+    override fun substitutable(): List<Substitutable<L>> = listOf()
+}
+
+sealed interface Substitutable<L : Language> : CVariable<L> {
+    override fun substitutable(): List<Substitutable<L>> = listOf(this)
+}
 
 data class CArrow<L : Language> private constructor(override val params: MutableList<ConstraintType<L>>) :
     CTypeConstructor<L>(params) {
@@ -43,9 +52,10 @@ sealed interface Constraint<L : Language> {
     fun trivial(): Boolean
 }
 
-data class EqualityConstraint<L : Language>(val l: ConstraintType<L>, val r: ConstraintType<L>) : Constraint<L> {
+data class EqualityConstraint<L : Language>(var l: ConstraintType<L>, var r: ConstraintType<L>) : Constraint<L> {
     override fun toString() = "$l = $r"
     override fun trivial() = l == r || l is InitConstrV || r is InitConstrV
+    fun substitutable() = l.substitutable() + r.substitutable()
 }
 
 typealias Commitment<L> = Pair<Hole<L>, SearchNode<L>>?
@@ -56,9 +66,11 @@ class Unification<L : Language> {
     private var proofVarId = Counter()
     private var error = false
     private var insts = Counter()  // Number of times any top-level type has been instantiated
+    private val references = mutableMapOf<Substitutable<L>, MutableList<EqualityConstraint<L>>>()
 
     constructor(constraints: List<Constraint<L>>) {
         this.constraints.addAll(constraints)
+        constraints.filterIsInstance<EqualityConstraint<L>>().forEach { addReferences(it) }
     }
 
     constructor(candidate: Candidate<L>, exs: List<Example>) : this(listOf()) {
@@ -66,7 +78,9 @@ class Unification<L : Language> {
             is Name -> candidate.searchNodeOf(ex.name).instantiate(instVarId, insts.get())
             is App -> {
                 val proofVariable = ProofVariable<L>(proofVarId.get())
-                constraints.add(EqualityConstraint(constrainType(ex.fn), CArrow(constrainType(ex.arg), proofVariable)))
+                val c = EqualityConstraint(constrainType(ex.fn), CArrow(constrainType(ex.arg), proofVariable))
+                addReferences(c)
+                constraints.add(c)
                 proofVariable
             }
         }
@@ -76,6 +90,20 @@ class Unification<L : Language> {
     }
 
     fun get(): List<Constraint<L>>? = if (error) null else constraints
+
+    private fun addReferences(c: EqualityConstraint<L>) {
+        val substitutables = c.substitutable()
+        substitutables.forEach {
+            references.getOrPut(it) { mutableListOf() }.add(c)
+        }
+    }
+
+    private fun removeReferences(c: EqualityConstraint<L>) {
+        val substitutables = c.substitutable()
+        substitutables.forEach {
+            references[it]!!.remove(c)
+        }
+    }
 
     fun commitAndCheckValid(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
         betterCommit(refinements)
@@ -102,7 +130,10 @@ class Unification<L : Language> {
 
                     val newL = newGuy(constr.l)
                     val newR = newGuy(constr.r)
-                    constraints[j] = EqualityConstraint(newL, newR)
+                    val newC = EqualityConstraint(newL, newR)
+                    constraints[j] = newC
+                    removeReferences(constr)
+                    addReferences(newC)
                     changedCurr = changedCurr || constr.l != newL || constr.r != newR
                 }
             }
@@ -113,17 +144,28 @@ class Unification<L : Language> {
     }
 
     private fun simplify() {
+        fun trivial() {
+            constraints.removeAll {
+                val t = it.trivial()
+                if (t && it is EqualityConstraint<L>) removeReferences(it)
+                t
+            }
+        }
+
         var substChange = substs()
         var splitChange = splits()
         while (splitChange || substChange) {
             substChange = if (splitChange) substs() else false
             splitChange = splits()
-            constraints.removeAll { it.trivial() }
+            trivial()
         }
-        constraints.removeAll { it.trivial() }
+        trivial()
         val cset = constraints.toSet()
-        constraints.clear()
-        constraints.addAll(cset)
+        constraints.removeAll {
+            val r = it !in cset
+            if (r && it is EqualityConstraint<L>) removeReferences(it)
+            r
+        }
     }
 
     /** Replace [v] with [s] in [t] inplace. */
@@ -143,24 +185,39 @@ class Unification<L : Language> {
         val substs = constraints.filterIsInstance<EqualityConstraint<L>>()
             .filter { it.l is Substitutable || it.r is Substitutable }.map { eq ->
                 val v: Substitutable<L> =
-                    if (eq.l is ProofVariable) eq.l
-                    else if (eq.r is ProofVariable) eq.r
+                    if (eq.l is ProofVariable) eq.l as ProofVariable<L>
+                    else (if (eq.r is ProofVariable) eq.r
                     else if (eq.l is Substitutable) eq.l
-                    else (eq.r as Substitutable)
+                    else (eq.r as Substitutable)) as Substitutable<L>
                 val s = if (eq.l == v) eq.r else eq.l
                 Triple(eq, v, s)
             }
-        for (j in constraints.indices) {
-            substs.forEach { (eq, v, s) ->
-                if (constraints[j] is EqualityConstraint<L> && constraints[j] != eq) {
-                    constraints[j] = EqualityConstraint(
-                        substitute(v, s, (constraints[j] as EqualityConstraint<L>).l),
-                        substitute(v, s, (constraints[j] as EqualityConstraint<L>).r)
-                    )
+        substs.forEach { (eq, v, s) ->
+            val refs = references[v]!!.toSet()
+            refs.forEach {
+                if (it != eq) {
+                    removeReferences(it)
+                    it.l = substitute(v, s, it.l)
+                    it.r = substitute(v, s, it.r)
+                    addReferences(it)
                 }
             }
         }
-        constraints.removeAll(substs.mapNotNull { (eq, v, _) -> if (v is ProofVariable<*>) eq else null })
+//        for (j in constraints.indices) {
+//            if (constraints[j] is EqualityConstraint<L> && constraints[j] != eq) {
+//                removeReferences(constraints[j] as EqualityConstraint<L>)
+//                constraints[j] = EqualityConstraint(
+//                    substitute(v, s, (constraints[j] as EqualityConstraint<L>).l),
+//                    substitute(v, s, (constraints[j] as EqualityConstraint<L>).r)
+//                )
+//                addReferences(constraints[j] as EqualityConstraint<L>)
+//                }
+//        }
+        val toRemove = substs.mapNotNull { (eq, v, _) -> if (v is ProofVariable<*>) eq else null }
+        constraints.removeAll {
+            if (it in toRemove && it is EqualityConstraint<L>) removeReferences(it)
+            it in toRemove
+        }
         return substs.isNotEmpty()
     }
 
@@ -189,7 +246,12 @@ class Unification<L : Language> {
             newConstrs.addAll(tmp)
         }
         if (error) return false
-        val changed = constraints.removeAll { splittable(it) }
+        val changed = constraints.removeAll {
+            val r = splittable(it)
+            if (r && it is EqualityConstraint<L>) removeReferences(it)
+            r
+        }
+        newConstrs.filterIsInstance<EqualityConstraint<L>>().forEach { addReferences(it) }
         constraints.addAll(newConstrs)
         return changed
     }
