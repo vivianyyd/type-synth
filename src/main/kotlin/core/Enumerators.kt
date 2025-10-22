@@ -3,9 +3,13 @@ package core
 import query.App
 import query.Name
 import query.Query
-import test.DictTest
+import query.parseContextAndExamples
+import test.*
 import util.clearCVC
 import util.lazyCartesianProduct
+import util.readExamples
+import java.io.File
+import java.io.PrintStream
 import java.util.*
 
 sealed interface Enumerator<L : Language> {
@@ -97,20 +101,11 @@ class DFSEnumerator<L : Language>(
         constrs: List<Constraint<L>>,
         recursionBound: Int
     ): Sequence<Candidate<L>> {
-//        println("exploring $c with constrs ${constrs.joinToString { "${it to it.trivial()}" }}")
         val (changeInd, leftmostNode) = c.types.withIndex().firstOrNull { (_, it) -> it.holes() > 0 }
             ?: return sequenceOf(c)
 
         val optionsForLeftmost =
             leftmostNode.dfsLeftExpansions(constrs, leftmostNode.variableNames(), recursionBound).asSequence()
-
-//        if (c.toString()
-//                .contains("Ebi: L2[L7[], L0[]], Eib: L2[L0[], L7[]], Eii: L2[L0[], L0[]]")
-//        ) println(
-//            "Exploring $c, leftmost is $leftmostNode, options for leftmost are ${
-//                optionsForLeftmost.map { it.first }.toList()
-//            }"
-//        )
 
         return optionsForLeftmost.flatMap { (newLeftMost, commit) ->
             val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newLeftMost else p })
@@ -134,6 +129,63 @@ class DFSEnumerator<L : Language>(
                     else true)
 
         return commitLeftmost(
+            seedCandidate, Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(), maxDepth
+        ).filter { c -> c.canonical() && check(c) }.toList()
+    }
+}
+
+class DFSPriorityEnumerator<L : Language>(
+    val query: Query,
+    val seedCandidate: Candidate<L>,
+    private val mustPassNegatives: Boolean,
+    private val minimizeSize: Boolean = false
+) : Enumerator<L> {
+    private fun commitPriority(
+        c: Candidate<L>,
+        constrs: List<Constraint<L>>,
+        recursionBound: Int
+    ): Sequence<Candidate<L>> {
+        println("Exploring $c")
+        if (
+            c.toString()
+                .contains("chain: L1[V1, V2] -> L1[V2, V3] -> L1[V1, V3], dbb: L1[L0[], L0[]], dbi: L1[L0[], L8[]], dib: L1[L8[], L0[]], dii: L1[L8[], L8[]], i: L8[], put: L1[V0, V1] -> V0 -> V1 -> L1[V0, V1")
+        ) {
+            println("I have $c")
+            println(Unification(c, query.posExsBeforeSubexprs).get())
+            println(Unification(c, query.negExamples.toList()).get())
+            TODO()
+        }
+
+        val (changeInd, prioritized) = c.types.withIndex().maxByOrNull { (_, it) -> it.priority() }
+            ?: return sequenceOf(c)
+        if (prioritized.priority() == 0) return sequenceOf(c)
+//        println("Prioritized hole: $prioritized")
+
+        val optionsForPrioritized =
+            prioritized.dfsPriorityExpansions(constrs, prioritized.variableNames(), recursionBound).asSequence()
+
+        return optionsForPrioritized.flatMap { (newType, commit) ->
+            val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newType else p })
+            if (commit == null) {
+                require(newCandidate == c)
+                emptySequence() // this call made no changes, but we don't want to hit it again TODO verify this doesn't break completeness
+            } else {
+                val u = Unification(constrs)
+                if (u.commitAndCheckValid(listOf(commit)))
+                    commitPriority(newCandidate, u.get()!!, recursionBound)
+                else emptySequence()
+            }
+        }
+    }
+
+    override fun enumerate(maxDepth: Int): List<Candidate<L>> {
+        fun check(c: Candidate<L>) =
+            Unification(c, query.posExsBeforeSubexprs).get() != null &&
+                    (if (mustPassNegatives)
+                        query.negExamples.all { Unification(c, listOf(it)).get() == null }
+                    else true)
+
+        return commitPriority(
             seedCandidate, Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(), maxDepth
         ).filter { c -> c.canonical() && check(c) }.toList()
     }
@@ -194,13 +246,21 @@ class ProductEnumerator<L : Language>(
     }
 }
 
-val RERUN_CVC = true
+val RERUN_CVC = false
 
 fun main() {
     if (RERUN_CVC) clearCVC()
 
-    val t = DictTest
-    val (query, oracle) = t.query to t.oracle
+    val logFile = File("app.log")
+    System.setOut(PrintStream(logFile.outputStream(), true))
+    System.setErr(PrintStream(logFile.outputStream(), true))
+
+    val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
+    val t = ConsTest
+    val testFromFile = parseContextAndExamples(readExamples("dictchain-smaller"))
+
+//    val (query, oracle) = t.query to t.oracle
+    val (query, oracle) = testFromFile
 
     val inits = lazyCartesianProduct(
         query.names.map { name ->
@@ -214,10 +274,11 @@ fun main() {
     fun <L : Language> fromSeeds(seeds: Sequence<Candidate<L>>, maxDepth: Int): Sequence<Candidate<L>> =
         seeds.flatMap { enum(it, maxDepth) }
 
+    val TIME = System.currentTimeMillis()
+
     val initSols = fromSeeds(inits, 4)
     var elabSols = fromSeeds(initSols.map { compileInit(it) }, 4)
 
-    val TIME = System.currentTimeMillis()
 
 //        elabSols = elabSols.filter {
 //        val cons = it.types[it.names.indexOf("cons")]
@@ -232,7 +293,7 @@ fun main() {
 
     val concEnumerators = elabSols.mapNotNull {
         compileElab(it, query, oracle, RERUN_CVC)?.let {
-            DFSEnumerator(query, it, mustPassNegatives = true, minimizeSize = true)
+            DFSPriorityEnumerator(query, it, mustPassNegatives = true, minimizeSize = true)
         }
     }.toList() // This needs to be a list so we don't keep calling it...
 

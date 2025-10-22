@@ -107,6 +107,7 @@ class Unification<L : Language> {
 
     fun commitAndCheckValid(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
         betterCommit(refinements)
+        if (error) refinements.forEach { it.first.conflict() }
         return !error
     }
 
@@ -152,6 +153,9 @@ class Unification<L : Language> {
             }
         }
 
+        val c1set = constraints.toSet()
+        constraints.clear()
+        constraints.addAll(c1set)
         var substChange = substs()
         var splitChange = splits()
         while (splitChange || substChange) {

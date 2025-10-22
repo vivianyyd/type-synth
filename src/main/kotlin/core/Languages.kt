@@ -344,6 +344,22 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
             } else listOf()
         } + (if (params.isEmpty()) listOf(this to null) else listOf())
     }
+
+    override fun dfsPriorityExpansions(
+        constrs: List<Constraint<Concrete>>, vars: Set<Int>, recursionBound: Int?
+    ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
+        var cont = true
+        return params.indices.sortedByDescending { params[it].priority() }.flatMap { i ->
+            if (cont) {
+                val exp =
+                    params[i].dfsLeftExpansions(constrs, vars, recursionBound?.let { it - 1 }).map { (node, commit) ->
+                        ConcreteL(id, params.mapIndexed { j, p -> if (j == i) node else p }) to commit
+                    }
+                cont = exp.size <= 1
+                exp
+            } else listOf()
+        } + (if (params.isEmpty()) listOf(this to null) else listOf())
+    }
 }
 
 class ConcreteHole(
@@ -393,13 +409,14 @@ class ConcreteHole(
 
         if (mustBeCompatible.isNotEmpty()) {
             if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return wrap(variableExpansions)
-            if (mustBeCompatible.all { mustBeCompatible.first().match(it) }) return wrap(
-                when (val f = mustBeCompatible.first()) {
-                    is CArrow -> listOf(fnExpansion)
-                    is ConcreteConstrL -> listOf(ConcreteL(f.label, List(labelArities[f.label]!!) { hole() }))
-                    else -> throw Exception("Cannot happen due to types")
-                }
+            if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
+                    mustBeCompatible.first().match(it)
+                }) return wrap(
+                listOf(fnExpansion)
             )
+            // TODO can't do this for all labels bc sometimes we have less constraints bc of lack of earlier commitments.
+            //  improve this comment. we erroneously commit to list of int bc we haven't yet committed to a different thing being list of bool.
+            //   this optimization as it was before is fine for dfsLeft expansions since we do no backtracking, but not priority, i think. think about that...
         }
 
         return wrap(  // TODO hilariously, I think the order makes a difference here. we should sort by size tbh

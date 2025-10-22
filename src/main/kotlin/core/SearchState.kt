@@ -20,7 +20,13 @@ sealed interface SearchNode<L : Language> {
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
+    fun dfsPriorityExpansions(
+        constrs: List<Constraint<L>> = listOf(),
+        vars: Set<Int> = setOf(),  // TODO if we do this correctly, this can just be an int
+        recursionBound: Int? = null
+    ): List<Pair<SearchNode<L>, Commitment<L>>>
 
+    fun priority(): Int
     fun size(): Int
     fun holes(): Int
     fun depth(): Int
@@ -36,6 +42,8 @@ sealed interface SearchNode<L : Language> {
 }
 
 sealed class Branch<L : Language>(open val params: List<SearchNode<L>>) : SearchNode<L> {
+    override fun priority(): Int = params.maxOfOrNull { it.priority() } ?: 0
+
     override fun size() = size
     private val size by lazy {
         1 + params.sumOf { it.size() }
@@ -112,6 +120,34 @@ data class NArrow<L : Language> private constructor(
             } else listOf()
         return (left + right).toSet().toList()
     }
+
+    override fun dfsPriorityExpansions(
+        constrs: List<Constraint<L>>,
+        vars: Set<Int>,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<L>, Commitment<L>>> {
+        val nextBound = recursionBound?.let { it - (if (contributesToDepth) 1 else 0) }
+        if (l.priority() == r.priority()) return dfsLeftExpansions(constrs, vars, recursionBound)
+        if (l.priority() > r.priority()) {
+            val left = l.dfsPriorityExpansions(constrs, vars, nextBound).map { (node, commit) ->
+                NArrow(node, r, contributesToDepth) to commit
+            }
+            val right = if (left.isEmpty() || (left.toSet().size == 1 && left.first().first.l == l))
+                r.dfsLeftExpansions(constrs, vars, nextBound).map { (node, commit) ->
+                    NArrow(l, node, contributesToDepth) to commit
+                } else listOf()
+            return (left + right).toSet().toList()
+        } else {
+            val right = r.dfsLeftExpansions(constrs, vars, nextBound).map { (node, commit) ->
+                NArrow(l, node, contributesToDepth) to commit
+            }
+            val left = if (right.isEmpty() || (right.toSet().size == 1 && right.first().first.l == l))
+                l.dfsPriorityExpansions(constrs, vars, nextBound).map { (node, commit) ->
+                    NArrow(node, r, contributesToDepth) to commit
+                } else listOf()
+            return (right + left).toSet().toList()
+        }
+    }
 }
 
 sealed interface Leaf<L : Language> : SearchNode<L> {
@@ -129,6 +165,14 @@ sealed interface Leaf<L : Language> : SearchNode<L> {
     ): List<Pair<SearchNode<L>, Commitment<L>>> =
         listOf(this to null)
 
+    override fun dfsPriorityExpansions(
+        constrs: List<Constraint<L>>,
+        vars: Set<Int>,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<L>, Commitment<L>>> =
+        listOf(this to null)
+
+    override fun priority() = 0
     override fun size() = 1
     override fun holes() = 0
     override fun depth() = 1
@@ -154,6 +198,12 @@ sealed class Hole<L : Language> : SearchNode<L> {
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(constrs, vars, recursionBound)
 
+    override fun dfsPriorityExpansions(
+        constrs: List<Constraint<L>>,
+        vars: Set<Int>,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(constrs, vars, recursionBound)
+
     private val instantiations = mutableListOf<Instantiation<L>>()
 
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L> {
@@ -164,6 +214,9 @@ sealed class Hole<L : Language> : SearchNode<L> {
 
     fun instantiations(): List<Instantiation<L>> = instantiations
 
+    fun conflict() = conflicts++
+    private var conflicts = 0
+    override fun priority(): Int = 1 + conflicts
     override fun size() = 1
     override fun holes() = 1
     override fun depth() = 1  // TODO think about me
