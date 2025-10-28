@@ -6,3 +6,7 @@ src/main/sketch/concretize/generated
 *results/
 *__pycache__/
 *output/
+.ipynb_checkpoints/
+profiling
+*.dot
+*.png

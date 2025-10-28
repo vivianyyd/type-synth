@@ -1,0 +1,109 @@
+module Main where
+import Text.Pandoc
+import Data.Text (Text)  -- Imports only the Text type from the Data.Text module.
+import qualified Data.Text.IO as T 
+  -- Imports the Data.Text.IO module under the alias T.
+  -- Data.Text.IO provides input/output functions for Text, like readFile, putStrLn, getContents.
+  -- The qualified ... as T means you have to prefix the functions with T.:
+
+mdToRST :: Text -> IO Text
+mdToRST txt = runIOorExplode $
+                readMarkdown def txt
+                >>= writeRST def{ writerReferenceLinks = True }
+
+main :: IO ()
+main = do
+  T.getContents >>= mdToRST >>= T.putStrLn
+
+=======================================
+  
+mdToRST :: Text -> IO Text
+mdToRST txt =
+  runIOorExplode
+    (bind (readMarkdown def txt)
+          (\pandoc ->
+             writeRST (def { writerReferenceLinks = True }) pandoc
+          )
+    )
+
+main :: IO ()
+main =
+  bind T.getContents
+       (\input ->
+          bind (mdToRST input)
+               (\rst ->
+                  T.putStrLn rst
+               )
+       )
+==========================================
+
+mdToRST :: Text -> IO Text
+mdToRST txt = do
+  pandoc <- readMarkdown def txt
+  writeRST (def { writerReferenceLinks = True }) pandoc
+
+main :: IO ()
+main = do
+  input <- T.getContents
+  rst <- mdToRST input
+  T.putStrLn rst
+  
+
+==========================================
+-- PandocPure version
+
+import Text.Pandoc
+import Text.Pandoc.Class (PandocMonad(..))
+import Data.Text (Text)
+
+mdToRST :: Text -> PandocPure Text
+mdToRST txt = do
+  doc <- readMarkdown def txt
+  writeRST def { writerReferenceLinks = True } doc
+
+example :: Text -> Text
+example input =
+  case runPure (mdToRST input) of
+    Left err -> "Error: " <> T.pack (show err)
+    Right rst -> rst
+
+example (T.pack "Hello!") -- always works
+
+
+==========================================
+
+mdToRST :: Text -> IO Text
+mdToRST txt = writeRST def (readMarkdown def txt)
+
+main :: IO ()
+main = T.putStrLn (mdToRST T.getContents)
+
+
+==========================================
+
+-- THE TWO DEFS HERE ARE DIFFERENT - one is ReaderOptions, the other WriterOptions
+-- Haskell knows from type inference which def we're referring to, but we should use different names
+
+main = T.putStrLn (writeRST def (readMarkdown def T.getContents))
+
+main = T.putStrLn (writeRST defW (readMarkdown defR T.getContents))
+==========================================
+
+
+
+import Text.Pandoc.Definition
+import Text.Pandoc.Generic
+import Data.Char (toUpper)
+
+modHeader :: Block -> Block
+modHeader (Header n _ xs) | n >= 3 = Para $ bottomUp allCaps xs
+modHeader x = x
+
+allCaps :: Inline -> Inline
+allCaps (Str xs) = Str $ map toUpper xs
+allCaps x = x
+
+changeHeaders :: Pandoc -> Pandoc
+changeHeaders = bottomUp modHeader
+==========================================
+
