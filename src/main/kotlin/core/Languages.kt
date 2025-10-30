@@ -160,9 +160,17 @@ data class LabelConstraint(val a: Int, val b: Int) : Constraint<Elaborated> {
 /** So ugly, but here since we have a new core. Later, delete old code. */
 sealed interface Dependency
 
-object NoVariables : Dependency
-data class Only(val v: Int) : Dependency
-data class MustContain(val vars: List<Int>) : Dependency
+object NoVariables : Dependency {
+    override fun toString() = "NoVariables"
+}
+
+data class Only(val v: Int) : Dependency {
+    override fun toString(): String = "Only($v)"
+}
+
+data class MustContain(val vars: List<Int>) : Dependency {
+    override fun toString(): String = "Contains$vars"
+}
 
 fun typeOfParam(candidate: Candidate<Elaborated>, param: ParameterNode): SearchNode<Elaborated> {
     var curr = candidate.types[candidate.names.indexOf(param.f)]

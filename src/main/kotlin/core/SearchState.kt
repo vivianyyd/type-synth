@@ -39,6 +39,21 @@ sealed interface SearchNode<L : Language> {
 
     /** Optional for correctness, but helps us recognize alpha equivalences */
     fun variableNames(): Set<Int>
+
+    /** Optional for correctness, but lets us reject bad candidates.
+     * While a function certainly return L[a] where a is unbound, it cannot simply return any a. */
+    fun noFreshSoleVarOnRHS(): Boolean = when (this) {
+        is NArrow -> {
+            val vars = this.l.variableNames().toMutableList()
+            var rightmost = this.r
+            while (rightmost is NArrow) {
+                vars.addAll(rightmost.l.variableNames())
+                rightmost = rightmost.r
+            }
+            !((rightmost.variableNames() - vars.toSet()).isNotEmpty() && rightmost is ConcreteV)
+        }
+        else -> true
+    }
 }
 
 sealed class Branch<L : Language>(open val params: List<SearchNode<L>>) : SearchNode<L> {
@@ -266,6 +281,7 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
     fun full() = types.all { it.full() }
 
     fun canonical() = types.all { it.variableNames().size == (it.variableNames().maxOrNull() ?: -1) + 1 }
+    // We can also add it.noFreshSoleVarOnRHS()
 
     fun bfsExpansions(constrs: List<Constraint<L>> = listOf()): Sequence<Candidate<L>> {
         // TODO should this be product, or also one at a time?? either will work but what is better

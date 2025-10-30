@@ -90,7 +90,7 @@ class BFSEnumerator<L : Language>(
     }
 }
 
-class DFSEnumerator<L : Language>(
+class DFSLeftEnumerator<L : Language>(
     val query: Query,
     val seedCandidate: Candidate<L>,
     private val mustPassNegatives: Boolean,
@@ -145,21 +145,9 @@ class DFSPriorityEnumerator<L : Language>(
         constrs: List<Constraint<L>>,
         recursionBound: Int
     ): Sequence<Candidate<L>> {
-        println("Exploring $c")
-        if (
-            c.toString()
-                .contains("chain: L1[V1, V2] -> L1[V2, V3] -> L1[V1, V3], dbb: L1[L0[], L0[]], dbi: L1[L0[], L8[]], dib: L1[L8[], L0[]], dii: L1[L8[], L8[]], i: L8[], put: L1[V0, V1] -> V0 -> V1 -> L1[V0, V1")
-        ) {
-            println("I have $c")
-            println(Unification(c, query.posExsBeforeSubexprs).get())
-            println(Unification(c, query.negExamples.toList()).get())
-            TODO()
-        }
-
         val (changeInd, prioritized) = c.types.withIndex().maxByOrNull { (_, it) -> it.priority() }
             ?: return sequenceOf(c)
         if (prioritized.priority() == 0) return sequenceOf(c)
-//        println("Prioritized hole: $prioritized")
 
         val optionsForPrioritized =
             prioritized.dfsPriorityExpansions(constrs, prioritized.variableNames(), recursionBound).asSequence()
@@ -171,6 +159,9 @@ class DFSPriorityEnumerator<L : Language>(
                 emptySequence() // this call made no changes, but we don't want to hit it again TODO verify this doesn't break completeness
             } else {
                 val u = Unification(constrs)
+                // This helps us skip many bad candidates, but the check itself is too slow for payoff.
+                // TODO the check only needs to occur where the latest commit happened, not on full candidate
+//                if (u.commitAndCheckValid(listOf(commit)) && newCandidate.types.all { !it.full() || it.noFreshSoleVarOnRHS() })
                 if (u.commitAndCheckValid(listOf(commit)))
                     commitPriority(newCandidate, u.get()!!, recursionBound)
                 else emptySequence()
@@ -257,7 +248,7 @@ fun main() {
 
     val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
     val t = ConsTest
-    val testFromFile = parseContextAndExamples(readExamples("dictchain-smaller"))
+    val testFromFile = parseContextAndExamples(readExamples("dictchain"))
 
 //    val (query, oracle) = t.query to t.oracle
     val (query, oracle) = testFromFile
@@ -269,7 +260,7 @@ fun main() {
         }).map { Candidate(query.names, it) }
 
     fun <L : Language> enum(seed: Candidate<L>, maxDepth: Int): List<Candidate<L>> =
-        DFSEnumerator(query, seed, false).enumerate(maxDepth)
+        DFSPriorityEnumerator(query, seed, false).enumerate(maxDepth)
 
     fun <L : Language> fromSeeds(seeds: Sequence<Candidate<L>>, maxDepth: Int): Sequence<Candidate<L>> =
         seeds.flatMap { enum(it, maxDepth) }

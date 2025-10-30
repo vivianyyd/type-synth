@@ -10,3 +10,4 @@ src/main/sketch/concretize/generated
 profiling
 *.dot
 *.png
+results/logs/big
