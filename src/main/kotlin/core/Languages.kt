@@ -395,7 +395,7 @@ class ConcreteHole(
         fun wrap(e: List<SearchNode<Concrete>>) = e.map { it to (this to it) }
 
         val variableExpansions = when (constraint) {  // TODO weird that vars need to be sorted
-            null, is MustContain -> (if (mayHaveFresh) vars + (vars.size + 1) else vars).sorted().map { ConcreteV(it) }
+            null, is MustContain -> (if (mayHaveFresh) vars + vars.size else vars).sorted().map { ConcreteV(it) }
             NoVariables -> listOf()
             is Only -> listOf(ConcreteV(constraint.v))
         }
