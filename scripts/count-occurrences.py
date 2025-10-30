@@ -1,6 +1,6 @@
 import sys
 
-target = "chain: L1[V1, V2] -> L1[V2, V3] -> L1[V1, V3], dbb: L1[L0[], L0[]], dbi: L1[L0[], L8[]], dib: L1[L8[], L0[]], dii: L1[L8[], L8[]], i: L8[], put: L1[V0, V1] -> V0 -> V1 -> L1[V0, V1"
+target = "chain: L1[V0, V1] -> L1[V1, V2] -> L1[V0, V2], dbb: L1[L0[], L0[]], dbi: L1[L0[], L8[]], dib: L1[L8[], L0[]], dii: L1[L8[], L8[]], i: L8[], put: L1[V0, V1] -> V0 -> V1 -> L1[V0, V1"
 count = 0
 lines = 0
 

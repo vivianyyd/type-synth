@@ -70,6 +70,9 @@ example input =
 example (T.pack "Hello!") -- always works
 
 
+-- runIO and runPure return an Either PandocError a. All errors raised in running a PandocMonad computation will be trapped and returned as a Left value, so they can be handled by the calling program. To see the constructors for PandocError, see the documentation for Text.Pandoc.Error.
+
+
 ==========================================
 
 mdToRST :: Text -> IO Text
@@ -78,6 +81,7 @@ mdToRST txt = writeRST def (readMarkdown def txt)
 main :: IO ()
 main = T.putStrLn (mdToRST T.getContents)
 
+-- The above doesn't work here since the <- is monadic. We need to support lambdas and bind and monads and stuff. But that requires that we have subtyping
 
 ==========================================
 
@@ -86,7 +90,9 @@ main = T.putStrLn (mdToRST T.getContents)
 
 main = T.putStrLn (writeRST def (readMarkdown def T.getContents))
 
-main = T.putStrLn (writeRST defW (readMarkdown defR T.getContents))
+-- def (from Data.Default) denotes a default value for each kind of option. (You can also use defaultWriterOptions and defaultReaderOptions.)
+-- https://pandoc.org/using-the-pandoc-api.html
+main = T.putStrLn (writeRST defaultWriterOptions (readMarkdown defaultReaderOptions T.getContents))
 ==========================================
 
 
@@ -107,3 +113,27 @@ changeHeaders :: Pandoc -> Pandoc
 changeHeaders = bottomUp modHeader
 ==========================================
 
+
+Here is a simple example of the use of a pandoc reader and writer to perform a conversion:
+
+import Text.Pandoc
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
+
+main :: IO ()
+main = do
+  result <- runIO $ do
+    doc <- readMarkdown def (T.pack "[testing](url)")
+    writeRST def doc
+  rst <- handleError result
+  TIO.putStrLn rst
+
+Some notes:
+
+The first part constructs a conversion pipeline: the input string is passed to readMarkdown, and the resulting Pandoc AST (doc) is then rendered by writeRST. The conversion pipeline is “run” by runIO—more on that below.
+
+result has the type Either PandocError Text. We could pattern-match on this manually, but it’s simpler in this context to use the handleError function from Text.Pandoc.Error. This exits with an appropriate error code and message if the value is a Left, and returns the Text if the value is a Right.
+
+
+Very useful:
+https://pandoc.org/using-the-pandoc-api.html#handling-errors-and-warnings
