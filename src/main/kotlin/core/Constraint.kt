@@ -39,9 +39,10 @@ data class CArrow<L : Language> private constructor(override val params: Mutable
  * It is this class's job to instantiate its children once a commitment is made.
  * inst denotes _which_ instantiation we are in. This matters bc if we fill a hole with a variable,
  * that variable needs to know where it is so it matches the others in the same instantiation call. */
-data class Instantiation<L : Language>(val n: Hole<L>, val uniqueId: Int, val inst: Int, val freshIdGen: Counter) :
-    CVariable<L> {  // Not substitutable - we need these to induce choices, can't discard as we do when we substitute
-    override fun toString() = "inst$uniqueId-$inst"
+data class Instantiation<L : Language>(
+    val n: Hole<L>, val holeId: Int, val uniqueId: Int, val inst: Int, val freshIdGen: Counter
+) : CVariable<L> {  // Not substitutable - we need these to induce choices, can't discard as we do when we substitute
+    override fun toString() = "inst$holeId-$inst"
 }
 
 data class ProofVariable<L : Language>(val id: Int) : CVariable<L>, Substitutable<L> {
@@ -56,6 +57,11 @@ data class EqualityConstraint<L : Language>(var l: ConstraintType<L>, var r: Con
     override fun toString() = "$l = $r"
     override fun trivial() = l == r || l is InitConstrV || r is InitConstrV
     fun substitutable() = l.substitutable() + r.substitutable()
+    override fun equals(other: Any?): Boolean {
+        return other is EqualityConstraint<*> && ((this.l == other.l && this.r == other.r) || (this.l == other.r && this.r == other.l))
+    }
+
+    override fun hashCode(): Int = l.hashCode() + r.hashCode()
 }
 
 typealias Commitment<L> = Pair<Hole<L>, SearchNode<L>>?
@@ -85,9 +91,16 @@ class Unification<L : Language> {
             }
         }
         exs.forEach { constrainType(it) }
-
+        if (candidate.toString() == "0: L0[], 1: L0[], Ebi: L2[L0[], L0[]], Eib: L2[L0[], L0[]], Eii: L2[L7[], _73_], put: L2[V2, V2] -> V0 -> V1 -> L2[L0[], V2], tr: L7[]") {
+            println("\nStarting fresh for candidate $candidate")
+            printConstrs()
+            simplify(true)
+            println()
+        }
         simplify()
     }
+
+    private fun printConstrs() = println("\t" + get()?.joinToString(separator = ";"))
 
     fun get(): List<Constraint<L>>? = if (error) null else constraints
 
@@ -116,18 +129,30 @@ class Unification<L : Language> {
     e.g. If we refine a hole to a fresh variable, store a list of commitments that we are delaying until later
      */
     private fun betterCommit(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
+        val printme = refinements.any { it.toString() == "(_77_, V2)" }
+        if (printme) {
+            println("Before committing:")
+            printConstrs()
+        }
         val change = refinements.fold(false) { changed, (hole, node) ->
             var changedCurr = changed
             for (j in constraints.indices) {
+                if (error) return false
                 if (constraints[j] is EqualityConstraint<L>) {
                     val constr = constraints[j] as EqualityConstraint<L>
 
-                    fun newGuy(n: ConstraintType<L>) =
-                        if (n is Instantiation && n in hole.instantiations())
-                            node.instantiate(
-                                n.freshIdGen,
-                                n.inst
-                            ) else n
+                    // TODO I am ugly and very bad. This should be a visitor pattern
+                    fun newGuy(n: ConstraintType<L>): ConstraintType<L> = when (n) {
+                        is Instantiation -> if (n in hole.instantiations()) node.instantiate(
+                            n.freshIdGen, n.inst
+                        ) else n
+                        is CArrow -> CArrow(newGuy(n.params[0]), newGuy(n.params[1]))
+                        is ConcreteConstrL -> ConcreteConstrL(
+                            n.label,
+                            n.params.map { newGuy(it as ConstraintType<L>) as ConstraintType<Concrete> }.toMutableList()
+                        ) as ConstraintType<L>
+                        is CVariable, InitConstrL, ElabConstrL, is ElaboratedConstrL -> n
+                    }
 
                     val newL = newGuy(constr.l)
                     val newR = newGuy(constr.r)
@@ -140,11 +165,15 @@ class Unification<L : Language> {
             }
             changedCurr
         }
-        simplify()
+        if (printme) {
+            println("After committing:")
+            printConstrs()
+        }
+        simplify(printme)
         return change
     }
 
-    private fun simplify() {
+    private fun simplify(print: Boolean = false) {
         fun trivial() {
             constraints.removeAll {
                 val t = it.trivial()
@@ -153,23 +182,50 @@ class Unification<L : Language> {
             }
         }
 
+        if (error) return
         val c1set = constraints.toSet()
         constraints.clear()
         constraints.addAll(c1set)
         var substChange = substs()
+        if (print) {
+            println("After substs")
+            printConstrs()
+        }
         var splitChange = splits()
+        if (print) {
+            println("After splits")
+            printConstrs()
+        }
         while (splitChange || substChange) {
+            if (error) return
+            trivial()
             val cset = constraints.toSet()
             constraints.clear()
             constraints.addAll(cset)
+            if (print) {
+                println("No dups")
+                printConstrs()
+            }
             substChange = if (splitChange) substs() else false
-            splitChange = splits()
-            trivial()
+            if (print) {
+                println("After substs")
+                printConstrs()
+            }
+            splitChange = if (substChange) splits() else false
+            if (print) {
+                println("After splits")
+                printConstrs()
+            }
         }
+        if (error) return
         trivial()
         val cset = constraints.toSet()
         constraints.clear()
         constraints.addAll(cset)
+        if (print) {
+            println("THERE IS AN ERROR: $error")
+            printConstrs()
+        }
     }
 
     /** Replace [v] with [s] in [t] inplace. */
@@ -197,19 +253,35 @@ class Unification<L : Language> {
                 Triple(eq, v, s)
             }
         substs.forEach { (eq, v, s) ->
+//            val print =
+//                (v.toString() == "V0-3" && s.toString() == "L -> L)") || (v.toString() == "V0-0" && s.toString() == "L -> T0")
+//            if (print) println("subst eq: $eq")
             val refs = references[v]!!.toSet()  // avoids concurrentmodificationexception
             refs.forEach {
                 if (it != eq) {
+//                    if (v is ProofVariable) {
                     removeReferences(it)
                     it.l = substitute(v, s, it.l)
                     it.r = substitute(v, s, it.r)
                     addReferences(it)
+//                    } else {
+                    // TODO we cannot do it inplace since if it is a variable that we later instantiate a hole to,
+                    //      we need to keep all its constraints around...
+                    //      this is really unfortunate because it gets really fat. instead we shouldn't bother trying to keep around old subst stuff
+                    //      including down below where we only delete a constraint if it involves a proof variable.
+//                        val new = EqualityConstraint(substitute(v, s, it.l), substitute(v, s, it.r))
+//                        constraints.add(new)
+//                        addReferences(new)
+//                    }
                 }
             }
         }
         // Because we make modifications inplace, we need to check that the constraint is even the same as when we began
         val toRemove =
             substs.mapNotNull { (eq, v, s) -> if (v is ProofVariable<*> && ((eq.l == v && eq.r == s) || eq.r == v && eq.l == s)) eq else null }
+//        if (toRemove.any {
+//                it.toString().contains("V0-3") && it.toString().contains("L -> L")
+//            }) println("this is bad")
         constraints.removeAll {
             if (it in toRemove && it is EqualityConstraint<L>) removeReferences(it)
             it in toRemove
@@ -274,8 +346,7 @@ fun main() {
                     ConcreteL(1, listOf(ConcreteV(0))),
                     ConcreteL(1, listOf(ConcreteHole(false, null, mapOf(0 to 0, 1 to 1, 2 to 0)))),
                     false
-                ),
-                false
+                ), false
             ),
             ConcreteL(2, listOf())
         )

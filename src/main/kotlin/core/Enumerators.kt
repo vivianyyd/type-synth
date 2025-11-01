@@ -142,9 +142,14 @@ class DFSPriorityEnumerator<L : Language>(
 ) : Enumerator<L> {
     private fun commitPriority(
         c: Candidate<L>,
-        constrs: List<Constraint<L>>,
+//        constrs: List<Constraint<L>>,
         recursionBound: Int
     ): Sequence<Candidate<L>> {
+        println("Exploring $c")  // \n\t$constrs
+        val constrs = Unification(c, query.posExsBeforeSubexprs).get() ?: return sequenceOf()
+        if (c.toString() == "0: L0[], 1: L0[], Ebi: L2[L0[], L0[]], Eib: L2[L0[], L0[]], Eii: L2[L7[], _73_], put: L2[V2, V2] -> V0 -> V1 -> L2[L0[], V2], tr: L7[]") println(
+            constrs.joinToString(separator = ";")
+        )
         val (changeInd, prioritized) = c.types.withIndex().maxByOrNull { (_, it) -> it.priority() }
             ?: return sequenceOf(c)
         if (prioritized.priority() == 0) return sequenceOf(c)
@@ -162,22 +167,27 @@ class DFSPriorityEnumerator<L : Language>(
                 // This helps us skip many bad candidates, but the check itself is too slow for payoff.
                 // TODO the check only needs to occur where the latest commit happened, not on full candidate
 //                if (u.commitAndCheckValid(listOf(commit)) && newCandidate.types.all { !it.full() || it.noFreshSoleVarOnRHS() })
-                if (u.commitAndCheckValid(listOf(commit)))
-                    commitPriority(newCandidate, u.get()!!, recursionBound)
-                else emptySequence()
+                if (u.commitAndCheckValid(listOf(commit))) {
+                    if (Unification(newCandidate, query.posExsBeforeSubexprs).get() == null) {
+                        TODO("Problem here $newCandidate")
+                    }
+                    commitPriority(newCandidate, /*u.get()!!,*/ recursionBound)
+                } else emptySequence()
             }
         }
     }
 
     override fun enumerate(maxDepth: Int): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
-            Unification(c, query.posExsBeforeSubexprs).get() != null &&
-                    (if (mustPassNegatives)
-                        query.negExamples.all { Unification(c, listOf(it)).get() == null }
-                    else true)
+//            Unification(c, query.posExsBeforeSubexprs).get() != null &&
+            (if (mustPassNegatives)
+                query.negExamples.all { Unification(c, listOf(it)).get() == null }
+            else true)
 
+        // Check for non null seed; this should only be necessary for the first round, since some Init seeds may be unsat
+        // TODO check that indeed only the Init seeds fail here
         return commitPriority(
-            seedCandidate, Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(), maxDepth
+            seedCandidate, /*Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(),*/ maxDepth
         ).filter { c -> c.canonical() && check(c) }.toList()
     }
 }
@@ -243,15 +253,16 @@ fun main() {
     if (RERUN_CVC) clearCVC()
 
     val logFile = File("app.log")
-    System.setOut(PrintStream(logFile.outputStream(), true))
-    System.setErr(PrintStream(logFile.outputStream(), true))
+    val logStream = PrintStream(logFile.outputStream(), true)
+//    System.setOut(logStream)
+//    System.setErr(logStream)
 
     val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
-    val t = ConsTest
+    val t = DictTest
     val testFromFile = parseContextAndExamples(readExamples("dictchain"))
 
-//    val (query, oracle) = t.query to t.oracle
-    val (query, oracle) = testFromFile
+    val (query, oracle) = t.query to t.oracle
+//    val (query, oracle) = testFromFile
 
     val inits = lazyCartesianProduct(
         query.names.map { name ->

@@ -22,15 +22,16 @@ object InitL : Leaf<Init> {
 }
 
 class InitHole : Hole<Init>() {
+    /** val so all expansions can share it, but must be lazy, we only use it when expanding, otherwise stackoverflow lol */
+    private val fnExpansion by lazy { NArrow(InitHole(), InitHole(), true) }
+
     override fun expansions(
         constrs: List<Constraint<Init>>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<Init>, Commitment<Init>>> =
         (listOf(InitV, InitL) + (if (recursionBound != null && recursionBound <= 1) listOf()
-        else listOf(
-            NArrow(InitHole(), InitHole(), true)
-        ))).map { it to (this to it) }
+        else listOf(fnExpansion))).map { it to (this to it) }
 }
 
 object InitConstrV : CVariable<Init> {
@@ -74,7 +75,7 @@ object ElabL : Leaf<Elab> {
 }
 
 class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
-    override fun toString() = "V_"
+    override fun toString() = "V_${holeId}_"
     override fun expansions(
         constrs: List<Constraint<Elab>>,
         vars: Set<Int>,
@@ -89,7 +90,7 @@ class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
 
 /** Good style would be to hide this constructor somehow so it can only be instantiated by ElabV */
 data class ElabConstrV(val v: Int, val instId: Int) : CVariable<Elab>, Substitutable<Elab> {
-    override fun toString() = "V${v}_$instId"
+    override fun toString() = "V${v}-$instId"
 }
 
 object ElabConstrL : CTypeConstructor<Elab>(mutableListOf()) {
@@ -141,7 +142,7 @@ data class ElaboratedL(val label: Int) : Leaf<Elaborated> {
 }
 
 data class ElaboratedConstrV(val v: Int, val instId: Int) : CVariable<Elaborated>, Substitutable<Elaborated> {
-    override fun toString() = "V${v}_$instId"
+    override fun toString() = "V${v}-$instId"
 }
 
 data class ElaboratedConstrL(val label: Int) : CTypeConstructor<Elaborated>(mutableListOf()) {
@@ -395,11 +396,14 @@ class ConcreteHole(
             }
         } else expansionsNoBound(constrs, vars)
 
+    private fun hole() = ConcreteHole(mayHaveFresh, constraint, labelArities)
+    private val fnExpansion by lazy { NArrow(hole(), hole(), true) }
+    private val labelExpansions by lazy { labelArities.map { ConcreteL(it.key, List(it.value) { hole() }) } }
+
     private fun expansionsNoBound(
         constrs: List<Constraint<Concrete>>,
         vars: Set<Int>,
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
-        fun hole() = ConcreteHole(mayHaveFresh, constraint, labelArities)
         fun wrap(e: List<SearchNode<Concrete>>) = e.map { it to (this to it) }
 
         val variableExpansions = when (constraint) {  // TODO weird that vars need to be sorted
@@ -407,7 +411,6 @@ class ConcreteHole(
             NoVariables -> listOf()
             is Only -> listOf(ConcreteV(constraint.v))
         }
-        val fnExpansion = NArrow(hole(), hole(), true)
 
         val mustBeCompatible = constrs.filterIsInstance<EqualityConstraint<Concrete>>().mapNotNull {
             if (it.l is Instantiation && (it.l as Instantiation<Concrete>).n == this) it.r
@@ -419,22 +422,20 @@ class ConcreteHole(
             if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return wrap(variableExpansions)
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
-                }) return wrap(
-                listOf(fnExpansion)
-            )
+                }) return wrap(listOf(fnExpansion))
             // TODO can't do this for all labels bc sometimes we have less constraints bc of lack of earlier commitments.
             //  improve this comment. we erroneously commit to list of int bc we haven't yet committed to a different thing being list of bool.
             //   this optimization as it was before is fine for dfsLeft expansions since we do no backtracking, but not priority, i think. think about that...
         }
 
         return wrap(  // TODO hilariously, I think the order makes a difference here. we should sort by size tbh
-            variableExpansions + labelArities.map { ConcreteL(it.key, List(it.value) { hole() }) } + fnExpansion
+            variableExpansions + labelExpansions + fnExpansion
         )
     }
 }
 
 data class ConcreteConstrV(val v: Int, val instId: Int) : CVariable<Concrete>, Substitutable<Concrete> {
-    override fun toString() = "V${v}_$instId"
+    override fun toString() = "V${v}-$instId"
 }
 
 data class ConcreteConstrL(val label: Int, override val params: MutableList<ConstraintType<Concrete>>) :

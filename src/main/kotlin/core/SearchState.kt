@@ -195,6 +195,12 @@ sealed interface Leaf<L : Language> : SearchNode<L> {
 }
 
 sealed class Hole<L : Language> : SearchNode<L> {
+    companion object {
+        var nextHoleId = 0
+    }
+
+    val holeId = nextHoleId++
+
     abstract fun expansions(
         constrs: List<Constraint<L>>,
         vars: Set<Int>,
@@ -222,7 +228,7 @@ sealed class Hole<L : Language> : SearchNode<L> {
     private val instantiations = mutableListOf<Instantiation<L>>()
 
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L> {
-        val inst = Instantiation(this, freshIdGen.get(), instId, freshIdGen)
+        val inst = Instantiation(this, this.holeId, freshIdGen.get(), instId, freshIdGen)
         instantiations.add(inst)
         return inst
     }
@@ -237,7 +243,7 @@ sealed class Hole<L : Language> : SearchNode<L> {
     override fun depth() = 1  // TODO think about me
     override fun full() = false
     override fun variableNames() = emptySet<Int>()
-    override fun toString() = "_"
+    override fun toString() = "_${holeId}_"
 }
 
 data class Candidate<L : Language>(val names: List<String>, val types: List<SearchNode<L>>) {
