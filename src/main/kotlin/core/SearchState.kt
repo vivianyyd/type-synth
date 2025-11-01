@@ -340,7 +340,7 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
                 })
                 Candidate(names, types)
 
-            if (Unification(constrs).commitAndCheckValid(commitments.filterNotNull())) Candidate(names, types)
+            if (ConstraintUnification(constrs).commitAndCheckValid(commitments.filterNotNull())) Candidate(names, types)
             else null  // Could count here for eval
 //            Candidate(names, types)  // Originally
         }

@@ -213,6 +213,7 @@ fun compileElab(
     seed: Candidate<Elab>,
     query: Query,
     oracle: EqualityNewOracle,
+    unification: UnificationForCandidate<Elaborated>,
     callSolver: Boolean
 ): Candidate<Concrete>? {
     val deps = Elaborated.aritiesToDeps.getOrPut(seed.arities()) {
@@ -224,8 +225,8 @@ fun compileElab(
     }
 
     val elaborated = compileElabIntermediate(seed)
-    val uf = TUnionFind()
-    (Unification(elaborated, query.posExsBeforeSubexprs).get()?.filterIsInstance<LabelConstraint>()
+    val uf = IntUnionFind()
+    (unification(elaborated, query.posExsBeforeSubexprs).constraints()?.filterIsInstance<LabelConstraint>()
         ?: throw Exception("Invariant broken")).forEach {
         uf.union(it.a, it.b)
     }
@@ -440,7 +441,7 @@ data class ConcreteConstrV(val v: Int, val instId: Int) : CVariable<Concrete>, S
     override fun toString() = "V${v}-$instId"
 }
 
-data class ConcreteConstrL(val label: Int, override val params: MutableList<ConstraintType<Concrete>>) :
+data class ConcreteConstrL(val label: Int, override val params: List<ConstraintType<Concrete>>) :
     CTypeConstructor<Concrete>(params) {
     companion object {
         fun new(label: Int, params: List<ConstraintType<Concrete>>) = ConcreteConstrL(label, params.toMutableList())

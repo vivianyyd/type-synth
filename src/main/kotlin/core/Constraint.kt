@@ -5,13 +5,14 @@ import query.Example
 import query.Name
 import test.ConsTest
 import util.Counter
+import util.UnionFind
 
 /** ConstraintTypes are mutable */
 sealed interface ConstraintType<L : Language> {
     fun substitutable(): List<Substitutable<L>>
 }
 
-sealed class CTypeConstructor<L : Language>(open val params: MutableList<ConstraintType<L>>) : ConstraintType<L> {
+sealed class CTypeConstructor<L : Language>(open val params: List<ConstraintType<L>>) : ConstraintType<L> {
     override fun substitutable(): List<Substitutable<L>> = params.flatMap { it.substitutable() }
     abstract fun match(other: CTypeConstructor<L>): Boolean
     open fun split(other: CTypeConstructor<L>): List<Constraint<L>>? =
@@ -26,7 +27,7 @@ sealed interface Substitutable<L : Language> : CVariable<L> {
     override fun substitutable(): List<Substitutable<L>> = listOf(this)
 }
 
-data class CArrow<L : Language> private constructor(override val params: MutableList<ConstraintType<L>>) :
+data class CArrow<L : Language> constructor(override val params: List<ConstraintType<L>>) :
     CTypeConstructor<L>(params) {
     constructor(l: ConstraintType<L>, r: ConstraintType<L>) : this(mutableListOf(l, r))
 
@@ -45,7 +46,7 @@ data class Instantiation<L : Language>(
     override fun toString() = "inst$holeId-$inst"
 }
 
-data class ProofVariable<L : Language>(val id: Int) : CVariable<L>, Substitutable<L> {
+data class ProofVariable<L : Language>(val id: Int) : Substitutable<L> {
     override fun toString() = "T$id"
 }
 
@@ -66,7 +67,95 @@ data class EqualityConstraint<L : Language>(var l: ConstraintType<L>, var r: Con
 
 typealias Commitment<L> = Pair<Hole<L>, SearchNode<L>>?
 
-class Unification<L : Language> {
+typealias UnificationForCandidate<L> = (Candidate<L>, List<Example>) -> Unification<L>
+
+interface Unification<L : Language> {
+    fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>>
+    fun commitAndCheckValid(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean
+    fun ok(): Boolean
+
+    /** Use me sparingly */
+    fun constraints(): List<Constraint<L>>?
+}
+
+class UFUnification<L : Language> : Unification<L> {
+    private val uf = UnionFind<ConstraintType<L>> { it is CTypeConstructor<L> }
+    private var instVarId = Counter()
+    private var proofVarId = Counter()
+    private var error = false
+    private var insts = Counter()  // Number of times any top-level type has been instantiated
+    private val customConstraints = mutableListOf<Constraint<L>>()
+
+    constructor(candidate: Candidate<L>, exs: List<Example>) {
+        fun constrainType(ex: Example): ConstraintType<L> = when (ex) {
+            is Name -> candidate.searchNodeOf(ex.name).instantiate(instVarId, insts.get())
+            is App -> {
+                val proofVariable = ProofVariable<L>(proofVarId.get())
+                val a = constrainType(ex.fn)
+                val b = CArrow(constrainType(ex.arg), proofVariable)
+                unify(a, b)
+                proofVariable
+            }
+        }
+        exs.forEach { constrainType(it) }
+        substs()
+    }
+
+    private fun unify(a: ConstraintType<L>, b: ConstraintType<L>) {
+        val ta = uf.find(a)
+        val tb = uf.find(b)
+        if (ta is CTypeConstructor<L> && tb is CTypeConstructor<L>) {
+            val (equalities, custom) = ta.split(tb)?.partition { it is EqualityConstraint } ?: run {
+                error = true
+                return
+            }
+            (equalities as List<EqualityConstraint<L>>).forEach { unify(it.l, it.r) }
+            customConstraints.addAll(custom)
+        } else if (ta is CVariable<L> || tb is CVariable<L>) {
+            uf.union(ta, tb)
+//            addReferences(ta)
+//            addReferences(tb)
+        } else throw Error("Cannot unify $a and $b: Something wrong with subtype casing")
+    }
+
+    override fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>> =
+        uf.rootsFor { it is Instantiation && it.n == this }.filterIsInstance<CTypeConstructor<L>>()
+
+    override fun commitAndCheckValid(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
+        TODO("Not yet implemented")
+        // TODO do substs at the beginning. and then again at the end?
+        // find the root of the thing we instantiated to in [uf]. unify that with the root of all inst variables!
+        // check this logic is consistent with prev impl
+        // TODO we can remove proof variables from the eqclasses once they are resolved
+    }
+
+    override fun ok(): Boolean = !error
+
+    /** Careful, I only return the custom ones! */
+    override fun constraints(): List<Constraint<L>>? = if (error) null else customConstraints
+
+    private fun substs() {
+        // TODO make me less awful
+        fun transform(t: ConstraintType<L>): ConstraintType<L> = when (t) {
+            is CTypeConstructor -> {
+                val p = t.params.map { transform(it) }
+                (when (t) {
+                    is CArrow -> CArrow(p)
+                    is ConcreteConstrL -> ConcreteConstrL(t.label, p as List<ConstraintType<Concrete>>)
+                    InitConstrL, ElabConstrL, is ElaboratedConstrL -> t
+                } as ConstraintType<L>)
+            }
+            is Substitutable, is Instantiation -> uf.find(t)
+            is InitConstrV -> t
+        }
+
+        val transformedRoots = uf.allRootValues().associateWith { transform(it) }
+        // For each root, perform as many substs from variables to other roots as possible
+        uf.replaceRoots(transformedRoots)
+    }
+}
+
+class ConstraintUnification<L : Language> : Unification<L> {
     private val constraints = mutableListOf<Constraint<L>>()
     private var instVarId = Counter()
     private var proofVarId = Counter()
@@ -101,6 +190,17 @@ class Unification<L : Language> {
 
     fun get(): List<Constraint<L>>? = if (error) null else constraints
 
+    override fun constraints() = get()
+
+    override fun ok() = !error
+
+    override fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>> =
+        constraints.filterIsInstance<EqualityConstraint<L>>().mapNotNull {
+            if (it.l is Instantiation && (it.l as Instantiation<L>).n == hole) it.r
+            else if (it.r is Instantiation && (it.r as Instantiation<L>).n == hole) it.l
+            else null
+        }.filterIsInstance<CTypeConstructor<L>>()
+
     private fun addReferences(c: EqualityConstraint<L>) {
         val substitutables = c.substitutable()
         substitutables.forEach {
@@ -115,7 +215,7 @@ class Unification<L : Language> {
         }
     }
 
-    fun commitAndCheckValid(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
+    override fun commitAndCheckValid(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
         betterCommit(refinements)
         if (error) refinements.forEach { it.first.conflict() }
         return !error
@@ -231,8 +331,15 @@ class Unification<L : Language> {
             is Substitutable -> if (t == v) s else t
             is Instantiation -> t
             is CTypeConstructor -> {
-                t.params.replaceAll { substitute(v, s, it) }
-                t
+//                t.params.replaceAll { substitute(v, s, it) }
+//                t
+                val p = t.params.map { substitute(v, s, it) }
+                (when (t) {
+                    is CArrow -> CArrow(p)
+                    is ConcreteConstrL -> ConcreteConstrL(t.label, p as List<ConstraintType<Concrete>>)
+                    InitConstrL, ElabConstrL, is ElaboratedConstrL -> t
+                } as ConstraintType<L>)
+
             }
 
             is InitConstrV -> t
@@ -379,6 +486,6 @@ fun main() {
     )
 
 
-    val constrs = Unification(ty, t.query.posExsBeforeSubexprs).get()
+    val constrs = ConstraintUnification(ty, t.query.posExsBeforeSubexprs).get()
     println(constrs)
 }

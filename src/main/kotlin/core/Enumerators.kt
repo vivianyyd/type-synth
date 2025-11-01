@@ -43,17 +43,20 @@ class BFSEnumerator<L : Language>(
 
         fun handleFull(c: Candidate<L>) {
             if (c.canonical() && (if (mustPassNegatives) query.negExamples.all {
-                    Unification(
+                    ConstraintUnification(
                         c, listOf(it)
                     ).get() == null
                 } else true)
-                && Unification(c, query.posExsBeforeSubexprs).get() != null  // TODO shouldn't need this line, but we do
+                && ConstraintUnification(
+                    c,
+                    query.posExsBeforeSubexprs
+                ).get() != null  // TODO shouldn't need this line, but we do
             ) ok.add(c)
         }
 
         do {
             curr = frontier.remove()
-            val constrs = Unification(curr, query.posExsBeforeSubexprs).get()
+            val constrs = ConstraintUnification(curr, query.posExsBeforeSubexprs).get()
             // TODO We will often rediscover the same constraints even if two candidates are not identical...
             if (constrs != null) {
                 if (curr.depth() > deepestSeen + 1) seen.clear()  // micro-opt
@@ -113,7 +116,9 @@ class DFSLeftEnumerator<L : Language>(
                 require(newCandidate == c)
                 emptySequence() // this call made no changes, but we don't want to hit it again TODO verify this doesn't break completeness
             } else {
-                val u = Unification(constrs)
+                // We reconstruct ConstraintUnification every time because we don't want different child branches to
+                //  affect one another, and ConstraintUnification is stateful.
+                val u = ConstraintUnification(constrs)
                 if (u.commitAndCheckValid(listOf(commit)))
                     commitLeftmost(newCandidate, u.get()!!, recursionBound)
                 else emptySequence()
@@ -123,13 +128,15 @@ class DFSLeftEnumerator<L : Language>(
 
     override fun enumerate(maxDepth: Int): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
-            Unification(c, query.posExsBeforeSubexprs).get() != null &&
+            ConstraintUnification(c, query.posExsBeforeSubexprs).get() != null &&
                     (if (mustPassNegatives)
-                        query.negExamples.all { Unification(c, listOf(it)).get() == null }
+                        query.negExamples.all { ConstraintUnification(c, listOf(it)).get() == null }
                     else true)
 
         return commitLeftmost(
-            seedCandidate, Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(), maxDepth
+            seedCandidate,
+            ConstraintUnification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(),
+            maxDepth
         ).filter { c -> c.canonical() && check(c) }.toList()
     }
 }
@@ -146,7 +153,7 @@ class DFSPriorityEnumerator<L : Language>(
         recursionBound: Int
     ): Sequence<Candidate<L>> {
 //        println("Exploring $c")  // \n\t$constrs
-//        val constrs = Unification(c, query.posExsBeforeSubexprs).get() ?: return sequenceOf()
+//        val constrs = ConstraintUnification(c, query.posExsBeforeSubexprs).get() ?: return sequenceOf()
         val (changeInd, prioritized) = c.types.withIndex().maxByOrNull { (_, it) -> it.priority() }
             ?: return sequenceOf(c)
         if (prioritized.priority() == 0) return sequenceOf(c)
@@ -164,7 +171,7 @@ class DFSPriorityEnumerator<L : Language>(
                 // TODO the check only needs to occur where the latest commit happened, not on full candidate
 //                if (u.commitAndCheckValid(listOf(commit)) && newCandidate.types.all { !it.full() || it.noFreshSoleVarOnRHS() })
 
-                val u = Unification(constrs)
+                val u = ConstraintUnification(constrs)
                 if (u.commitAndCheckValid(listOf(commit))) {
 //                    if (Unification(newCandidate, query.posExsBeforeSubexprs).get() == null) {
 //                        TODO("Problem here $newCandidate")
@@ -180,15 +187,17 @@ class DFSPriorityEnumerator<L : Language>(
 
     override fun enumerate(maxDepth: Int): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
-            Unification(c, query.posExsBeforeSubexprs).get() != null &&
+            ConstraintUnification(c, query.posExsBeforeSubexprs).get() != null &&
                     (if (mustPassNegatives)
-                        query.negExamples.all { Unification(c, listOf(it)).get() == null }
+                        query.negExamples.all { ConstraintUnification(c, listOf(it)).get() == null }
                     else true)
 
         // Check for non null seed; this should only be necessary for the first round, since some Init seeds may be unsat
         // TODO check that indeed only the Init seeds fail here
         return commitPriority(
-            seedCandidate, Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(), maxDepth
+            seedCandidate,
+            ConstraintUnification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(),
+            maxDepth
         ).filter { c -> c.canonical() && check(c) }.toList()
     }
 }
@@ -229,8 +238,8 @@ class ProductEnumerator<L : Language>(
         TODO()
 
 
-//        // 1. Get constraints for each function from Unification
-//        val constrs = Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf()
+//        // 1. Get constraints for each function from ConstraintUnification
+//        val constrs = ConstraintUnification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf()
 //        // 2. For each function, enumerate possible building blocks (expansions)
 //        val optionsPerFunction = seedCandidate.types.mapIndexed { i, node ->
 //            node.expansions(constrs, node.variableNames(), maxDepth).map { it.first }
@@ -240,9 +249,9 @@ class ProductEnumerator<L : Language>(
 //        // 4. Filter candidates by constraints and examples
 //        return candidates.filter { c ->
 //            c.canonical() &&
-//                    Unification(c, query.posExsBeforeSubexprs).get() != null &&
+//                    ConstraintUnification(c, query.posExsBeforeSubexprs).get() != null &&
 //                    (if (mustPassNegatives) query.negExamples.all {
-//                        Unification(c, listOf(it)).get() == null
+//                        ConstraintUnification(c, listOf(it)).get() == null
 //                    } else true)
 //        }.toList()
     }
@@ -295,7 +304,7 @@ fun main() {
 //    }
 
     val concEnumerators = elabSols.mapNotNull {
-        compileElab(it, query, oracle, RERUN_CVC)?.let {
+        compileElab(it, query, oracle, ::ConstraintUnification, RERUN_CVC)?.let {
             DFSPriorityEnumerator(query, it, mustPassNegatives = true, minimizeSize = true)
         }
     }.toList() // This needs to be a list so we don't keep calling it...
