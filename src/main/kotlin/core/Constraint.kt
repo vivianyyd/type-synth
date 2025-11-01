@@ -91,16 +91,13 @@ class Unification<L : Language> {
             }
         }
         exs.forEach { constrainType(it) }
-        if (candidate.toString() == "0: L0[], 1: L0[], Ebi: L2[L0[], L0[]], Eib: L2[L0[], L0[]], Eii: L2[L7[], _73_], put: L2[V2, V2] -> V0 -> V1 -> L2[L0[], V2], tr: L7[]") {
-            println("\nStarting fresh for candidate $candidate")
-            printConstrs()
-            simplify(true)
-            println()
-        }
         simplify()
     }
 
-    private fun printConstrs() = println("\t" + get()?.joinToString(separator = ";"))
+    private fun printConstrs() {
+        return
+        println("\t" + get()?.joinToString(separator = ";"))
+    }
 
     fun get(): List<Constraint<L>>? = if (error) null else constraints
 
@@ -129,11 +126,11 @@ class Unification<L : Language> {
     e.g. If we refine a hole to a fresh variable, store a list of commitments that we are delaying until later
      */
     private fun betterCommit(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
-        val printme = refinements.any { it.toString() == "(_77_, V2)" }
-        if (printme) {
-            println("Before committing:")
-            printConstrs()
-        }
+        val printme = false//refinements.any { it.toString() == "(_77_, V2)" }
+//        if (printme) {
+//            println("Before committing:")
+//            printConstrs()
+//        }
         val change = refinements.fold(false) { changed, (hole, node) ->
             var changedCurr = changed
             for (j in constraints.indices) {
@@ -165,10 +162,10 @@ class Unification<L : Language> {
             }
             changedCurr
         }
-        if (printme) {
-            println("After committing:")
-            printConstrs()
-        }
+//        if (printme) {
+//            println("After committing:")
+//            printConstrs()
+//        }
         simplify(printme)
         return change
     }
@@ -253,29 +250,56 @@ class Unification<L : Language> {
                 Triple(eq, v, s)
             }
         substs.forEach { (eq, v, s) ->
-//            val print =
-//                (v.toString() == "V0-3" && s.toString() == "L -> L)") || (v.toString() == "V0-0" && s.toString() == "L -> T0")
-//            if (print) println("subst eq: $eq")
             val refs = references[v]!!.toSet()  // avoids concurrentmodificationexception
             refs.forEach {
                 if (it != eq) {
-//                    if (v is ProofVariable) {
                     removeReferences(it)
                     it.l = substitute(v, s, it.l)
                     it.r = substitute(v, s, it.r)
                     addReferences(it)
+                }
+            }
+        }
+        /*
+        val varSubsts = equivalenceClasses(substs) { (_, v1, _), (_, v2, _) -> v1 == v2 }
+        var tmpSubs = mutableListOf<EqualityConstraint<L>>()
+        varSubsts.forEach { subsForV ->
+            val eqsForV = subsForV.map { it.first }
+
+
+            // Substitute into things that are not substitutors for v, with replacement
+            subsForV.forEach { (eq, v, s) ->
+                val refs = references[v]!!.toSet()  // avoids concurrentmodificationexception
+                refs.forEach {
+                    // Not only must [it] not be equal to [eq], it shouldn't be a substitution for V at all
+                    if (it !in eqsForV) {
+//                    if (v is ProofVariable) {
+//                        removeReferences(it)
+//                        it.l = substitute(v, s, it.l)
+//                        it.r = substitute(v, s, it.r)
+//                        addReferences(it)
 //                    } else {
-                    // TODO we cannot do it inplace since if it is a variable that we later instantiate a hole to,
-                    //      we need to keep all its constraints around...
-                    //      this is really unfortunate because it gets really fat. instead we shouldn't bother trying to keep around old subst stuff
-                    //      including down below where we only delete a constraint if it involves a proof variable.
+                        // TODO we cannot do it inplace since if it is a variable that we later instantiate a hole to,
+                        //      we need to keep all its constraints around...
+                        //      this is really unfortunate because it gets really fat. instead we shouldn't bother trying to keep around old subst stuff
+                        //      including down below where we only delete a constraint if it involves a proof variable.
 //                        val new = EqualityConstraint(substitute(v, s, it.l), substitute(v, s, it.r))
 //                        constraints.add(new)
 //                        addReferences(new)
 //                    }
+                    } else { // TODO substitute into things that *are* substitutors for v, by appending
+                        if (it != eq) {
+                            val new = EqualityConstraint(substitute(v, s, it.l), substitute(v, s, it.r))
+                            tmpSubs.add(new)
+                        }
+                    }
+                    tmpSubs.removeAll { it.trivial() }
+                    tmpSubs.addAll(tmpSubs.toSet())
                 }
             }
         }
+
+         */
         // Because we make modifications inplace, we need to check that the constraint is even the same as when we began
         val toRemove =
             substs.mapNotNull { (eq, v, s) -> if (v is ProofVariable<*> && ((eq.l == v && eq.r == s) || eq.r == v && eq.l == s)) eq else null }
@@ -309,9 +333,11 @@ class Unification<L : Language> {
         }
 
         for (constr in constraints.filterIsInstance<EqualityConstraint<L>>()) {
-            val tmp = split(constr)
-            if (error) return false
-            newConstrs.addAll(tmp)
+            if (splittable(constr)) {
+                val tmp = split(constr)
+                if (error) return false
+                newConstrs.addAll(tmp)
+            }
         }
         if (error) return false
         val changed = constraints.removeAll {

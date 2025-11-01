@@ -301,7 +301,9 @@ fun compileElab(
     return Candidate(
         elaboratedAfterEquivalences.names,
         elaboratedAfterEquivalences.names.zip(elaboratedAfterEquivalences.types)
-            .map { (name, ty) -> compile(name, 0, ty) })
+            .map { (name, ty) -> compile(name, 0, ty) },
+        constraints
+    )
 }
 
 object Concrete : Language

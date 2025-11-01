@@ -1,6 +1,7 @@
 package core
 
 import util.Counter
+import util.ParameterNode
 import util.lazyCartesianProduct
 import java.lang.Integer.max
 
@@ -247,6 +248,15 @@ sealed class Hole<L : Language> : SearchNode<L> {
 }
 
 data class Candidate<L : Language>(val names: List<String>, val types: List<SearchNode<L>>) {
+    private var deps: Map<ParameterNode, Dependency>? = null
+
+    constructor(names: List<String>, types: List<SearchNode<L>>, deps: Map<ParameterNode, Dependency>) : this(
+        names,
+        types
+    ) {
+        this.deps = deps
+    }
+
     override fun toString(): String = names.zip(types).joinToString(separator = ", ") { "${it.first}: ${it.second}" }
 
     fun searchNodeOf(name: String): SearchNode<L> = types[names.indexOf(name)]
@@ -280,13 +290,32 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
         return p
     }
 
+    private fun params(node: SearchNode<L>) = when (node) {
+        is NArrow -> params(node)
+        else -> listOf(node)
+    }
+
+    fun satisfiesDependencies(): Boolean {
+        if (deps == null) return true
+        val params = types.map { params(it) }
+        return deps!!.all { (param, dep) ->
+            val paramNode = params[names.indexOf(param.f)][param.i]
+            !paramNode.full() || when (dep) {
+                is MustContain -> dep.vars.all { it in paramNode.variableNames() }
+                NoVariables -> paramNode.variableNames().isEmpty()
+                is Only -> paramNode.variableNames().size == 1 && paramNode.variableNames().first() == dep.v
+            }
+        }
+    }
+
     fun asMap() = names.zip(types).toMap()
 
     fun arities() = types.map { it.params() }
 
     fun full() = types.all { it.full() }
 
-    fun canonical() = types.all { it.variableNames().size == (it.variableNames().maxOrNull() ?: -1) + 1 }
+    fun canonical() =
+        types.all { it.variableNames().size == (it.variableNames().maxOrNull() ?: -1) + 1 }
     // We can also add it.noFreshSoleVarOnRHS()
 
     fun bfsExpansions(constrs: List<Constraint<L>> = listOf()): Sequence<Candidate<L>> {

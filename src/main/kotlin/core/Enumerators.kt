@@ -142,14 +142,11 @@ class DFSPriorityEnumerator<L : Language>(
 ) : Enumerator<L> {
     private fun commitPriority(
         c: Candidate<L>,
-//        constrs: List<Constraint<L>>,
+        constrs: List<Constraint<L>>,
         recursionBound: Int
     ): Sequence<Candidate<L>> {
-        println("Exploring $c")  // \n\t$constrs
-        val constrs = Unification(c, query.posExsBeforeSubexprs).get() ?: return sequenceOf()
-        if (c.toString() == "0: L0[], 1: L0[], Ebi: L2[L0[], L0[]], Eib: L2[L0[], L0[]], Eii: L2[L7[], _73_], put: L2[V2, V2] -> V0 -> V1 -> L2[L0[], V2], tr: L7[]") println(
-            constrs.joinToString(separator = ";")
-        )
+//        println("Exploring $c")  // \n\t$constrs
+//        val constrs = Unification(c, query.posExsBeforeSubexprs).get() ?: return sequenceOf()
         val (changeInd, prioritized) = c.types.withIndex().maxByOrNull { (_, it) -> it.priority() }
             ?: return sequenceOf(c)
         if (prioritized.priority() == 0) return sequenceOf(c)
@@ -163,15 +160,19 @@ class DFSPriorityEnumerator<L : Language>(
                 require(newCandidate == c)
                 emptySequence() // this call made no changes, but we don't want to hit it again TODO verify this doesn't break completeness
             } else {
-                val u = Unification(constrs)
                 // This helps us skip many bad candidates, but the check itself is too slow for payoff.
                 // TODO the check only needs to occur where the latest commit happened, not on full candidate
 //                if (u.commitAndCheckValid(listOf(commit)) && newCandidate.types.all { !it.full() || it.noFreshSoleVarOnRHS() })
+
+                val u = Unification(constrs)
                 if (u.commitAndCheckValid(listOf(commit))) {
-                    if (Unification(newCandidate, query.posExsBeforeSubexprs).get() == null) {
-                        TODO("Problem here $newCandidate")
-                    }
-                    commitPriority(newCandidate, /*u.get()!!,*/ recursionBound)
+//                    if (Unification(newCandidate, query.posExsBeforeSubexprs).get() == null) {
+//                        TODO("Problem here $newCandidate")
+//                    }
+                    if (newCandidate.satisfiesDependencies())
+                        commitPriority(newCandidate, u.get()!!, recursionBound)
+                    else emptySequence()
+
                 } else emptySequence()
             }
         }
@@ -179,15 +180,15 @@ class DFSPriorityEnumerator<L : Language>(
 
     override fun enumerate(maxDepth: Int): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
-//            Unification(c, query.posExsBeforeSubexprs).get() != null &&
-            (if (mustPassNegatives)
-                query.negExamples.all { Unification(c, listOf(it)).get() == null }
-            else true)
+            Unification(c, query.posExsBeforeSubexprs).get() != null &&
+                    (if (mustPassNegatives)
+                        query.negExamples.all { Unification(c, listOf(it)).get() == null }
+                    else true)
 
         // Check for non null seed; this should only be necessary for the first round, since some Init seeds may be unsat
         // TODO check that indeed only the Init seeds fail here
         return commitPriority(
-            seedCandidate, /*Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(),*/ maxDepth
+            seedCandidate, Unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf(), maxDepth
         ).filter { c -> c.canonical() && check(c) }.toList()
     }
 }
