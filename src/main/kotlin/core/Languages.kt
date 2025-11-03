@@ -364,9 +364,10 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
         return params.indices.sortedByDescending { params[it].priority() }.flatMap { i ->
             if (cont) {
                 val exp =
-                    params[i].dfsLeftExpansions(constrs, vars, recursionBound?.let { it - 1 }).map { (node, commit) ->
-                        ConcreteL(id, params.mapIndexed { j, p -> if (j == i) node else p }) to commit
-                    }
+                    params[i].dfsPriorityExpansions(constrs, vars, recursionBound?.let { it - 1 })
+                        .map { (node, commit) ->
+                            ConcreteL(id, params.mapIndexed { j, p -> if (j == i) node else p }) to commit
+                        }
                 cont = exp.size <= 1
                 exp
             } else listOf()

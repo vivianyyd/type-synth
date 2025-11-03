@@ -143,18 +143,17 @@ data class NArrow<L : Language> private constructor(
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> {
         val nextBound = recursionBound?.let { it - (if (contributesToDepth) 1 else 0) }
-        if (l.priority() == r.priority()) return dfsLeftExpansions(constrs, vars, recursionBound)
-        if (l.priority() > r.priority()) {
+        if (l.priority() >= r.priority()) {
             val left = l.dfsPriorityExpansions(constrs, vars, nextBound).map { (node, commit) ->
                 NArrow(node, r, contributesToDepth) to commit
             }
             val right = if (left.isEmpty() || (left.toSet().size == 1 && left.first().first.l == l))
-                r.dfsLeftExpansions(constrs, vars, nextBound).map { (node, commit) ->
+                r.dfsPriorityExpansions(constrs, vars, nextBound).map { (node, commit) ->
                     NArrow(l, node, contributesToDepth) to commit
                 } else listOf()
             return (left + right).toSet().toList()
         } else {
-            val right = r.dfsLeftExpansions(constrs, vars, nextBound).map { (node, commit) ->
+            val right = r.dfsPriorityExpansions(constrs, vars, nextBound).map { (node, commit) ->
                 NArrow(l, node, contributesToDepth) to commit
             }
             val left = if (right.isEmpty() || (right.toSet().size == 1 && right.first().first.l == l))
