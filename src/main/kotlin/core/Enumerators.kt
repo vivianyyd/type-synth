@@ -185,6 +185,46 @@ class DFSPriorityEnumerator<L : Language>(
         }
     }
 
+    // TODO merge this with above impl
+    /*
+    private fun commitPriorityUF(
+        c: Candidate<L>,
+        unification: UFUnification<L>,
+        recursionBound: Int
+    ): Sequence<Candidate<L>> {
+        val (changeInd, prioritized) = c.types.withIndex().maxByOrNull { (_, it) -> it.priority() }
+            ?: return sequenceOf(c)
+        if (prioritized.priority() == 0) return sequenceOf(c)
+
+        val optionsForPrioritized =
+            prioritized.dfsPriorityExpansions(constrs, prioritized.variableNames(), recursionBound).asSequence()
+
+        return optionsForPrioritized.flatMap { (newType, commit) ->
+            val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newType else p })
+            if (commit == null) {
+                require(newCandidate == c)
+                emptySequence() // this call made no changes, but we don't want to hit it again TODO verify this doesn't break completeness
+            } else {
+                // This helps us skip many bad candidates, but the check itself is too slow for payoff.
+                // TODO the check only needs to occur where the latest commit happened, not on full candidate
+//                if (u.commitAndCheckValid(listOf(commit)) && newCandidate.types.all { !it.full() || it.noFreshSoleVarOnRHS() })
+
+                val u = ConstraintUnification(constrs)
+                if (u.commitAndCheckValid(listOf(commit))) {
+//                    if (Unification(newCandidate, query.posExsBeforeSubexprs).get() == null) {
+//                        TODO("Problem here $newCandidate")
+//                    }
+                    if (newCandidate.satisfiesDependencies())
+                        commitPriority(newCandidate, u.get()!!, recursionBound)
+                    else emptySequence()
+
+                } else emptySequence()
+            }
+        }
+    }
+
+     */
+
     override fun enumerate(maxDepth: Int): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
             ConstraintUnification(c, query.posExsBeforeSubexprs).get() != null &&

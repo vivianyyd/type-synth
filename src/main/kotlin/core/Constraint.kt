@@ -122,10 +122,18 @@ class UFUnification<L : Language> : Unification<L> {
         uf.rootsFor { it is Instantiation && it.n == this }.filterIsInstance<CTypeConstructor<L>>()
 
     override fun commitAndCheckValid(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
-        TODO("Not yet implemented")
-        // TODO do substs at the beginning. and then again at the end?
-        // find the root of the thing we instantiated to in [uf]. unify that with the root of all inst variables!
-        // check this logic is consistent with prev impl
+        refinements.forEach { (hole, node) ->
+            // for each instantiation variable for this node,
+            uf.filterNodes { it is Instantiation && it in hole.instantiations() }
+                .filterIsInstance<Instantiation<L>>(/*redundant but for cast*/).forEach {
+                    // instantiate node with the correct ids and
+                    // unify the instantiated replacement type with the canonical node of the inst
+                    unify(uf.find(it), node.instantiate(it.freshIdGen, it.inst))
+                    if (error) return false
+                }
+        }
+        substs()
+        return true
         // TODO we can remove proof variables from the eqclasses once they are resolved
     }
 
@@ -148,7 +156,7 @@ class UFUnification<L : Language> : Unification<L> {
             is Substitutable, is Instantiation -> uf.find(t)
             is InitConstrV -> t
         }
-
+        // TODO I can use references to micro-opt
         val transformedRoots = uf.allRootValues().associateWith { transform(it) }
         // For each root, perform as many substs from variables to other roots as possible
         uf.replaceRoots(transformedRoots)

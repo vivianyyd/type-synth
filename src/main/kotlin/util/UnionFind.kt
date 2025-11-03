@@ -149,6 +149,8 @@ class UnionFind<T>(
 
     fun rootsFor(selector: (T) -> Boolean) = nodes.mapNotNull { if (selector(it.key)) find(it.value).value else null }
 
+    fun filterNodes(selector: (T) -> Boolean) = nodes.keys.filter { selector(it) }
+
     fun replaceRoots(transform: Map<T, T>) {
         val toTransform = nodes.toList()
             .filter { it.second.parent == it.second && it.first in transform }  // two conditions should be equiv
