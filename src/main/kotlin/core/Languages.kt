@@ -26,7 +26,7 @@ class InitHole : Hole<Init>() {
     private val fnExpansion by lazy { NArrow(InitHole(), InitHole(), true) }
 
     override fun expansions(
-        constrs: List<Constraint<Init>>,
+        unification: Unification<Init>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<Init>, Commitment<Init>>> =
@@ -77,7 +77,7 @@ object ElabL : Leaf<Elab> {
 class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
     override fun toString() = "V_${holeId}_"
     override fun expansions(
-        constrs: List<Constraint<Elab>>,
+        unification: Unification<Elab>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<Elab>, Commitment<Elab>>> =
@@ -156,6 +156,7 @@ data class ElaboratedConstrL(val label: Int) : CTypeConstructor<Elaborated>(muta
 data class LabelConstraint(val a: Int, val b: Int) : Constraint<Elaborated> {
     override fun toString() = "L$a == L$b"
     override fun trivial() = a == b
+    override fun copy() = this
 }
 
 /** So ugly, but here since we have a new core. Later, delete old code. */
@@ -328,12 +329,12 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
         ConcreteConstrL.new(id, params.map { it.instantiate(freshIdGen, instId) })
 
     override fun bfsExpansions(
-        constrs: List<Constraint<Concrete>>,
+        unification: Unification<Concrete>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
         params.indices.flatMap { i ->
-            params[i].bfsExpansions(constrs, vars, recursionBound?.let { it - 1 })
+            params[i].bfsExpansions(unification, vars, recursionBound?.let { it - 1 })
                 .map { (node, commit) ->
                     ConcreteL(
                         id,
@@ -342,15 +343,16 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
         } + (if (params.isEmpty()) listOf(this to null) else listOf())
 
     override fun dfsLeftExpansions(
-        constrs: List<Constraint<Concrete>>, vars: Set<Int>, recursionBound: Int?
+        unification: Unification<Concrete>, vars: Set<Int>, recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
         var cont = true
         return params.indices.flatMap { i ->
             if (cont) {
                 val exp =
-                    params[i].dfsLeftExpansions(constrs, vars, recursionBound?.let { it - 1 }).map { (node, commit) ->
-                        ConcreteL(id, params.mapIndexed { j, p -> if (j == i) node else p }) to commit
-                    }
+                    params[i].dfsLeftExpansions(unification, vars, recursionBound?.let { it - 1 })
+                        .map { (node, commit) ->
+                            ConcreteL(id, params.mapIndexed { j, p -> if (j == i) node else p }) to commit
+                        }
                 cont = exp.size <= 1
                 exp
             } else listOf()
@@ -358,13 +360,13 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
     }
 
     override fun dfsPriorityExpansions(
-        constrs: List<Constraint<Concrete>>, vars: Set<Int>, recursionBound: Int?
+        unification: Unification<Concrete>, vars: Set<Int>, recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
         var cont = true
         return params.indices.sortedByDescending { params[it].priority() }.flatMap { i ->
             if (cont) {
                 val exp =
-                    params[i].dfsPriorityExpansions(constrs, vars, recursionBound?.let { it - 1 })
+                    params[i].dfsPriorityExpansions(unification, vars, recursionBound?.let { it - 1 })
                         .map { (node, commit) ->
                             ConcreteL(id, params.mapIndexed { j, p -> if (j == i) node else p }) to commit
                         }
@@ -386,11 +388,11 @@ class ConcreteHole(
 //    override fun hashCode() = 0
 
     override fun expansions(
-        constrs: List<Constraint<Concrete>>,
+        unification: Unification<Concrete>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
-        if (recursionBound != null && recursionBound <= 1) expansionsNoBound(constrs, vars).filter {
+        if (recursionBound != null && recursionBound <= 1) expansionsNoBound(unification, vars).filter {
             when (val t = it.first) {
                 is ConcreteL -> t.params.isEmpty()
                 is NArrow -> false
@@ -398,14 +400,14 @@ class ConcreteHole(
                 is ConcreteV -> true
                 else -> throw Exception("Impossible")
             }
-        } else expansionsNoBound(constrs, vars)
+        } else expansionsNoBound(unification, vars)
 
     private fun hole() = ConcreteHole(mayHaveFresh, constraint, labelArities)
     private val fnExpansion by lazy { NArrow(hole(), hole(), true) }
     private val labelExpansions by lazy { labelArities.map { ConcreteL(it.key, List(it.value) { hole() }) } }
 
     private fun expansionsNoBound(
-        constrs: List<Constraint<Concrete>>,
+        unification: Unification<Concrete>,
         vars: Set<Int>,
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
         fun wrap(e: List<SearchNode<Concrete>>) = e.map { it to (this to it) }
@@ -416,11 +418,7 @@ class ConcreteHole(
             is Only -> listOf(ConcreteV(constraint.v))
         }
 
-        val mustBeCompatible = constrs.filterIsInstance<EqualityConstraint<Concrete>>().mapNotNull {
-            if (it.l is Instantiation && (it.l as Instantiation<Concrete>).n == this) it.r
-            else if (it.r is Instantiation && (it.r as Instantiation<Concrete>).n == this) it.l
-            else null
-        }.filterIsInstance<CTypeConstructor<Concrete>>()
+        val mustBeCompatible = unification.holeEquals(this)
 
         if (mustBeCompatible.isNotEmpty()) {
             if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return wrap(variableExpansions)

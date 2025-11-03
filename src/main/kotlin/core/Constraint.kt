@@ -29,7 +29,7 @@ sealed interface Substitutable<L : Language> : CVariable<L> {
 
 data class CArrow<L : Language> constructor(override val params: List<ConstraintType<L>>) :
     CTypeConstructor<L>(params) {
-    constructor(l: ConstraintType<L>, r: ConstraintType<L>) : this(mutableListOf(l, r))
+    constructor(l: ConstraintType<L>, r: ConstraintType<L>) : this(listOf(l, r))
 
     override fun match(other: CTypeConstructor<L>) = other is CArrow<L>
 
@@ -42,7 +42,7 @@ data class CArrow<L : Language> constructor(override val params: List<Constraint
  * that variable needs to know where it is so it matches the others in the same instantiation call. */
 data class Instantiation<L : Language>(
     val n: Hole<L>, val holeId: Int, val uniqueId: Int, val inst: Int, val freshIdGen: Counter
-) : CVariable<L> {  // Not substitutable - we need these to induce choices, can't discard as we do when we substitute
+) : CVariable<L> {  // TODO I think this is substitutable now. Not substitutable - we need these to induce choices, can't discard as we do when we substitute
     override fun toString() = "inst$holeId-$inst"
 }
 
@@ -52,6 +52,7 @@ data class ProofVariable<L : Language>(val id: Int) : Substitutable<L> {
 
 sealed interface Constraint<L : Language> {
     fun trivial(): Boolean
+    fun copy(): Constraint<L>
 }
 
 data class EqualityConstraint<L : Language>(var l: ConstraintType<L>, var r: ConstraintType<L>) : Constraint<L> {
@@ -63,6 +64,7 @@ data class EqualityConstraint<L : Language>(var l: ConstraintType<L>, var r: Con
     }
 
     override fun hashCode(): Int = l.hashCode() + r.hashCode()
+    override fun copy() = EqualityConstraint(l, r)
 }
 
 typealias Commitment<L> = Pair<Hole<L>, SearchNode<L>>?
@@ -73,20 +75,33 @@ interface Unification<L : Language> {
     fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>>
     fun commitAndCheckValid(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean
     fun ok(): Boolean
+    fun spawn(): Unification<L>
 
     /** Use me sparingly */
     fun constraints(): List<Constraint<L>>?
 }
 
-class UFUnification<L : Language> : Unification<L> {
-    private val uf = UnionFind<ConstraintType<L>> { it is CTypeConstructor<L> }
-    private var instVarId = Counter()
-    private var proofVarId = Counter()
-    private var error = false
-    private var insts = Counter()  // Number of times any top-level type has been instantiated
-    private val customConstraints = mutableListOf<Constraint<L>>()
+class Empty<L : Language> : Unification<L> {
+    override fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>> = listOf()
 
-    constructor(candidate: Candidate<L>, exs: List<Example>) {
+    override fun commitAndCheckValid(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean = true
+
+    override fun ok(): Boolean = true
+
+    override fun spawn(): Unification<L> = this
+
+    override fun constraints(): List<Constraint<L>>? = listOf()
+}
+
+class UFUnification<L : Language> private constructor(
+    private val uf: UnionFind<ConstraintType<L>> = UnionFind { it is CTypeConstructor<L> },
+    private val instVarId: Counter = Counter(),
+    private val proofVarId: Counter = Counter(),
+    private var error: Boolean = false,
+    private val insts: Counter = Counter(),  // Number of times any top-level type has been instantiated
+    private val customConstraints: MutableList<Constraint<L>> = mutableListOf()
+) : Unification<L> {
+    constructor(candidate: Candidate<L>, exs: List<Example>) : this() {
         fun constrainType(ex: Example): ConstraintType<L> = when (ex) {
             is Name -> candidate.searchNodeOf(ex.name).instantiate(instVarId, insts.get())
             is App -> {
@@ -100,6 +115,16 @@ class UFUnification<L : Language> : Unification<L> {
         exs.forEach { constrainType(it) }
         substs()
     }
+
+    override fun spawn() =
+        UFUnification(
+            uf.copy(),
+            instVarId.copy(),
+            proofVarId.copy(),
+            error,
+            insts.copy(),
+            customConstraints.map { it.copy() }.toMutableList()
+        )
 
     private fun unify(a: ConstraintType<L>, b: ConstraintType<L>) {
         val ta = uf.find(a)
@@ -190,6 +215,8 @@ class ConstraintUnification<L : Language> : Unification<L> {
         exs.forEach { constrainType(it) }
         simplify()
     }
+
+    override fun spawn() = ConstraintUnification(constraints)
 
     private fun printConstrs() {
         return

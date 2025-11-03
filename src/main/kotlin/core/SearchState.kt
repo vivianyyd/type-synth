@@ -10,19 +10,19 @@ import java.lang.Integer.max
 sealed interface SearchNode<L : Language> {
     fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L>
     fun bfsExpansions(
-        constrs: List<Constraint<L>> = listOf(),
+        unification: Unification<L>,
         vars: Set<Int> = setOf(),  // TODO if we do this correctly, this can just be an int
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
     fun dfsLeftExpansions(
-        constrs: List<Constraint<L>> = listOf(),
+        unification: Unification<L>,
         vars: Set<Int> = setOf(),  // TODO if we do this correctly, this can just be an int
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
     fun dfsPriorityExpansions(
-        constrs: List<Constraint<L>> = listOf(),
+        unification: Unification<L>,
         vars: Set<Int> = setOf(),  // TODO if we do this correctly, this can just be an int
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
@@ -103,7 +103,7 @@ data class NArrow<L : Language> private constructor(
         CArrow(l.instantiate(freshIdGen, instId), r.instantiate(freshIdGen, instId))
 
     override fun bfsExpansions(
-        constrs: List<Constraint<L>>,
+        unification: Unification<L>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> {
@@ -113,51 +113,51 @@ data class NArrow<L : Language> private constructor(
 //             NArrow(it)
 //         }
         val nextBound = recursionBound?.let { it - (if (contributesToDepth) 1 else 0) }
-        val one = (l.bfsExpansions(constrs, vars, nextBound).map { (node, commit) ->
+        val one = (l.bfsExpansions(unification, vars, nextBound).map { (node, commit) ->
             NArrow(node, r, contributesToDepth) to commit
-        } + r.bfsExpansions(constrs, vars, nextBound).map { (node, commit) ->
+        } + r.bfsExpansions(unification, vars, nextBound).map { (node, commit) ->
             NArrow(l, node, contributesToDepth) to commit
         })
         return one.toSet().toList()
     }
 
     override fun dfsLeftExpansions(
-        constrs: List<Constraint<L>>,
+        unification: Unification<L>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> {
         val nextBound = recursionBound?.let { it - (if (contributesToDepth) 1 else 0) }
-        val left = l.dfsLeftExpansions(constrs, vars, nextBound).map { (node, commit) ->
+        val left = l.dfsLeftExpansions(unification, vars, nextBound).map { (node, commit) ->
             NArrow(node, r, contributesToDepth) to commit
         }
         val right = if (left.isEmpty() || (left.toSet().size == 1 && left.first().first.l == l))
-            r.dfsLeftExpansions(constrs, vars, nextBound).map { (node, commit) ->
+            r.dfsLeftExpansions(unification, vars, nextBound).map { (node, commit) ->
                 NArrow(l, node, contributesToDepth) to commit
             } else listOf()
         return (left + right).toSet().toList()
     }
 
     override fun dfsPriorityExpansions(
-        constrs: List<Constraint<L>>,
+        unification: Unification<L>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> {
         val nextBound = recursionBound?.let { it - (if (contributesToDepth) 1 else 0) }
         if (l.priority() >= r.priority()) {
-            val left = l.dfsPriorityExpansions(constrs, vars, nextBound).map { (node, commit) ->
+            val left = l.dfsPriorityExpansions(unification, vars, nextBound).map { (node, commit) ->
                 NArrow(node, r, contributesToDepth) to commit
             }
             val right = if (left.isEmpty() || (left.toSet().size == 1 && left.first().first.l == l))
-                r.dfsPriorityExpansions(constrs, vars, nextBound).map { (node, commit) ->
+                r.dfsPriorityExpansions(unification, vars, nextBound).map { (node, commit) ->
                     NArrow(l, node, contributesToDepth) to commit
                 } else listOf()
             return (left + right).toSet().toList()
         } else {
-            val right = r.dfsPriorityExpansions(constrs, vars, nextBound).map { (node, commit) ->
+            val right = r.dfsPriorityExpansions(unification, vars, nextBound).map { (node, commit) ->
                 NArrow(l, node, contributesToDepth) to commit
             }
             val left = if (right.isEmpty() || (right.toSet().size == 1 && right.first().first.l == l))
-                l.dfsPriorityExpansions(constrs, vars, nextBound).map { (node, commit) ->
+                l.dfsPriorityExpansions(unification, vars, nextBound).map { (node, commit) ->
                     NArrow(node, r, contributesToDepth) to commit
                 } else listOf()
             return (right + left).toSet().toList()
@@ -167,21 +167,21 @@ data class NArrow<L : Language> private constructor(
 
 sealed interface Leaf<L : Language> : SearchNode<L> {
     override fun bfsExpansions(
-        constrs: List<Constraint<L>>,
+        unification: Unification<L>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> =
         listOf(this to null)
 
     override fun dfsLeftExpansions(
-        constrs: List<Constraint<L>>,
+        unification: Unification<L>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> =
         listOf(this to null)
 
     override fun dfsPriorityExpansions(
-        constrs: List<Constraint<L>>,
+        unification: Unification<L>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> =
@@ -202,28 +202,28 @@ sealed class Hole<L : Language> : SearchNode<L> {
     val holeId = nextHoleId++
 
     abstract fun expansions(
-        constrs: List<Constraint<L>>,
+        unification: Unification<L>,
         vars: Set<Int>,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
     override fun bfsExpansions(
-        constrs: List<Constraint<L>>,
+        unification: Unification<L>,
         vars: Set<Int>,
         recursionBound: Int?
-    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(constrs, vars, recursionBound)
+    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(unification, vars, recursionBound)
 
     override fun dfsLeftExpansions(
-        constrs: List<Constraint<L>>,
+        unification: Unification<L>,
         vars: Set<Int>,
         recursionBound: Int?
-    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(constrs, vars, recursionBound)
+    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(unification, vars, recursionBound)
 
     override fun dfsPriorityExpansions(
-        constrs: List<Constraint<L>>,
+        unification: Unification<L>,
         vars: Set<Int>,
         recursionBound: Int?
-    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(constrs, vars, recursionBound)
+    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(unification, vars, recursionBound)
 
     private val instantiations = mutableListOf<Instantiation<L>>()
 
@@ -317,15 +317,15 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
         types.all { it.variableNames().size == (it.variableNames().maxOrNull() ?: -1) + 1 }
     // We can also add it.noFreshSoleVarOnRHS()
 
-    fun bfsExpansions(constrs: List<Constraint<L>> = listOf()): Sequence<Candidate<L>> {
+    fun bfsExpansions(unification: Unification<L>): Sequence<Candidate<L>> {
         // TODO should this be product, or also one at a time?? either will work but what is better
         return lazyCartesianProduct(types.map {
             // TODO we don't really learn from bad combinations here
-            // Each expansion corresponds with concretizing one hole. We check constrs after refining corresponding inst
+            // Each expansion corresponds with concretizing one hole. We check unification after refining corresponding inst
             // variables, this lets us check w inherited constrs from parent. If we can elim many this way, we save a
             // lot of space from not keeping around bad candidates in frontier only to find they are bad later.
             // We also use one construction of constraints to prune many expansions
-            it.bfsExpansions(constrs, it.variableNames())
+            it.bfsExpansions(unification, it.variableNames())
         }).mapNotNull {
 
             val (types, commitments) = it.unzip()
@@ -339,7 +339,7 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
                 })
                 Candidate(names, types)
 
-            if (ConstraintUnification(constrs).commitAndCheckValid(commitments.filterNotNull())) Candidate(names, types)
+            if (unification.commitAndCheckValid(commitments.filterNotNull())) Candidate(names, types)
             else null  // Could count here for eval
 //            Candidate(names, types)  // Originally
         }

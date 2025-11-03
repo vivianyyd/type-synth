@@ -147,6 +147,14 @@ class UnionFind<T>(
 
     private val nodes = mutableMapOf<T, Node<T>>()
 
+    fun copy(): UnionFind<T> {
+        val new = UnionFind(isTypeConstructor)
+        nodes.forEach { (t, _) ->
+            new.union(t, find(t))
+        }
+        return new
+    }
+
     fun rootsFor(selector: (T) -> Boolean) = nodes.mapNotNull { if (selector(it.key)) find(it.value).value else null }
 
     fun filterNodes(selector: (T) -> Boolean) = nodes.keys.filter { selector(it) }
