@@ -261,11 +261,6 @@ class ConstraintUnification<L : Language> : Unification<L> {
     e.g. If we refine a hole to a fresh variable, store a list of commitments that we are delaying until later
      */
     private fun betterCommit(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Boolean {
-        val printme = false//refinements.any { it.toString() == "(_77_, V2)" }
-//        if (printme) {
-//            println("Before committing:")
-//            printConstrs()
-//        }
         val change = refinements.fold(false) { changed, (hole, node) ->
             var changedCurr = changed
             for (j in constraints.indices) {
@@ -297,15 +292,11 @@ class ConstraintUnification<L : Language> : Unification<L> {
             }
             changedCurr
         }
-//        if (printme) {
-//            println("After committing:")
-//            printConstrs()
-//        }
-        simplify(printme)
+        simplify()
         return change
     }
 
-    private fun simplify(print: Boolean = false) {
+    private fun simplify() {
         fun trivial() {
             constraints.removeAll {
                 val t = it.trivial()
@@ -319,45 +310,21 @@ class ConstraintUnification<L : Language> : Unification<L> {
         constraints.clear()
         constraints.addAll(c1set)
         var substChange = substs()
-        if (print) {
-            println("After substs")
-            printConstrs()
-        }
         var splitChange = splits()
-        if (print) {
-            println("After splits")
-            printConstrs()
-        }
         while (splitChange || substChange) {
             if (error) return
             trivial()
             val cset = constraints.toSet()
             constraints.clear()
             constraints.addAll(cset)
-            if (print) {
-                println("No dups")
-                printConstrs()
-            }
             substChange = if (splitChange) substs() else false
-            if (print) {
-                println("After substs")
-                printConstrs()
-            }
             splitChange = if (substChange) splits() else false
-            if (print) {
-                println("After splits")
-                printConstrs()
-            }
         }
         if (error) return
         trivial()
         val cset = constraints.toSet()
         constraints.clear()
         constraints.addAll(cset)
-        if (print) {
-            println("THERE IS AN ERROR: $error")
-            printConstrs()
-        }
     }
 
     /** Replace [v] with [s] in [t] inplace. */
@@ -366,8 +333,6 @@ class ConstraintUnification<L : Language> : Unification<L> {
             is Substitutable -> if (t == v) s else t
             is Instantiation -> t
             is CTypeConstructor -> {
-//                t.params.replaceAll { substitute(v, s, it) }
-//                t
                 val p = t.params.map { substitute(v, s, it) }
                 (when (t) {
                     is CArrow -> CArrow(p)
@@ -402,52 +367,9 @@ class ConstraintUnification<L : Language> : Unification<L> {
                 }
             }
         }
-        /*
-        val varSubsts = equivalenceClasses(substs) { (_, v1, _), (_, v2, _) -> v1 == v2 }
-        var tmpSubs = mutableListOf<EqualityConstraint<L>>()
-        varSubsts.forEach { subsForV ->
-            val eqsForV = subsForV.map { it.first }
-
-
-            // Substitute into things that are not substitutors for v, with replacement
-            subsForV.forEach { (eq, v, s) ->
-                val refs = references[v]!!.toSet()  // avoids concurrentmodificationexception
-                refs.forEach {
-                    // Not only must [it] not be equal to [eq], it shouldn't be a substitution for V at all
-                    if (it !in eqsForV) {
-//                    if (v is ProofVariable) {
-//                        removeReferences(it)
-//                        it.l = substitute(v, s, it.l)
-//                        it.r = substitute(v, s, it.r)
-//                        addReferences(it)
-//                    } else {
-                        // TODO we cannot do it inplace since if it is a variable that we later instantiate a hole to,
-                        //      we need to keep all its constraints around...
-                        //      this is really unfortunate because it gets really fat. instead we shouldn't bother trying to keep around old subst stuff
-                        //      including down below where we only delete a constraint if it involves a proof variable.
-//                        val new = EqualityConstraint(substitute(v, s, it.l), substitute(v, s, it.r))
-//                        constraints.add(new)
-//                        addReferences(new)
-//                    }
-                    } else { // TODO substitute into things that *are* substitutors for v, by appending
-                        if (it != eq) {
-                            val new = EqualityConstraint(substitute(v, s, it.l), substitute(v, s, it.r))
-                            tmpSubs.add(new)
-                        }
-                    }
-                    tmpSubs.removeAll { it.trivial() }
-                    tmpSubs.addAll(tmpSubs.toSet())
-                }
-            }
-        }
-
-         */
         // Because we make modifications inplace, we need to check that the constraint is even the same as when we began
         val toRemove =
             substs.mapNotNull { (eq, v, s) -> if (v is ProofVariable<*> && ((eq.l == v && eq.r == s) || eq.r == v && eq.l == s)) eq else null }
-//        if (toRemove.any {
-//                it.toString().contains("V0-3") && it.toString().contains("L -> L")
-//            }) println("this is bad")
         constraints.removeAll {
             if (it in toRemove && it is EqualityConstraint<L>) removeReferences(it)
             it in toRemove

@@ -263,7 +263,7 @@ class ProductEnumerator<L : Language>(
     }
 }
 
-val RERUN_CVC = false
+val RERUN_CVC = true
 
 fun main() {
     if (RERUN_CVC) clearCVC()
@@ -277,8 +277,8 @@ fun main() {
     val t = DictTest
     val testFromFile = parseContextAndExamples(readExamples("dictchain"))
 
-    val (query, oracle) = t.query to t.oracle
-//    val (query, oracle) = testFromFile
+//    val (query, oracle) = t.query to t.oracle
+    val (query, oracle) = testFromFile
 
     // TODO set unification algo once up here, it just gets referenced below
 
@@ -299,18 +299,6 @@ fun main() {
 
     val initSols = fromSeeds(inits, 4)
     var elabSols = fromSeeds(initSols.map { compileInit(it) }, 4)
-
-
-//        elabSols = elabSols.filter {
-//        val cons = it.types[it.names.indexOf("cons")]
-//        cons is NArrow && cons.l is ElabV && cons.r is NArrow && cons.r.l is ElabL && cons.r.r is ElabL
-//    }
-
-    // TODO deleteme
-//    elabSols = elabSols.filter {
-//        val put = it.types[it.names.indexOf("put")]
-//        put is NArrow && put.l is ElabL && put.r is NArrow && put.r.l is ElabV && put.r.r is NArrow && put.r.r.l is ElabV && put.r.r.r is ElabL
-//    }
 
     val concEnumerators = elabSols.mapNotNull {
         compileElab(it, query, oracle, ::UFUnification, RERUN_CVC)?.let {

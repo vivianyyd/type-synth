@@ -5,6 +5,7 @@
 (- (chain dib dii))
 (- (chain dbi dbb))
 (+ (put (chain dib dbi) i i))
+(+ (put (put dib i b) i b))
 (+ (put (chain dib dbb) i b))
 (+ (chain dib (chain dbi dii)))
 (+ (chain dii (chain dib (put dbi b i))))
