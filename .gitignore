@@ -11,3 +11,5 @@ profiling
 *.dot
 *.png
 results/logs/big
+*.hi
+*.o
