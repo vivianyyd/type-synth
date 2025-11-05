@@ -182,6 +182,7 @@ class DFSPriorityEnumerator<L : Language>(
 //                    if (Unification(newCandidate, query.posExsBeforeSubexprs).get() == null) {
 //                        TODO("Problem here $newCandidate")
 //                    }
+                    // TODO ablate this
                     if (newCandidate.satisfiesDependencies())
                         commitPriority(newCandidate, u, recursionBound)
                     else emptySequence()
@@ -265,7 +266,7 @@ class ProductEnumerator<L : Language>(
     }
 }
 
-val RERUN_CVC = true
+val RERUN_CVC = false
 
 fun main() {
     if (RERUN_CVC) clearCVC()

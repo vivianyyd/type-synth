@@ -15,7 +15,8 @@ sealed interface ConstraintType<L : Language> {
 
 sealed class CTypeConstructor<L : Language>(open val params: List<ConstraintType<L>>) : ConstraintType<L> {
     override val hasSubstitutable by lazy { params.any { it.hasSubstitutable } }
-    override fun substitutable(): List<Substitutable<L>> = params.flatMap { it.substitutable() }
+    override fun substitutable(): List<Substitutable<L>> = substitutable
+    private val substitutable by lazy { params.flatMap { it.substitutable() } }
     abstract fun match(other: CTypeConstructor<L>): Boolean
     open fun split(other: CTypeConstructor<L>): List<Constraint<L>>? =
         if (match(other)) params.zip(other.params).map { (a, b) -> EqualityConstraint(a, b) } else null
@@ -111,18 +112,16 @@ class EagerUnification<L : Language>(
     private val instVarId = Counter()
     private val insts = Counter()  // Number of times any top-level type has been instantiated
 
-    override fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>> = holeConstraints[hole] ?: listOf()
+    override fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>> =
+        if (ok()) holeConstraints[hole] ?: listOf() else listOf()
 
     override fun ok(): Boolean {
-        println("Checking ${candidate.asMap}")
         if (!evaluated) {
             error = exs.any {
-                println("Got ${type(it)} for $it")
                 type(it) == null
             }
             evaluated = true
         }
-        println("Error: $error")
         return !error
     }
 
@@ -146,9 +145,7 @@ class EagerUnification<L : Language>(
         return when (ex) {
             is Name -> context[ex.name]?.instantiate(instVarId, insts.get())
             is App -> type(ex.fn).let { f ->
-                println("${ex.fn}: $f")
                 type(ex.arg)?.let { arg ->
-                    println("${ex.arg}: $arg")
                     when (f) {
                         is CArrow -> apply(f, arg)
                         is Instantiation -> {
@@ -179,14 +176,12 @@ class EagerUnification<L : Language>(
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
     private val unify = mutableMapOf<Pair<ConstraintType<L>, ConstraintType<L>>, List<Binding<L>>?>()
     fun unify(param: ConstraintType<L>, arg: ConstraintType<L>): List<Binding<L>>? {
-        println("Unifying $param with $arg")
         if ((param to arg) in unify) return unify[param to arg]
         val result = when (param) {
             is ProofVariable -> error("No proof variables arise in eager unification")
-            is Substitutable -> listOf(
-                Binding(param, arg),
-                TODO("OCCURS CHECK HERE! actually maybe we don't need it bc everything is instantiated separately and we only generate valid types. can we ever run into this issue when we have some choices made first then we grow the library but the new things don't mesh with the old ones?")
-            )
+            is Substitutable ->
+                if (param in arg.substitutable()) null
+                else listOf(Binding(param, arg))
             is CTypeConstructor -> when (arg) {
                 is ProofVariable -> error("No proof variables arise in eager unification")
                 is CTypeConstructor -> {
@@ -209,10 +204,9 @@ class EagerUnification<L : Language>(
                         bindings
                     }
                 }
-                is Substitutable -> listOf(  // this happens when for example, a function expects argument (int -> int) and we pass ('a -> 'a)
-                    Binding(arg, param),
-                    TODO("OCCURS CHECK HERE! actually maybe we don't need it bc everything is instantiated separately and we only generate valid types. can we ever run into this issue when we have some choices made first then we grow the library but the new things don't mesh with the old ones?")
-                )
+                is Substitutable -> // for example, a function expects argument (int -> int) and we pass ('a -> 'a)
+                    if (arg in param.substitutable()) null
+                    else listOf(Binding(arg, param))
                 InitConstrV -> listOf()
                 is Instantiation -> {
                     holeConstraint(arg, param)
@@ -258,7 +252,7 @@ class EagerUnification<L : Language>(
     fun applyBindings(t: ConstraintType<L>, bindings: List<Binding<L>>): ConstraintType<L> =
         bindings.fold(t) { acc, (v, sub) -> applyBinding(acc, v, sub) }
 
-    override fun constraints(): List<Constraint<L>>? = if (error) null else customConstraints
+    override fun constraints(): List<Constraint<L>>? = if (ok()) customConstraints else null
 }
 
 class UFUnification<L : Language> private constructor(
@@ -388,11 +382,6 @@ class ConstraintUnification<L : Language> : Unification<L> {
         }
         exs.forEach { constrainType(it) }
         simplify()
-    }
-
-    private fun printConstrs() {
-        return
-        println("\t" + get()?.joinToString(separator = ";"))
     }
 
     fun get(): List<Constraint<L>>? = if (error) null else constraints
