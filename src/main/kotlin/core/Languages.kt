@@ -34,7 +34,7 @@ class InitHole : Hole<Init>() {
         else listOf(fnExpansion))).map { it to (this to it) }
 }
 
-object InitConstrV : CVariable<Init> {
+object InitConstrV : CVariable<Init>() {
     override fun toString() = "V"
 }
 
@@ -89,7 +89,7 @@ class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
 }
 
 /** Good style would be to hide this constructor somehow so it can only be instantiated by ElabV */
-data class ElabConstrV(val v: Int, val instId: Int) : CVariable<Elab>, Substitutable<Elab> {
+data class ElabConstrV(val v: Int, val instId: Int) : Substitutable<Elab>() {
     override fun toString() = "V${v}-$instId"
 }
 
@@ -141,7 +141,7 @@ data class ElaboratedL(val label: Int) : Leaf<Elaborated> {
     override fun variableNames() = emptySet<Int>()
 }
 
-data class ElaboratedConstrV(val v: Int, val instId: Int) : CVariable<Elaborated>, Substitutable<Elaborated> {
+data class ElaboratedConstrV(val v: Int, val instId: Int) : Substitutable<Elaborated>() {
     override fun toString() = "V${v}-$instId"
 }
 
@@ -436,7 +436,7 @@ class ConcreteHole(
     }
 }
 
-data class ConcreteConstrV(val v: Int, val instId: Int) : CVariable<Concrete>, Substitutable<Concrete> {
+data class ConcreteConstrV(val v: Int, val instId: Int) : Substitutable<Concrete>() {
     override fun toString() = "V${v}-$instId"
 }
 

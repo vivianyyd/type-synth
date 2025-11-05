@@ -5,8 +5,8 @@ import util.ParameterNode
 import util.lazyCartesianProduct
 import java.lang.Integer.max
 
-/** SearchNodes are functional and immutable... except for Holes. So they are not
- * Only full types are hashable */
+/** SearchNodes are hashable. All but holes are functional and immutable.
+ * Holes mutate when they count conflicts, but they are normal rather than data classes, so they are physical equals */
 sealed interface SearchNode<L : Language> {
     fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L>
     fun bfsExpansions(
@@ -80,9 +80,9 @@ sealed class Branch<L : Language>(open val params: List<SearchNode<L>>) : Search
     override fun variableNames() = params.flatMap { it.variableNames() }.toSet()
 }
 
-data class NArrow<L : Language> private constructor(
+data class NArrow<L : Language> constructor(
     override val params: List<SearchNode<L>>,
-    private val contributesToDepth: Boolean
+    val contributesToDepth: Boolean
 ) : Branch<L>(params) {
     val l = params[0]
     val r = params[1]
@@ -307,7 +307,7 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
         }
     }
 
-    fun asMap() = names.zip(types).toMap()
+    val asMap by lazy { names.zip(types).toMap() }
 
     fun arities() = types.map { it.params() }
 
@@ -339,7 +339,7 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
                 })
                 Candidate(names, types)
 
-            if (unification.commitAndCheckValid(commitments.filterNotNull())) Candidate(names, types)
+            if (unification.spawnAndRefine(commitments.filterNotNull()).ok()) Candidate(names, types)
             else null  // Could count here for eval
 //            Candidate(names, types)  // Originally
         }

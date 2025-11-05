@@ -122,7 +122,7 @@ class LabelArityConstraints(
         decls.add("$py = Int${if (names.size == 1) "" else "s"}('$cvc5')")
     }
 
-    fun initialQuery(): String = PyWriter().query("${cand.asMap()}", decls, constrs)
+    fun initialQuery(): String = PyWriter().query("${cand.asMap}", decls, constrs)
 
     fun smallerQuery(sizes: Map<Int, Int>): String {
         fun or(args: List<String>): String {

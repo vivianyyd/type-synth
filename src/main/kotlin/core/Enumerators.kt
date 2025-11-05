@@ -120,8 +120,8 @@ class DFSLeftEnumerator<L : Language>(
             } else {
                 // We reconstruct Unification every time because we don't want different child branches to
                 //  affect one another, and Unification is stateful.
-                val u = unification.spawn()
-                if (u.commitAndCheckValid(listOf(commit)))
+                val u = unification.spawnAndRefine(listOf(commit))
+                if (u.ok())
                     commitLeftmost(newCandidate, u, recursionBound)
                 else emptySequence()
             }
@@ -157,16 +157,18 @@ class DFSPriorityEnumerator<L : Language>(
         unification: Unification<L>,
         recursionBound: Int
     ): Sequence<Candidate<L>> {
-//        println("Exploring $c")  // \n\t$constrs
         val (changeInd, prioritized) = c.types.withIndex().maxByOrNull { (_, it) -> it.priority() }
             ?: return sequenceOf(c)
         if (prioritized.priority() == 0) return sequenceOf(c)
+
+//        println("Starting with $c, ${unification.ok()}")
 
         val optionsForPrioritized =
             prioritized.dfsPriorityExpansions(unification, prioritized.variableNames(), recursionBound).asSequence()
 
         return optionsForPrioritized.flatMap { (newType, commit) ->
             val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newType else p })
+//            println("Considering new: ${newCandidate.asMap}")
             if (commit == null) {
                 require(newCandidate == c)
                 emptySequence() // this call made no changes, but we don't want to hit it again TODO verify this doesn't break completeness
@@ -175,8 +177,8 @@ class DFSPriorityEnumerator<L : Language>(
                 // TODO the check only needs to occur where the latest commit happened, not on full candidate
 //                if (u.commitAndCheckValid(listOf(commit)) && newCandidate.types.all { !it.full() || it.noFreshSoleVarOnRHS() })
 
-                val u = unification.spawn()
-                if (u.commitAndCheckValid(listOf(commit))) {
+                val u = unification.spawnAndRefine(listOf(commit))
+                if (u.ok()) {
 //                    if (Unification(newCandidate, query.posExsBeforeSubexprs).get() == null) {
 //                        TODO("Problem here $newCandidate")
 //                    }
@@ -277,8 +279,8 @@ fun main() {
     val t = DictTest
     val testFromFile = parseContextAndExamples(readExamples("dictchain"))
 
-//    val (query, oracle) = t.query to t.oracle
-    val (query, oracle) = testFromFile
+    val (query, oracle) = t.query to t.oracle
+//    val (query, oracle) = testFromFile
 
     // TODO set unification algo once up here, it just gets referenced below
 
@@ -290,7 +292,7 @@ fun main() {
         }).map { Candidate(query.names, it) }
 
     fun <L : Language> enum(seed: Candidate<L>, maxDepth: Int): List<Candidate<L>> =
-        DFSPriorityEnumerator(query, seed, ::UFUnification, false).enumerate(maxDepth)
+        DFSPriorityEnumerator(query, seed, ::EagerUnification, false).enumerate(maxDepth)
 
     fun <L : Language> fromSeeds(seeds: Sequence<Candidate<L>>, maxDepth: Int): Sequence<Candidate<L>> =
         seeds.flatMap { enum(it, maxDepth) }
@@ -301,8 +303,8 @@ fun main() {
     var elabSols = fromSeeds(initSols.map { compileInit(it) }, 4)
 
     val concEnumerators = elabSols.mapNotNull {
-        compileElab(it, query, oracle, ::UFUnification, RERUN_CVC)?.let {
-            DFSPriorityEnumerator(query, it, ::UFUnification, mustPassNegatives = true, minimizeSize = true)
+        compileElab(it, query, oracle, ::EagerUnification, RERUN_CVC)?.let {
+            DFSPriorityEnumerator(query, it, ::EagerUnification, mustPassNegatives = true, minimizeSize = true)
         }
     }.toList() // This needs to be a list so we don't keep calling it...
 
