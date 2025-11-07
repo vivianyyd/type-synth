@@ -174,9 +174,7 @@ class EagerUnification<L : Language>(
     }
 
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
-    private val unify = mutableMapOf<Pair<ConstraintType<L>, ConstraintType<L>>, List<Binding<L>>?>()
     fun unify(param: ConstraintType<L>, arg: ConstraintType<L>): List<Binding<L>>? {
-        if ((param to arg) in unify) return unify[param to arg]
         val result = when (param) {
             is ProofVariable -> error("No proof variables arise in eager unification")
             is Substitutable ->
@@ -219,12 +217,8 @@ class EagerUnification<L : Language>(
                 listOf()
             }
         }
-        unify[param to arg] = result
         return result
     }
-
-    private val applyBinding =
-        mutableMapOf<Triple<ConstraintType<L>, Substitutable<L>, ConstraintType<L>>, ConstraintType<L>>()
 
     fun applyBinding(
         t: ConstraintType<L>,
@@ -232,20 +226,18 @@ class EagerUnification<L : Language>(
         sub: ConstraintType<L>
     ): ConstraintType<L> {
         if (!t.hasSubstitutable) return t
-        return applyBinding.getOrPut(Triple(t, v, sub)) {
-            when (t) {
-                is Substitutable -> if (t == v) sub else t
-                is CTypeConstructor -> {
-                    val p = t.params.map { applyBinding(it, v, sub) }
-                    (when (t) {
-                        is CArrow -> CArrow(p)
-                        is ConcreteConstrL -> ConcreteConstrL(t.label, p as List<ConstraintType<Concrete>>)
-                        InitConstrL, ElabConstrL, is ElaboratedConstrL -> error("hasSubstitutable should have been false")
-                    } as ConstraintType<L>)
-                }
-                is Instantiation -> error("hasSubstitutable should have been false")
-                is InitConstrV -> t
+        return when (t) {
+            is Substitutable -> if (t == v) sub else t
+            is CTypeConstructor -> {
+                val p = t.params.map { applyBinding(it, v, sub) }
+                (when (t) {
+                    is CArrow -> CArrow(p)
+                    is ConcreteConstrL -> ConcreteConstrL(t.label, p as List<ConstraintType<Concrete>>)
+                    InitConstrL, ElabConstrL, is ElaboratedConstrL -> error("hasSubstitutable should have been false")
+                } as ConstraintType<L>)
             }
+            is Instantiation -> error("hasSubstitutable should have been false")
+            is InitConstrV -> t
         }
     }
 
