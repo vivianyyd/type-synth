@@ -50,7 +50,7 @@ data class Var(val varId: Int, override val id: Int) : Node {
 class ConcreteEnumerator(
     val query: Query, contextOutline: Projection,
     /** Map from label ids to number of parameters */
-    inLabels: Map<stc.L, Int>, private val dependencies: DependencyAnalysis, private val oracle: EqualityNewOracle
+    inLabels: Map<stc.L, Int>, private val dependencies: DependencyAnalysis, private val oracle: Oracle
 ) {
     private val state: MutableMap<String, Node> = mutableMapOf()
     private val variablesInScope: Map<String, MutableList<Int>> = query.names.associateWith { mutableListOf() }

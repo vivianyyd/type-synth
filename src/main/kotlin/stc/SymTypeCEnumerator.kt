@@ -6,14 +6,14 @@ import query.Name
 import query.Query
 import sta.Function
 import sta.State
-import util.EqualityNewOracle
 import util.OldUnionFind
+import util.Oracle
 import util.lazyCartesianProduct
 
 class SymTypeCEnumerator(
     val query: Query,
     state: State,
-    private val oracle: EqualityNewOracle,
+    private val oracle: Oracle,
 ) {
     private val state = state.read()
 

@@ -10,7 +10,7 @@ import util.*
 
 /** Infrastructure for the old implementation. */
 
-fun run(query: Query, oracle: EqualityNewOracle): List<Map<String, ConcreteNode>> {
+fun run(query: Query, oracle: Oracle): List<Map<String, ConcreteNode>> {
     val outlines = outlines(query, oracle)
     outlines.map { println(it.outline) }
 
@@ -49,7 +49,7 @@ fun run(query: Query, oracle: EqualityNewOracle): List<Map<String, ConcreteNode>
     return OK
 }
 
-private fun outlines(query: Query, oracle: EqualityNewOracle): List<Projection> {
+private fun outlines(query: Query, oracle: Oracle): List<Projection> {
     val projections = if (MAKE_OUTLINES) SymTypeCEnumerator(query, SymTypeABuilder(query).make, oracle).enumerateAll()
     else readIntermediateOutlines().map { it.second }
     if (MAKE_OUTLINES && WRITE_INTERMEDIATE) projections.forEachIndexed { i, it ->
@@ -61,7 +61,7 @@ private fun outlines(query: Query, oracle: EqualityNewOracle): List<Projection> 
 // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to arity)
 private fun aritiesToDeps(
     query: Query,
-    oracle: EqualityNewOracle,
+    oracle: Oracle,
     outlines: List<Projection>
 ): Map<Map<String, Int>, DependencyAnalysis> =
     outlines.map { it.arities }.toSet().associateWith { DependencyAnalysis(query, it, oracle) }

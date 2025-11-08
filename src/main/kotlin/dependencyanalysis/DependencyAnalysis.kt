@@ -41,7 +41,7 @@ fun constraints(outline: Projection, deps: DependencyAnalysis) =
     }
 
 class DependencyAnalysis(
-    private val query: Query, arities: Map<String, Int>, private val oracle: EqualityNewOracle
+    private val query: Query, arities: Map<String, Int>, private val oracle: Oracle
 ) {
     private val nodes = arities.flatMap { (name, arity) -> (0 until arity).map { ParameterNode(name, it) } }
 

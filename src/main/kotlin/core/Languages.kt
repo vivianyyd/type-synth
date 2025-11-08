@@ -213,7 +213,7 @@ fun constraints(candidate: Candidate<Elaborated>, deps: DependencyAnalysis): Map
 fun compileElab(
     seed: Candidate<Elab>,
     query: Query,
-    oracle: EqualityNewOracle,
+    oracle: Oracle,
     unification: UnificationForCandidate<Elaborated>,
     callSolver: Boolean
 ): Candidate<Concrete>? {

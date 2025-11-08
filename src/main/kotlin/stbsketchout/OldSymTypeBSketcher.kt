@@ -6,11 +6,11 @@ import query.Name
 import query.Query
 import sta.Function
 import sta.State
-import util.EqualityNewOracle
+import util.Oracle
 import util.SketchWriter
 import kotlin.math.roundToInt
 
-class OldSymTypeBSketcher(val query: Query, private val state: State, private val oracle: EqualityNewOracle) {
+class OldSymTypeBSketcher(val query: Query, private val state: State, private val oracle: Oracle) {
     private val sw = SymbolicSketchWriter()
     fun nextQuery(sketch: String, round: Int) = sw.addBanned(SymbolicSketchParser(sketch).parseAll.first, round)
     fun output(sketch: String): Pair<Int, String> {

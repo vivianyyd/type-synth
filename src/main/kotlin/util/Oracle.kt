@@ -4,7 +4,7 @@ import query.*
 import types.Type
 import types.checkApplication
 
-interface EqualityNewOracle {
+interface Oracle {
     fun equal(a: Example, b: Example): Boolean
     fun flatEqual(a: FlatApp, b: FlatApp): Boolean = equal(a.unflatten(), b.unflatten())
     fun dummy(e: Example): Int
@@ -14,7 +14,7 @@ interface EqualityNewOracle {
  * Requires [secret[app]] is null iff [app] is a negative example
  * Requires a mapping of *all* positive applications (including all subexpressions) to their dummy types
  */
-class ScrappyNewOracle(private val secret: Map<Example, String?>) : EqualityNewOracle {
+class ScrappyNewOracle(private val secret: Map<Example, String?>) : Oracle {
     private var fresh = 0
     private val dummies = secret.values.filterNotNull().toSet().associateWith { fresh++ }
 
@@ -32,7 +32,7 @@ interface EqualityOracle {
 /**
  * Computes types of applications based on types of named values, given as [secret]
  */
-class CheckingOracle(private val secret: Map<String, Type>) : EqualityNewOracle {
+class CheckingOracle(private val secret: Map<String, Type>) : Oracle {
     // flatEqual(a.flatten(), b.flatten()) works too. Idk why I did this
     override fun equal(a: Example, b: Example): Boolean {
         val ta = check(a, secret)
