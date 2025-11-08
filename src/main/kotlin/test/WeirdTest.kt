@@ -5,7 +5,9 @@ import query.parseApp
 import query.parseExamples
 import util.ScrappyNewOracle
 
-object WeirdTest {
+object WeirdTest : Test {
+    override val name = "Weird"
+
     // f:. f id 0 is valid, but f_swap 0 id is not.
     val examples = mapOf(
         "(+ f)" to "(a -> a) -> a -> a",
@@ -28,6 +30,6 @@ object WeirdTest {
         "(+ (inc (id n)))" to "int",
     )
 
-    val query: Query = parseExamples(examples.keys)
-    val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
+    override val query: Query = parseExamples(examples.keys)
+    override val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
 }

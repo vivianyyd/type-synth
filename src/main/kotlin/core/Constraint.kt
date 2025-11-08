@@ -76,6 +76,16 @@ typealias Commitment<L> = Pair<Hole<L>, SearchNode<L>>?
 
 typealias UnificationForCandidate<L> = (Candidate<L>, List<Example>) -> Unification<L>
 
+enum class UnificationTag {
+    Eager, UnionFind, Constraint
+}
+
+fun <L : Language> unification(tag: UnificationTag): UnificationForCandidate<L> = when (tag) {
+    UnificationTag.Eager -> ::EagerUnification
+    UnificationTag.UnionFind -> ::UFUnification
+    UnificationTag.Constraint -> ::ConstraintUnification
+}
+
 interface Unification<L : Language> {
     fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>>
     fun ok(): Boolean

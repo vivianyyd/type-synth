@@ -6,7 +6,6 @@ import dependencyanalysis.viz
 import query.Query
 import sta.SymTypeABuilder
 import stc.*
-import stc.Var
 import util.*
 
 /** Infrastructure for the old implementation. */

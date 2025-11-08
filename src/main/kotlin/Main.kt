@@ -1,8 +1,7 @@
-import query.parseContextAndExamples
+import query.parseTest
 import test.*
 import util.clearCVC
 import util.clearOutlines
-import util.readExamples
 import java.io.File
 import java.io.PrintStream
 
@@ -15,7 +14,7 @@ const val CALL_CVC = REDO_ALL
 fun main() {
     val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
     val smallTest = DictTest
-    val testFromFile = parseContextAndExamples(readExamples("dictchain"))
+    val testFromFile = parseTest("dictchain")
 
     val (query, oracle) = (smallTest.query to smallTest.oracle)
 //    val (query, oracle) = testFromFile

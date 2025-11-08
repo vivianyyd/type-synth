@@ -8,7 +8,7 @@ import java.util.*
 
 class BFSEnumerator<L : Language>(
     val query: Query,
-    seedCandidate: Candidate<L>,
+    override val seedCandidate: Candidate<L>,
     private val unification: UnificationForCandidate<L>,
     private val mustPassNegatives: Boolean,
     private val minimizeSize: Boolean = false

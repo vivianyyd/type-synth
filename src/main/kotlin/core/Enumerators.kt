@@ -1,81 +1,83 @@
 package core
 
-import core.enumerate.DFSPriorityEnumerator
+import core.enumerate.EnumeratorTag
+import core.enumerate.enumerator
 import query.App
 import query.Name
-import query.parseContextAndExamples
+import query.parseTest
 import test.*
+import util.Configuration
+import util.Logger
 import util.clearCVC
 import util.lazyCartesianProduct
-import util.readExamples
-import java.io.File
-import java.io.PrintStream
-
-val RERUN_CVC = false
 
 fun main() {
-    if (RERUN_CVC) clearCVC()
+    val tests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
+    val testFromFile = parseTest("dictchain")
 
-    val logFile = File("app.log")
-    val logStream = PrintStream(logFile.outputStream(), true)
-//    System.setOut(logStream)
-//    System.setErr(logStream)
+    val configuration = Configuration(
+        test = ConsTest,
+        runCVC = true,
+        enumeratorTag = EnumeratorTag.DFSPriority,
+        unificationTag = UnificationTag.Eager,
+        maxDepth = 4
+    )
 
-    val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
-    val t = DictTest
-    val testFromFile = parseContextAndExamples(readExamples("dictchain"))
+    val logger = Logger(
+        configuration = configuration,
+        logToFile = false
+    )
 
-    val (query, oracle) = t.query to t.oracle
-//    val (query, oracle) = testFromFile
+    run(configuration, logger)
+}
 
-    // TODO set unification algo once up here, it just gets referenced below
+fun run(configuration: Configuration, logger: Logger) {
+    if (configuration.runCVC) clearCVC()
+    val (query, oracle) = configuration.test.pair()
 
+    fun <L : Language> makeEnumerator(seed: Candidate<L>, mustPassNegatives: Boolean) =
+        enumerator(
+            configuration.enumeratorTag,
+            query,
+            seed,
+            unification(configuration.unificationTag),
+            mustPassNegatives,
+            logger
+        )
 
-    val inits = lazyCartesianProduct(
+    val initSeeds = lazyCartesianProduct(
         query.names.map { name ->
-            InitHole().expansions(Empty(), setOf(), null).map { it.first }
+            InitHole()
+                .expansions(Empty(), setOf(), null)
+                .map { it.first }
                 .filter { it is InitL || (it is NArrow && query.posExamples.any { it is App && it.fn is Name && it.fn.name == name }) }
         }).map { Candidate(query.names, it) }
+    val initSols = initSeeds.flatMap { makeEnumerator(it, false).enumerate(configuration.maxDepth) }
 
-    fun <L : Language> enum(seed: Candidate<L>, maxDepth: Int): List<Candidate<L>> =
-        DFSPriorityEnumerator(query, seed, ::EagerUnification, false).enumerate(maxDepth)
+    val elabSeeds = initSols.map { compileInit(it) }
+    val elabSols = elabSeeds.flatMap { makeEnumerator(it, false).enumerate(configuration.maxDepth) }
 
-    fun <L : Language> fromSeeds(seeds: Sequence<Candidate<L>>, maxDepth: Int): Sequence<Candidate<L>> =
-        seeds.flatMap { enum(it, maxDepth) }
-
-    val TIME = System.currentTimeMillis()
-
-    val initSols = fromSeeds(inits, 4)
-    var elabSols = fromSeeds(initSols.map { compileInit(it) }, 4)
-
-    val concEnumerators = elabSols.mapNotNull {
-        compileElab(it, query, oracle, ::EagerUnification, RERUN_CVC)?.let {
-            DFSPriorityEnumerator(query, it, ::EagerUnification, mustPassNegatives = true, minimizeSize = true)
-        }
-    }.toList() // This needs to be a list so we don't keep calling it...
-
-    println(concEnumerators.joinToString(separator = "\n") { "${it.seedCandidate}" })
-
-    val sol = mutableListOf<Candidate<Concrete>>()
-    for (i in 1..4) {
+    val concSeeds = elabSols.mapNotNull {
+        compileElab(
+            it,
+            query,
+            oracle,
+            unification(configuration.unificationTag),
+            configuration.runCVC
+        )
+    }.toList()  // This needs to be a list so we don't keep calling it
+    println(concSeeds.joinToString(separator = "\n"))
+    val concEnumerators = concSeeds.map { makeEnumerator(it, true) }
+    val concSols = mutableListOf<Candidate<Concrete>>()
+    for (i in 1..configuration.maxDepth) {
         println("Hello $i")
         val sols = concEnumerators.flatMap { it.enumerate(i) }.toList()
         if (sols.isNotEmpty()) {
-            sol.addAll(sols)
+            concSols.addAll(sols)
             break
         }
     }
 
     println("FINAL SOLUTIONS:")
-    println(sol.joinToString(separator = "\n"))
-
-    println("TIME: ${System.currentTimeMillis() - TIME}")
-
-    TODO("BRING BACK CEGIS LOOP")
-//    println(solslist.joinToString(prefix = "SOLUTIONS:\n", separator = "\n"))
-    TODO("Stop enumerating if we have all solutions of min size")
-    TODO("Canonicalize wrt alpha equiv before storing in seen?")
-    TODO(
-        "In the next step, should we allow new labels to be introduced in expansions? " + "Will there ever be problems where a label type only occurs within other label types as a param?"
-    )
+    println(concSols.joinToString(separator = "\n"))
 }

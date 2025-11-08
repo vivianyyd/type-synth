@@ -5,7 +5,9 @@ import query.parseApp
 import query.parseExamples
 import util.ScrappyNewOracle
 
-object ConsTest {
+object ConsTest : Test {
+    override val name = "Cons"
+
     private val intExamples = mapOf(
         "(+ 0)" to "int",
         "(+ Li)" to "lint",
@@ -38,6 +40,6 @@ object ConsTest {
     )
     val examples = intExamples + boolExamples
 
-    val query: Query = parseExamples(examples.keys)
-    val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
+    override val query: Query = parseExamples(examples.keys)
+    override val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
 }

@@ -1,9 +1,12 @@
 package query
 
+import test.Test
+import test.TestPair
 import types.toType
 import util.CheckingOracle
 import util.SExpr
 import util.SExprParser
+import util.readExamples
 
 fun sexpsFromExamples(exs: Collection<Example>, pos: Boolean): Collection<SExpr> = exs.map {
     SExpr.Lst(listOf(SExpr.Atm(if (pos) "+" else "-"), it.flatten().toSExpr()))
@@ -14,8 +17,10 @@ private fun FlatApp.toSExpr(): SExpr =
 
 fun parseExamples(sexps: Collection<String>): Query = examplesFromSexps(sexps.map { SExprParser(it).parse() })
 
-fun parseContextAndExamples(contextExamples: Pair<String, List<String>>): Pair<Query, CheckingOracle> =
-    parseExamples(contextExamples.second.filter { it.isNotBlank() }) to oracleFromAssignment(contextExamples.first)
+fun parseTest(name: String): Test {
+    val exs = readExamples(name)
+    return TestPair(name, parseExamples(exs.second.filter { it.isNotBlank() }), oracleFromAssignment(exs.first))
+}
 
 fun oracleFromAssignment(context: String) = CheckingOracle(assignment(context))
 

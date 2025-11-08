@@ -5,13 +5,14 @@ import core.Language
 import core.Unification
 import core.UnificationForCandidate
 import query.Query
+import util.Logger
 
 class DFSLeftEnumerator<L : Language>(
     val query: Query,
-    val seedCandidate: Candidate<L>,
+    override val seedCandidate: Candidate<L>,
     private val unification: UnificationForCandidate<L>,
     private val mustPassNegatives: Boolean,
-    private val minimizeSize: Boolean = false
+    private val logger: Logger,
 ) : Enumerator<L> {
     private fun commitLeftmost(
         c: Candidate<L>,

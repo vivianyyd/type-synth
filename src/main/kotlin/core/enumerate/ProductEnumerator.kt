@@ -11,7 +11,7 @@ data class PortNode<L : Language>(val options: List<MutableList<PortNode<L>>>) {
 
 class ProductEnumerator<L : Language>(
     val query: Query,
-    val seedCandidate: Candidate<L>,
+    override val seedCandidate: Candidate<L>,
     private val mustPassNegatives: Boolean,
     val depth: (Candidate<L>) -> Int,
     private val minimizeSize: Boolean = false
