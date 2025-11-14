@@ -66,7 +66,9 @@ val groundTruth = parseHaskellTypes(
         "NothingBool :: Maybe Bool",
         "Just :: a -> Maybe a",
     )
-).map { (t, n) -> n to t }.toMap()
+)
+
+val groundTruthMap = groundTruth.map { (t, n) -> n to t }.toMap()
 
 val examples = listOf(
     "filter not (cons True NilBool)",

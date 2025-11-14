@@ -69,7 +69,9 @@ class ExampleGenerator(
         val posExamples = mutableMapOf<Type, MutableList<Example>>()
 
         fun addPos(t: Type, ex: Example) {
-            if (t in posExamples) posExamples[t]!!.add(ex) else posExamples[t] = mutableListOf(ex)
+            if (ex.size() < 4 || (1..10).random() < 3) {
+                if (t in posExamples) posExamples[t]!!.add(ex) else posExamples[t] = mutableListOf(ex)
+            }
         }
         dummies.forEach { (n, t) -> addPos(t, Name(n)) }
 //        dummies.filter { it.value is LabelNode }.forEach { (n, t) -> addPos(t, Name(n) as Example) }
@@ -94,7 +96,7 @@ class ExampleGenerator(
                         dummies.mapNotNull { (n, t) -> if (t is Function) t to listOf(Name(n)) else null }.toMap()
                     // This forces that we can't pass partially applied stuff as an argument
                     val possArgs =
-                        if (currTy.left is LabelNode) posExamples.filter { (t, _) -> t is LabelNode && currTy.left.label == t.label } else if (currTy.left is Function) funcDummies else funcDummies + posExamples.filterKeys { it !is Function }
+                        if (currTy.left is LabelNode) posExamples.filter { (t, _) -> t is LabelNode && currTy.left.label == t.label } else if (currTy.left is Function) funcDummies else /*funcDummies letting arbitrary functions in the place of alpha takes too long+ */ posExamples.filterKeys { it !is Function }
                     val (goodArgs, badArgs) = possArgs.entries.associate { (t, exs) ->
                         exs.filter { it.depth() < MAX_DEPTH } to applyOrError(currTy, t)
                     }.filterKeys { it.isNotEmpty() }.entries.partition { it.value !is Err }
