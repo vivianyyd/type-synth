@@ -23,15 +23,18 @@ object InitL : Leaf<Init> {
 
 class InitHole : Hole<Init>() {
     /** val so all expansions can share it, but must be lazy, we only use it when expanding, otherwise stackoverflow lol */
-    private val fnExpansion by lazy { NArrow(InitHole(), InitHole(), true) }
+    fun fnExpansion() = NArrow(InitHole(), InitHole(), true)
 
     override fun expansions(
         unification: Unification<Init>,
         vars: Set<Int>,
         recursionBound: Int?
-    ): List<Pair<SearchNode<Init>, Commitment<Init>>> =
-        (listOf(InitV, InitL) + (if (recursionBound != null && recursionBound <= 1) listOf()
-        else listOf(fnExpansion))).map { it to (this to it) }
+    ): List<Pair<SearchNode<Init>, Commitment<Init>>> {
+        val mustBeCompatible = unification.holeEquals(this)
+        val fn = if (recursionBound != null && recursionBound <= 1) listOf()
+        else if (mustBeCompatible.any { it is CArrow }) listOf(fnExpansion()) else listOf()
+        return (listOf(InitV, InitL) + fn).map { it to (this to it) }
+    }
 }
 
 object InitConstrV : CVariable<Init>() {
