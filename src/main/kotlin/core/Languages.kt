@@ -279,7 +279,7 @@ fun compileElab(
     var previousSolution = readCVC("$seedId") ?: return null
     var lastSuccessful = -1
     do {
-        println("Getting smaller CVC results")
+//        println("Getting smaller CVC results")
         val parser = CVCParser(previousSolution)
         val testName = "$seedId-smaller${counter++}"
         val cont = if (parser.sizes.isNotEmpty()) callCVC(
@@ -296,11 +296,7 @@ fun compileElab(
     val labelArities: Map<Int, Int> =
         CVCParser(readCVC(finalSuccessfulOutput)!!).sizes.mapKeys { gen.pySizeToL(it.key).label }
 
-    println(elaboratedAfterEquivalences)
-    println(labelArities)
-
-    val constraints = constraints(elaboratedAfterEquivalences, deps)
-
+    if (labelArities.values.all { it > 0 }) return null  // TODO I need to change if we allow L<a>
     fun compileParameter(node: SearchNode<Elaborated>, parameter: ParameterNode): SearchNode<Concrete> = when (node) {
         is ElaboratedV -> ConcreteV(node.v)
         is ElaboratedL -> ConcreteL(
