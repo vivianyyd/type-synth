@@ -177,10 +177,10 @@ data class MustContain(val vars: List<Int>) : Dependency {
     override fun toString(): String = "Contains$vars"
 }
 
-fun typeOfParam(candidate: Candidate<Elaborated>, param: ParameterNode): SearchNode<Elaborated> {
+fun typeOfParam(candidate: Candidate<Elab>, param: ParameterNode): SearchNode<Elab> {
     var curr = candidate.types[candidate.names.indexOf(param.f)]
     var i = 0
-    while (curr is NArrow<Elaborated>) {
+    while (curr is NArrow<Elab>) {
         if (i == param.i) return curr.l
         curr = curr.r
         i++
@@ -189,7 +189,7 @@ fun typeOfParam(candidate: Candidate<Elaborated>, param: ParameterNode): SearchN
     return curr
 }
 
-fun constraints(candidate: Candidate<Elaborated>, deps: DependencyAnalysis): Map<ParameterNode, Dependency> {
+fun constraints(candidate: Candidate<Elab>, deps: DependencyAnalysis): Map<ParameterNode, Dependency> {
     val constraints = mutableMapOf<ParameterNode, Dependency>()
     candidate.names.forEach { name ->
         val graph = deps.graphs[name]!!
@@ -198,12 +198,11 @@ fun constraints(candidate: Candidate<Elaborated>, deps: DependencyAnalysis): Map
         }
         graph.deps.forEach {
             val sup = typeOfParam(candidate, it.sup)
-            if (sup is ElaboratedV) constraints[ParameterNode(name, it.sub.i)] = Only(sup.v)
+            if (sup is ElabV) constraints[ParameterNode(name, it.sub.i)] = Only(sup.v)
         }
         equivalenceClasses(graph.deps) { e1, e2 -> e1.sup == e2.sup }.forEach {
             val sink = it.first().sup
-            val containedVars =
-                it.map { typeOfParam(candidate, it.sub) }.filterIsInstance<ElaboratedV>().map { it.v }
+            val containedVars = it.map { typeOfParam(candidate, it.sub) }.filterIsInstance<ElabV>().map { it.v }
             if (typeOfParam(candidate, sink) !is Var && containedVars.isNotEmpty()) {
                 val p = ParameterNode(name, sink.i)
                 if (p !in constraints) constraints[p] = MustContain(containedVars)
@@ -226,6 +225,26 @@ fun compileElab(
             seed.names.zip(seed.arities()).toMap(),
             oracle
         )
+    }
+
+    val constraints = constraints(seed, deps)
+
+    fun satisfiesDependencies(): Boolean {
+        val params = seed.types.map { seed.params(it) }
+        return constraints.all { (param, dep) ->
+            val t = params[seed.names.indexOf(param.f)][param.i]
+            when (dep) {
+                is MustContain -> (t !is ElabV) || (dep.vars.size == 1 && t.v == dep.vars[0])
+                NoVariables -> t !is ElabV
+                is Only -> (t !is ElabV) || (dep.v == t.v)
+            }
+        }
+    }
+
+    if (!satisfiesDependencies()) {
+        return null  // TODO these should really be pruned before the fn call, maybe even while enuming Elab
+        // dependencies should just be the edges between parameter nodes,
+        // we decide for a given type whether it satisfies the edges. no need for constraint middle man
     }
 
     val elaborated = compileElabIntermediate(seed)

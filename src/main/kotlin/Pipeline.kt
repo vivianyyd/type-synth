@@ -1,8 +1,7 @@
 import concreteenumerator.ConcreteEnumerator
 import concreteenumerator.ConcreteNode
 import constraints.LabelConstraintGenerator
-import dependencyanalysis.DependencyAnalysis
-import dependencyanalysis.viz
+import dependencyanalysis.*
 import query.Query
 import sta.SymTypeABuilder
 import stc.*
@@ -12,19 +11,35 @@ import util.*
 
 fun run(query: Query, oracle: Oracle): List<Map<String, ConcreteNode>> {
     val outlines = outlines(query, oracle)
-    outlines.map { println(it.outline) }
 
     println("Starting dependency analysis")
     val aritiesToDeps = aritiesToDeps(query, oracle, outlines)
 //    vizDeps(listOf("put", "chain"), aritiesToDeps)
 
+    val outlinesPruned = outlines.filter {
+        val deps = aritiesToDeps[it.arities]!!
+        val constrs = constraints(it, deps)
+        it.parameterToType.all { (p, t) ->
+            val c = constrs[p.f]?.get(p.i)
+            when (c) {
+                ContainsNoVariables -> t !is Var
+                is ContainsOnly -> (t !is Var) || (t.vId == c.vId && t.tId == c.tId)
+                is MustContainVariables -> (t !is Var) || (c.vars.size == 1 && t.vId == c.vars[0].first && t.tId == c.vars[0].second)
+                null -> true
+            }
+        }
+    }
+
+    println(outlinesPruned.joinToString(separator = "\n") { it.outline.toString() })
+    println("Pruned outlines: ${outlinesPruned.size}")
+
     println("Searching for label sizes with CVC")
-    val candidateToLabelSizes = assignLabelSizes(outlines, aritiesToDeps)
+    val candidateToLabelSizes = assignLabelSizes(outlinesPruned, aritiesToDeps)
 
     println("Search seeds:")
     candidateToLabelSizes.map { (candidate, lSizes) ->
         print("$candidate")
-        printSearchSeed(lSizes, outlines[candidate])
+        printSearchSeed(lSizes, outlinesPruned[candidate])
     }
 
     println("Enumerating")
@@ -32,12 +47,12 @@ fun run(query: Query, oracle: Oracle): List<Map<String, ConcreteNode>> {
 
     val enumerators = candidateToLabelSizes.map { (candidate, lSizes) ->
         println("\n\n")
-        printSearchSeed(lSizes, outlines[candidate])
+        printSearchSeed(lSizes, outlinesPruned[candidate])
         ConcreteEnumerator(
             query,
-            outlines[candidate],
+            outlinesPruned[candidate],
             lSizes,
-            aritiesToDeps[outlines[candidate].arities]!!,
+            aritiesToDeps[outlinesPruned[candidate].arities]!!,
             oracle
         )
     }

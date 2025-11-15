@@ -240,7 +240,7 @@ sealed class Hole<L : Language> : SearchNode<L> {
     override fun priority(): Int = 1 + conflicts
     override fun size() = 1
     override fun holes() = 1
-    override fun depth() = 1  // TODO think about me
+    override fun depth() = 1  // useful for recursion bound
     override fun full() = false
     override fun variableNames() = emptySet<Int>()
     override fun toString() = "_${holeId}_"
@@ -289,7 +289,7 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
         return p
     }
 
-    private fun params(node: SearchNode<L>) = when (node) {
+    fun params(node: SearchNode<L>) = when (node) {
         is NArrow -> params(node)
         else -> listOf(node)
     }
