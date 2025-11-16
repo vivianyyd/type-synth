@@ -15,15 +15,18 @@ class Logger(
     configuration: Config,
     logToFile: Boolean,
     logFilename: String = "type.log",
+    private val printImmediately: Boolean = false,
     private val logTimestamps: Boolean = true,
     private val logVerbosity: Boolean = true,
     val verbosity: Int = MAX_VERBOSITY
 ) : Writer() {
     private val stages = Stack<Pair<String, Long>>()
-    private val logStream = if (logToFile) PrintStream(File(logFilename).outputStream(), true) else System.out
+    private val logStream = if (logToFile) PrintStream(File(logFilename).outputStream(), false) else System.out
+    private val startTime = System.currentTimeMillis()
 
     init {
         logStream.println(configuration)
+        if (printImmediately) logStream.flush()
     }
 
     fun log(message: String, level: Int = 0) {
@@ -32,6 +35,7 @@ class Logger(
             val lvl = if (level > 0 && logVerbosity) " [$level]" else ""
             logStream.println("$time$lvl\t$message")
         }
+        if (printImmediately) logStream.flush()
     }
 
     fun start(stage: String) {
@@ -45,5 +49,23 @@ class Logger(
         if (s != stage) error("Stopped a stage that wasn't started")
         dedent()
         log("Finished $stage after ${System.currentTimeMillis() - t} ms")
+    }
+
+    private val counts = mutableMapOf<String, Int>()
+    fun count(value: String) {
+        if (verbosity > 4) {
+            if (value in counts) counts[value] = counts[value]!! + 1
+            else counts[value] = 1
+        }
+    }
+
+    fun finish() {
+        log(counts.entries.joinToString(separator = "\n", prefix = "Counts:\n"))
+        log("Total time: ${System.currentTimeMillis() - startTime} ms")
+    }
+
+    fun fail(message: String = "") {
+        finish()
+        error(message)
     }
 }

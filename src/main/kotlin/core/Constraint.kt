@@ -84,7 +84,7 @@ fun <L : Language> unification(tag: UnificationTag): UnificationForCandidate<L> 
 }
 
 interface Unification<L : Language> {
-    fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>>?
+    fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>>
     fun ok(): Boolean
     fun spawnAndRefine(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Unification<L>
 

@@ -15,7 +15,13 @@ data class ConfigForOld(
     val runCVC: Boolean,
     val maxDepth: Int,
     val writeIR: Boolean = true
-) : Config
+) : Config {
+    override fun toString(): String =
+        listOf(test.name, "Running CVC: $runCVC", "Max depth: $maxDepth").joinToString(
+            separator = "\n",
+            postfix = "\n=====\n"
+        )
+}
 
 fun run(config: ConfigForOld, logger: Logger) {
     val (query, oracle) = config.test.pair()
@@ -78,6 +84,7 @@ fun run(config: ConfigForOld, logger: Logger) {
         enumerators.forEach { OK.addAll(it.step()) }
     }
 
+    logger.finish()
     println("Solutions:")
     OK.forEach { println(it.toList().joinToString(separator = "\n", postfix = "\n---\n")) }
     println("${OK.size} satisfying contexts")

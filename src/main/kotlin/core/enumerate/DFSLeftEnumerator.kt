@@ -23,7 +23,7 @@ class DFSLeftEnumerator<L : Language>(
             ?: return sequenceOf(c)
 
         val optionsForLeftmost =
-            leftmostNode.dfsLeftExpansions(unification, leftmostNode.variableNames(), recursionBound).asSequence()
+            leftmostNode.dfsLeftExpansions(unification, leftmostNode.variableNames().size, recursionBound).asSequence()
 
         return optionsForLeftmost.flatMap { (newLeftMost, commit) ->
             val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newLeftMost else p })
@@ -54,6 +54,6 @@ class DFSLeftEnumerator<L : Language>(
             seedCandidate,
             u,
             maxDepth
-        ).filter { c -> c.canonical() && check(c) }.toList()
+        ).filter { c -> check(c) }.toList()
     }
 }

@@ -27,12 +27,12 @@ class InitHole : Hole<Init>() {
 
     override fun expansions(
         unification: Unification<Init>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<Init>, Commitment<Init>>> {
         val mustBeCompatible = unification.holeEquals(this)
         val fn = if (recursionBound != null && recursionBound <= 1) listOf()
-        else if (mustBeCompatible == null || mustBeCompatible.any { it is CArrow }) listOf(fnExpansion()) else listOf()
+        else if (mustBeCompatible.any { it is CArrow }) listOf(fnExpansion()) else listOf()
         return (listOf(InitV, InitL) + fn).map { it to (this to it) }
     }
 }
@@ -47,18 +47,18 @@ object InitConstrL : CTypeConstructor<Init>(mutableListOf()) {
 }
 
 fun compileInit(seed: Candidate<Init>): Candidate<Elab> {
-    fun compile(seed: SearchNode<Init>, vars: Int): Pair<SearchNode<Elab>, Int> = when (seed) {
+    fun compile(seed: SearchNode<Init>): SearchNode<Elab> = when (seed) {
         is NArrow -> {
-            val (leftTy, leftVars) = compile(seed.l, vars)
-            val (rightTy, endVars) = compile(seed.r, leftVars)
-            NArrow(leftTy, rightTy, true) to endVars
+            val leftTy = compile(seed.l)
+            val rightTy = compile(seed.r)
+            NArrow(leftTy, rightTy, true)
         }
-        InitL -> ElabL to vars
-        InitV -> ElabVarHole((0..vars).toList()) to vars + 1
+        InitL -> ElabL
+        InitV -> ElabVarHole()
         is InitHole -> throw Exception("Invariant broken")
         else -> throw Exception("Will never happen due to types")
     }
-    return Candidate(seed.names, seed.types.map { compile(it, 0).first })
+    return Candidate(seed.names, seed.types.map { compile(it) })
 }
 
 object Elab : Language
@@ -77,14 +77,14 @@ object ElabL : Leaf<Elab> {
     override fun variableNames() = emptySet<Int>()
 }
 
-class ElabVarHole(val vars: List<Int>) : Hole<Elab>() {
+class ElabVarHole() : Hole<Elab>() {
     override fun toString() = "V_${holeId}_"
     override fun expansions(
         unification: Unification<Elab>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<Elab>, Commitment<Elab>>> =
-        this.vars.map { ElabV(it) }.map { it to (this to it) }
+        (0 until vars + 1).map { ElabV(it) }.map { it to (this to it) }
 
     // TODO Not sure if this does what I want to do.
 //    override fun equals(other: Any?) = other is ElabVarHole
@@ -348,7 +348,7 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
 
     override fun bfsExpansions(
         unification: Unification<Concrete>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
         params.indices.flatMap { i ->
@@ -361,7 +361,7 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
         } + (if (params.isEmpty()) listOf(this to null) else listOf())
 
     override fun dfsLeftExpansions(
-        unification: Unification<Concrete>, vars: Set<Int>, recursionBound: Int?
+        unification: Unification<Concrete>, vars: Int, recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
         var cont = true
         return params.indices.flatMap { i ->
@@ -378,7 +378,7 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
     }
 
     override fun dfsPriorityExpansions(
-        unification: Unification<Concrete>, vars: Set<Int>, recursionBound: Int?
+        unification: Unification<Concrete>, vars: Int, recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
         var cont = true
         return params.indices.sortedByDescending { params[it].priority() }.flatMap { i ->
@@ -407,7 +407,7 @@ class ConcreteHole(
 
     override fun expansions(
         unification: Unification<Concrete>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
         if (recursionBound != null && recursionBound <= 1) expansionsNoBound(unification, vars).filter {
@@ -426,32 +426,42 @@ class ConcreteHole(
 
     private fun expansionsNoBound(
         unification: Unification<Concrete>,
-        vars: Set<Int>,
+        vars: Int,
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
         fun wrap(e: List<SearchNode<Concrete>>) = e.map { it to (this to it) }
 
         val variableExpansions = when (constraint) {  // TODO weird that vars need to be sorted
-            null, is MustContain -> (if (mayHaveFresh) vars + vars.size else vars).sorted().map { ConcreteV(it) }
+            null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { ConcreteV(it) }
             NoVariables -> listOf()
             is Only -> listOf(ConcreteV(constraint.v))
         }
 
         val mustBeCompatible = unification.holeEquals(this)
 
-        if (mustBeCompatible != null && mustBeCompatible.isNotEmpty()) {
+        if (mustBeCompatible.isNotEmpty()) {
             if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return wrap(variableExpansions)
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) return wrap(listOf(fnExpansion))
-            // TODO can't do this for all labels bc sometimes we have less constraints bc of lack of earlier commitments.
-            //  improve this comment. we erroneously commit to list of int bc we haven't yet committed to a different thing being list of bool.
-            //   this optimization as it was before is fine for dfsLeft expansions since we do no backtracking, but not priority, i think. think about that...
+//            if (mustBeCompatible.first() is ConcreteConstrL && mustBeCompatible.all {
+//                    mustBeCompatible.first().match(it)
+//                }) {
+//                val label = (mustBeCompatible.first() as ConcreteConstrL).label
+//                // TODO this is bad bc the holes are not shared... bad for priority assignment
+//                return wrap(listOf(ConcreteL(label, List(labelArities[label]!!) { hole() })) + variableExpansions)
+//            }
+            // TODO can't do this for labels bc sometimes we have less constraints bc of lack of earlier commitments.
+            //   we might erroneously commit to list of int bc we haven't yet committed to a different thing being list of bool.
+            //   AH, but, *if* there is only one label here, the only label expansion we could have is that label!
+            //       and we can say this recursively too
         }
 
         return wrap(  // TODO hilariously, I think the order makes a difference here. we should sort by size tbh
-            variableExpansions + labelExpansions + fnExpansion
+            labelExpansions + variableExpansions + fnExpansion
         )
     }
+
+//    private fun antiunify(types: List<CTypeConstructor<Concrete>>): ConstraintType<Concrete>
 }
 
 data class ConcreteConstrV(val v: Int, val instId: Int) : Substitutable<Concrete>() {

@@ -19,12 +19,15 @@ class DFSPriorityEnumerator<L : Language>(
         unification: Unification<L>,
         recursionBound: Int
     ): Sequence<Candidate<L>> {
+        logger.count("Cands for $seedCandidate")
+
         val (changeInd, prioritized) = c.types.withIndex().maxByOrNull { (_, it) -> it.priority() }
             ?: return sequenceOf(c)
         if (prioritized.priority() == 0) return sequenceOf(c)
 
         val optionsForPrioritized =
-            prioritized.dfsPriorityExpansions(unification, prioritized.variableNames(), recursionBound).asSequence()
+            prioritized.dfsPriorityExpansions(unification, prioritized.variableNames().size, recursionBound)
+                .asSequence()
         return optionsForPrioritized.flatMap { (newType, commit) ->
             val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newType else p })
             if (commit == null) {
@@ -50,14 +53,10 @@ class DFSPriorityEnumerator<L : Language>(
                         query.negExamples.all { !unification(c, listOf(it)).ok() }
                     else true)
 
-        // Check for non null seed; this should only be necessary for the first round, since some Init seeds may be unsat
-        // TODO check that indeed only the Init seeds fail here
-        val u = unification(seedCandidate, query.posExsBeforeSubexprs)
-        if (!u.ok()) return listOf()
         return commitPriority(
             seedCandidate,
-            u,
+            unification(seedCandidate, query.posExsBeforeSubexprs),
             maxDepth
-        ).filter { c -> c.canonical() && check(c) }.toList()
+        ).filter { c -> check(c) }.toList()
     }
 }

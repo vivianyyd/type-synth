@@ -11,19 +11,19 @@ sealed interface SearchNode<L : Language> {
     fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L>
     fun bfsExpansions(
         unification: Unification<L>,
-        vars: Set<Int> = setOf(),  // TODO if we do this correctly, this can just be an int
+        vars: Int = 0,  // TODO if we do this correctly, this can just be an int
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
     fun dfsLeftExpansions(
         unification: Unification<L>,
-        vars: Set<Int> = setOf(),  // TODO if we do this correctly, this can just be an int
+        vars: Int = 0,  // TODO if we do this correctly, this can just be an int
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
     fun dfsPriorityExpansions(
         unification: Unification<L>,
-        vars: Set<Int> = setOf(),  // TODO if we do this correctly, this can just be an int
+        vars: Int = 0,  // TODO if we do this correctly, this can just be an int
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
@@ -104,7 +104,7 @@ data class NArrow<L : Language> constructor(
 
     override fun bfsExpansions(
         unification: Unification<L>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> {
         // If we use prod, hole expansion cannot include itself, or blowup is too fast...
@@ -123,7 +123,7 @@ data class NArrow<L : Language> constructor(
 
     override fun dfsLeftExpansions(
         unification: Unification<L>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> {
         val nextBound = recursionBound?.let { it - (if (contributesToDepth) 1 else 0) }
@@ -139,7 +139,7 @@ data class NArrow<L : Language> constructor(
 
     override fun dfsPriorityExpansions(
         unification: Unification<L>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> {
         val nextBound = recursionBound?.let { it - (if (contributesToDepth) 1 else 0) }
@@ -168,21 +168,21 @@ data class NArrow<L : Language> constructor(
 sealed interface Leaf<L : Language> : SearchNode<L> {
     override fun bfsExpansions(
         unification: Unification<L>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> =
         listOf(this to null)
 
     override fun dfsLeftExpansions(
         unification: Unification<L>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> =
         listOf(this to null)
 
     override fun dfsPriorityExpansions(
         unification: Unification<L>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> =
         listOf(this to null)
@@ -203,25 +203,25 @@ sealed class Hole<L : Language> : SearchNode<L> {
 
     abstract fun expansions(
         unification: Unification<L>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
     override fun bfsExpansions(
         unification: Unification<L>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(unification, vars, recursionBound)
 
     override fun dfsLeftExpansions(
         unification: Unification<L>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(unification, vars, recursionBound)
 
     override fun dfsPriorityExpansions(
         unification: Unification<L>,
-        vars: Set<Int>,
+        vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(unification, vars, recursionBound)
 
@@ -325,7 +325,7 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
             // variables, this lets us check w inherited constrs from parent. If we can elim many this way, we save a
             // lot of space from not keeping around bad candidates in frontier only to find they are bad later.
             // We also use one construction of constraints to prune many expansions
-            it.bfsExpansions(unification, it.variableNames())
+            it.bfsExpansions(unification, it.variableNames().size)
         }).mapNotNull {
 
             val (types, commitments) = it.unzip()

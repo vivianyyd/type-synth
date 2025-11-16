@@ -8,7 +8,7 @@ fun main() {
     val testFromFile = parseTest("dictchain")
 
     val config = ConfigForOld(
-        test = DictTest,
+        test = testFromFile,
         runCVC = true,
         maxDepth = 4
     )

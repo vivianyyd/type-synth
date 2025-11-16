@@ -9,15 +9,14 @@ import test.*
 import util.Configuration
 import util.Logger
 import util.clearCVC
-import util.lazyCartesianProduct
 
 fun main() {
     val tests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
     val testFromFile = parseTest("dictchain")
 
     val configuration = Configuration(
-        test = ConsTest,
-        runCVC = true,
+        test = testFromFile,
+        runCVC = false,
         enumeratorTag = EnumeratorTag.DFSPriority,
         unificationTag = UnificationTag.Eager,
         maxDepth = 4
@@ -45,39 +44,56 @@ fun run(configuration: Configuration, logger: Logger) {
             logger
         )
 
-    val initSeeds = lazyCartesianProduct(
+    fun <T> time(name: String, block: () -> T): T {
+        logger.start(name)
+        val result = block()
+        logger.stop(name)
+        return result
+    }
+
+    val initSeed = Candidate(
+        query.names,
         query.names.map { name ->
-            InitHole()
-                .expansions(Empty(), setOf(), null)
-                .map { it.first }
-                .filter { it is InitL || (it is NArrow && query.posExamples.any { it is App && it.fn is Name && it.fn.name == name }) }
-        }).map { Candidate(query.names, it) }
-    val initSols = initSeeds.flatMap { makeEnumerator(it, false).enumerate(configuration.maxDepth) }
+            if (query.posExamples.any { it is App && it.fn is Name && it.fn.name == name })
+                InitHole().fnExpansion()
+            else InitL
+        })
+    val initSols = time("Init search") { makeEnumerator(initSeed, false).enumerate(configuration.maxDepth) }
 
-    val elabSeeds = initSols.map { compileInit(it) }
-    val elabSols = elabSeeds.flatMap { makeEnumerator(it, false).enumerate(configuration.maxDepth) }
+    val elabSeeds = time("Compile Init to Elab") { initSols.map { compileInit(it) } }
+    val elabSols = time("Elab search") {
+        elabSeeds.flatMap { makeEnumerator(it, false).enumerate(configuration.maxDepth) }
+    }
 
-    val concSeeds = elabSols.mapNotNull {
-        compileElab(
-            it,
-            query,
-            oracle,
-            unification(configuration.unificationTag),
-            configuration.runCVC
-        )
-    }.toList()  // This needs to be a list so we don't keep calling it
-    println(concSeeds.joinToString(separator = "\n"))
-    val concEnumerators = concSeeds.map { makeEnumerator(it, true) }
-    val concSols = mutableListOf<Candidate<Concrete>>()
-    for (i in 1..configuration.maxDepth) {
-        println("Hello $i")
-        val sols = concEnumerators.flatMap { it.enumerate(i) }.toList()
-        if (sols.isNotEmpty()) {
-            concSols.addAll(sols)
-            break
+    val concSeeds = time("Compile Elab to Concrete") {
+        elabSols.mapNotNull {
+            compileElab(
+                it,
+                query,
+                oracle,
+                unification(configuration.unificationTag),
+                configuration.runCVC
+            )
         }
+    }
+    println(concSeeds.joinToString(separator = "\n"))
+
+    val concSols = time("Concrete search") {
+        val concEnumerators = concSeeds.map { makeEnumerator(it, true) }
+        val sols = mutableListOf<Candidate<Concrete>>()
+        for (i in 1..configuration.maxDepth) {
+            println("Hello $i")
+            val currSols = concEnumerators.flatMap { it.enumerate(i) }.toList()
+            if (currSols.isNotEmpty()) {
+                sols.addAll(currSols)
+                break
+            }
+        }
+        sols
     }
 
     println("FINAL SOLUTIONS:")
     println(concSols.joinToString(separator = "\n"))
+
+    logger.finish()
 }
