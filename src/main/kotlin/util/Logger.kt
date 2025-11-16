@@ -12,7 +12,7 @@ TODO log file that has a list of runs in CSV format that this appends to
  */
 
 class Logger(
-    configuration: Configuration,
+    configuration: Config,
     logToFile: Boolean,
     logFilename: String = "type.log",
     private val logTimestamps: Boolean = true,
@@ -21,7 +21,6 @@ class Logger(
 ) : Writer() {
     private val stages = Stack<Pair<String, Long>>()
     private val logStream = if (logToFile) PrintStream(File(logFilename).outputStream(), true) else System.out
-    
 
     init {
         logStream.println(configuration)

@@ -5,12 +5,28 @@ import dependencyanalysis.*
 import query.Query
 import sta.SymTypeABuilder
 import stc.*
+import test.Test
 import util.*
 
 /** Infrastructure for the old implementation. */
 
-fun run(query: Query, oracle: Oracle): List<Map<String, ConcreteNode>> {
-    val outlines = outlines(query, oracle)
+data class ConfigForOld(
+    val test: Test,
+    val runCVC: Boolean,
+    val maxDepth: Int,
+    val writeIR: Boolean = true
+) : Config
+
+fun run(config: ConfigForOld, logger: Logger) {
+    val (query, oracle) = config.test.pair()
+    if (config.writeIR) clearOutlines()
+    if (config.runCVC) clearCVC()
+
+    val outlines = if (config.writeIR) SymTypeCEnumerator(query, SymTypeABuilder(query).make, oracle).enumerateAll()
+    else readIntermediateOutlines().map { it.second }
+    if (config.writeIR) outlines.forEachIndexed { i, it ->
+        writeIntermediateOutline("${it.outline.toSExpr()}", "$i")
+    }
 
     println("Starting dependency analysis")
     val aritiesToDeps = aritiesToDeps(query, oracle, outlines)
@@ -34,7 +50,7 @@ fun run(query: Query, oracle: Oracle): List<Map<String, ConcreteNode>> {
     println("Pruned outlines: ${outlinesPruned.size}")
 
     println("Searching for label sizes with CVC")
-    val candidateToLabelSizes = assignLabelSizes(outlinesPruned, aritiesToDeps)
+    val candidateToLabelSizes = assignLabelSizes(outlinesPruned, aritiesToDeps, config.runCVC)
 
     println("Search seeds:")
     candidateToLabelSizes.map { (candidate, lSizes) ->
@@ -56,22 +72,17 @@ fun run(query: Query, oracle: Oracle): List<Map<String, ConcreteNode>> {
             oracle
         )
     }
-    for (i in 1..MAX_ITERATIONS) {
+    for (i in 1..config.maxDepth) {
         if (OK.isNotEmpty()) break
         println("Depth $i")
         enumerators.forEach { OK.addAll(it.step()) }
     }
-    return OK
+
+    println("Solutions:")
+    OK.forEach { println(it.toList().joinToString(separator = "\n", postfix = "\n---\n")) }
+    println("${OK.size} satisfying contexts")
 }
 
-private fun outlines(query: Query, oracle: Oracle): List<Projection> {
-    val projections = if (MAKE_OUTLINES) SymTypeCEnumerator(query, SymTypeABuilder(query).make, oracle).enumerateAll()
-    else readIntermediateOutlines().map { it.second }
-    if (MAKE_OUTLINES && WRITE_INTERMEDIATE) projections.forEachIndexed { i, it ->
-        writeIntermediateOutline("${it.outline.toSExpr()}", "$i")
-    }
-    return projections
-}
 
 // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name to arity)
 private fun aritiesToDeps(
@@ -86,11 +97,12 @@ private fun vizDeps(components: List<String>, aritiesToDeps: Map<Map<String, Int
 
 private fun assignLabelSizes(
     outlines: List<Projection>,
-    aritiesToDeps: Map<Map<String, Int>, DependencyAnalysis>
+    aritiesToDeps: Map<Map<String, Int>, DependencyAnalysis>,
+    runCVC: Boolean
 ): Map<Int, Map<L, Int>> {
     val cvcGens = outlines.withIndex()
         .associate { (i, outline) -> i to LabelConstraintGenerator(outline, aritiesToDeps[outline.arities]!!) }
-    if (CALL_CVC) {
+    if (runCVC) {
         cvcGens.forEach { (i, gen) -> callCVC(gen.initialQuery(), "$i") }
         return readInitialCVCresults().associate { (i, contents) -> i to minLabelSizes(i, contents, cvcGens[i]!!) }
     } else {
