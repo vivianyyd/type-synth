@@ -48,85 +48,77 @@ class EagerUnification<L : Language>(
         return EagerUnification(Candidate(candidate.names, candidate.types.map { refine(it) }), exs)
     }
 
-    private fun type(ex: Example): ConstraintType<L>? {
-        // build up custom constraints and hole constraints
+    private fun type(ex: Example): ConstraintType<L>? = when (ex) {
         // for now, instantiate everything immediately. later i can think about lazy if it's slow
-        return when (ex) {
-            is Name -> context[ex.name]?.instantiate(instVarId, insts.get())
-            is App -> type(ex.fn).let { f ->
-                type(ex.arg)?.let { arg ->
-                    when (f) {
-                        is CArrow -> apply(f, arg)
-                        is Instantiation -> {
-                            holeConstraint(f, CArrow(arg, f))
-                            // This is not actually the type, but the type is a hole, so let's just reuse the hole.
-                            // This is okay because every time we commit, we start completely fresh.
-                            f
-                        }
-                        else -> null
+        is Name -> context[ex.name]?.instantiate(instVarId, insts.get())
+        is App -> type(ex.fn).let { f ->
+            type(ex.arg)?.let { arg ->
+                when (f) {
+                    is CArrow -> apply(f, arg)
+                    is Instantiation -> {
+                        holeConstraint(f, CArrow(arg, f))
+                        // This is not actually the type, but the type is a hole, so let's just reuse the hole.
+                        // This is okay because every time we commit, we start completely fresh.
+                        f
                     }
+                    else -> null
                 }
             }
         }
     }
 
-    fun apply(fn: CArrow<L>, arg: ConstraintType<L>): ConstraintType<L>? {
-        val result = unify(fn.params.first(), arg)?.let {
+    fun apply(fn: CArrow<L>, arg: ConstraintType<L>): ConstraintType<L>? =
+        unify(fn.params.first(), arg)?.let {
             val out = if (fn.params.size == 2) fn.params[1] else CArrow(fn.params.drop(1))
             applyBindings(out, it)
         }
-        return result
-    }
 
     private fun holeConstraint(inst: Instantiation<L>, t: ConstraintType<L>) {
         if (t is CTypeConstructor<L>) holeConstraints.getOrPut(inst.n) { mutableListOf() }.add(t)
     }
 
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
-    fun unify(param: ConstraintType<L>, arg: ConstraintType<L>): List<Binding<L>>? {
-        val result = when (param) {
+    fun unify(param: ConstraintType<L>, arg: ConstraintType<L>): List<Binding<L>>? = when (param) {
+        is ProofVariable -> error("No proof variables arise in eager unification")
+        is Substitutable ->
+            if (param in arg.substitutable()) null
+            else listOf(Binding(param, arg))
+        is CTypeConstructor -> when (arg) {
             is ProofVariable -> error("No proof variables arise in eager unification")
-            is Substitutable ->
-                if (param in arg.substitutable()) null
-                else listOf(Binding(param, arg))
-            is CTypeConstructor -> when (arg) {
-                is ProofVariable -> error("No proof variables arise in eager unification")
-                is CTypeConstructor -> {
-                    val split = param.split(arg)
-                    if (split == null) {
-                        error = true
-                        null // TODO check this is passed up correctly
-                    } else {
-                        val (equalities, custom) = split.partition { it is EqualityConstraint }
-                        var bindings: MutableList<Binding<L>>? = mutableListOf()
-                        (equalities as List<EqualityConstraint<L>>).forEach {
-                            if (bindings != null) {
-                                val l = applyBindings(it.l, bindings!!)
-                                val r = applyBindings(it.r, bindings!!)
-                                val u = unify(l, r)
-                                if (u == null) bindings = null else bindings!!.addAll(u)
-                            }
+            is CTypeConstructor -> {
+                val split = param.split(arg)
+                if (split == null) {
+                    error = true
+                    null // TODO check this is passed up correctly
+                } else {
+                    val (equalities, custom) = split.partition { it is EqualityConstraint }
+                    var bindings: MutableList<Binding<L>>? = mutableListOf()
+                    (equalities as List<EqualityConstraint<L>>).forEach {
+                        if (bindings != null) {
+                            val l = applyBindings(it.l, bindings!!)
+                            val r = applyBindings(it.r, bindings!!)
+                            val u = unify(l, r)
+                            if (u == null) bindings = null else bindings!!.addAll(u)
                         }
-                        customConstraints.addAll(custom)
-                        bindings
                     }
-                }
-                is Substitutable -> // for example, a function expects argument (int -> int) and we pass ('a -> 'a)
-                    if (arg in param.substitutable()) null
-                    else listOf(Binding(arg, param))
-                InitConstrV -> listOf()
-                is Instantiation -> {
-                    holeConstraint(arg, param)
-                    listOf()
+                    customConstraints.addAll(custom)
+                    bindings
                 }
             }
+            is Substitutable -> // for example, a function expects argument (int -> int) and we pass ('a -> 'a)
+                if (arg in param.substitutable()) null
+                else listOf(Binding(arg, param))
             InitConstrV -> listOf()
             is Instantiation -> {
-                holeConstraint(param, arg)
+                holeConstraint(arg, param)
                 listOf()
             }
         }
-        return result
+        InitConstrV -> listOf()
+        is Instantiation -> {
+            holeConstraint(param, arg)
+            listOf()
+        }
     }
 
     fun applyBinding(
