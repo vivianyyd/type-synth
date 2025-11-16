@@ -32,7 +32,7 @@ class InitHole : Hole<Init>() {
     ): List<Pair<SearchNode<Init>, Commitment<Init>>> {
         val mustBeCompatible = unification.holeEquals(this)
         val fn = if (recursionBound != null && recursionBound <= 1) listOf()
-        else if (mustBeCompatible.any { it is CArrow }) listOf(fnExpansion()) else listOf()
+        else if (mustBeCompatible == null || mustBeCompatible.any { it is CArrow }) listOf(fnExpansion()) else listOf()
         return (listOf(InitV, InitL) + fn).map { it to (this to it) }
     }
 }
@@ -438,7 +438,7 @@ class ConcreteHole(
 
         val mustBeCompatible = unification.holeEquals(this)
 
-        if (mustBeCompatible.isNotEmpty()) {
+        if (mustBeCompatible != null && mustBeCompatible.isNotEmpty()) {
             if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return wrap(variableExpansions)
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
