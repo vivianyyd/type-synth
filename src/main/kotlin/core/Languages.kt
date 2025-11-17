@@ -22,8 +22,8 @@ object InitL : Leaf<Init> {
 }
 
 class InitHole : Hole<Init>() {
-    /** val so all expansions can share it, but must be lazy, we only use it when expanding, otherwise stackoverflow lol */
-    fun fnExpansion() = NArrow(InitHole(), InitHole(), true)
+    /** val so we can prioritize holes correctly, but must be lazy, we only use it when expanding, otherwise stackoverflow lol */
+    private val fnExpansion by lazy { NArrow(InitHole(), InitHole(), true) }
 
     override fun expansions(
         unification: Unification<Init>,
@@ -32,7 +32,7 @@ class InitHole : Hole<Init>() {
     ): List<Pair<SearchNode<Init>, Commitment<Init>>> {
         val mustBeCompatible = unification.holeEquals(this)
         val fn = if (recursionBound != null && recursionBound <= 1) listOf()
-        else if (mustBeCompatible.any { it is CArrow }) listOf(fnExpansion()) else listOf()
+        else if (mustBeCompatible.any { it is CArrow }) listOf(fnExpansion) else listOf()
         return (listOf(InitV, InitL) + fn).map { it to (this to it) }
     }
 }
