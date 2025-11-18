@@ -346,6 +346,17 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Concrete> =
         ConcreteConstrL.new(id, params.map { it.instantiate(freshIdGen, instId) })
 
+    override fun replace(hole: Hole<Concrete>, node: SearchNode<Concrete>) =
+        ConcreteL(id, params.map { it.replace(hole, node) })
+
+    override fun replaceWithAll(hole: Hole<Concrete>, nodes: List<SearchNode<Concrete>>): List<SearchNode<Concrete>> {
+        val newParams = params.map { it.replaceWithAll(hole, nodes) }
+        val changed = newParams.indexOfFirst { it.size > 1 }
+        return newParams[changed].map {
+            ConcreteL(id, params.mapIndexed { i, param -> if (i == changed) it else param })
+        }
+    }
+
     override fun dfsLeftExpansions(
         unification: Unification<Concrete>, vars: Int, recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
@@ -503,6 +514,20 @@ data class SketchL(val id: Int, override val params: List<SearchNode<ConcreteSke
     override fun toString() = "L$id$params"
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<ConcreteSketch> =
         SketchConstrL.new(id, params.map { it.instantiate(freshIdGen, instId) })
+
+    override fun replace(hole: Hole<ConcreteSketch>, node: SearchNode<ConcreteSketch>) =
+        SketchL(id, params.map { it.replace(hole, node) })
+
+    override fun replaceWithAll(
+        hole: Hole<ConcreteSketch>,
+        nodes: List<SearchNode<ConcreteSketch>>
+    ): List<SearchNode<ConcreteSketch>> {
+        val newParams = params.map { it.replaceWithAll(hole, nodes) }
+        val changed = newParams.indexOfFirst { it.size > 1 }
+        return newParams[changed].map {
+            SketchL(id, params.mapIndexed { i, param -> if (i == changed) it else param })
+        }
+    }
 
     override fun dfsLeftExpansions(
         unification: Unification<ConcreteSketch>, vars: Int, recursionBound: Int?

@@ -21,6 +21,7 @@ class DFSPriorityEnumerator<L : Language>(
     ): Sequence<Candidate<L>> {
         val (iToFill, typeToFill) = c.types.withIndex().maxBy { (_, it) -> it.priority() }
 
+        // Old impl
         return typeToFill
             .dfsPriorityExpansions(unification, typeToFill.variableNames().size, recursionBound)
             .asSequence()
@@ -28,6 +29,19 @@ class DFSPriorityEnumerator<L : Language>(
                 if (commit == null) null  // generated context is the same as this one
                 else Candidate(c.names, c.types.mapIndexed { i, p -> if (iToFill == i) newType else p })
             }
+
+        // New version doesn't use SearchNode-specified expansions for each node, only for the holes
+        /*
+        val holeToFill = typeToFill.listHoles().maxBy { it.priority() }
+        val expansions = holeToFill.expansions(unification, typeToFill.variableNames().size, recursionBound)
+        val newTys = expansions.map { (holeFill, commit) -> typeToFill.replace(holeToFill, holeFill) to commit }
+        // TODO this can be cleaned up since expansions can return only commits instead of a pair
+        return newTys.asSequence()
+            .mapNotNull { (newType, commit) ->
+                if (commit == null) null  // generated context is the same as this one
+                else Candidate(c.names, c.types.mapIndexed { i, p -> if (iToFill == i) newType else p })
+            }
+         */
     }
 
     private fun commitPriority(
@@ -44,7 +58,8 @@ class DFSPriorityEnumerator<L : Language>(
             val u = unification(it, query.posExsBeforeSubexprs)
             if (u.ok()) {
                 if (it.satisfiesDependencies())  // TODO ablate this
-                    commitPriority(it, u, recursionBound)
+                    commitPriority(it, u, recursionBound) // -1 TODO need this for new impl //  - it.depth()
+                // TODO is this bound on depth or on size now that we do it here instead of asking each node to reduce the bound as we go?
                 else emptySequence()
             } else emptySequence()
         }

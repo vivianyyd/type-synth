@@ -37,6 +37,7 @@ object ConsTest : Test {
         "(- (cons 0 LLi))" to null,
         "(- (cons tr LLi))" to null,
         "(- (cons tr (cons 0 Li)))" to null,
+        "(+ (cons []b))" to "llbool to llbool"
     )
     val examples = intExamples + boolExamples
 

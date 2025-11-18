@@ -9,6 +9,10 @@ import java.lang.Integer.max
 sealed interface SearchNode<L : Language> {
     fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L>
 
+    fun replace(hole: Hole<L>, node: SearchNode<L>): SearchNode<L>
+
+    fun replaceWithAll(hole: Hole<L>, nodes: List<SearchNode<L>>): List<SearchNode<L>>
+
     fun dfsLeftExpansions(
         unification: Unification<L>,
         vars: Int = 0,
@@ -30,6 +34,8 @@ sealed interface SearchNode<L : Language> {
 
     /** The number of holes. */
     fun holes(): Int
+
+    fun listHoles(): List<Hole<L>>
 
     /** The number of nodes in the longest path from root to leaf. */
     fun depth(): Int
@@ -77,6 +83,8 @@ sealed class Branch<L : Language>(open val params: List<SearchNode<L>>) : Search
         params.sumOf { it.holes() }
     }
 
+    override fun listHoles(): List<Hole<L>> = params.flatMap { it.listHoles() }
+
     override fun depth() = depth
     private val depth by lazy {
         1 + (params.maxOfOrNull { it.depth() } ?: 0)
@@ -108,6 +116,18 @@ data class NArrow<L : Language> constructor(
 
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L> =
         CArrow(l.instantiate(freshIdGen, instId), r.instantiate(freshIdGen, instId))
+
+    override fun replace(hole: Hole<L>, node: SearchNode<L>) =
+        NArrow(l.replace(hole, node), r.replace(hole, node), contributesToDepth)
+
+    override fun replaceWithAll(hole: Hole<L>, nodes: List<SearchNode<L>>): List<SearchNode<L>> {
+        val newL = l.replaceWithAll(hole, nodes)
+        val newR = r.replaceWithAll(hole, nodes)
+        require(!(newL.size > 1 && newR.size > 1))
+        return if (newL.isNotEmpty())
+            newL.map { NArrow(it, r, contributesToDepth) }
+        else newR.map { NArrow(l, it, contributesToDepth) }
+    }
 
     override fun dfsLeftExpansions(
         unification: Unification<L>,
@@ -154,6 +174,12 @@ data class NArrow<L : Language> constructor(
 }
 
 sealed interface Leaf<L : Language> : SearchNode<L> {
+    override fun listHoles(): List<Hole<L>> = listOf()
+
+    override fun replace(hole: Hole<L>, node: SearchNode<L>): SearchNode<L> = this
+
+    override fun replaceWithAll(hole: Hole<L>, nodes: List<SearchNode<L>>) = listOf(this)
+
     override fun dfsLeftExpansions(
         unification: Unification<L>,
         vars: Int,
@@ -181,6 +207,12 @@ sealed class Hole<L : Language> : SearchNode<L> {
     }
 
     val holeId = nextHoleId++
+
+    override fun listHoles(): List<Hole<L>> = listOf(this)
+
+    override fun replace(hole: Hole<L>, node: SearchNode<L>): SearchNode<L> = if (hole == this) node else this
+
+    override fun replaceWithAll(hole: Hole<L>, nodes: List<SearchNode<L>>) = if (hole == this) nodes else listOf(this)
 
     abstract fun expansions(
         unification: Unification<L>,
