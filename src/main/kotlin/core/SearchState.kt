@@ -2,18 +2,12 @@ package core
 
 import util.Counter
 import util.ParameterNode
-import util.lazyCartesianProduct
 import java.lang.Integer.max
 
 /** SearchNodes are hashable. All but holes are functional and immutable.
  * Holes mutate when they count conflicts, but they are normal rather than data classes, so they are physical equals */
 sealed interface SearchNode<L : Language> {
     fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L>
-    fun bfsExpansions(
-        unification: Unification<L>,
-        vars: Int = 0,
-        recursionBound: Int? = null
-    ): List<Pair<SearchNode<L>, Commitment<L>>>
 
     fun dfsLeftExpansions(
         unification: Unification<L>,
@@ -115,25 +109,6 @@ data class NArrow<L : Language> constructor(
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L> =
         CArrow(l.instantiate(freshIdGen, instId), r.instantiate(freshIdGen, instId))
 
-    override fun bfsExpansions(
-        unification: Unification<L>,
-        vars: Int,
-        recursionBound: Int?
-    ): List<Pair<SearchNode<L>, Commitment<L>>> {
-        // If we use prod, hole expansion cannot include itself, or blowup is too fast...
-        // multiple commitments made at once if we use prod
-//         val prod = lazyCartesianProduct(listOf(params[0].expansions(), params[1].expansions())).map {
-//             NArrow(it)
-//         }
-        val nextBound = recursionBound?.let { it - (if (contributesToDepth) 1 else 0) }
-        val one = (l.bfsExpansions(unification, vars, nextBound).map { (node, commit) ->
-            NArrow(node, r, contributesToDepth) to commit
-        } + r.bfsExpansions(unification, vars, nextBound).map { (node, commit) ->
-            NArrow(l, node, contributesToDepth) to commit
-        })
-        return one.toSet().toList()
-    }
-
     override fun dfsLeftExpansions(
         unification: Unification<L>,
         vars: Int,
@@ -179,13 +154,6 @@ data class NArrow<L : Language> constructor(
 }
 
 sealed interface Leaf<L : Language> : SearchNode<L> {
-    override fun bfsExpansions(
-        unification: Unification<L>,
-        vars: Int,
-        recursionBound: Int?
-    ): List<Pair<SearchNode<L>, Commitment<L>>> =
-        listOf(this to null)
-
     override fun dfsLeftExpansions(
         unification: Unification<L>,
         vars: Int,
@@ -219,12 +187,6 @@ sealed class Hole<L : Language> : SearchNode<L> {
         vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<L>, Commitment<L>>>
-
-    override fun bfsExpansions(
-        unification: Unification<L>,
-        vars: Int,
-        recursionBound: Int?
-    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(unification, vars, recursionBound)
 
     override fun dfsLeftExpansions(
         unification: Unification<L>,
@@ -329,32 +291,4 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
     fun canonical() =
         types.all { it.variableNames().size == (it.variableNames().maxOrNull() ?: -1) + 1 }
     // We can also add it.noFreshSoleVarOnRHS()
-
-    fun bfsExpansions(unification: Unification<L>): Sequence<Candidate<L>> {
-        // TODO should this be product, or also one at a time?? either will work but what is better
-        return lazyCartesianProduct(types.map {
-            // TODO we don't really learn from bad combinations here
-            // Each expansion corresponds with concretizing one hole. We check unification after refining corresponding inst
-            // variables, this lets us check w inherited constrs from parent. If we can elim many this way, we save a
-            // lot of space from not keeping around bad candidates in frontier only to find they are bad later.
-            // We also use one construction of constraints to prune many expansions
-            it.bfsExpansions(unification, it.variableNames().size)
-        }).mapNotNull {
-
-            val (types, commitments) = it.unzip()
-
-            // Micro-opt: If the commitment refines a hole to a fresh variable, no need to check validity
-            if (it.all { (ty, commit) ->
-                    commit == null ||
-                            (commit.second is ConcreteV && (commit.second as ConcreteV).v !in ty.variableNames() && TODO(
-                                "This is wrong - we check the new ty's variableNames, so the second branch will always be false!"
-                            ))
-                })
-                Candidate(names, types)
-
-            if (unification.spawnAndRefine(commitments.filterNotNull()).ok()) Candidate(names, types)
-            else null  // Could count here for eval
-//            Candidate(names, types)  // Originally
-        }
-    }
 }

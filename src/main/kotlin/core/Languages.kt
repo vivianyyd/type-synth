@@ -346,20 +346,6 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Concrete> =
         ConcreteConstrL.new(id, params.map { it.instantiate(freshIdGen, instId) })
 
-    override fun bfsExpansions(
-        unification: Unification<Concrete>,
-        vars: Int,
-        recursionBound: Int?
-    ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
-        params.indices.flatMap { i ->
-            params[i].bfsExpansions(unification, vars, recursionBound?.let { it - 1 })
-                .map { (node, commit) ->
-                    ConcreteL(
-                        id,
-                        params.mapIndexed { j, p -> if (j == i) node else p }) to commit
-                }
-        } + (if (params.isEmpty()) listOf(this to null) else listOf())
-
     override fun dfsLeftExpansions(
         unification: Unification<Concrete>, vars: Int, recursionBound: Int?
     ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
@@ -517,20 +503,6 @@ data class SketchL(val id: Int, override val params: List<SearchNode<ConcreteSke
     override fun toString() = "L$id$params"
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<ConcreteSketch> =
         SketchConstrL.new(id, params.map { it.instantiate(freshIdGen, instId) })
-
-    override fun bfsExpansions(
-        unification: Unification<ConcreteSketch>,
-        vars: Int,
-        recursionBound: Int?
-    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> =
-        params.indices.flatMap { i ->
-            params[i].bfsExpansions(unification, vars, recursionBound?.let { it - 1 })
-                .map { (node, commit) ->
-                    SketchL(
-                        id,
-                        params.mapIndexed { j, p -> if (j == i) node else p }) to commit
-                }
-        } + (if (params.isEmpty()) listOf(this to null) else listOf())
 
     override fun dfsLeftExpansions(
         unification: Unification<ConcreteSketch>, vars: Int, recursionBound: Int?
