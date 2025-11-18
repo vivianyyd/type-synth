@@ -14,35 +14,39 @@ class DFSPriorityEnumerator<L : Language>(
     private val mustPassNegatives: Boolean,
     private val logger: Logger,
 ) : Enumerator<L> {
+    private fun fill(
+        c: Candidate<L>,
+        unification: Unification<L>,
+        recursionBound: Int
+    ): Sequence<Candidate<L>> {
+        val (iToFill, typeToFill) = c.types.withIndex().maxBy { (_, it) -> it.priority() }
+
+        return typeToFill
+            .dfsPriorityExpansions(unification, typeToFill.variableNames().size, recursionBound)
+            .asSequence()
+            .mapNotNull { (newType, commit) ->
+                if (commit == null) null  // generated context is the same as this one
+                else Candidate(c.names, c.types.mapIndexed { i, p -> if (iToFill == i) newType else p })
+            }
+    }
+
     private fun commitPriority(
         c: Candidate<L>,
         unification: Unification<L>,
         recursionBound: Int
     ): Sequence<Candidate<L>> {
+        if (c.full()) return sequenceOf(c)
         logger.count("Cands for $seedCandidate")
 
-        val (changeInd, prioritized) = c.types.withIndex().maxByOrNull { (_, it) -> it.priority() }
-            ?: return sequenceOf(c)
-        if (prioritized.priority() == 0) return sequenceOf(c)
-
-        val optionsForPrioritized =
-            prioritized.dfsPriorityExpansions(unification, prioritized.variableNames().size, recursionBound)
-                .asSequence()
-        return optionsForPrioritized.flatMap { (newType, commit) ->
-            val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newType else p })
-            if (commit == null) {
-                require(newCandidate == c)
-                emptySequence() // this call made no changes, but we don't want to hit it again TODO verify this doesn't break completeness
-            } else {
-                val u = unification.spawnAndRefine(listOf(commit))
-                if (u.ok()) {
-                    // TODO ablate this
-                    if (newCandidate.satisfiesDependencies())
-                        commitPriority(newCandidate, u, recursionBound)
-                    else emptySequence()
-
-                } else emptySequence()
-            }
+        return fill(c, unification, recursionBound).flatMap {
+            // TODO spawnAndRefine is slow for eager unification since we make a duplicate candidate.
+            //      but making a new unification is slow for other unifs.
+            val u = unification(it, query.posExsBeforeSubexprs)
+            if (u.ok()) {
+                if (it.satisfiesDependencies())  // TODO ablate this
+                    commitPriority(it, u, recursionBound)
+                else emptySequence()
+            } else emptySequence()
         }
     }
 

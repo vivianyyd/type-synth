@@ -55,7 +55,7 @@ fun run(configuration: Configuration, logger: Logger) {
         query.names,
         query.names.map { name ->
             if (query.posExamples.any { it is App && it.fn is Name && it.fn.name == name })
-                InitHole().fnExpansion()
+                InitHole().fnExpansion
             else InitL
         })
     val initSols = time("Init search") { makeEnumerator(initSeed, false).enumerate(configuration.maxDepth) }

@@ -11,28 +11,41 @@ sealed interface SearchNode<L : Language> {
     fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L>
     fun bfsExpansions(
         unification: Unification<L>,
-        vars: Int = 0,  // TODO if we do this correctly, this can just be an int
+        vars: Int = 0,
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
     fun dfsLeftExpansions(
         unification: Unification<L>,
-        vars: Int = 0,  // TODO if we do this correctly, this can just be an int
+        vars: Int = 0,
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
     fun dfsPriorityExpansions(
         unification: Unification<L>,
-        vars: Int = 0,  // TODO if we do this correctly, this can just be an int
+        vars: Int = 0,
         recursionBound: Int? = null
     ): List<Pair<SearchNode<L>, Commitment<L>>>
 
+    /** The priority is the max number of conflicts that some hole in this subtree participates in.
+     * TODO: maybe it should be sum instead of max. */
     fun priority(): Int
+
+    /** The total number of nodes, including holes. */
     fun size(): Int
+
+    /** The number of holes. */
     fun holes(): Int
+
+    /** The number of nodes in the longest path from root to leaf. */
     fun depth(): Int
+
+    /** TODO not sure if the invariant here should be that num holes = 0 iff full.
+     *    I think we need one metric for no more holes *to fill* ,
+     *    one metric for it's actually a full type with no holes */
     fun full(): Boolean
 
+    /** The number of parameters this type has. */
     fun params(): Int = when (this) {
         is NArrow -> 1 + r.params()
         else -> 1
@@ -235,7 +248,7 @@ sealed class Hole<L : Language> : SearchNode<L> {
 
     fun instantiations(): List<Instantiation<L>> = instantiations
 
-    fun conflict() = conflicts++
+    open fun conflict() = conflicts++
     private var conflicts = 0
     override fun priority(): Int = 1 + conflicts
     override fun size() = 1

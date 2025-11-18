@@ -23,7 +23,7 @@ object InitL : Leaf<Init> {
 
 class InitHole : Hole<Init>() {
     /** val so we can prioritize holes correctly, but must be lazy, we only use it when expanding, otherwise stackoverflow lol */
-    private val fnExpansion by lazy { NArrow(InitHole(), InitHole(), true) }
+    val fnExpansion by lazy { NArrow(InitHole(), InitHole(), true) }
 
     override fun expansions(
         unification: Unification<Init>,
@@ -475,5 +475,181 @@ data class ConcreteConstrL(val label: Int, override val params: List<ConstraintT
     }
 
     override fun match(other: CTypeConstructor<Concrete>): Boolean = other is ConcreteConstrL && label == other.label
+    override fun toString() = "L$label$params"
+}
+
+object ConcreteSketch : Language
+
+class Blank(
+    mayHaveFresh: Boolean,
+    constraint: Dependency?,
+    labelArities: Map<Int, Int>,
+) : SketchHole(mayHaveFresh, constraint, labelArities) {
+    init {
+        TODO(
+            "It is a hole bc we want to be able to fast-forward." +
+                    "We want it to have priority zero and only expand to itself"
+        )
+    }
+
+    override fun conflict() = 0
+    override fun priority() = 0
+    override fun holes() = 1 // TODO not sure about this one
+    override fun full() = false // TODO also not sure about this one
+
+    override fun expansions(
+        unification: Unification<ConcreteSketch>,
+        vars: Int,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> = listOf(this to null)
+}
+
+data class SketchV(val v: Int) : Leaf<ConcreteSketch> {
+    override fun toString() = "V$v"
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<ConcreteSketch> =
+        SketchConstrV(v, instId)
+
+    override fun variableNames() = setOf(v)
+}
+
+data class SketchL(val id: Int, override val params: List<SearchNode<ConcreteSketch>>) :
+    Branch<ConcreteSketch>(params) {
+    override fun toString() = "L$id$params"
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<ConcreteSketch> =
+        SketchConstrL.new(id, params.map { it.instantiate(freshIdGen, instId) })
+
+    override fun bfsExpansions(
+        unification: Unification<ConcreteSketch>,
+        vars: Int,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> =
+        params.indices.flatMap { i ->
+            params[i].bfsExpansions(unification, vars, recursionBound?.let { it - 1 })
+                .map { (node, commit) ->
+                    SketchL(
+                        id,
+                        params.mapIndexed { j, p -> if (j == i) node else p }) to commit
+                }
+        } + (if (params.isEmpty()) listOf(this to null) else listOf())
+
+    override fun dfsLeftExpansions(
+        unification: Unification<ConcreteSketch>, vars: Int, recursionBound: Int?
+    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> {
+        var cont = true
+        return params.indices.flatMap { i ->
+            if (cont) {
+                val exp =
+                    params[i].dfsLeftExpansions(unification, vars, recursionBound?.let { it - 1 })
+                        .map { (node, commit) ->
+                            SketchL(id, params.mapIndexed { j, p -> if (j == i) node else p }) to commit
+                        }
+                cont = exp.size <= 1
+                exp
+            } else listOf()
+        } + (if (params.isEmpty()) listOf(this to null) else listOf())
+    }
+
+    override fun dfsPriorityExpansions(
+        unification: Unification<ConcreteSketch>, vars: Int, recursionBound: Int?
+    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> {
+        var cont = true
+        return params.indices.sortedByDescending { params[it].priority() }.flatMap { i ->
+            if (cont) {
+                val exp =
+                    params[i].dfsPriorityExpansions(unification, vars, recursionBound?.let { it - 1 })
+                        .map { (node, commit) ->
+                            SketchL(id, params.mapIndexed { j, p -> if (j == i) node else p }) to commit
+                        }
+                cont = exp.size <= 1
+                exp
+            } else listOf()
+        } + (if (params.isEmpty()) listOf(this to null) else listOf())
+    }
+}
+
+open class SketchHole(
+    protected val mayHaveFresh: Boolean,
+    protected val constraint: Dependency?,
+    protected val labelArities: Map<Int, Int>,
+) : Hole<ConcreteSketch>() {
+    // TODO We want to use the below equals when we are comparing new candidates against what we've seen before.
+    //      but we want to use built in physical equals when we are looking to replace holes!
+//    override fun equals(other: Any?): Boolean = other is ConcreteHole
+//    override fun hashCode() = 0
+
+    override fun expansions(
+        unification: Unification<ConcreteSketch>,
+        vars: Int,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> =
+        if (recursionBound != null && recursionBound <= 1) expansionsNoBound(unification, vars).filter {
+            when (val t = it.first) {
+                is SketchL -> t.params.isEmpty()
+                is NArrow -> false
+                is SketchHole -> true
+                is SketchV -> true
+                is Blank -> true
+                else -> throw Exception("Impossible")
+            }
+        } else expansionsNoBound(unification, vars)
+
+    private fun hole() = SketchHole(mayHaveFresh, constraint, labelArities)
+    private val fnExpansion by lazy { NArrow(hole(), hole(), true) }
+    private val labelExpansions by lazy { labelArities.map { SketchL(it.key, List(it.value) { hole() }) } }
+    private val blankExpansion by lazy { Blank(mayHaveFresh, constraint, labelArities) }
+
+    private fun expansionsNoBound(
+        unification: Unification<ConcreteSketch>,
+        vars: Int,
+    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> {
+        fun wrap(e: List<SearchNode<ConcreteSketch>>) = e.map { it to (this to it) }
+
+        val variableExpansions = when (constraint) {  // TODO weird that vars need to be sorted
+            null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { SketchV(it) }
+            NoVariables -> listOf()
+            is Only -> listOf(SketchV(constraint.v))
+        }
+
+        val mustBeCompatible = unification.holeEquals(this)
+
+        if (mustBeCompatible.isNotEmpty()) {
+            if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return wrap(variableExpansions)
+            if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
+                    mustBeCompatible.first().match(it)
+                }) return wrap(listOf(fnExpansion))
+//            if (mustBeCompatible.first() is ConcreteConstrL && mustBeCompatible.all {
+//                    mustBeCompatible.first().match(it)
+//                }) {
+//                val label = (mustBeCompatible.first() as ConcreteConstrL).label
+//                // TODO this is bad bc the holes are not shared... bad for priority assignment
+//                return wrap(listOf(ConcreteL(label, List(labelArities[label]!!) { hole() })) + variableExpansions)
+//            }
+            // TODO can't do this for labels bc sometimes we have less constraints bc of lack of earlier commitments.
+            //   we might erroneously commit to list of int bc we haven't yet committed to a different thing being list of bool.
+            //   AH, but, *if* there is only one label here, the only label expansion we could have is that label!
+            //       and we can say this recursively too
+        }
+
+        return wrap(  // TODO hilariously, I think the order makes a difference here. we should sort by size tbh
+            listOf(blankExpansion) + labelExpansions + variableExpansions + fnExpansion
+        )
+    }
+
+//    private fun antiunify(types: List<CTypeConstructor<Concrete>>): ConstraintType<Concrete>
+}
+
+data class SketchConstrV(val v: Int, val instId: Int) : Substitutable<ConcreteSketch>() {
+    override fun toString() = "V${v}-$instId"
+}
+
+data class SketchConstrL(val label: Int, override val params: List<ConstraintType<ConcreteSketch>>) :
+    CTypeConstructor<ConcreteSketch>(params) {
+    companion object {
+        fun new(label: Int, params: List<ConstraintType<ConcreteSketch>>) = SketchConstrL(label, params.toMutableList())
+    }
+
+    override fun match(other: CTypeConstructor<ConcreteSketch>): Boolean =
+        other is SketchConstrL && label == other.label
+
     override fun toString() = "L$label$params"
 }

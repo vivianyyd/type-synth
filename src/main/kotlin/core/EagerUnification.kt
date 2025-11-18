@@ -39,10 +39,13 @@ class EagerUnification<L : Language>(
         fun refine(n: SearchNode<L>): SearchNode<L> = when (n) {
             is Hole -> ref[n] ?: n
             is Leaf -> n
+            is NArrow -> NArrow(n.params.map { refine(it) }, n.contributesToDepth)
             is ConcreteL -> ConcreteL(
                 n.id,
                 n.params.map { refine(it as SearchNode<L>) } as List<SearchNode<Concrete>>) as SearchNode<L>
-            is NArrow -> NArrow(n.params.map { refine(it) }, n.contributesToDepth)
+            is SketchL -> SketchL(
+                n.id,
+                n.params.map { refine(it as SearchNode<L>) } as List<SearchNode<ConcreteSketch>>) as SearchNode<L>
         }
 
         return EagerUnification(Candidate(candidate.names, candidate.types.map { refine(it) }), exs)
@@ -134,6 +137,7 @@ class EagerUnification<L : Language>(
                 (when (t) {
                     is CArrow -> CArrow(p)
                     is ConcreteConstrL -> ConcreteConstrL(t.label, p as List<ConstraintType<Concrete>>)
+                    is SketchConstrL -> SketchConstrL(t.label, p as List<ConstraintType<ConcreteSketch>>)
                     InitConstrL, ElabConstrL, is ElaboratedConstrL -> error("hasSubstitutable should have been false")
                 } as ConstraintType<L>)
             }
