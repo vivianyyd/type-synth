@@ -97,6 +97,10 @@ class ConstraintUnification<L : Language> : Unification<L> {
                             n.label,
                             n.params.map { newGuy(it as ConstraintType<L>) as ConstraintType<Concrete> }.toMutableList()
                         ) as ConstraintType<L>
+                        is SketchConstrL -> SketchConstrL(
+                            n.label,
+                            n.params.map { newGuy(it as ConstraintType<L>) as ConstraintType<ConcreteSketch> }.toMutableList()
+                        )as ConstraintType<L>
                         is CVariable, InitConstrL, ElabConstrL, is ElaboratedConstrL -> n
                     }
 
@@ -155,6 +159,7 @@ class ConstraintUnification<L : Language> : Unification<L> {
                 val p = t.params.map { substitute(v, s, it) }
                 (when (t) {
                     is CArrow -> CArrow(p)
+                    is SketchConstrL -> SketchConstrL(t.label, p as List<ConstraintType<ConcreteSketch>>)
                     is ConcreteConstrL -> ConcreteConstrL(t.label, p as List<ConstraintType<Concrete>>)
                     InitConstrL, ElabConstrL, is ElaboratedConstrL -> t
                 } as ConstraintType<L>)
