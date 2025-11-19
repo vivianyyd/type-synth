@@ -21,7 +21,7 @@ class DFSPriorityEnumerator<L : Language>(
     ): Sequence<Candidate<L>> {
         val (iToFill, typeToFill) = c.types.withIndex().maxBy { (_, it) -> it.priority() }
 
-        // Old impl
+        // Old impl measures depth bound as we recurse downwards, collecting expansions
         return typeToFill
             .dfsPriorityExpansions(unification, typeToFill.variableNames().size, recursionBound)
             .asSequence()

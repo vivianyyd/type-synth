@@ -19,12 +19,13 @@ fun main() {
         runCVC = false,
         enumeratorTag = EnumeratorTag.DFSPriority,
         unificationTag = UnificationTag.Eager,
-        maxDepth = 4
+        maxDepth = 10
     )
 
     val logger = Logger(
         configuration = configuration,
-        logToFile = false
+        logToFile = false,
+        verbosity = 4
     )
 
     run(configuration, logger)

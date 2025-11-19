@@ -440,13 +440,13 @@ class ConcreteHole(
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) return wrap(listOf(fnExpansion))
-//            if (mustBeCompatible.first() is ConcreteConstrL && mustBeCompatible.all {
-//                    mustBeCompatible.first().match(it)
-//                }) {
-//                val label = (mustBeCompatible.first() as ConcreteConstrL).label
-//                // TODO this is bad bc the holes are not shared... bad for priority assignment
-//                return wrap(listOf(ConcreteL(label, List(labelArities[label]!!) { hole() })) + variableExpansions)
-//            }
+            if (mustBeCompatible.first() is ConcreteConstrL && mustBeCompatible.all {
+                    mustBeCompatible.first().match(it)
+                }) {
+                val label = (mustBeCompatible.first() as ConcreteConstrL).label
+                // TODO labelExpansions should be an array or something
+                return wrap(labelExpansions.filter { it.id == label } + variableExpansions)
+            }
             // TODO can't do this for labels bc sometimes we have less constraints bc of lack of earlier commitments.
             //   we might erroneously commit to list of int bc we haven't yet committed to a different thing being list of bool.
             //   AH, but, *if* there is only one label here, the only label expansion we could have is that label!
@@ -499,6 +499,7 @@ class Blank(
         vars: Int,
         recursionBound: Int?
     ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> = listOf(this to null)
+    // TODO expansions() should actually return the same as SketchHole, then we can filter when we're short circuiting
 }
 
 data class SketchV(val v: Int) : Leaf<ConcreteSketch> {
@@ -614,17 +615,13 @@ open class SketchHole(
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) return wrap(listOf(fnExpansion))
-//            if (mustBeCompatible.first() is ConcreteConstrL && mustBeCompatible.all {
-//                    mustBeCompatible.first().match(it)
-//                }) {
-//                val label = (mustBeCompatible.first() as ConcreteConstrL).label
-//                // TODO this is bad bc the holes are not shared... bad for priority assignment
-//                return wrap(listOf(ConcreteL(label, List(labelArities[label]!!) { hole() })) + variableExpansions)
-//            }
-            // TODO can't do this for labels bc sometimes we have less constraints bc of lack of earlier commitments.
-            //   we might erroneously commit to list of int bc we haven't yet committed to a different thing being list of bool.
-            //   AH, but, *if* there is only one label here, the only label expansion we could have is that label!
-            //       and we can say this recursively too
+            if (mustBeCompatible.first() is SketchConstrL && mustBeCompatible.all {
+                    mustBeCompatible.first().match(it)
+                }) {
+                val label = (mustBeCompatible.first() as ConcreteConstrL).label
+                // TODO look at concretehole
+                return wrap(labelExpansions.filter { it.id == label } + variableExpansions)
+            }
         }
 
         return wrap(  // TODO hilariously, I think the order makes a difference here. we should sort by size tbh

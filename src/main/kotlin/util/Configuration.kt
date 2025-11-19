@@ -11,6 +11,7 @@ data class Configuration(
     val runCVC: Boolean,
     val enumeratorTag: EnumeratorTag,
     val unificationTag: UnificationTag,
+//    val bound: Bound,
     val maxDepth: Int
 ) : Config {
     override fun toString(): String =
@@ -19,3 +20,7 @@ data class Configuration(
             postfix = "\n=====\n"
         )
 }
+
+interface Bound
+data class DepthBound(val b: Int) : Bound
+data class ChoiceBound(val b: Int) : Bound
