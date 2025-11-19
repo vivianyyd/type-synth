@@ -11,10 +11,18 @@ data class Configuration(
     val runCVC: Boolean,
     val enumeratorTag: EnumeratorTag,
     val unificationTag: UnificationTag,
-    val bound: Bound
+    val sizeBound: Int,
+    val depthBound: Int
 ) : Config {
     override fun toString(): String =
-        listOf(test.name, "Running CVC: $runCVC", enumeratorTag, unificationTag, "Bound: $bound").joinToString(
+        listOf(
+            test.name,
+            "Running CVC: $runCVC",
+            enumeratorTag,
+            unificationTag,
+            "Size bound: $sizeBound",
+            "Depth bound: $depthBound"
+        ).joinToString(
             separator = "\n",
             postfix = "\n=====\n"
         )

@@ -5,12 +5,11 @@ import core.Language
 import core.UnificationForCandidate
 import core.enumerate.EnumeratorTag.*
 import query.Query
-import util.Bound
 import util.Logger
 
 sealed interface Enumerator<L : Language> {
     val seedCandidate: Candidate<L>
-    fun enumerate(bound: Bound): List<Candidate<L>>
+    fun enumerate(sizeBound: Int, hardDepthBound: Int): List<Candidate<L>>
 }
 
 enum class EnumeratorTag {
@@ -32,22 +31,28 @@ fun <L : Language> enumerator(
 }
 
 fun <L : Language> solutions(
-    enumerators: List<Enumerator<L>>,
-    bound: Bound,
-    iterative: Boolean,
-    logger: Logger
+    enumerators: List<Enumerator<L>>, sizeBound: Int, hardDepthBound: Int, iterative: Boolean, logger: Logger
 ): List<Candidate<L>> {
+    val holes = enumerators.map { it.seedCandidate.holes }
+    if (holes.min() > sizeBound) throw IllegalArgumentException("Size bound not large enough for any concrete types")
+
     return if (iterative) {
         val sols = mutableListOf<Candidate<L>>()
-        for (i in 1..bound.b) {
-            logger.start("Depth $i")
-            val currSols = enumerators.flatMap { it.enumerate(bound.copy(b = i)) }.toList()
-            if (currSols.isNotEmpty()) {
-                sols.addAll(currSols)
-                break
+        for (depth in 1..hardDepthBound) {
+            logger.start("Depth $depth")
+            for (size in (holes.min() + depth - 1)..sizeBound) {
+                logger.start("Size $size")
+                val currSols =
+                    enumerators.filter { it.seedCandidate.holes <= size }.flatMap { it.enumerate(size, depth) }
+                        .toList()
+                if (currSols.isNotEmpty()) {
+                    sols.addAll(currSols)
+                    break
+                }
+                logger.stop("Size $size")
             }
-            logger.stop("Depth $i")
+            logger.stop("Depth $depth")
         }
         sols
-    } else enumerators.flatMap { it.enumerate(bound) }
+    } else enumerators.flatMap { it.enumerate(sizeBound, hardDepthBound) }
 }

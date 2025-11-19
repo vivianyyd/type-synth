@@ -57,7 +57,7 @@ class SketchEnumerator<L : Language>(
 //        }
 //    }
 
-    override fun enumerate(maxDepth: Int): List<Candidate<L>> {
+    override fun enumerate(sizeBound: Int, hardDepthBound: Int): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
             unification(c, query.posExsBeforeSubexprs).ok() &&
                     (if (mustPassNegatives)

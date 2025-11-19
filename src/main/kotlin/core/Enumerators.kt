@@ -7,7 +7,9 @@ import query.App
 import query.Name
 import query.parseTest
 import test.*
-import util.*
+import util.Configuration
+import util.Logger
+import util.clearCVC
 
 fun main() {
     val tests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
@@ -18,7 +20,8 @@ fun main() {
         runCVC = false,
         enumeratorTag = EnumeratorTag.DFSPriority,
         unificationTag = UnificationTag.Eager,
-        bound = Bound(4, BoundTag.Depth)
+        sizeBound = 20,
+        depthBound = 4
     )
 
     val logger = Logger(
@@ -61,7 +64,8 @@ fun run(configuration: Configuration, logger: Logger) {
     val initSols = time("Init search") {
         solutions(
             listOf(makeEnumerator(initSeed, false)),
-            configuration.bound,
+            configuration.sizeBound,
+            configuration.depthBound,
             iterative = false,
             logger
         )
@@ -71,7 +75,8 @@ fun run(configuration: Configuration, logger: Logger) {
     val elabSols = time("Elab search") {
         solutions(
             elabSeeds.map { makeEnumerator(it, false) },
-            configuration.bound,
+            configuration.sizeBound,
+            configuration.depthBound,
             iterative = false,
             logger
         )
@@ -93,7 +98,8 @@ fun run(configuration: Configuration, logger: Logger) {
     val concSols = time("Concrete search") {
         solutions(
             concSeeds.map { makeEnumerator(it, true) },
-            configuration.bound,
+            configuration.sizeBound,
+            configuration.depthBound,
             iterative = true,
             logger
         )

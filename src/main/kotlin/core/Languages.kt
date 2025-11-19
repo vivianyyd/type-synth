@@ -430,7 +430,7 @@ class ConcreteHole(
             if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return variableExpansions
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
-                }) return listOf(fnExpansion, TODO("Should I add variableExpansions here??"))
+                }) return variableExpansions + fnExpansion // TODO Think about this
             if (mustBeCompatible.first() is ConcreteConstrL && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) {

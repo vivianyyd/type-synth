@@ -5,9 +5,6 @@ import core.Language
 import core.Unification
 import core.UnificationForCandidate
 import query.Query
-import util.Bound
-import util.BoundTag.Choice
-import util.BoundTag.Depth
 import util.Logger
 
 class DFSPriorityEnumerator<L : Language>(
@@ -20,23 +17,15 @@ class DFSPriorityEnumerator<L : Language>(
     private fun fill(
         c: Candidate<L>,
         unification: Unification<L>,
-        bound: Bound
+        mustBeLeaf: Boolean
     ): Sequence<Candidate<L>> {
-        val (iToFill, typeToFill) = c.types.withIndex().maxBy { (_, it) -> it.priority() }
-
-        val mustBeLeaf = when (bound.type) {
-            Depth -> false
-            Choice -> bound.b <= 1
-        }
+        val (iToFill, typeToFill) = c.types.withIndex()
+            .maxBy { (_, it) -> it.priority() }  // todo want to order by hole depth, then remove bound on iterative deepening thing
 
         // New version doesn't use SearchNode-specified expansions for each node, only for the holes
         val holeToFill = typeToFill.listHoles().maxBy { it.priority() }
         return holeToFill.expansions(unification, typeToFill.variableNames().size, mustBeLeaf).asSequence()
-            .mapNotNull { holeFill ->
-                val t = typeToFill.replace(holeToFill, holeFill)
-                if (bound.type == Depth && t.depth() > bound.b) null
-                else t  // TODO the hole should just store its own depth and we query that to figure out if it must be leaf. then no need to filter this late
-            }
+            .map { holeFill -> typeToFill.replace(holeToFill, holeFill) }
             .map { newType ->
                 Candidate(c.names, c.types.mapIndexed { i, p -> if (iToFill == i) newType else p })
             }
@@ -45,32 +34,31 @@ class DFSPriorityEnumerator<L : Language>(
     private fun commitPriority(
         c: Candidate<L>,
         unification: Unification<L>,
-        bound: Bound
+        sizeBound: Int,
+        hardDepthBound: Int
     ): Sequence<Candidate<L>> {
+        println(c)
+        if (sizeBound > 18 && c.toString().contains("L1")) TODO()
         if (c.full()) return sequenceOf(c)
+        if (sizeBound == 0) return sequenceOf()
         logger.count("Cands for $seedCandidate")
 
-        val nextBound = when (bound.type) {
-            Depth -> bound
-            Choice -> {
-                if (bound.b == 0) return sequenceOf()
-                bound.copy(b = bound.b - 1)
+        return fill(c, unification, sizeBound <= 1).flatMap {
+            if (it.depth() > hardDepthBound) emptySequence()
+            else {
+                // TODO spawnAndRefine is slow for eager unification since we make a duplicate candidate.
+                //      but making a new unification is slow for other unifs.
+                val u = unification(it, query.posExsBeforeSubexprs)
+                if (u.ok()) {
+                    if (it.satisfiesDependencies())  // TODO ablate this
+                        commitPriority(it, u, sizeBound - 1, hardDepthBound)
+                    else emptySequence()
+                } else emptySequence()
             }
-        }
-
-        return fill(c, unification, bound).flatMap {
-            // TODO spawnAndRefine is slow for eager unification since we make a duplicate candidate.
-            //      but making a new unification is slow for other unifs.
-            val u = unification(it, query.posExsBeforeSubexprs)
-            if (u.ok()) {
-                if (it.satisfiesDependencies())  // TODO ablate this
-                    commitPriority(it, u, nextBound)
-                else emptySequence()
-            } else emptySequence()
         }
     }
 
-    override fun enumerate(bound: Bound): List<Candidate<L>> {
+    override fun enumerate(sizeBound: Int, hardDepthBound: Int): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
             unification(c, query.posExsBeforeSubexprs).ok() &&
                     (if (mustPassNegatives)
@@ -80,7 +68,8 @@ class DFSPriorityEnumerator<L : Language>(
         return commitPriority(
             seedCandidate,
             unification(seedCandidate, query.posExsBeforeSubexprs),
-            bound
+            sizeBound,
+            hardDepthBound
         ).filter { c -> check(c) }.toList()
     }
 }
