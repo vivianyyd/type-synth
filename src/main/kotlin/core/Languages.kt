@@ -29,11 +29,11 @@ class InitHole : Hole<Init>() {
         unification: Unification<Init>,
         vars: Int,
         recursionBound: Int?
-    ): List<Pair<SearchNode<Init>, Commitment<Init>>> {
+    ): List<SearchNode<Init>> {
         val mustBeCompatible = unification.holeEquals(this)
         val fn = if (recursionBound != null && recursionBound <= 1) listOf()
         else if (mustBeCompatible.any { it is CArrow }) listOf(fnExpansion) else listOf()
-        return (listOf(InitV, InitL) + fn).map { it to (this to it) }
+        return listOf(InitV, InitL) + fn
     }
 }
 
@@ -83,8 +83,8 @@ class ElabVarHole() : Hole<Elab>() {
         unification: Unification<Elab>,
         vars: Int,
         recursionBound: Int?
-    ): List<Pair<SearchNode<Elab>, Commitment<Elab>>> =
-        (0 until vars + 1).map { ElabV(it) }.map { it to (this to it) }
+    ): List<SearchNode<Elab>> =
+        (0 until vars + 1).map { ElabV(it) }
 
     // TODO Not sure if this does what I want to do.
 //    override fun equals(other: Any?) = other is ElabVarHole
@@ -406,10 +406,10 @@ class ConcreteHole(
         unification: Unification<Concrete>,
         vars: Int,
         recursionBound: Int?
-    ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> =
+    ): List<SearchNode<Concrete>> =
         if (recursionBound != null && recursionBound <= 1) expansionsNoBound(unification, vars).filter {
-            when (val t = it.first) {
-                is ConcreteL -> t.params.isEmpty()
+            when (it) {
+                is ConcreteL -> it.params.isEmpty()
                 is NArrow -> false
                 is ConcreteHole -> true
                 is ConcreteV -> true
@@ -424,8 +424,7 @@ class ConcreteHole(
     private fun expansionsNoBound(
         unification: Unification<Concrete>,
         vars: Int,
-    ): List<Pair<SearchNode<Concrete>, Commitment<Concrete>>> {
-        fun wrap(e: List<SearchNode<Concrete>>) = e.map { it to (this to it) }
+    ): List<SearchNode<Concrete>> {
 
         val variableExpansions = when (constraint) {  // TODO weird that vars need to be sorted
             null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { ConcreteV(it) }
@@ -436,16 +435,16 @@ class ConcreteHole(
         val mustBeCompatible = unification.holeEquals(this)
 
         if (mustBeCompatible.isNotEmpty()) {
-            if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return wrap(variableExpansions)
+            if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return variableExpansions
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
-                }) return wrap(listOf(fnExpansion))
+                }) return listOf(fnExpansion)
             if (mustBeCompatible.first() is ConcreteConstrL && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) {
                 val label = (mustBeCompatible.first() as ConcreteConstrL).label
                 // TODO labelExpansions should be an array or something
-                return wrap(labelExpansions.filter { it.id == label } + variableExpansions)
+                return labelExpansions.filter { it.id == label } + variableExpansions
             }
             // TODO can't do this for labels bc sometimes we have less constraints bc of lack of earlier commitments.
             //   we might erroneously commit to list of int bc we haven't yet committed to a different thing being list of bool.
@@ -453,9 +452,8 @@ class ConcreteHole(
             //       and we can say this recursively too
         }
 
-        return wrap(  // TODO hilariously, I think the order makes a difference here. we should sort by size tbh
-            labelExpansions + variableExpansions + fnExpansion
-        )
+        // TODO hilariously, I think the order makes a difference here. we should sort by size tbh
+        return labelExpansions + variableExpansions + fnExpansion
     }
 
 //    private fun antiunify(types: List<CTypeConstructor<Concrete>>): ConstraintType<Concrete>
@@ -498,7 +496,7 @@ class Blank(
         unification: Unification<ConcreteSketch>,
         vars: Int,
         recursionBound: Int?
-    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> = listOf(this to null)
+    ): List<SearchNode<ConcreteSketch>> = listOf(this)
     // TODO expansions() should actually return the same as SketchHole, then we can filter when we're short circuiting
 }
 
@@ -579,14 +577,13 @@ open class SketchHole(
         unification: Unification<ConcreteSketch>,
         vars: Int,
         recursionBound: Int?
-    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> =
+    ): List<SearchNode<ConcreteSketch>> =
         if (recursionBound != null && recursionBound <= 1) expansionsNoBound(unification, vars).filter {
-            when (val t = it.first) {
-                is SketchL -> t.params.isEmpty()
+            when (it) {
+                is SketchL -> it.params.isEmpty()
                 is NArrow -> false
                 is SketchHole -> true
                 is SketchV -> true
-                is Blank -> true
                 else -> throw Exception("Impossible")
             }
         } else expansionsNoBound(unification, vars)
@@ -599,9 +596,7 @@ open class SketchHole(
     private fun expansionsNoBound(
         unification: Unification<ConcreteSketch>,
         vars: Int,
-    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> {
-        fun wrap(e: List<SearchNode<ConcreteSketch>>) = e.map { it to (this to it) }
-
+    ): List<SearchNode<ConcreteSketch>> {
         val variableExpansions = when (constraint) {  // TODO weird that vars need to be sorted
             null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { SketchV(it) }
             NoVariables -> listOf()
@@ -611,22 +606,20 @@ open class SketchHole(
         val mustBeCompatible = unification.holeEquals(this)
 
         if (mustBeCompatible.isNotEmpty()) {
-            if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return wrap(variableExpansions)
+            if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return variableExpansions
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
-                }) return wrap(listOf(fnExpansion))
+                }) return listOf(fnExpansion)
             if (mustBeCompatible.first() is SketchConstrL && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) {
                 val label = (mustBeCompatible.first() as ConcreteConstrL).label
                 // TODO look at concretehole
-                return wrap(labelExpansions.filter { it.id == label } + variableExpansions)
+                return labelExpansions.filter { it.id == label } + variableExpansions
             }
         }
 
-        return wrap(  // TODO hilariously, I think the order makes a difference here. we should sort by size tbh
-            listOf(blankExpansion) + labelExpansions + variableExpansions + fnExpansion
-        )
+        return listOf(blankExpansion) + labelExpansions + variableExpansions + fnExpansion
     }
 
 //    private fun antiunify(types: List<CTypeConstructor<Concrete>>): ConstraintType<Concrete>

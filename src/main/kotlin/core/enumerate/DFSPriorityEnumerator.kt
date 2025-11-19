@@ -21,19 +21,9 @@ class DFSPriorityEnumerator<L : Language>(
     ): Sequence<Candidate<L>> {
         val (iToFill, typeToFill) = c.types.withIndex().maxBy { (_, it) -> it.priority() }
 
-        // Old impl measures depth bound as we recurse downwards, collecting expansions
-        return typeToFill
-            .dfsPriorityExpansions(unification, typeToFill.variableNames().size, recursionBound)
-            .asSequence()
-            .mapNotNull { (newType, commit) ->
-                if (commit == null) null  // generated context is the same as this one
-                else Candidate(c.names, c.types.mapIndexed { i, p -> if (iToFill == i) newType else p })
-            }
-
         // New version doesn't use SearchNode-specified expansions for each node, only for the holes
-        /*
         val holeToFill = typeToFill.listHoles().maxBy { it.priority() }
-        val expansions = holeToFill.expansions(unification, typeToFill.variableNames().size, recursionBound)
+        val expansions = holeToFill.expansionsWithCommits(unification, typeToFill.variableNames().size, recursionBound)
         val newTys = expansions.map { (holeFill, commit) -> typeToFill.replace(holeToFill, holeFill) to commit }
         // TODO this can be cleaned up since expansions can return only commits instead of a pair
         return newTys.asSequence()
@@ -41,7 +31,6 @@ class DFSPriorityEnumerator<L : Language>(
                 if (commit == null) null  // generated context is the same as this one
                 else Candidate(c.names, c.types.mapIndexed { i, p -> if (iToFill == i) newType else p })
             }
-         */
     }
 
     private fun commitPriority(

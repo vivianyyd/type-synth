@@ -218,19 +218,26 @@ sealed class Hole<L : Language> : SearchNode<L> {
         unification: Unification<L>,
         vars: Int,
         recursionBound: Int?
-    ): List<Pair<SearchNode<L>, Commitment<L>>>
+    ): List<SearchNode<L>>
+
+    fun expansionsWithCommits(
+        unification: Unification<L>,
+        vars: Int,
+        recursionBound: Int?
+    ): List<Pair<SearchNode<L>, Commitment<L>>> =
+        expansions(unification, vars, recursionBound).map { it to (this to it) }
 
     override fun dfsLeftExpansions(
         unification: Unification<L>,
         vars: Int,
         recursionBound: Int?
-    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(unification, vars, recursionBound)
+    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansionsWithCommits(unification, vars, recursionBound)
 
     override fun dfsPriorityExpansions(
         unification: Unification<L>,
         vars: Int,
         recursionBound: Int?
-    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansions(unification, vars, recursionBound)
+    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansionsWithCommits(unification, vars, recursionBound)
 
     private val instantiations = mutableListOf<Instantiation<L>>()
 
