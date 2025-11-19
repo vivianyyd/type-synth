@@ -37,7 +37,7 @@ sealed interface SearchNode<L : Language> {
 
     fun listHoles(): List<Hole<L>>
 
-    /** The number of nodes in the longest path from root to leaf. */
+    /** The number of nodes in the longest path from root to leaf, including holes. */
     fun depth(): Int
 
     /** TODO not sure if the invariant here should be that num holes = 0 iff full.
@@ -217,27 +217,29 @@ sealed class Hole<L : Language> : SearchNode<L> {
     abstract fun expansions(
         unification: Unification<L>,
         vars: Int,
-        recursionBound: Int?
+        mustBeLeaf: Boolean
     ): List<SearchNode<L>>
 
     fun expansionsWithCommits(
         unification: Unification<L>,
         vars: Int,
-        recursionBound: Int?
+        mustBeLeaf: Boolean
     ): List<Pair<SearchNode<L>, Commitment<L>>> =
-        expansions(unification, vars, recursionBound).map { it to (this to it) }
+        expansions(unification, vars, mustBeLeaf).map { it to (this to it) }
 
     override fun dfsLeftExpansions(
         unification: Unification<L>,
         vars: Int,
         recursionBound: Int?
-    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansionsWithCommits(unification, vars, recursionBound)
+    ): List<Pair<SearchNode<L>, Commitment<L>>> =
+        expansionsWithCommits(unification, vars, recursionBound != null && recursionBound <= 1)
 
     override fun dfsPriorityExpansions(
         unification: Unification<L>,
         vars: Int,
         recursionBound: Int?
-    ): List<Pair<SearchNode<L>, Commitment<L>>> = expansionsWithCommits(unification, vars, recursionBound)
+    ): List<Pair<SearchNode<L>, Commitment<L>>> =
+        expansionsWithCommits(unification, vars, recursionBound != null && recursionBound <= 1)
 
     private val instantiations = mutableListOf<Instantiation<L>>()
 

@@ -16,7 +16,7 @@
 (+ (chain dii (chain dib dbb)))
 (+ (chain dib (chain dbi (chain dib dbb))))
 (+ (chain dbi (chain dii dib)))
-(+ (chain (put dii i i)))
+(+ (chain (put dii i i) dii))
 (+ (chain (chain dii dii)))
 (+ (chain (chain dii (put dii i i))))
 (+ (chain (chain dib dbi)))

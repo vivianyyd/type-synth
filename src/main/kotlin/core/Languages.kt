@@ -28,10 +28,10 @@ class InitHole : Hole<Init>() {
     override fun expansions(
         unification: Unification<Init>,
         vars: Int,
-        recursionBound: Int?
+        mustBeLeaf: Boolean
     ): List<SearchNode<Init>> {
         val mustBeCompatible = unification.holeEquals(this)
-        val fn = if (recursionBound != null && recursionBound <= 1) listOf()
+        val fn = if (mustBeLeaf) listOf()
         else if (mustBeCompatible.any { it is CArrow }) listOf(fnExpansion) else listOf()
         return listOf(InitV, InitL) + fn
     }
@@ -63,8 +63,6 @@ fun compileInit(seed: Candidate<Init>): Candidate<Elab> {
 
 object Elab : Language
 
-// TODO: Add to canonical: output shouldn't be an unbound variable. Vars should go in increasing order
-
 data class ElabV(val v: Int) : Leaf<Elab> {
     override fun toString() = "V$v"
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Elab> = ElabConstrV(v, instId)
@@ -82,7 +80,7 @@ class ElabVarHole() : Hole<Elab>() {
     override fun expansions(
         unification: Unification<Elab>,
         vars: Int,
-        recursionBound: Int?
+        mustBeLeaf: Boolean
     ): List<SearchNode<Elab>> =
         (0 until vars + 1).map { ElabV(it) }
 
@@ -397,17 +395,12 @@ class ConcreteHole(
     private val constraint: Dependency?,
     private val labelArities: Map<Int, Int>,
 ) : Hole<Concrete>() {
-    // TODO We want to use the below equals when we are comparing new candidates against what we've seen before.
-    //      but we want to use built in physical equals when we are looking to replace holes!
-//    override fun equals(other: Any?): Boolean = other is ConcreteHole
-//    override fun hashCode() = 0
-
     override fun expansions(
         unification: Unification<Concrete>,
         vars: Int,
-        recursionBound: Int?
+        mustBeLeaf: Boolean
     ): List<SearchNode<Concrete>> =
-        if (recursionBound != null && recursionBound <= 1) expansionsNoBound(unification, vars).filter {
+        if (mustBeLeaf) expansionsNoBound(unification, vars).filter {
             when (it) {
                 is ConcreteL -> it.params.isEmpty()
                 is NArrow -> false
@@ -425,7 +418,6 @@ class ConcreteHole(
         unification: Unification<Concrete>,
         vars: Int,
     ): List<SearchNode<Concrete>> {
-
         val variableExpansions = when (constraint) {  // TODO weird that vars need to be sorted
             null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { ConcreteV(it) }
             NoVariables -> listOf()
@@ -438,7 +430,7 @@ class ConcreteHole(
             if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return variableExpansions
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
-                }) return listOf(fnExpansion)
+                }) return listOf(fnExpansion, TODO("Should I add variableExpansions here??"))
             if (mustBeCompatible.first() is ConcreteConstrL && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) {
@@ -495,7 +487,7 @@ class Blank(
     override fun expansions(
         unification: Unification<ConcreteSketch>,
         vars: Int,
-        recursionBound: Int?
+        mustBeLeaf: Boolean
     ): List<SearchNode<ConcreteSketch>> = listOf(this)
     // TODO expansions() should actually return the same as SketchHole, then we can filter when we're short circuiting
 }
@@ -576,9 +568,9 @@ open class SketchHole(
     override fun expansions(
         unification: Unification<ConcreteSketch>,
         vars: Int,
-        recursionBound: Int?
+        mustBeLeaf: Boolean
     ): List<SearchNode<ConcreteSketch>> =
-        if (recursionBound != null && recursionBound <= 1) expansionsNoBound(unification, vars).filter {
+        if (mustBeLeaf) expansionsNoBound(unification, vars).filter {
             when (it) {
                 is SketchL -> it.params.isEmpty()
                 is NArrow -> false

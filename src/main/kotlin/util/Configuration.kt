@@ -11,16 +11,17 @@ data class Configuration(
     val runCVC: Boolean,
     val enumeratorTag: EnumeratorTag,
     val unificationTag: UnificationTag,
-//    val bound: Bound,
-    val maxDepth: Int
+    val bound: Bound
 ) : Config {
     override fun toString(): String =
-        listOf(test.name, "Running CVC: $runCVC", enumeratorTag, unificationTag, "Max depth: $maxDepth").joinToString(
+        listOf(test.name, "Running CVC: $runCVC", enumeratorTag, unificationTag, "Bound: $bound").joinToString(
             separator = "\n",
             postfix = "\n=====\n"
         )
 }
 
-interface Bound
-data class DepthBound(val b: Int) : Bound
-data class ChoiceBound(val b: Int) : Bound
+data class Bound(val b: Int, val type: BoundTag)
+
+enum class BoundTag {
+    Depth, Choice
+}

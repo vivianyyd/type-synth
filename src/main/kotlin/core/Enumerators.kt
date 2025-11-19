@@ -2,13 +2,12 @@ package core
 
 import core.enumerate.EnumeratorTag
 import core.enumerate.enumerator
+import core.enumerate.solutions
 import query.App
 import query.Name
 import query.parseTest
 import test.*
-import util.Configuration
-import util.Logger
-import util.clearCVC
+import util.*
 
 fun main() {
     val tests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
@@ -19,7 +18,7 @@ fun main() {
         runCVC = false,
         enumeratorTag = EnumeratorTag.DFSPriority,
         unificationTag = UnificationTag.Eager,
-        maxDepth = 10
+        bound = Bound(4, BoundTag.Depth)
     )
 
     val logger = Logger(
@@ -59,11 +58,23 @@ fun run(configuration: Configuration, logger: Logger) {
                 InitHole().fnExpansion
             else InitL
         })
-    val initSols = time("Init search") { makeEnumerator(initSeed, false).enumerate(configuration.maxDepth) }
+    val initSols = time("Init search") {
+        solutions(
+            listOf(makeEnumerator(initSeed, false)),
+            configuration.bound,
+            iterative = false,
+            logger
+        )
+    }
 
     val elabSeeds = time("Compile Init to Elab") { initSols.map { compileInit(it) } }
     val elabSols = time("Elab search") {
-        elabSeeds.flatMap { makeEnumerator(it, false).enumerate(configuration.maxDepth) }
+        solutions(
+            elabSeeds.map { makeEnumerator(it, false) },
+            configuration.bound,
+            iterative = false,
+            logger
+        )
     }
 
     val concSeeds = time("Compile Elab to Concrete") {
@@ -80,17 +91,12 @@ fun run(configuration: Configuration, logger: Logger) {
     println(concSeeds.joinToString(separator = "\n"))
 
     val concSols = time("Concrete search") {
-        val concEnumerators = concSeeds.map { makeEnumerator(it, true) }
-        val sols = mutableListOf<Candidate<Concrete>>()
-        for (i in 1..configuration.maxDepth) {
-            println("Hello $i")
-            val currSols = concEnumerators.flatMap { it.enumerate(i) }.toList()
-            if (currSols.isNotEmpty()) {
-                sols.addAll(currSols)
-                break
-            }
-        }
-        sols
+        solutions(
+            concSeeds.map { makeEnumerator(it, true) },
+            configuration.bound,
+            iterative = true,
+            logger
+        )
     }
 
     println("FINAL SOLUTIONS:")

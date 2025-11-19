@@ -4,6 +4,7 @@ import core.Candidate
 import core.Language
 import core.UnificationForCandidate
 import query.Query
+import util.Bound
 
 class BFSEnumerator<L : Language>(
     val query: Query,
@@ -16,6 +17,6 @@ class BFSEnumerator<L : Language>(
         throw UnsupportedOperationException("No more BFS")
     }
 
-    override fun enumerate(maxDepth: Int): List<Candidate<L>> =
+    override fun enumerate(bound: Bound): List<Candidate<L>> =
         throw UnsupportedOperationException("No more BFS")
 }

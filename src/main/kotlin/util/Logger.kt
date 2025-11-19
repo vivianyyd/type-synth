@@ -40,7 +40,7 @@ class Logger(
 
     fun start(stage: String) {
         stages.push(stage to System.currentTimeMillis())
-        log("Started $stage")
+        log("BEG $stage")
         indent()
     }
 
@@ -48,7 +48,7 @@ class Logger(
         val (s, t) = stages.pop()
         if (s != stage) error("Stopped a stage that wasn't started")
         dedent()
-        log("Finished $stage after ${System.currentTimeMillis() - t} ms")
+        log("END $stage : ${System.currentTimeMillis() - t} ms")
     }
 
     private val counts = mutableMapOf<String, Int>()

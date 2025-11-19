@@ -5,6 +5,8 @@ import core.Language
 import core.Unification
 import core.UnificationForCandidate
 import query.Query
+import util.Bound
+import util.BoundTag
 import util.Logger
 
 class DFSLeftEnumerator<L : Language>(
@@ -41,7 +43,7 @@ class DFSLeftEnumerator<L : Language>(
         }
     }
 
-    override fun enumerate(maxDepth: Int): List<Candidate<L>> {
+    override fun enumerate(bound: Bound): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
             unification(c, query.posExsBeforeSubexprs).ok() &&
                     (if (mustPassNegatives)
@@ -50,10 +52,12 @@ class DFSLeftEnumerator<L : Language>(
 
         val u = unification(seedCandidate, query.posExsBeforeSubexprs)
         if (!u.ok()) return listOf()
+
+        if (bound.type != BoundTag.Depth) throw UnsupportedOperationException("Only depth is supported for leftmost DFS")
         return commitLeftmost(
             seedCandidate,
             u,
-            maxDepth
+            bound.b
         ).filter { c -> check(c) }.toList()
     }
 }

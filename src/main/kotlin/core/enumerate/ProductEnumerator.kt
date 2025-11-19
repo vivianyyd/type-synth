@@ -4,6 +4,7 @@ import core.Candidate
 import core.Language
 import core.SearchNode
 import query.Query
+import util.Bound
 
 data class PortNode<L : Language>(val options: List<MutableList<PortNode<L>>>) {
 
@@ -37,7 +38,7 @@ class ProductEnumerator<L : Language>(
         TODO()
     }
 
-    override fun enumerate(maxDepth: Int): List<Candidate<L>> {
+    override fun enumerate(bound: Bound): List<Candidate<L>> {
         TODO()
 
 

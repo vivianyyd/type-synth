@@ -5,6 +5,9 @@ import core.Language
 import core.Unification
 import core.UnificationForCandidate
 import query.Query
+import util.Bound
+import util.BoundTag.Choice
+import util.BoundTag.Depth
 import util.Logger
 
 class DFSPriorityEnumerator<L : Language>(
@@ -17,44 +20,57 @@ class DFSPriorityEnumerator<L : Language>(
     private fun fill(
         c: Candidate<L>,
         unification: Unification<L>,
-        recursionBound: Int
+        bound: Bound
     ): Sequence<Candidate<L>> {
         val (iToFill, typeToFill) = c.types.withIndex().maxBy { (_, it) -> it.priority() }
 
+        val mustBeLeaf = when (bound.type) {
+            Depth -> false
+            Choice -> bound.b <= 1
+        }
+
         // New version doesn't use SearchNode-specified expansions for each node, only for the holes
         val holeToFill = typeToFill.listHoles().maxBy { it.priority() }
-        val expansions = holeToFill.expansionsWithCommits(unification, typeToFill.variableNames().size, recursionBound)
-        val newTys = expansions.map { (holeFill, commit) -> typeToFill.replace(holeToFill, holeFill) to commit }
-        // TODO this can be cleaned up since expansions can return only commits instead of a pair
-        return newTys.asSequence()
-            .mapNotNull { (newType, commit) ->
-                if (commit == null) null  // generated context is the same as this one
-                else Candidate(c.names, c.types.mapIndexed { i, p -> if (iToFill == i) newType else p })
+        return holeToFill.expansions(unification, typeToFill.variableNames().size, mustBeLeaf).asSequence()
+            .mapNotNull { holeFill ->
+                val t = typeToFill.replace(holeToFill, holeFill)
+                if (bound.type == Depth && t.depth() > bound.b) null
+                else t  // TODO the hole should just store its own depth and we query that to figure out if it must be leaf. then no need to filter this late
+            }
+            .map { newType ->
+                Candidate(c.names, c.types.mapIndexed { i, p -> if (iToFill == i) newType else p })
             }
     }
 
     private fun commitPriority(
         c: Candidate<L>,
         unification: Unification<L>,
-        recursionBound: Int
+        bound: Bound
     ): Sequence<Candidate<L>> {
         if (c.full()) return sequenceOf(c)
         logger.count("Cands for $seedCandidate")
 
-        return fill(c, unification, recursionBound).flatMap {
+        val nextBound = when (bound.type) {
+            Depth -> bound
+            Choice -> {
+                if (bound.b == 0) return sequenceOf()
+                bound.copy(b = bound.b - 1)
+            }
+        }
+
+        return fill(c, unification, bound).flatMap {
             // TODO spawnAndRefine is slow for eager unification since we make a duplicate candidate.
             //      but making a new unification is slow for other unifs.
             val u = unification(it, query.posExsBeforeSubexprs)
             if (u.ok()) {
                 if (it.satisfiesDependencies())  // TODO ablate this
-                    commitPriority(it, u, recursionBound) // -1 TODO need this for new impl //  - it.depth()
-                // TODO is this bound on depth or on size now that we do it here instead of asking each node to reduce the bound as we go?
+                    commitPriority(it, u, nextBound)
                 else emptySequence()
             } else emptySequence()
         }
     }
 
-    override fun enumerate(maxDepth: Int): List<Candidate<L>> {
+    override fun enumerate(bound: Bound): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
             unification(c, query.posExsBeforeSubexprs).ok() &&
                     (if (mustPassNegatives)
@@ -64,7 +80,7 @@ class DFSPriorityEnumerator<L : Language>(
         return commitPriority(
             seedCandidate,
             unification(seedCandidate, query.posExsBeforeSubexprs),
-            maxDepth
+            bound
         ).filter { c -> check(c) }.toList()
     }
 }
