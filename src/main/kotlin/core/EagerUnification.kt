@@ -15,13 +15,13 @@ class EagerUnification<L : Language>(
     private var evaluated = false
     private var error = false
     private val customConstraints = mutableListOf<Constraint<L>>()
-    private val holeConstraints = mutableMapOf<Hole<L>, MutableList<CTypeConstructor<L>>>()
+    private val holeConstraints = mutableMapOf<Int, MutableList<ConstraintType<L>>>()  // holeId
     private var context = candidate.asMap
 
     private val instVarId = Counter()
     private val insts = Counter()  // Number of times any top-level type has been instantiated
 
-    override fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>> =
+    override fun holeEquals(hole: Int): List<ConstraintType<L>> =
         if (ok()) holeConstraints[hole] ?: listOf() else listOf()
 
     override fun ok(): Boolean {
@@ -76,7 +76,7 @@ class EagerUnification<L : Language>(
         }
 
     private fun holeConstraint(inst: Instantiation<L>, t: ConstraintType<L>) {
-        if (t is CTypeConstructor<L>) holeConstraints.getOrPut(inst.n) { mutableListOf() }.add(t)
+        holeConstraints.getOrPut(inst.n.holeId) { mutableListOf() }.add(t)
     }
 
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */

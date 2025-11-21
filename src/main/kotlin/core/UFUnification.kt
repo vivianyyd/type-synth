@@ -47,8 +47,8 @@ class UFUnification<L : Language> private constructor(
         } else throw Error("Cannot unify $a and $b: Something wrong with subtype casing")
     }
 
-    override fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>> =
-        uf.rootsFor { it is Instantiation && it.n == this }.filterIsInstance<CTypeConstructor<L>>()
+    override fun holeEquals(hole: Int): List<ConstraintType<L>> =
+        uf.rootsFor { it is Instantiation && it.n.holeId == hole }
 
     override fun spawnAndRefine(refinements: List<Pair<Hole<L>, SearchNode<L>>>): Unification<L> {
         val new = spawn()

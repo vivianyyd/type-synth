@@ -37,11 +37,21 @@ class DFSPriorityEnumerator<L : Language>(
         sizeBound: Int,
         hardDepthBound: Int
     ): Sequence<Candidate<L>> {
-        println(c)
-        if (sizeBound > 18 && c.toString().contains("L1")) TODO()
-        if (c.full()) return sequenceOf(c)
-        if (sizeBound == 0) return sequenceOf()
-        logger.count("Cands for $seedCandidate")
+        logger.count("Cands under $seedCandidate")
+        logger.log("Exploring $c")
+        if (c.full()) {
+            logger.count("Cand under $seedCandidate passed all posexs")
+            return sequenceOf(c)
+        }
+        if (sizeBound == 0) {
+            logger.count("Hit size bound under $seedCandidate")
+            val ff = c.fastForward(unification) ?: return sequenceOf()
+            return if (ff.full()) {
+                logger.count("Fast forwarded for $seedCandidate")
+                logger.log("\tFast forwarded from\n\t\t$c\n\t\t$ff")
+                sequenceOf(ff)
+            } else sequenceOf()
+        }
 
         return fill(c, unification, sizeBound <= 1).flatMap {
             if (it.depth() > hardDepthBound) emptySequence()

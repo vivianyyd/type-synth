@@ -30,11 +30,13 @@ class InitHole : Hole<Init>() {
         vars: Int,
         mustBeLeaf: Boolean
     ): List<SearchNode<Init>> {
-        val mustBeCompatible = unification.holeEquals(this)
+        val mustBeCompatible = unification.holeEqualsConstructors(this)
         val fn = if (mustBeLeaf) listOf()
         else if (mustBeCompatible.any { it is CArrow }) listOf(fnExpansion) else listOf()
         return listOf(InitV, InitL) + fn
     }
+
+    override fun fastForward(unification: Unification<Init>, vars: Int): SearchNode<Init>? = null
 }
 
 object InitConstrV : CVariable<Init>() {
@@ -83,6 +85,8 @@ class ElabVarHole : Hole<Elab>() {
         mustBeLeaf: Boolean
     ): List<SearchNode<Elab>> =
         (0 until vars + 1).map { ElabV(it) }
+
+    override fun fastForward(unification: Unification<Elab>, vars: Int): SearchNode<Elab>? = null
 
     // TODO Not sure if this does what I want to do.
 //    override fun equals(other: Any?) = other is ElabVarHole
@@ -413,30 +417,29 @@ class ConcreteHole(
     private fun hole() = ConcreteHole(mayHaveFresh, constraint, labelArities)
     private val fnExpansion by lazy { NArrow(hole(), hole(), true) }
     private val labelExpansions by lazy { labelArities.map { ConcreteL(it.key, List(it.value) { hole() }) } }
+    private fun variableExpansions(vars: Int) = when (constraint) {  // TODO weird that vars need to be sorted
+        null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { ConcreteV(it) }
+        NoVariables -> listOf()
+        is Only -> listOf(ConcreteV(constraint.v))
+    }
 
     private fun expansionsNoBound(
         unification: Unification<Concrete>,
         vars: Int,
     ): List<SearchNode<Concrete>> {
-        val variableExpansions = when (constraint) {  // TODO weird that vars need to be sorted
-            null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { ConcreteV(it) }
-            NoVariables -> listOf()
-            is Only -> listOf(ConcreteV(constraint.v))
-        }
-
-        val mustBeCompatible = unification.holeEquals(this)
+        val mustBeCompatible = unification.holeEqualsConstructors(this)
 
         if (mustBeCompatible.isNotEmpty()) {
-            if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return variableExpansions
+            if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return variableExpansions(vars)
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
-                }) return variableExpansions + fnExpansion // TODO Think about this
+                }) return variableExpansions(vars) + fnExpansion // TODO Think about this
             if (mustBeCompatible.first() is ConcreteConstrL && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) {
                 val label = (mustBeCompatible.first() as ConcreteConstrL).label
                 // TODO labelExpansions should be an array or something
-                return labelExpansions.filter { it.id == label } + variableExpansions
+                return labelExpansions.filter { it.id == label } + variableExpansions(vars)
             }
             // TODO can't do this for labels bc sometimes we have less constraints bc of lack of earlier commitments.
             //   we might erroneously commit to list of int bc we haven't yet committed to a different thing being list of bool.
@@ -445,10 +448,92 @@ class ConcreteHole(
         }
 
         // TODO hilariously, I think the order makes a difference here. we should sort by size tbh
-        return labelExpansions + variableExpansions + fnExpansion
+        return labelExpansions + variableExpansions(vars) + fnExpansion
     }
 
-//    private fun antiunify(types: List<CTypeConstructor<Concrete>>): ConstraintType<Concrete>
+    /** Returns the first node if top-level constructors all match; null if mismatch or empty. */
+    private fun takeFirstIfMatch(constrs: List<CTypeConstructor<Concrete>>): CTypeConstructor<Concrete>? {
+        return if (constrs.isEmpty()) null
+        else if (constrs.all { a -> constrs.all { b -> a.match(b) } }) {
+            // we only care about the top-level constructor, so it suffices to return an arbitrary element
+            constrs.first()
+        } else null
+    }
+
+    private fun antiunify(
+        exprs: List<ConstraintType<Concrete>>, unification: Unification<Concrete>, defaultVariable: ConcreteConstrV?
+    ): ConstraintType<Concrete>? {
+        if (exprs.isEmpty()) return defaultVariable  // might as well give this a try
+        if (exprs.any { it is ConcreteConstrV }) return defaultVariable
+
+        val insts = exprs.filterIsInstance<Instantiation<Concrete>>()
+        val constructors = exprs.filterIsInstance<CTypeConstructor<Concrete>>()
+
+        /** insts might point to more insts; follow all pointers and collect them.
+         * no need til fixpt, just keep separate unseen set and only add those' ptrs
+         * TABLED for now, since I think this is a waste of time when all we want is an approximation */
+        fun followInstPointers(
+            acc: List<Instantiation<Concrete>>, new: List<Instantiation<Concrete>>
+        ): List<Instantiation<Concrete>> = TODO()
+
+        val instsPointTo = insts.mapNotNull {
+            val instEqs = unification.holeEquals(it.holeId)
+            // Ignore the other insts if unconstrained, if it can be a variable, or constructors mismatch
+            if (instEqs.any { it is ConcreteConstrV }) null
+            else takeFirstIfMatch(instEqs.filterIsInstance<CTypeConstructor<Concrete>>())
+        }
+
+        if (constructors.isEmpty() || constructors.any { a -> constructors.any { b -> !a.match(b) } })
+            return defaultVariable
+
+        // We know they match now
+        val auConstrs = when (constructors.first()) {
+            is CArrow -> {
+                antiunify(constructors.map { (it as CArrow).l }, unification, defaultVariable)?.let { l ->
+                    antiunify(constructors.map { (it as CArrow).r }, unification, defaultVariable)?.let { r ->
+                        CArrow(l, r)
+                    }
+                }
+            }
+            is ConcreteConstrL -> {
+                val params = List(constructors.first().params.size) { i ->
+                    antiunify(constructors.map { (it as ConcreteConstrL).params[i] }, unification, defaultVariable)
+                }.filterNotNull()
+                if (params.size != constructors.first().params.size) null
+                else ConcreteConstrL(
+                    (constructors.first() as ConcreteConstrL).label,
+                    params
+                )
+            }
+            else -> error("Unreachable pattern match")
+        }
+
+        return if (auConstrs != null) takeFirstIfMatch(listOf(auConstrs) + instsPointTo) else null
+    }
+
+    override fun fastForward(unification: Unification<Concrete>, vars: Int): SearchNode<Concrete>? {
+        val vExp = variableExpansions(vars)
+        val defaultVariable =
+            if (vExp.isNotEmpty()) ConcreteConstrV(vExp.first().v, instId = 0)  // instId shouldn't matter, dummy here
+            else null  // Not sure if we want this
+
+        val antiunifies = unification.holeEquals(this)
+            .filter { it !is ProofVariable }  // let's ignore proof variables TODO this can be cleaned up but I don't wanna deal with it rn
+        return antiunify(antiunifies, unification, defaultVariable)?.toNode()
+    }
+}
+
+fun ConstraintType<Concrete>.toNode(): SearchNode<Concrete> = when (this) {
+    is CArrow -> NArrow(
+        this.l.toNode(),
+        this.r.toNode(),
+        contributesToDepth = false
+    ) // depth arg not quite right here, but good enough
+    is ConcreteConstrL -> ConcreteL(this.label, this.params.map { it.toNode() })
+    is ConcreteConstrV -> ConcreteV(this.v)
+    is Instantiation -> error("Unreachable pattern match - convert Instantiation to node")
+    is ProofVariable -> error("Unreachable pattern match - convert ProofVariable to node")
+    else -> error("Unreachable pattern match")
 }
 
 data class ConcreteConstrV(val v: Int, val instId: Int) : Substitutable<Concrete>() {
@@ -489,6 +574,10 @@ class Blank(
         vars: Int,
         mustBeLeaf: Boolean
     ): List<SearchNode<ConcreteSketch>> = listOf(this)
+
+    override fun fastForward(unification: Unification<ConcreteSketch>, vars: Int): SearchNode<ConcreteSketch>? {
+        TODO("Not yet implemented")
+    }
     // TODO expansions() should actually return the same as SketchHole, then we can filter when we're short circuiting
 }
 
@@ -595,7 +684,7 @@ open class SketchHole(
             is Only -> listOf(SketchV(constraint.v))
         }
 
-        val mustBeCompatible = unification.holeEquals(this)
+        val mustBeCompatible = unification.holeEqualsConstructors(this)
 
         if (mustBeCompatible.isNotEmpty()) {
             if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return variableExpansions
@@ -612,6 +701,10 @@ open class SketchHole(
         }
 
         return listOf(blankExpansion) + labelExpansions + variableExpansions + fnExpansion
+    }
+
+    override fun fastForward(unification: Unification<ConcreteSketch>, vars: Int): SearchNode<ConcreteSketch>? {
+        TODO("Not yet implemented")
     }
 
 //    private fun antiunify(types: List<CTypeConstructor<Concrete>>): ConstraintType<Concrete>

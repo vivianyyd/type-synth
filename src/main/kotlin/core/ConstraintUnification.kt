@@ -40,12 +40,12 @@ class ConstraintUnification<L : Language> : Unification<L> {
 
     override fun ok() = !error
 
-    override fun holeEquals(hole: Hole<L>): List<CTypeConstructor<L>> =
+    override fun holeEquals(hole: Int): List<ConstraintType<L>> =
         constraints.filterIsInstance<EqualityConstraint<L>>().mapNotNull {
-            if (it.l is Instantiation && (it.l as Instantiation<L>).n == hole) it.r
-            else if (it.r is Instantiation && (it.r as Instantiation<L>).n == hole) it.l
+            if (it.l is Instantiation && (it.l as Instantiation<L>).n.holeId == hole) it.r
+            else if (it.r is Instantiation && (it.r as Instantiation<L>).n.holeId == hole) it.l
             else null
-        }.filterIsInstance<CTypeConstructor<L>>()
+        }
 
     private fun addReferences(c: EqualityConstraint<L>) {
         val substitutables = c.substitutable()
@@ -99,8 +99,9 @@ class ConstraintUnification<L : Language> : Unification<L> {
                         ) as ConstraintType<L>
                         is SketchConstrL -> SketchConstrL(
                             n.label,
-                            n.params.map { newGuy(it as ConstraintType<L>) as ConstraintType<ConcreteSketch> }.toMutableList()
-                        )as ConstraintType<L>
+                            n.params.map { newGuy(it as ConstraintType<L>) as ConstraintType<ConcreteSketch> }
+                                .toMutableList()
+                        ) as ConstraintType<L>
                         is CVariable, InitConstrL, ElabConstrL, is ElaboratedConstrL -> n
                     }
 
