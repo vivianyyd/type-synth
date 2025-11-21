@@ -75,7 +75,7 @@ object ElabL : Leaf<Elab> {
     override fun variableNames() = emptySet<Int>()
 }
 
-class ElabVarHole() : Hole<Elab>() {
+class ElabVarHole : Hole<Elab>() {
     override fun toString() = "V_${holeId}_"
     override fun expansions(
         unification: Unification<Elab>,

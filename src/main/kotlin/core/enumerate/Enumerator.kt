@@ -31,27 +31,38 @@ fun <L : Language> enumerator(
 }
 
 fun <L : Language> solutions(
-    enumerators: List<Enumerator<L>>, sizeBound: Int, hardDepthBound: Int, iterative: Boolean, logger: Logger
+    enumerators: List<Enumerator<L>>,
+    sizeBound: Int,
+    hardDepthBound: Int,
+    skipSizeIfCantFillAll: Boolean,
+    iterative: Boolean,
+    logger: Logger
 ): List<Candidate<L>> {
     val holes = enumerators.map { it.seedCandidate.holes }
     if (holes.min() > sizeBound) throw IllegalArgumentException("Size bound not large enough for any concrete types")
 
     return if (iterative) {
         val sols = mutableListOf<Candidate<L>>()
-        for (depth in 1..hardDepthBound) {
+        for (depth in 2..hardDepthBound) {  // depth starts at 2 because outermost labels are 1
             logger.start("Depth $depth")
-            for (size in (holes.min() + depth - 1)..sizeBound) {
+            for (size in 1..sizeBound) {
                 logger.start("Size $size")
-                val currSols =
-                    enumerators.filter { it.seedCandidate.holes <= size }.flatMap { it.enumerate(size, depth) }
-                        .toList()
+                val currSols = enumerators
+                    .filter { if (skipSizeIfCantFillAll) it.seedCandidate.holes <= size else true }
+                    .flatMap { it.enumerate(size, depth) }
+                    .toList()
+                logger.stop("Size $size")
                 if (currSols.isNotEmpty()) {
                     sols.addAll(currSols)
+                    logger.log("STOPPED AT SIZE $size")
                     break
                 }
-                logger.stop("Size $size")
             }
             logger.stop("Depth $depth")
+            if (sols.isNotEmpty()) {
+                logger.log("STOPPED AT DEPTH $depth")
+                break
+            }
         }
         sols
     } else enumerators.flatMap { it.enumerate(sizeBound, hardDepthBound) }

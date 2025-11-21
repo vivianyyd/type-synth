@@ -17,17 +17,19 @@ fun main() {
 
     val configuration = Configuration(
         test = testFromFile,
-        runCVC = false,
+        runCVC = true,
         enumeratorTag = EnumeratorTag.DFSPriority,
         unificationTag = UnificationTag.Eager,
+        finalRoundSketches = false,
         sizeBound = 20,
         depthBound = 4
     )
 
     val logger = Logger(
         configuration = configuration,
-        logToFile = false,
-        verbosity = 4
+        logFilename = "dictchain-ff.log",
+        logToFile = true,
+        verbosity = 5
     )
 
     run(configuration, logger)
@@ -66,6 +68,7 @@ fun run(configuration: Configuration, logger: Logger) {
             listOf(makeEnumerator(initSeed, false)),
             configuration.sizeBound,
             configuration.depthBound,
+            skipSizeIfCantFillAll = true,
             iterative = false,
             logger
         )
@@ -78,9 +81,12 @@ fun run(configuration: Configuration, logger: Logger) {
             configuration.sizeBound,
             configuration.depthBound,
             iterative = false,
-            logger
+            skipSizeIfCantFillAll = true,
+            logger = logger
         )
     }
+
+    Hole.resetIds() // quality of life
 
     val concSeeds = time("Compile Elab to Concrete") {
         elabSols.mapNotNull {
@@ -101,7 +107,8 @@ fun run(configuration: Configuration, logger: Logger) {
             configuration.sizeBound,
             configuration.depthBound,
             iterative = true,
-            logger
+            skipSizeIfCantFillAll = !configuration.finalRoundSketches,
+            logger = logger
         )
     }
 

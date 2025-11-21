@@ -46,7 +46,7 @@ class Logger(
 
     fun stop(stage: String) {
         val (s, t) = stages.pop()
-        if (s != stage) error("Stopped a stage that wasn't started")
+        if (s != stage) error("Stopped a stage that wasn't started: $stage")
         dedent()
         log("END $stage : ${System.currentTimeMillis() - t} ms")
     }

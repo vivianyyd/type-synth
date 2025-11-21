@@ -71,9 +71,8 @@ class EagerUnification<L : Language>(
     }
 
     fun apply(fn: CArrow<L>, arg: ConstraintType<L>): ConstraintType<L>? =
-        unify(fn.params.first(), arg)?.let {
-            val out = if (fn.params.size == 2) fn.params[1] else CArrow(fn.params.drop(1))
-            applyBindings(out, it)
+        unify(fn.l, arg)?.let {
+            applyBindings(fn.r, it)
         }
 
     private fun holeConstraint(inst: Instantiation<L>, t: ConstraintType<L>) {

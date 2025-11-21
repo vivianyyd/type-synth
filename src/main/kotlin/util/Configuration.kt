@@ -11,6 +11,7 @@ data class Configuration(
     val runCVC: Boolean,
     val enumeratorTag: EnumeratorTag,
     val unificationTag: UnificationTag,
+    val finalRoundSketches: Boolean,
     val sizeBound: Int,
     val depthBound: Int
 ) : Config {

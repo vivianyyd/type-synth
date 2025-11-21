@@ -33,9 +33,12 @@ data class CArrow<L : Language> constructor(override val params: List<Constraint
     CTypeConstructor<L>(params) {
     constructor(l: ConstraintType<L>, r: ConstraintType<L>) : this(listOf(l, r))
 
+    val l = params[0]
+    val r = params[1]
+
     override fun match(other: CTypeConstructor<L>) = other is CArrow<L>
 
-    override fun toString() = "${if (params[0] is CArrow) "(${params[0]})" else "${params[0]}"} -> ${params[1]}"
+    override fun toString() = "${if (l is CArrow) "($l)" else "$l"} -> $r"
 }
 
 /**

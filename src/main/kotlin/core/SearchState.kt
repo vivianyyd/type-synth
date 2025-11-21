@@ -204,6 +204,11 @@ sealed interface Leaf<L : Language> : SearchNode<L> {
 sealed class Hole<L : Language> : SearchNode<L> {
     companion object {
         var nextHoleId = 0
+
+        /** Just so the numbers are smaller for readability. Only call me between phases */
+        fun resetIds() {
+            nextHoleId = 0
+        }
     }
 
     val holeId = nextHoleId++
@@ -226,6 +231,8 @@ sealed class Hole<L : Language> : SearchNode<L> {
         mustBeLeaf: Boolean
     ): List<Pair<SearchNode<L>, Commitment<L>>> =
         expansions(unification, vars, mustBeLeaf).map { it to (this to it) }
+
+    abstract fun fastForward(unification: Unification<L>, vars: Int): SearchNode<L>?
 
     override fun dfsLeftExpansions(
         unification: Unification<L>,
@@ -332,4 +339,18 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
     fun canonical() =
         types.all { it.variableNames().size == (it.variableNames().maxOrNull() ?: -1) + 1 }
     // We can also add it.noFreshSoleVarOnRHS()
+
+    fun fastForward(unification: Unification<L>): Candidate<L>? {
+        // TODO continue to commit until either full or null
+        val commitments =
+            types.map { t -> t.listHoles().map { it to it.fastForward(unification, t.variableNames().size) } }
+        return if (commitments.any { it.any { it.second == null } }) null
+        else Candidate(
+            names,
+            types.zip(commitments).map { (t, commits) ->
+                commits.fold(t) { acc: SearchNode<L>, commitment: Pair<Hole<L>, SearchNode<L>?> ->
+                    acc.replace(commitment.first, commitment.second!!)
+                }
+            })
+    }
 }

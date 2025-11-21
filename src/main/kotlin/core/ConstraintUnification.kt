@@ -92,7 +92,7 @@ class ConstraintUnification<L : Language> : Unification<L> {
                         is Instantiation -> if (n in hole.instantiations()) node.instantiate(
                             n.freshIdGen, n.inst
                         ) else n
-                        is CArrow -> CArrow(newGuy(n.params[0]), newGuy(n.params[1]))
+                        is CArrow -> CArrow(newGuy(n.l), newGuy(n.r))
                         is ConcreteConstrL -> ConcreteConstrL(
                             n.label,
                             n.params.map { newGuy(it as ConstraintType<L>) as ConstraintType<Concrete> }.toMutableList()
