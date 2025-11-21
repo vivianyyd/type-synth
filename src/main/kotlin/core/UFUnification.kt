@@ -95,7 +95,7 @@ class UFUnification<L : Language> private constructor(
                 (when (t) {
                     is CArrow -> CArrow(p)
                     is ConcreteConstrL -> ConcreteConstrL(t.label, p as List<ConstraintType<Concrete>>)
-                    is SketchConstrL -> SketchConstrL(t.label, p as List<ConstraintType<ConcreteSketch>>)
+                    is SketchConstrL -> SketchConstrL(t.label, p as List<ConstraintType<Sketch>>)
                     InitConstrL, ElabConstrL, is ElaboratedConstrL -> t
                 } as ConstraintType<L>)
             }

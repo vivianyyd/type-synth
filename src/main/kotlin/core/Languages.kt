@@ -550,7 +550,7 @@ data class ConcreteConstrL(val label: Int, override val params: List<ConstraintT
     override fun toString() = "L$label$params"
 }
 
-object ConcreteSketch : Language
+object Sketch : Language
 
 class Blank(
     mayHaveFresh: Boolean,
@@ -570,38 +570,38 @@ class Blank(
     override fun full() = false // TODO also not sure about this one
 
     override fun expansions(
-        unification: Unification<ConcreteSketch>,
+        unification: Unification<Sketch>,
         vars: Int,
         mustBeLeaf: Boolean
-    ): List<SearchNode<ConcreteSketch>> = listOf(this)
+    ): List<SearchNode<Sketch>> = listOf(this)
 
-    override fun fastForward(unification: Unification<ConcreteSketch>, vars: Int): SearchNode<ConcreteSketch>? {
+    override fun fastForward(unification: Unification<Sketch>, vars: Int): SearchNode<Sketch>? {
         TODO("Not yet implemented")
     }
     // TODO expansions() should actually return the same as SketchHole, then we can filter when we're short circuiting
 }
 
-data class SketchV(val v: Int) : Leaf<ConcreteSketch> {
+data class SketchV(val v: Int) : Leaf<Sketch> {
     override fun toString() = "V$v"
-    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<ConcreteSketch> =
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Sketch> =
         SketchConstrV(v, instId)
 
     override fun variableNames() = setOf(v)
 }
 
-data class SketchL(val id: Int, override val params: List<SearchNode<ConcreteSketch>>) :
-    Branch<ConcreteSketch>(params) {
+data class SketchL(val id: Int, override val params: List<SearchNode<Sketch>>) :
+    Branch<Sketch>(params) {
     override fun toString() = "L$id$params"
-    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<ConcreteSketch> =
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Sketch> =
         SketchConstrL.new(id, params.map { it.instantiate(freshIdGen, instId) })
 
-    override fun replace(hole: Hole<ConcreteSketch>, node: SearchNode<ConcreteSketch>) =
+    override fun replace(hole: Hole<Sketch>, node: SearchNode<Sketch>) =
         SketchL(id, params.map { it.replace(hole, node) })
 
     override fun replaceWithAll(
-        hole: Hole<ConcreteSketch>,
-        nodes: List<SearchNode<ConcreteSketch>>
-    ): List<SearchNode<ConcreteSketch>> {
+        hole: Hole<Sketch>,
+        nodes: List<SearchNode<Sketch>>
+    ): List<SearchNode<Sketch>> {
         val newParams = params.map { it.replaceWithAll(hole, nodes) }
         val changed = newParams.indexOfFirst { it.size > 1 }
         return newParams[changed].map {
@@ -610,8 +610,8 @@ data class SketchL(val id: Int, override val params: List<SearchNode<ConcreteSke
     }
 
     override fun dfsLeftExpansions(
-        unification: Unification<ConcreteSketch>, vars: Int, recursionBound: Int?
-    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> {
+        unification: Unification<Sketch>, vars: Int, recursionBound: Int?
+    ): List<Pair<SearchNode<Sketch>, Commitment<Sketch>>> {
         var cont = true
         return params.indices.flatMap { i ->
             if (cont) {
@@ -627,8 +627,8 @@ data class SketchL(val id: Int, override val params: List<SearchNode<ConcreteSke
     }
 
     override fun dfsPriorityExpansions(
-        unification: Unification<ConcreteSketch>, vars: Int, recursionBound: Int?
-    ): List<Pair<SearchNode<ConcreteSketch>, Commitment<ConcreteSketch>>> {
+        unification: Unification<Sketch>, vars: Int, recursionBound: Int?
+    ): List<Pair<SearchNode<Sketch>, Commitment<Sketch>>> {
         var cont = true
         return params.indices.sortedByDescending { params[it].priority() }.flatMap { i ->
             if (cont) {
@@ -648,17 +648,17 @@ open class SketchHole(
     protected val mayHaveFresh: Boolean,
     protected val constraint: Dependency?,
     protected val labelArities: Map<Int, Int>,
-) : Hole<ConcreteSketch>() {
+) : Hole<Sketch>() {
     // TODO We want to use the below equals when we are comparing new candidates against what we've seen before.
     //      but we want to use built in physical equals when we are looking to replace holes!
 //    override fun equals(other: Any?): Boolean = other is ConcreteHole
 //    override fun hashCode() = 0
 
     override fun expansions(
-        unification: Unification<ConcreteSketch>,
+        unification: Unification<Sketch>,
         vars: Int,
         mustBeLeaf: Boolean
-    ): List<SearchNode<ConcreteSketch>> =
+    ): List<SearchNode<Sketch>> =
         if (mustBeLeaf) expansionsNoBound(unification, vars).filter {
             when (it) {
                 is SketchL -> it.params.isEmpty()
@@ -675,9 +675,9 @@ open class SketchHole(
     private val blankExpansion by lazy { Blank(mayHaveFresh, constraint, labelArities) }
 
     private fun expansionsNoBound(
-        unification: Unification<ConcreteSketch>,
+        unification: Unification<Sketch>,
         vars: Int,
-    ): List<SearchNode<ConcreteSketch>> {
+    ): List<SearchNode<Sketch>> {
         val variableExpansions = when (constraint) {  // TODO weird that vars need to be sorted
             null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { SketchV(it) }
             NoVariables -> listOf()
@@ -703,24 +703,24 @@ open class SketchHole(
         return listOf(blankExpansion) + labelExpansions + variableExpansions + fnExpansion
     }
 
-    override fun fastForward(unification: Unification<ConcreteSketch>, vars: Int): SearchNode<ConcreteSketch>? {
+    override fun fastForward(unification: Unification<Sketch>, vars: Int): SearchNode<Sketch>? {
         TODO("Not yet implemented")
     }
 
 //    private fun antiunify(types: List<CTypeConstructor<Concrete>>): ConstraintType<Concrete>
 }
 
-data class SketchConstrV(val v: Int, val instId: Int) : Substitutable<ConcreteSketch>() {
+data class SketchConstrV(val v: Int, val instId: Int) : Substitutable<Sketch>() {
     override fun toString() = "V${v}-$instId"
 }
 
-data class SketchConstrL(val label: Int, override val params: List<ConstraintType<ConcreteSketch>>) :
-    CTypeConstructor<ConcreteSketch>(params) {
+data class SketchConstrL(val label: Int, override val params: List<ConstraintType<Sketch>>) :
+    CTypeConstructor<Sketch>(params) {
     companion object {
-        fun new(label: Int, params: List<ConstraintType<ConcreteSketch>>) = SketchConstrL(label, params.toMutableList())
+        fun new(label: Int, params: List<ConstraintType<Sketch>>) = SketchConstrL(label, params.toMutableList())
     }
 
-    override fun match(other: CTypeConstructor<ConcreteSketch>): Boolean =
+    override fun match(other: CTypeConstructor<Sketch>): Boolean =
         other is SketchConstrL && label == other.label
 
     override fun toString() = "L$label$params"
