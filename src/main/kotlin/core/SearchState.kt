@@ -29,13 +29,18 @@ sealed interface SearchNode<L : Language> {
      * TODO: maybe it should be sum instead of max. */
     fun priority(): Int
 
-    /** The total number of nodes, including holes. */
-    fun size(): Int
+    /** The cost of committing to this node.. */
+    fun costToCommit(): Int = 1
 
     /** The number of holes. */
     fun holes(): Int
 
+    /** All holes in the type. */
     fun listHoles(): List<Hole<L>>
+
+    /** Holes which can be filled in the type.
+     * In particular, excludes blanks. */
+    fun fillable(): List<Hole<L>>
 
     /** The number of nodes in the longest path from root to leaf, including holes. */
     fun depth(): Int
@@ -73,17 +78,14 @@ sealed interface SearchNode<L : Language> {
 sealed class Branch<L : Language>(open val params: List<SearchNode<L>>) : SearchNode<L> {
     override fun priority(): Int = params.maxOfOrNull { it.priority() } ?: 0
 
-    override fun size() = size
-    private val size by lazy {
-        1 + params.sumOf { it.size() }
-    }
-
     override fun holes() = holes
     private val holes by lazy {
         params.sumOf { it.holes() }
     }
 
     override fun listHoles(): List<Hole<L>> = params.flatMap { it.listHoles() }
+
+    override fun fillable(): List<Hole<L>> = params.flatMap { it.fillable() }
 
     override fun depth() = depth
     private val depth by lazy {
@@ -175,6 +177,7 @@ data class NArrow<L : Language> constructor(
 
 sealed interface Leaf<L : Language> : SearchNode<L> {
     override fun listHoles(): List<Hole<L>> = listOf()
+    override fun fillable(): List<Hole<L>> = listOf()
 
     override fun replace(hole: Hole<L>, node: SearchNode<L>): SearchNode<L> = this
 
@@ -195,7 +198,6 @@ sealed interface Leaf<L : Language> : SearchNode<L> {
         listOf(this to null)
 
     override fun priority() = 0
-    override fun size() = 1
     override fun holes() = 0
     override fun depth() = 1
     override fun full() = true
@@ -214,6 +216,8 @@ sealed class Hole<L : Language> : SearchNode<L> {
     val holeId = nextHoleId++
 
     override fun listHoles(): List<Hole<L>> = listOf(this)
+
+    override fun fillable(): List<Hole<L>> = listOf(this)
 
     override fun replace(hole: Hole<L>, node: SearchNode<L>): SearchNode<L> = if (hole == this) node else this
 
@@ -261,7 +265,6 @@ sealed class Hole<L : Language> : SearchNode<L> {
     open fun conflict() = conflicts++
     private var conflicts = 0
     override fun priority(): Int = 1 + conflicts
-    override fun size() = 1
     override fun holes() = 1
     override fun depth() = 1  // useful for recursion bound
     override fun full() = false
@@ -285,10 +288,6 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
 
     val assocList by lazy {
         names.zip(types)
-    }
-
-    val size by lazy {
-        types.sumOf { it.size() }
     }
 
     val holes by lazy {

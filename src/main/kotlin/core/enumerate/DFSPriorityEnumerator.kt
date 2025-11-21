@@ -14,20 +14,21 @@ class DFSPriorityEnumerator<L : Language>(
     private val mustPassNegatives: Boolean,
     private val logger: Logger,
 ) : Enumerator<L> {
+    /** Fills one hole. Returns the resulting Candidate and the cost of that single commitment made. */
     private fun fill(
         c: Candidate<L>,
         unification: Unification<L>,
         mustBeLeaf: Boolean
-    ): Sequence<Candidate<L>> {
+    ): Sequence<Pair<Candidate<L>, Int>> {
         val (iToFill, typeToFill) = c.types.withIndex()
             .maxBy { (_, it) -> it.priority() }  // todo want to order by hole depth, then remove bound on iterative deepening thing
 
         // New version doesn't use SearchNode-specified expansions for each node, only for the holes
-        val holeToFill = typeToFill.listHoles().maxBy { it.priority() }
+        val holeToFill = typeToFill.fillable().maxBy { it.priority() }
         return holeToFill.expansions(unification, typeToFill.variableNames().size, mustBeLeaf).asSequence()
-            .map { holeFill -> typeToFill.replace(holeToFill, holeFill) }
-            .map { newType ->
-                Candidate(c.names, c.types.mapIndexed { i, p -> if (iToFill == i) newType else p })
+            .map { holeFill -> typeToFill.replace(holeToFill, holeFill) to holeFill.costToCommit() }
+            .map { (newType, cost) ->
+                Candidate(c.names, c.types.mapIndexed { i, p -> if (iToFill == i) newType else p }) to cost
             }
     }
 
@@ -39,8 +40,15 @@ class DFSPriorityEnumerator<L : Language>(
     ): Sequence<Candidate<L>> {
         logger.count("Cands under $seedCandidate")
         logger.log("Exploring $c")
-        if (c.full()) {
-            logger.count("Cand under $seedCandidate passed all posexs")
+        if (c.types.all { it.fillable().isEmpty() }) {
+            val ff = c.fastForward(unification) ?: return sequenceOf()
+            return if (ff.full()) {
+                logger.count("Fast forwarded for $seedCandidate")
+                logger.log("\tFast forwarded from\n\t\t$c\n\t\t$ff")
+                sequenceOf(ff)
+            } else sequenceOf()
+            
+//            logger.count("Cand under $seedCandidate passed all posexs")
             return sequenceOf(c)
         }
         if (sizeBound == 0) {
@@ -53,16 +61,16 @@ class DFSPriorityEnumerator<L : Language>(
             } else sequenceOf()
         }
 
-        return fill(c, unification, sizeBound <= 1).flatMap {
-            if (it.depth() > hardDepthBound) emptySequence()
+        return fill(c, unification, sizeBound <= 1).flatMap { (newCand, cost) ->
+            if (newCand.depth() > hardDepthBound) emptySequence()
             else {
                 // TODO spawnAndRefine is slow for eager unification since we make a duplicate candidate.
                 //      but making a new unification is slow for other unifs.
-                val u = unification(it, query.posExsBeforeSubexprs)
+                val u = unification(newCand, query.posExsBeforeSubexprs)
                 if (u.ok()) {
-                    if (it.satisfiesDependencies())  // TODO ablate this
-                        commitPriority(it, u, sizeBound - 1, hardDepthBound)
-                    else emptySequence()
+                    if (newCand.satisfiesDependencies()) {  // TODO ablate this
+                        commitPriority(newCand, u, sizeBound - cost, hardDepthBound)
+                    } else emptySequence()
                 } else emptySequence()
             }
         }

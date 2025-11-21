@@ -1,0 +1,271 @@
+Cons
+Running CVC: true
+DFSPriority
+Eager
+Size bound: 20
+Depth bound: 4
+=====
+
+[17:55:07.783726]	BEG Init search
+[17:55:07.795664]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: _1_ -> _2_, tr: L
+[17:55:07.820082]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V -> _2_, tr: L
+[17:55:07.821328]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V -> _3_ -> _4_, tr: L
+[17:55:07.821758]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V -> V -> _4_, tr: L
+[17:55:07.822093]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V -> V -> V, tr: L
+[17:55:07.822504]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V -> V -> V, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V -> V -> V, tr: L
+[17:55:07.824507]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V -> V -> L, tr: L
+[17:55:07.824904]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V -> V -> L, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V -> V -> L, tr: L
+[17:55:07.825813]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V -> L -> _4_, tr: L
+[17:55:07.826431]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V -> L -> V, tr: L
+[17:55:07.826736]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V -> L -> V, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V -> L -> V, tr: L
+[17:55:07.827486]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V -> L -> L, tr: L
+[17:55:07.827842]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V -> L -> L, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V -> L -> L, tr: L
+[17:55:07.828685]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> _2_, tr: L
+[17:55:07.829550]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> _3_ -> _4_, tr: L
+[17:55:07.830194]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> V -> _4_, tr: L
+[17:55:07.830748]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> V -> V, tr: L
+[17:55:07.831055]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: L -> V -> V, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: L -> V -> V, tr: L
+[17:55:07.831546]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> V -> L, tr: L
+[17:55:07.831752]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: L -> V -> L, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: L -> V -> L, tr: L
+[17:55:07.832127]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> L -> _4_, tr: L
+[17:55:07.832520]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> L -> V, tr: L
+[17:55:07.832734]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: L -> L -> V, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: L -> L -> V, tr: L
+[17:55:07.833099]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> L -> L, tr: L
+[17:55:07.833382]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: L -> L -> L, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: L -> L -> L, tr: L
+[17:55:07.833829]	END Init search : 79 ms
+[17:55:07.834371]	BEG Compile Init to Elab
+[17:55:07.836310]	END Compile Init to Elab : 2 ms
+[17:55:07.836701]	BEG Elab search
+[17:55:07.836996]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V_5_ -> V_6_ -> V_7_, tr: L
+[17:55:07.838254]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> V_6_ -> V_7_, tr: L
+[17:55:07.838794]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> V0 -> V_7_, tr: L
+[17:55:07.839229]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> V0 -> V0, tr: L
+[17:55:07.839481]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V0 -> V0, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V0 -> V0, tr: L
+[17:55:07.839983]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> V0 -> V1, tr: L
+[17:55:07.840159]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V0 -> V1, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V0 -> V1, tr: L
+[17:55:07.841780]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> V_7_, tr: L
+[17:55:07.842182]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> V0, tr: L
+[17:55:07.842406]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> V0, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> V0, tr: L
+[17:55:07.842812]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> V1, tr: L
+[17:55:07.843060]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> V1, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> V1, tr: L
+[17:55:07.843712]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> V2, tr: L
+[17:55:07.843974]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> V2, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> V2, tr: L
+[17:55:07.844436]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V_8_ -> V_9_ -> L, tr: L
+[17:55:07.845101]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> V_9_ -> L, tr: L
+[17:55:07.845567]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> V0 -> L, tr: L
+[17:55:07.845792]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V0 -> L, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V0 -> L, tr: L
+[17:55:07.846356]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> L, tr: L
+[17:55:07.846575]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> L, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> V1 -> L, tr: L
+[17:55:07.846927]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V_10_ -> L -> V_11_, tr: L
+[17:55:07.847379]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> L -> V_11_, tr: L
+[17:55:07.847853]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> L -> V0, tr: L
+[17:55:07.848075]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> L -> V0, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> L -> V0, tr: L
+[17:55:07.848805]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> L -> V1, tr: L
+[17:55:07.849048]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> L -> V1, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> L -> V1, tr: L
+[17:55:07.849449]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V_12_ -> L -> L, tr: L
+[17:55:07.849911]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: V0 -> L -> L, tr: L
+[17:55:07.850180]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> L -> L, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: V0 -> L -> L, tr: L
+[17:55:07.850672]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> V_13_ -> V_14_, tr: L
+[17:55:07.851122]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> V0 -> V_14_, tr: L
+[17:55:07.851484]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> V0 -> V0, tr: L
+[17:55:07.851622]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: L -> V0 -> V0, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: L -> V0 -> V0, tr: L
+[17:55:07.851979]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> V0 -> V1, tr: L
+[17:55:07.852152]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: L -> V0 -> V1, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: L -> V0 -> V1, tr: L
+[17:55:07.852427]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> V_15_ -> L, tr: L
+[17:55:07.852671]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> V0 -> L, tr: L
+[17:55:07.852815]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: L -> V0 -> L, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: L -> V0 -> L, tr: L
+[17:55:07.853116]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> L -> V_16_, tr: L
+[17:55:07.853552]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> L -> V0, tr: L
+[17:55:07.853793]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: L -> L -> V0, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: L -> L -> V0, tr: L
+[17:55:07.854077]	Exploring 0: L, LLi: L, Li: L, []b: L, cons: L -> L -> L, tr: L
+[17:55:07.854263]		Fast forwarded from
+		0: L, LLi: L, Li: L, []b: L, cons: L -> L -> L, tr: L
+		0: L, LLi: L, Li: L, []b: L, cons: L -> L -> L, tr: L
+[17:55:07.854594]	END Elab search : 18 ms
+[17:55:07.855280]	BEG Compile Elab to Concrete
+[17:55:09.242588]	END Compile Elab to Concrete : 1387 ms
+[17:55:09.243245]	BEG Concrete search
+[17:55:09.243453]	BEG Depth 2
+[17:55:09.243519]	BEG Size 1
+[17:55:09.243642]	Exploring 0: L0[], LLi: L0[], Li: L0[], []b: L3[], cons: V0 -> V0 -> V0, tr: L3[]
+[17:55:09.243811]		Fast forwarded from
+		0: L0[], LLi: L0[], Li: L0[], []b: L3[], cons: V0 -> V0 -> V0, tr: L3[]
+		0: L0[], LLi: L0[], Li: L0[], []b: L3[], cons: V0 -> V0 -> V0, tr: L3[]
+[17:55:09.245033]	Exploring 0: L0[], LLi: L1[_0_s], Li: L1[_1_s], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.246866]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[_1_s], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.247550]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.248134]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.248715]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[☐17] -> L1[_4_s], tr: L6[]
+[17:55:09.249274]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[☐17] -> L1[☐21], tr: L6[]
+[17:55:09.249856]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[☐17] -> L1[L0[]], tr: L6[]
+[17:55:09.250493]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[☐17] -> L1[L6[]], tr: L6[]
+[17:55:09.251568]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[☐17] -> L1[V0], tr: L6[]
+[17:55:09.252102]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L0[]] -> L1[_4_s], tr: L6[]
+[17:55:09.252648]		Fast forwarded from
+		0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L0[]] -> L1[_4_s], tr: L6[]
+		0: L0[], LLi: L1[L0[]], Li: L1[L0[]], []b: L1[L0[]], cons: V0 -> L1[L0[]] -> L1[L0[]], tr: L6[]
+[17:55:09.253758]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L6[]] -> L1[_4_s], tr: L6[]
+[17:55:09.255017]		Fast forwarded from
+		0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L6[]] -> L1[_4_s], tr: L6[]
+		0: L0[], LLi: L1[L6[]], Li: L1[L6[]], []b: L1[L6[]], cons: V0 -> L1[L6[]] -> L1[L6[]], tr: L6[]
+[17:55:09.256117]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[V0] -> L1[_4_s], tr: L6[]
+[17:55:09.257005]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[L0[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.257886]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[L6[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.258725]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L0[]], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.259249]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L6[]], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.259966]	Exploring 0: L0[], LLi: L1[L0[]], Li: L1[_1_s], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.260453]	Exploring 0: L0[], LLi: L1[L6[]], Li: L1[_1_s], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.260732]	END Size 1 : 17 ms
+[17:55:09.260814]	BEG Size 2
+[17:55:09.260918]	Exploring 0: L0[], LLi: L0[], Li: L0[], []b: L3[], cons: V0 -> V0 -> V0, tr: L3[]
+[17:55:09.261053]		Fast forwarded from
+		0: L0[], LLi: L0[], Li: L0[], []b: L3[], cons: V0 -> V0 -> V0, tr: L3[]
+		0: L0[], LLi: L0[], Li: L0[], []b: L3[], cons: V0 -> V0 -> V0, tr: L3[]
+[17:55:09.261322]	Exploring 0: L0[], LLi: L1[_0_s], Li: L1[_1_s], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.261907]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[_1_s], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.262328]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.262744]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.263174]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[☐17] -> L1[_4_s], tr: L6[]
+[17:55:09.263713]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[☐17] -> L1[☐21], tr: L6[]
+[17:55:09.264267]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[☐17] -> L1[L0[]], tr: L6[]
+[17:55:09.264891]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[☐17] -> L1[L6[]], tr: L6[]
+[17:55:09.265552]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[☐17] -> L1[V0], tr: L6[]
+[17:55:09.266126]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L0[]] -> L1[_4_s], tr: L6[]
+[17:55:09.266678]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L0[]] -> L1[L0[]], tr: L6[]
+[17:55:09.266998]		Fast forwarded from
+		0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L0[]] -> L1[L0[]], tr: L6[]
+		0: L0[], LLi: L1[L0[]], Li: L1[L0[]], []b: L1[L0[]], cons: V0 -> L1[L0[]] -> L1[L0[]], tr: L6[]
+[17:55:09.267623]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L6[]] -> L1[_4_s], tr: L6[]
+[17:55:09.268036]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L6[]] -> L1[L6[]], tr: L6[]
+[17:55:09.268358]		Fast forwarded from
+		0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L6[]] -> L1[L6[]], tr: L6[]
+		0: L0[], LLi: L1[L6[]], Li: L1[L6[]], []b: L1[L6[]], cons: V0 -> L1[L6[]] -> L1[L6[]], tr: L6[]
+[17:55:09.269430]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[V0] -> L1[_4_s], tr: L6[]
+[17:55:09.270471]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[V0] -> L1[V0], tr: L6[]
+[17:55:09.271221]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[L0[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.271664]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[L0[]], cons: V0 -> L1[L0[]] -> L1[_4_s], tr: L6[]
+[17:55:09.271954]		Fast forwarded from
+		0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[L0[]], cons: V0 -> L1[L0[]] -> L1[_4_s], tr: L6[]
+		0: L0[], LLi: L1[L0[]], Li: L1[L0[]], []b: L1[L0[]], cons: V0 -> L1[L0[]] -> L1[L0[]], tr: L6[]
+[17:55:09.272629]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[L6[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.272982]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[L6[]], cons: V0 -> L1[L6[]] -> L1[_4_s], tr: L6[]
+[17:55:09.273254]		Fast forwarded from
+		0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[L6[]], cons: V0 -> L1[L6[]] -> L1[_4_s], tr: L6[]
+		0: L0[], LLi: L1[L6[]], Li: L1[L6[]], []b: L1[L6[]], cons: V0 -> L1[L6[]] -> L1[L6[]], tr: L6[]
+[17:55:09.273720]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[☐9], []b: L1[L6[]], cons: V0 -> L1[V0] -> L1[_4_s], tr: L6[]
+[17:55:09.274071]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L0[]], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.274314]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L0[]], []b: L1[☐13], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.274605]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L0[]], []b: L1[☐13], cons: V0 -> L1[L0[]] -> L1[_4_s], tr: L6[]
+[17:55:09.274940]		Fast forwarded from
+		0: L0[], LLi: L1[☐5], Li: L1[L0[]], []b: L1[☐13], cons: V0 -> L1[L0[]] -> L1[_4_s], tr: L6[]
+		0: L0[], LLi: L1[L0[]], Li: L1[L0[]], []b: L1[L0[]], cons: V0 -> L1[L0[]] -> L1[L0[]], tr: L6[]
+[17:55:09.275359]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L0[]], []b: L1[☐13], cons: V0 -> L1[V0] -> L1[_4_s], tr: L6[]
+[17:55:09.275707]		Fast forwarded from
+		0: L0[], LLi: L1[☐5], Li: L1[L0[]], []b: L1[☐13], cons: V0 -> L1[V0] -> L1[_4_s], tr: L6[]
+		0: L0[], LLi: L1[L1[L0[]]], Li: L1[L0[]], []b: L1[L6[]], cons: V0 -> L1[V0] -> L1[V0], tr: L6[]
+[17:55:09.276240]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L0[]], []b: L1[L0[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.276739]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L0[]], []b: L1[L6[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.277243]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L6[]], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.277707]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L6[]], []b: L1[☐13], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.278171]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L6[]], []b: L1[☐13], cons: V0 -> L1[L6[]] -> L1[_4_s], tr: L6[]
+[17:55:09.278709]		Fast forwarded from
+		0: L0[], LLi: L1[☐5], Li: L1[L6[]], []b: L1[☐13], cons: V0 -> L1[L6[]] -> L1[_4_s], tr: L6[]
+		0: L0[], LLi: L1[L6[]], Li: L1[L6[]], []b: L1[L6[]], cons: V0 -> L1[L6[]] -> L1[L6[]], tr: L6[]
+[17:55:09.279223]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L6[]], []b: L1[L0[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.279586]	Exploring 0: L0[], LLi: L1[☐5], Li: L1[L6[]], []b: L1[L6[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.280086]	Exploring 0: L0[], LLi: L1[L0[]], Li: L1[_1_s], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.280408]	Exploring 0: L0[], LLi: L1[L0[]], Li: L1[☐9], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.280723]	Exploring 0: L0[], LLi: L1[L0[]], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.281084]	Exploring 0: L0[], LLi: L1[L0[]], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L0[]] -> L1[_4_s], tr: L6[]
+[17:55:09.281389]		Fast forwarded from
+		0: L0[], LLi: L1[L0[]], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L0[]] -> L1[_4_s], tr: L6[]
+		0: L0[], LLi: L1[L0[]], Li: L1[L0[]], []b: L1[L0[]], cons: V0 -> L1[L0[]] -> L1[L0[]], tr: L6[]
+[17:55:09.282058]	Exploring 0: L0[], LLi: L1[L0[]], Li: L1[☐9], []b: L1[L0[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.282450]	Exploring 0: L0[], LLi: L1[L0[]], Li: L1[☐9], []b: L1[L6[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.282761]	Exploring 0: L0[], LLi: L1[L0[]], Li: L1[L0[]], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.283077]	Exploring 0: L0[], LLi: L1[L0[]], Li: L1[L6[]], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.283381]	Exploring 0: L0[], LLi: L1[L6[]], Li: L1[_1_s], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.283678]	Exploring 0: L0[], LLi: L1[L6[]], Li: L1[☐9], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.283956]	Exploring 0: L0[], LLi: L1[L6[]], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.284267]	Exploring 0: L0[], LLi: L1[L6[]], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L6[]] -> L1[_4_s], tr: L6[]
+[17:55:09.284598]		Fast forwarded from
+		0: L0[], LLi: L1[L6[]], Li: L1[☐9], []b: L1[☐13], cons: V0 -> L1[L6[]] -> L1[_4_s], tr: L6[]
+		0: L0[], LLi: L1[L6[]], Li: L1[L6[]], []b: L1[L6[]], cons: V0 -> L1[L6[]] -> L1[L6[]], tr: L6[]
+[17:55:09.285067]	Exploring 0: L0[], LLi: L1[L6[]], Li: L1[☐9], []b: L1[L0[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.285452]	Exploring 0: L0[], LLi: L1[L6[]], Li: L1[☐9], []b: L1[L6[]], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.285767]	Exploring 0: L0[], LLi: L1[L6[]], Li: L1[L0[]], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.286050]	Exploring 0: L0[], LLi: L1[L6[]], Li: L1[L6[]], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]
+[17:55:09.286283]	END Size 2 : 26 ms
+[17:55:09.286364]	STOPPED AT SIZE 2
+[17:55:09.286426]	END Depth 2 : 43 ms
+[17:55:09.286483]	STOPPED AT DEPTH 2
+[17:55:09.286544]	END Concrete search : 43 ms
+[17:55:09.286863]	Counts:
+Cands under 0: L, LLi: L, Li: L, []b: L, cons: _1_ -> _2_, tr: L=17
+Fast forwarded for 0: L, LLi: L, Li: L, []b: L, cons: _1_ -> _2_, tr: L=8
+Cands under 0: L, LLi: L, Li: L, []b: L, cons: V_5_ -> V_6_ -> V_7_, tr: L=9
+Fast forwarded for 0: L, LLi: L, Li: L, []b: L, cons: V_5_ -> V_6_ -> V_7_, tr: L=5
+Cands under 0: L, LLi: L, Li: L, []b: L, cons: V_8_ -> V_9_ -> L, tr: L=4
+Fast forwarded for 0: L, LLi: L, Li: L, []b: L, cons: V_8_ -> V_9_ -> L, tr: L=2
+Cands under 0: L, LLi: L, Li: L, []b: L, cons: V_10_ -> L -> V_11_, tr: L=4
+Fast forwarded for 0: L, LLi: L, Li: L, []b: L, cons: V_10_ -> L -> V_11_, tr: L=2
+Cands under 0: L, LLi: L, Li: L, []b: L, cons: V_12_ -> L -> L, tr: L=2
+Fast forwarded for 0: L, LLi: L, Li: L, []b: L, cons: V_12_ -> L -> L, tr: L=1
+Cands under 0: L, LLi: L, Li: L, []b: L, cons: L -> V_13_ -> V_14_, tr: L=4
+Fast forwarded for 0: L, LLi: L, Li: L, []b: L, cons: L -> V_13_ -> V_14_, tr: L=2
+Cands under 0: L, LLi: L, Li: L, []b: L, cons: L -> V_15_ -> L, tr: L=2
+Fast forwarded for 0: L, LLi: L, Li: L, []b: L, cons: L -> V_15_ -> L, tr: L=1
+Cands under 0: L, LLi: L, Li: L, []b: L, cons: L -> L -> V_16_, tr: L=2
+Fast forwarded for 0: L, LLi: L, Li: L, []b: L, cons: L -> L -> V_16_, tr: L=1
+Cands under 0: L, LLi: L, Li: L, []b: L, cons: L -> L -> L, tr: L=1
+Fast forwarded for 0: L, LLi: L, Li: L, []b: L, cons: L -> L -> L, tr: L=1
+Cands under 0: L0[], LLi: L0[], Li: L0[], []b: L3[], cons: V0 -> V0 -> V0, tr: L3[]=2
+Fast forwarded for 0: L0[], LLi: L0[], Li: L0[], []b: L3[], cons: V0 -> V0 -> V0, tr: L3[]=2
+Cands under 0: L0[], LLi: L1[_0_s], Li: L1[_1_s], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]=65
+Hit size bound under 0: L0[], LLi: L1[_0_s], Li: L1[_1_s], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]=29
+Fast forwarded for 0: L0[], LLi: L1[_0_s], Li: L1[_1_s], []b: L1[_2_s], cons: V0 -> L1[_3_s] -> L1[_4_s], tr: L6[]=11
+[17:55:09.286975]	Total time: 1547 ms

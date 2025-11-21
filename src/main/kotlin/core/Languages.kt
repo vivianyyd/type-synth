@@ -214,13 +214,13 @@ fun constraints(candidate: Candidate<Elab>, deps: DependencyAnalysis): Map<Param
     return constraints
 }
 
-fun compileElab(
+fun compileElabToInfo(
     seed: Candidate<Elab>,
     query: Query,
     oracle: Oracle,
     unification: UnificationForCandidate<Elaborated>,
     callSolver: Boolean
-): Candidate<Concrete>? {
+): ElaboratedInfo? {
     val deps = Elaborated.aritiesToDeps.getOrPut(seed.arities()) {
         DependencyAnalysis(
             query,
@@ -281,7 +281,6 @@ fun compileElab(
     var previousSolution = readCVC("$seedId") ?: return null
     var lastSuccessful = -1
     do {
-//        println("Getting smaller CVC results")
         val parser = CVCParser(previousSolution)
         val testName = "$seedId-smaller${counter++}"
         val cont = if (parser.sizes.isNotEmpty()) callCVC(
@@ -299,33 +298,66 @@ fun compileElab(
         CVCParser(readCVC(finalSuccessfulOutput)!!).sizes.mapKeys { gen.pySizeToL(it.key).label }
 
     if (labelArities.values.all { it > 0 }) return null  // TODO I need to change if we allow L<a>
-    fun compileParameter(node: SearchNode<Elaborated>, parameter: ParameterNode): SearchNode<Concrete> = when (node) {
-        is ElaboratedV -> ConcreteV(node.v)
-        is ElaboratedL -> ConcreteL(
-            node.label,
-            List(labelArities[node.label]!!) {  // TODO If unconstrained, 0 params?
-                ConcreteHole(deps.mayHaveFresh(parameter), constraints[parameter], labelArities)
-            })
-        is NArrow -> NArrow(compileParameter(node.l, parameter), compileParameter(node.r, parameter), true)
-        else -> throw Exception("Will never happen")
-    }
 
-    fun compile(name: String, paramsSoFar: Int, seed: SearchNode<Elaborated>): SearchNode<Concrete> = when (seed) {
-        is ElaboratedV, is ElaboratedL -> compileParameter(seed, ParameterNode(name, paramsSoFar))
-        is NArrow -> NArrow(
-            compileParameter(seed.l, ParameterNode(name, paramsSoFar)),
-            compile(name, paramsSoFar + 1, seed.r), false
-        )
-        is Hole -> throw Exception("Invariant broken")
-        else -> throw Exception("Will never happen due to types")
-    }
+    return ElaboratedInfo(elaboratedAfterEquivalences, labelArities, deps, constraints)
+}
 
-    return Candidate(
-        elaboratedAfterEquivalences.names,
-        elaboratedAfterEquivalences.names.zip(elaboratedAfterEquivalences.types)
-            .map { (name, ty) -> compile(name, 0, ty) },
+data class ElaboratedInfo(
+    val candidate: Candidate<Elaborated>,
+    val labelArities: Map<Int, Int>,
+    val deps: DependencyAnalysis,
+    val constraints: Map<ParameterNode, Dependency>
+)
+
+fun compileToConcrete(info: ElaboratedInfo) =
+    Candidate(
+        info.candidate.names,
+        info.candidate.names.zip(info.candidate.types).map { (name, ty) ->
+            compileConcreteType(name, 0, ty, info.labelArities, info.deps, info.constraints)
+        })
+
+fun compileConcreteParameter(
+    node: SearchNode<Elaborated>,
+    parameter: ParameterNode,
+    labelArities: Map<Int, Int>,
+    deps: DependencyAnalysis,
+    constraints: Map<ParameterNode, Dependency>
+): SearchNode<Concrete> = when (node) {
+    is ElaboratedV -> ConcreteV(node.v)
+    is ElaboratedL -> ConcreteL(
+        node.label,
+        List(labelArities[node.label]!!) {  // TODO If unconstrained, 0 params?
+            ConcreteHole(deps.mayHaveFresh(parameter), constraints[parameter], labelArities)
+        })
+    is NArrow -> NArrow(
+        compileConcreteParameter(node.l, parameter, labelArities, deps, constraints),
+        compileConcreteParameter(node.r, parameter, labelArities, deps, constraints),
+        true
+    )
+    else -> throw Exception("Will never happen")
+}
+
+fun compileConcreteType(
+    name: String,
+    paramsSoFar: Int,
+    seed: SearchNode<Elaborated>,
+    labelArities: Map<Int, Int>,
+    deps: DependencyAnalysis,
+    constraints: Map<ParameterNode, Dependency>
+): SearchNode<Concrete> = when (seed) {
+    is ElaboratedV, is ElaboratedL -> compileConcreteParameter(
+        seed,
+        ParameterNode(name, paramsSoFar),
+        labelArities,
+        deps,
         constraints
     )
+    is NArrow -> NArrow(
+        compileConcreteParameter(seed.l, ParameterNode(name, paramsSoFar), labelArities, deps, constraints),
+        compileConcreteType(name, paramsSoFar + 1, seed.r, labelArities, deps, constraints), false
+    )
+    is Hole -> throw Exception("Invariant broken")
+    else -> throw Exception("Will never happen due to types")
 }
 
 object Concrete : Language
@@ -511,6 +543,19 @@ class ConcreteHole(
         return if (auConstrs != null) takeFirstIfMatch(listOf(auConstrs) + instsPointTo) else null
     }
 
+    fun ConstraintType<Concrete>.toNode(): SearchNode<Concrete> = when (this) {
+        is CArrow -> NArrow(
+            this.l.toNode(),
+            this.r.toNode(),
+            contributesToDepth = false
+        ) // depth arg not quite right here, but good enough
+        is ConcreteConstrL -> ConcreteL(this.label, this.params.map { it.toNode() })
+        is ConcreteConstrV -> ConcreteV(this.v)
+        is Instantiation -> error("Unreachable pattern match - convert Instantiation to node")
+        is ProofVariable -> error("Unreachable pattern match - convert ProofVariable to node")
+        else -> error("Unreachable pattern match")
+    }
+
     override fun fastForward(unification: Unification<Concrete>, vars: Int): SearchNode<Concrete>? {
         val vExp = variableExpansions(vars)
         val defaultVariable =
@@ -521,19 +566,6 @@ class ConcreteHole(
             .filter { it !is ProofVariable }  // let's ignore proof variables TODO this can be cleaned up but I don't wanna deal with it rn
         return antiunify(antiunifies, unification, defaultVariable)?.toNode()
     }
-}
-
-fun ConstraintType<Concrete>.toNode(): SearchNode<Concrete> = when (this) {
-    is CArrow -> NArrow(
-        this.l.toNode(),
-        this.r.toNode(),
-        contributesToDepth = false
-    ) // depth arg not quite right here, but good enough
-    is ConcreteConstrL -> ConcreteL(this.label, this.params.map { it.toNode() })
-    is ConcreteConstrV -> ConcreteV(this.v)
-    is Instantiation -> error("Unreachable pattern match - convert Instantiation to node")
-    is ProofVariable -> error("Unreachable pattern match - convert ProofVariable to node")
-    else -> error("Unreachable pattern match")
 }
 
 data class ConcreteConstrV(val v: Int, val instId: Int) : Substitutable<Concrete>() {
@@ -550,6 +582,57 @@ data class ConcreteConstrL(val label: Int, override val params: List<ConstraintT
     override fun toString() = "L$label$params"
 }
 
+fun compileToSketch(info: ElaboratedInfo) =
+    Candidate(
+        info.candidate.names,
+        info.candidate.names.zip(info.candidate.types).map { (name, ty) ->
+            compileSketchType(name, 0, ty, info.labelArities, info.deps, info.constraints)
+        })
+
+fun compileSketchParameter(
+    node: SearchNode<Elaborated>,
+    parameter: ParameterNode,
+    labelArities: Map<Int, Int>,
+    deps: DependencyAnalysis,
+    constraints: Map<ParameterNode, Dependency>
+): SearchNode<Sketch> = when (node) {
+    is ElaboratedV -> SketchV(node.v)
+    is ElaboratedL -> SketchL(
+        node.label,
+        List(labelArities[node.label]!!) {  // TODO If unconstrained, 0 params?
+            SketchHole(deps.mayHaveFresh(parameter), constraints[parameter], labelArities)
+        })
+    is NArrow -> NArrow(
+        compileSketchParameter(node.l, parameter, labelArities, deps, constraints),
+        compileSketchParameter(node.r, parameter, labelArities, deps, constraints),
+        true
+    )
+    else -> throw Exception("Will never happen")
+}
+
+fun compileSketchType(
+    name: String,
+    paramsSoFar: Int,
+    seed: SearchNode<Elaborated>,
+    labelArities: Map<Int, Int>,
+    deps: DependencyAnalysis,
+    constraints: Map<ParameterNode, Dependency>
+): SearchNode<Sketch> = when (seed) {
+    is ElaboratedV, is ElaboratedL -> compileSketchParameter(
+        seed,
+        ParameterNode(name, paramsSoFar),
+        labelArities,
+        deps,
+        constraints
+    )
+    is NArrow -> NArrow(
+        compileSketchParameter(seed.l, ParameterNode(name, paramsSoFar), labelArities, deps, constraints),
+        compileSketchType(name, paramsSoFar + 1, seed.r, labelArities, deps, constraints), false
+    )
+    is Hole -> throw Exception("Invariant broken")
+    else -> throw Exception("Will never happen due to types")
+}
+
 object Sketch : Language
 
 class Blank(
@@ -557,15 +640,10 @@ class Blank(
     constraint: Dependency?,
     labelArities: Map<Int, Int>,
 ) : SketchHole(mayHaveFresh, constraint, labelArities) {
-    init {
-        TODO(
-            "It is a hole bc we want to be able to fast-forward." +
-                    "We want it to have priority zero and only expand to itself"
-        )
-    }
-
     override fun conflict() = 0
     override fun priority() = 0
+    override fun costToCommit(): Int = 0
+    override fun fillable(): List<Hole<Sketch>> = listOf()
     override fun holes() = 1 // TODO not sure about this one
     override fun full() = false // TODO also not sure about this one
 
@@ -575,10 +653,7 @@ class Blank(
         mustBeLeaf: Boolean
     ): List<SearchNode<Sketch>> = listOf(this)
 
-    override fun fastForward(unification: Unification<Sketch>, vars: Int): SearchNode<Sketch>? {
-        TODO("Not yet implemented")
-    }
-    // TODO expansions() should actually return the same as SketchHole, then we can filter when we're short circuiting
+    override fun toString() = "☐$holeId"
 }
 
 data class SketchV(val v: Int) : Leaf<Sketch> {
@@ -649,10 +724,7 @@ open class SketchHole(
     protected val constraint: Dependency?,
     protected val labelArities: Map<Int, Int>,
 ) : Hole<Sketch>() {
-    // TODO We want to use the below equals when we are comparing new candidates against what we've seen before.
-    //      but we want to use built in physical equals when we are looking to replace holes!
-//    override fun equals(other: Any?): Boolean = other is ConcreteHole
-//    override fun hashCode() = 0
+//    override fun toString() = "_${holeId}_s"
 
     override fun expansions(
         unification: Unification<Sketch>,
@@ -673,41 +745,118 @@ open class SketchHole(
     private val fnExpansion by lazy { NArrow(hole(), hole(), true) }
     private val labelExpansions by lazy { labelArities.map { SketchL(it.key, List(it.value) { hole() }) } }
     private val blankExpansion by lazy { Blank(mayHaveFresh, constraint, labelArities) }
+    private fun variableExpansions(vars: Int) = when (constraint) {  // TODO weird that vars need to be sorted
+        null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { SketchV(it) }
+        NoVariables -> listOf()
+        is Only -> listOf(SketchV(constraint.v))
+    }
 
     private fun expansionsNoBound(
         unification: Unification<Sketch>,
         vars: Int,
     ): List<SearchNode<Sketch>> {
-        val variableExpansions = when (constraint) {  // TODO weird that vars need to be sorted
-            null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { SketchV(it) }
-            NoVariables -> listOf()
-            is Only -> listOf(SketchV(constraint.v))
-        }
-
         val mustBeCompatible = unification.holeEqualsConstructors(this)
 
         if (mustBeCompatible.isNotEmpty()) {
-            if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return variableExpansions
+            if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return variableExpansions(vars)
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) return listOf(fnExpansion)
             if (mustBeCompatible.first() is SketchConstrL && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) {
-                val label = (mustBeCompatible.first() as ConcreteConstrL).label
-                // TODO look at concretehole
-                return labelExpansions.filter { it.id == label } + variableExpansions
+                val label = (mustBeCompatible.first() as SketchConstrL).label
+                // TODO look at the todo in concretehole
+                return labelExpansions.filter { it.id == label } + variableExpansions(vars)
             }
         }
+        return listOf(blankExpansion) + labelExpansions + variableExpansions(vars) + fnExpansion
+    }
 
-        return listOf(blankExpansion) + labelExpansions + variableExpansions + fnExpansion
+    /** Returns the first node if top-level constructors all match; null if mismatch or empty. */
+    private fun takeFirstIfMatch(constrs: List<CTypeConstructor<Sketch>>): CTypeConstructor<Sketch>? {
+        return if (constrs.isEmpty()) null
+        else if (constrs.all { a -> constrs.all { b -> a.match(b) } }) {
+            // we only care about the top-level constructor, so it suffices to return an arbitrary element
+            constrs.first()
+        } else null
+    }
+
+    private fun antiunify(
+        exprs: List<ConstraintType<Sketch>>, unification: Unification<Sketch>, defaultVariable: SketchConstrV?
+    ): ConstraintType<Sketch>? {
+        if (exprs.isEmpty()) return defaultVariable  // might as well give this a try
+        if (exprs.any { it is SketchConstrV }) return defaultVariable
+
+        val insts = exprs.filterIsInstance<Instantiation<Sketch>>()
+        val constructors = exprs.filterIsInstance<CTypeConstructor<Sketch>>()
+
+        /** insts might point to more insts; follow all pointers and collect them.
+         * no need til fixpt, just keep separate unseen set and only add those' ptrs
+         * TABLED for now, since I think this is a waste of time when all we want is an approximation */
+        fun followInstPointers(
+            acc: List<Instantiation<Sketch>>, new: List<Instantiation<Sketch>>
+        ): List<Instantiation<Sketch>> = TODO()
+
+        val instsPointTo = insts.mapNotNull {
+            val instEqs = unification.holeEquals(it.holeId)
+            // Ignore the other insts if unconstrained, if it can be a variable, or constructors mismatch
+            if (instEqs.any { it is SketchConstrV }) null
+            else takeFirstIfMatch(instEqs.filterIsInstance<CTypeConstructor<Sketch>>())
+        }
+
+        if (constructors.isEmpty() || constructors.any { a -> constructors.any { b -> !a.match(b) } })
+            return defaultVariable
+
+        // We know they match now
+        val auConstrs = when (constructors.first()) {
+            is CArrow -> {
+                antiunify(constructors.map { (it as CArrow).l }, unification, defaultVariable)?.let { l ->
+                    antiunify(constructors.map { (it as CArrow).r }, unification, defaultVariable)?.let { r ->
+                        CArrow(l, r)
+                    }
+                }
+            }
+            is SketchConstrL -> {
+                val params = List(constructors.first().params.size) { i ->
+                    antiunify(constructors.map { (it as SketchConstrL).params[i] }, unification, defaultVariable)
+                }.filterNotNull()
+                if (params.size != constructors.first().params.size) null
+                else SketchConstrL(
+                    (constructors.first() as SketchConstrL).label,
+                    params
+                )
+            }
+            else -> error("Unreachable pattern match")
+        }
+
+        return if (auConstrs != null) takeFirstIfMatch(listOf(auConstrs) + instsPointTo) else null
+    }
+
+    private fun ConstraintType<Sketch>.toNode(): SearchNode<Sketch> = when (this) {
+        is CArrow -> NArrow(
+            this.l.toNode(),
+            this.r.toNode(),
+            contributesToDepth = false
+        ) // depth arg not quite right here, but good enough
+        is SketchConstrL -> SketchL(this.label, this.params.map { it.toNode() })
+        is SketchConstrV -> SketchV(this.v)
+        is Instantiation -> error("Unreachable pattern match - convert Instantiation to node")
+        is ProofVariable -> error("Unreachable pattern match - convert ProofVariable to node")
+        else -> error("Unreachable pattern match")
     }
 
     override fun fastForward(unification: Unification<Sketch>, vars: Int): SearchNode<Sketch>? {
-        TODO("Not yet implemented")
-    }
+        val vExp = variableExpansions(vars)
+        val defaultVariable =
+            if (vExp.isNotEmpty()) SketchConstrV(vExp.first().v, instId = 0)  // instId shouldn't matter, dummy here
+            else null  // Not sure if we want this
 
-//    private fun antiunify(types: List<CTypeConstructor<Concrete>>): ConstraintType<Concrete>
+        val antiunifies = unification.holeEquals(this)
+            .filter { it !is ProofVariable }  // let's ignore proof variables TODO this can be cleaned up but I don't wanna deal with it rn
+
+        return antiunify(antiunifies, unification, defaultVariable)?.toNode()
+    }
 }
 
 data class SketchConstrV(val v: Int, val instId: Int) : Substitutable<Sketch>() {

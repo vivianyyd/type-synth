@@ -89,8 +89,8 @@ fun run(configuration: Configuration, logger: Logger) {
     Hole.resetIds() // quality of life
 
     val concSeeds = time("Compile Elab to Concrete") {
-        elabSols.mapNotNull {
-            compileElab(
+        val info = elabSols.mapNotNull {
+            compileElabToInfo(
                 it,
                 query,
                 oracle,
@@ -98,6 +98,8 @@ fun run(configuration: Configuration, logger: Logger) {
                 configuration.runCVC
             )
         }
+        if (configuration.finalRoundSketches) info.map { compileToSketch(it) }
+        else info.map { compileToConcrete(it) }
     }
     println(concSeeds.joinToString(separator = "\n"))
 
