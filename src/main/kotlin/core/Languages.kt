@@ -791,22 +791,15 @@ open class SketchHole(
         val insts = exprs.filterIsInstance<Instantiation<Sketch>>()
         val constructors = exprs.filterIsInstance<CTypeConstructor<Sketch>>()
 
+        if (constructors.isEmpty() || constructors.any { a -> constructors.any { b -> !a.match(b) } })
+            return defaultVariable
+
         /** insts might point to more insts; follow all pointers and collect them.
          * no need til fixpt, just keep separate unseen set and only add those' ptrs
          * TABLED for now, since I think this is a waste of time when all we want is an approximation */
         fun followInstPointers(
             acc: List<Instantiation<Sketch>>, new: List<Instantiation<Sketch>>
         ): List<Instantiation<Sketch>> = TODO()
-
-        val instsPointTo = insts.mapNotNull {
-            val instEqs = unification.holeEquals(it.holeId)
-            // Ignore the other insts if unconstrained, if it can be a variable, or constructors mismatch
-            if (instEqs.any { it is SketchConstrV }) null
-            else takeFirstIfMatch(instEqs.filterIsInstance<CTypeConstructor<Sketch>>())
-        }
-
-        if (constructors.isEmpty() || constructors.any { a -> constructors.any { b -> !a.match(b) } })
-            return defaultVariable
 
         // We know they match now
         val auConstrs = when (constructors.first()) {
@@ -830,7 +823,15 @@ open class SketchHole(
             else -> error("Unreachable pattern match")
         }
 
-        return if (auConstrs != null) takeFirstIfMatch(listOf(auConstrs) + instsPointTo) else null
+        return if (auConstrs != null) {
+            val instsPointTo = insts.mapNotNull {
+                val instEqs = unification.holeEquals(it.holeId)
+                // Ignore the other insts if unconstrained, if it can be a variable, or constructors mismatch
+                if (instEqs.any { it is SketchConstrV }) null
+                else takeFirstIfMatch(instEqs.filterIsInstance<CTypeConstructor<Sketch>>())
+            }
+            takeFirstIfMatch(listOf(auConstrs) + instsPointTo)
+        } else null
     }
 
     private fun ConstraintType<Sketch>.toNode(): SearchNode<Sketch> = when (this) {
@@ -850,6 +851,7 @@ open class SketchHole(
         val vExp = variableExpansions(vars)
         val defaultVariable =
             if (vExp.isNotEmpty()) SketchConstrV(vExp.first().v, instId = 0)  // instId shouldn't matter, dummy here
+//        if (constraint is Only) SketchConstrV(constraint.v, instId = 0)
             else null  // Not sure if we want this
 
         val antiunifies = unification.holeEquals(this)
