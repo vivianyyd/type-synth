@@ -39,24 +39,33 @@ class DFSPriorityEnumerator<L : Language>(
         hardDepthBound: Int
     ): Sequence<Candidate<L>> {
         logger.count("Cands under $seedCandidate")
-        logger.log("Exploring $c")
+        if (c.full()) return sequenceOf(c)
+
+        if (c.toString().contains("put: L1[V0, V1] -> V0 -> V1 -> L1[V0, V1]")) {
+            println("HELLO I am $c")
+            println("Fast forward:")
+            println(c.fastForward(unification))
+            TODO()
+        }
+
+
         if (c.types.all { it.fillable().isEmpty() }) {
+            logger.count("Only blanks left under $seedCandidate")
+            logger.count("Trying ff for $seedCandidate")
             val ff = c.fastForward(unification) ?: return sequenceOf()
             return if (ff.full()) {
-                logger.count("Fast forwarded for $seedCandidate")
-                logger.log("\tFast forwarded from\n\t\t$c\n\t\t$ff")
+                logger.count("Successful fast forward for $seedCandidate")
                 sequenceOf(ff)
             } else sequenceOf()
-            
-//            logger.count("Cand under $seedCandidate passed all posexs")
-            return sequenceOf(c)
         }
+
         if (sizeBound == 0) {
+            logger.log("Trying ff on $c")
             logger.count("Hit size bound under $seedCandidate")
+            logger.count("Trying ff for $seedCandidate")
             val ff = c.fastForward(unification) ?: return sequenceOf()
             return if (ff.full()) {
-                logger.count("Fast forwarded for $seedCandidate")
-                logger.log("\tFast forwarded from\n\t\t$c\n\t\t$ff")
+                logger.count("Successful fast forward for $seedCandidate")
                 sequenceOf(ff)
             } else sequenceOf()
         }
