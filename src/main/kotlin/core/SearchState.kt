@@ -252,15 +252,11 @@ sealed class Hole<L : Language> : SearchNode<L> {
     ): List<Pair<SearchNode<L>, Commitment<L>>> =
         expansionsWithCommits(unification, vars, recursionBound != null && recursionBound <= 1)
 
-    private val instantiations = mutableListOf<Instantiation<L>>()
-
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<L> {
-        val inst = Instantiation(this, this.holeId, freshIdGen.get(), instId, freshIdGen)
-        instantiations.add(inst)
-        return inst
+        return Instantiation(this, this.holeId, freshIdGen.get(), instId, freshIdGen)
     }
 
-    fun instantiations(): List<Instantiation<L>> = instantiations
+    fun instantiations(): List<Instantiation<L>> = TODO("No longer supported bc it takes too much memory")
 
     open fun conflict() = conflicts++
     private var conflicts = 0
