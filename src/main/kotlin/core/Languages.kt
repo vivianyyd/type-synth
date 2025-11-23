@@ -744,7 +744,7 @@ open class SketchHole(
     private fun hole() = SketchHole(mayHaveFresh, constraint, labelArities)
     private val fnExpansion by lazy { NArrow(hole(), hole(), true) }
     private val labelExpansions by lazy { labelArities.map { SketchL(it.key, List(it.value) { hole() }) } }
-    private val blankExpansion by lazy { Blank(mayHaveFresh, constraint, labelArities) }
+    val blankExpansion by lazy { Blank(mayHaveFresh, constraint, labelArities) }
     private fun variableExpansions(vars: Int) = when (constraint) {  // TODO weird that vars need to be sorted
         null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { SketchV(it) }
         NoVariables -> listOf()
@@ -857,7 +857,11 @@ open class SketchHole(
         val antiunifies = unification.holeEquals(this)
             .filter { it !is ProofVariable }  // let's ignore proof variables TODO this can be cleaned up but I don't wanna deal with it rn
 
-        return antiunify(antiunifies, unification, defaultVariable)?.toNode()
+//        println("Hole: $this\nAntiunifies: $antiunifies")
+
+        val tmp = antiunify(antiunifies, unification, defaultVariable)?.toNode()
+//        println("Result: $tmp")
+        return tmp
     }
 }
 

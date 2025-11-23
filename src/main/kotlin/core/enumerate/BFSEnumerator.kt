@@ -16,6 +16,6 @@ class BFSEnumerator<L : Language>(
         throw UnsupportedOperationException("No more BFS")
     }
 
-    override fun enumerate(sizeBound: Int, hardDepthBound: Int): List<Candidate<L>> =
+    override fun enumerate(sketches: Boolean, sizeBound: Int, hardDepthBound: Int): List<Candidate<L>> =
         throw UnsupportedOperationException("No more BFS")
 }

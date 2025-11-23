@@ -17,17 +17,17 @@ fun main() {
 
     val configuration = Configuration(
         test = testFromFile,
-        runCVC = true,
+        runCVC = false,
         enumeratorTag = EnumeratorTag.DFSPriority,
         unificationTag = UnificationTag.Eager,
-        finalRoundSketches = false,
+        finalRoundSketches = true,
         sizeBound = 20,
         depthBound = 4
     )
 
     val logger = Logger(
         configuration = configuration,
-        logFilename = "dictchain-ff.log",
+        logFilename = "dictchain-sketches.log",
         logToFile = true,
         verbosity = 5
     )
@@ -66,6 +66,7 @@ fun run(configuration: Configuration, logger: Logger) {
     val initSols = time("Init search") {
         solutions(
             listOf(makeEnumerator(initSeed, false)),
+            false,
             configuration.sizeBound,
             configuration.depthBound,
             skipSizeIfCantFillAll = true,
@@ -78,6 +79,7 @@ fun run(configuration: Configuration, logger: Logger) {
     val elabSols = time("Elab search") {
         solutions(
             elabSeeds.map { makeEnumerator(it, false) },
+            false,
             configuration.sizeBound,
             configuration.depthBound,
             iterative = false,
@@ -106,6 +108,7 @@ fun run(configuration: Configuration, logger: Logger) {
     val concSols = time("Concrete search") {
         solutions(
             concSeeds.map { makeEnumerator(it, true) },
+            configuration.finalRoundSketches,
             configuration.sizeBound,
             configuration.depthBound,
             iterative = true,

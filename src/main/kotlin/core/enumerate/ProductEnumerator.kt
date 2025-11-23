@@ -37,7 +37,7 @@ class ProductEnumerator<L : Language>(
         TODO()
     }
 
-    override fun enumerate(sizeBound: Int, hardDepthBound: Int): List<Candidate<L>> {
+    override fun enumerate(sketches: Boolean, sizeBound: Int, hardDepthBound: Int): List<Candidate<L>> {
         TODO()
 
 

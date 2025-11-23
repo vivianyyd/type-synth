@@ -41,7 +41,7 @@ class DFSLeftEnumerator<L : Language>(
         }
     }
 
-    override fun enumerate(sizeBound: Int, hardDepthBound: Int): List<Candidate<L>> {
+    override fun enumerate(sketches: Boolean, sizeBound: Int, hardDepthBound: Int): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
             unification(c, query.posExsBeforeSubexprs).ok() &&
                     (if (mustPassNegatives)

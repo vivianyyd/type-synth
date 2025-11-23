@@ -2,6 +2,7 @@ package core.enumerate
 
 import core.Candidate
 import core.Language
+import core.NArrow
 import core.UnificationForCandidate
 import core.enumerate.EnumeratorTag.*
 import query.Query
@@ -9,7 +10,7 @@ import util.Logger
 
 sealed interface Enumerator<L : Language> {
     val seedCandidate: Candidate<L>
-    fun enumerate(sizeBound: Int, hardDepthBound: Int): List<Candidate<L>>
+    fun enumerate(sketches: Boolean, sizeBound: Int, hardDepthBound: Int): List<Candidate<L>>
 }
 
 enum class EnumeratorTag {
@@ -32,6 +33,7 @@ fun <L : Language> enumerator(
 
 fun <L : Language> solutions(
     enumerators: List<Enumerator<L>>,
+    sketches: Boolean,
     sizeBound: Int,
     hardDepthBound: Int,
     skipSizeIfCantFillAll: Boolean,
@@ -48,8 +50,19 @@ fun <L : Language> solutions(
             for (size in 1..sizeBound) {
                 logger.start("Size $size")
                 val currSols = enumerators
-                    .filter { if (skipSizeIfCantFillAll) it.seedCandidate.holes <= size else true }
-                    .flatMap { it.enumerate(size, depth) }
+                    .filter {
+                        if (skipSizeIfCantFillAll) it.seedCandidate.holes <= size
+                        else if (sketches) enumerators.minOf {
+                            it.seedCandidate.types.fold(0) { acc, t ->
+                                acc + when (t) {
+                                    is NArrow -> t.holes()
+                                    else -> 0
+                                }
+                            }
+                        } <= size
+                        else true
+                    }
+                    .flatMap { it.enumerate(sketches, size, depth) }
                     .toList()
                 logger.stop("Size $size")
                 if (currSols.isNotEmpty()) {
@@ -65,5 +78,5 @@ fun <L : Language> solutions(
             }
         }
         sols
-    } else enumerators.flatMap { it.enumerate(sizeBound, hardDepthBound) }
+    } else enumerators.flatMap { it.enumerate(sketches, sizeBound, hardDepthBound) }
 }
