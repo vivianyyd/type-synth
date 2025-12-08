@@ -52,6 +52,8 @@ fun <L : Language> solutions(
                 val currSols = enumerators
                     .filter {
                         if (skipSizeIfCantFillAll) it.seedCandidate.holes <= size
+                        // TODO this skips the size unless we can fill all functions,
+                        //  which is not better than above / it's not what we want for blank trees
                         else if (sketches) enumerators.minOf {
                             it.seedCandidate.types.fold(0) { acc, t ->
                                 acc + when (t) {

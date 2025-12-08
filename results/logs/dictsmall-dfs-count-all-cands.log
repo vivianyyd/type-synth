@@ -1,0 +1,61 @@
+Dict
+Running CVC: false
+DFSPriority
+Eager
+Size bound: 20
+Depth bound: 4
+=====
+
+[12:44:54.808994]	BEG Init search
+[12:44:54.864645]	END Init search : 56 ms
+[12:44:54.865562]	BEG Compile Init to Elab
+[12:44:54.868847]	END Compile Init to Elab : 3 ms
+[12:44:54.869791]	BEG Elab search
+[12:44:54.903647]	END Elab search : 34 ms
+[12:44:54.904308]	BEG Compile Elab to Concrete
+[12:44:55.707993]	END Compile Elab to Concrete : 803 ms
+[12:44:55.708493]	BEG Concrete search
+[12:44:55.708639]	BEG Depth 2
+[12:44:55.708708]	BEG Size 1
+[12:44:55.708874]	END Size 1 : 0 ms
+[12:44:55.708952]	BEG Size 2
+[12:44:55.709056]	END Size 2 : 1 ms
+[12:44:55.709119]	BEG Size 3
+[12:44:55.709187]	END Size 3 : 0 ms
+[12:44:55.709253]	BEG Size 4
+[12:44:55.709319]	END Size 4 : 0 ms
+[12:44:55.709385]	BEG Size 5
+[12:44:55.709454]	END Size 5 : 0 ms
+[12:44:55.709523]	BEG Size 6
+[12:44:55.709591]	END Size 6 : 0 ms
+[12:44:55.709658]	BEG Size 7
+[12:44:55.709725]	END Size 7 : 0 ms
+[12:44:55.709788]	BEG Size 8
+[12:44:55.709858]	END Size 8 : 0 ms
+[12:44:55.709965]	BEG Size 9
+[12:44:55.710033]	END Size 9 : 1 ms
+[12:44:55.710097]	BEG Size 10
+[12:44:56.948942]	END Size 10 : 1238 ms
+[12:44:56.949091]	STOPPED AT SIZE 10
+[12:44:56.949176]	END Depth 2 : 1241 ms
+[12:44:56.949247]	STOPPED AT DEPTH 2
+[12:44:56.949353]	END Concrete search : 1241 ms
+[12:44:56.949689]	Counts:
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: _1_ -> _2_, tr: L=48
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_7_ -> V_8_ -> V_9_ -> V_10_, tr: L=23
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_11_ -> V_12_ -> V_13_ -> L, tr: L=8
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_14_ -> V_15_ -> L -> V_16_, tr: L=8
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_17_ -> V_18_ -> L -> L, tr: L=3
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_19_ -> L -> V_20_ -> V_21_, tr: L=8
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_22_ -> L -> V_23_ -> L, tr: L=3
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_24_ -> L -> L -> V_25_, tr: L=3
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_26_ -> L -> L -> L, tr: L=1
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> V_27_ -> V_28_ -> V_29_, tr: L=8
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> V_30_ -> V_31_ -> L, tr: L=3
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> V_32_ -> L -> V_33_, tr: L=3
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> V_34_ -> L -> L, tr: L=1
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> L -> V_35_ -> V_36_, tr: L=3
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> L -> V_37_ -> L, tr: L=1
+CHECKING A CANDIDATE UNDER 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> L -> L -> V_38_, tr: L=1
+CHECKING A CANDIDATE UNDER 0: L0[], 1: L0[], Ebi: L2[_0_, _1_], Eib: L2[_2_, _3_], Eii: L2[_4_, _5_], put: L2[_6_, _7_] -> V0 -> V1 -> L2[_8_, _9_], tr: L7[]=5002
+[12:44:56.949866]	Total time: 2148 ms
