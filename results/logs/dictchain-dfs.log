@@ -1,0 +1,319 @@
+dictchain
+Running CVC: false
+DFSPriority
+Eager
+Size bound: 20
+Depth bound: 4
+=====
+
+[12:08:27.748802]	BEG Init search
+[12:08:27.849985]	END Init search : 125 ms
+[12:08:27.850626]	BEG Compile Init to Elab
+[12:08:27.855177]	END Compile Init to Elab : 5 ms
+[12:08:27.856241]	BEG Elab search
+[12:08:28.249103]	END Elab search : 393 ms
+[12:08:28.249622]	BEG Compile Elab to Concrete
+[12:08:30.335117]	END Compile Elab to Concrete : 2086 ms
+[12:08:30.335952]	BEG Concrete search
+[12:08:30.336231]	BEG Depth 2
+[12:08:30.336319]	BEG Size 1
+[12:08:30.336391]	END Size 1 : 0 ms
+[12:08:30.336586]	BEG Size 2
+[12:08:30.336663]	END Size 2 : 0 ms
+[12:08:30.336772]	BEG Size 3
+[12:08:30.336843]	END Size 3 : 0 ms
+[12:08:30.336913]	BEG Size 4
+[12:08:30.336992]	END Size 4 : 0 ms
+[12:08:30.337073]	BEG Size 5
+[12:08:30.337159]	END Size 5 : 0 ms
+[12:08:30.337228]	BEG Size 6
+[12:08:30.337295]	END Size 6 : 0 ms
+[12:08:30.337357]	BEG Size 7
+[12:08:30.337437]	END Size 7 : 0 ms
+[12:08:30.337503]	BEG Size 8
+[12:08:30.337568]	END Size 8 : 0 ms
+[12:08:30.337639]	BEG Size 9
+[12:08:30.337714]	END Size 9 : 0 ms
+[12:08:30.337804]	BEG Size 10
+[12:08:30.337874]	END Size 10 : 0 ms
+[12:08:30.337950]	BEG Size 11
+[12:08:30.338016]	END Size 11 : 1 ms
+[12:08:30.338082]	BEG Size 12
+[12:08:30.338145]	END Size 12 : 0 ms
+[12:08:30.338208]	BEG Size 13
+[12:08:30.338272]	END Size 13 : 0 ms
+[12:08:30.338327]	BEG Size 14
+[12:08:30.338384]	END Size 14 : 0 ms
+[12:08:30.338436]	BEG Size 15
+[12:08:30.338494]	END Size 15 : 0 ms
+[12:08:30.338547]	BEG Size 16
+[12:08:30.338607]	END Size 16 : 0 ms
+[12:08:30.338661]	BEG Size 17
+[12:08:30.338739]	END Size 17 : 0 ms
+[12:08:30.338793]	BEG Size 18
+[12:11:51.252574]	END Size 18 : 200914 ms
+[12:11:51.252726]	STOPPED AT SIZE 18
+[12:11:51.252770]	END Depth 2 : 200916 ms
+[12:11:51.252806]	STOPPED AT DEPTH 2
+[12:11:51.252858]	END Concrete search : 200917 ms
+[12:11:51.253318]	Counts:
+Valid candidate under b: L, chain: _1_ -> _2_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: _4_ -> _5_=305
+CHECKING A CANDIDATE UNDER b: L, chain: _1_ -> _2_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: _4_ -> _5_=404
+Valid candidate under b: L, chain: V_12_ -> V_13_ -> V_14_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_15_ -> V_16_ -> V_17_ -> V_18_=124
+CHECKING A CANDIDATE UNDER b: L, chain: V_12_ -> V_13_ -> V_14_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_15_ -> V_16_ -> V_17_ -> V_18_=123
+Valid candidate under b: L, chain: V_19_ -> V_20_ -> V_21_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_22_ -> V_23_ -> V_24_ -> L=49
+CHECKING A CANDIDATE UNDER b: L, chain: V_19_ -> V_20_ -> V_21_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_22_ -> V_23_ -> V_24_ -> L=48
+Valid candidate under b: L, chain: V_25_ -> V_26_ -> V_27_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_28_ -> V_29_ -> L -> V_30_=49
+CHECKING A CANDIDATE UNDER b: L, chain: V_25_ -> V_26_ -> V_27_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_28_ -> V_29_ -> L -> V_30_=48
+Valid candidate under b: L, chain: V_31_ -> V_32_ -> V_33_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_34_ -> V_35_ -> L -> L=24
+CHECKING A CANDIDATE UNDER b: L, chain: V_31_ -> V_32_ -> V_33_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_34_ -> V_35_ -> L -> L=23
+Valid candidate under b: L, chain: V_36_ -> V_37_ -> V_38_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_39_ -> L -> V_40_ -> V_41_=49
+CHECKING A CANDIDATE UNDER b: L, chain: V_36_ -> V_37_ -> V_38_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_39_ -> L -> V_40_ -> V_41_=48
+Valid candidate under b: L, chain: V_42_ -> V_43_ -> V_44_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_45_ -> L -> V_46_ -> L=24
+CHECKING A CANDIDATE UNDER b: L, chain: V_42_ -> V_43_ -> V_44_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_45_ -> L -> V_46_ -> L=23
+Valid candidate under b: L, chain: V_47_ -> V_48_ -> V_49_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_50_ -> L -> L -> V_51_=24
+CHECKING A CANDIDATE UNDER b: L, chain: V_47_ -> V_48_ -> V_49_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_50_ -> L -> L -> V_51_=23
+Valid candidate under b: L, chain: V_52_ -> V_53_ -> V_54_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_55_ -> L -> L -> L=14
+CHECKING A CANDIDATE UNDER b: L, chain: V_52_ -> V_53_ -> V_54_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_55_ -> L -> L -> L=13
+Valid candidate under b: L, chain: V_56_ -> V_57_ -> V_58_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_59_ -> V_60_ -> V_61_=49
+CHECKING A CANDIDATE UNDER b: L, chain: V_56_ -> V_57_ -> V_58_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_59_ -> V_60_ -> V_61_=48
+Valid candidate under b: L, chain: V_62_ -> V_63_ -> V_64_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_65_ -> V_66_ -> L=24
+CHECKING A CANDIDATE UNDER b: L, chain: V_62_ -> V_63_ -> V_64_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_65_ -> V_66_ -> L=23
+Valid candidate under b: L, chain: V_67_ -> V_68_ -> V_69_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_70_ -> L -> V_71_=24
+CHECKING A CANDIDATE UNDER b: L, chain: V_67_ -> V_68_ -> V_69_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_70_ -> L -> V_71_=23
+Valid candidate under b: L, chain: V_72_ -> V_73_ -> V_74_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_75_ -> L -> L=14
+CHECKING A CANDIDATE UNDER b: L, chain: V_72_ -> V_73_ -> V_74_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_75_ -> L -> L=13
+Valid candidate under b: L, chain: V_76_ -> V_77_ -> V_78_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_79_ -> V_80_=24
+CHECKING A CANDIDATE UNDER b: L, chain: V_76_ -> V_77_ -> V_78_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_79_ -> V_80_=23
+Valid candidate under b: L, chain: V_81_ -> V_82_ -> V_83_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_84_ -> L=14
+CHECKING A CANDIDATE UNDER b: L, chain: V_81_ -> V_82_ -> V_83_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_84_ -> L=13
+Valid candidate under b: L, chain: V_85_ -> V_86_ -> V_87_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_88_=14
+CHECKING A CANDIDATE UNDER b: L, chain: V_85_ -> V_86_ -> V_87_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_88_=13
+Valid candidate under b: L, chain: V_89_ -> V_90_ -> V_91_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=9
+CHECKING A CANDIDATE UNDER b: L, chain: V_89_ -> V_90_ -> V_91_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=8
+Valid candidate under b: L, chain: V_92_ -> V_93_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_94_ -> V_95_ -> V_96_ -> V_97_=50
+CHECKING A CANDIDATE UNDER b: L, chain: V_92_ -> V_93_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_94_ -> V_95_ -> V_96_ -> V_97_=49
+Valid candidate under b: L, chain: V_98_ -> V_99_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_100_ -> V_101_ -> V_102_ -> L=20
+CHECKING A CANDIDATE UNDER b: L, chain: V_98_ -> V_99_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_100_ -> V_101_ -> V_102_ -> L=19
+Valid candidate under b: L, chain: V_103_ -> V_104_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_105_ -> V_106_ -> L -> V_107_=20
+CHECKING A CANDIDATE UNDER b: L, chain: V_103_ -> V_104_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_105_ -> V_106_ -> L -> V_107_=19
+Valid candidate under b: L, chain: V_108_ -> V_109_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_110_ -> V_111_ -> L -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_108_ -> V_109_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_110_ -> V_111_ -> L -> L=9
+Valid candidate under b: L, chain: V_112_ -> V_113_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_114_ -> L -> V_115_ -> V_116_=20
+CHECKING A CANDIDATE UNDER b: L, chain: V_112_ -> V_113_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_114_ -> L -> V_115_ -> V_116_=19
+Valid candidate under b: L, chain: V_117_ -> V_118_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_119_ -> L -> V_120_ -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_117_ -> V_118_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_119_ -> L -> V_120_ -> L=9
+Valid candidate under b: L, chain: V_121_ -> V_122_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_123_ -> L -> L -> V_124_=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_121_ -> V_122_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_123_ -> L -> L -> V_124_=9
+Valid candidate under b: L, chain: V_125_ -> V_126_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_127_ -> L -> L -> L=6
+CHECKING A CANDIDATE UNDER b: L, chain: V_125_ -> V_126_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_127_ -> L -> L -> L=5
+Valid candidate under b: L, chain: V_128_ -> V_129_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_130_ -> V_131_ -> V_132_=20
+CHECKING A CANDIDATE UNDER b: L, chain: V_128_ -> V_129_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_130_ -> V_131_ -> V_132_=19
+Valid candidate under b: L, chain: V_133_ -> V_134_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_135_ -> V_136_ -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_133_ -> V_134_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_135_ -> V_136_ -> L=9
+Valid candidate under b: L, chain: V_137_ -> V_138_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_139_ -> L -> V_140_=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_137_ -> V_138_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_139_ -> L -> V_140_=9
+Valid candidate under b: L, chain: V_141_ -> V_142_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_143_ -> L -> L=6
+CHECKING A CANDIDATE UNDER b: L, chain: V_141_ -> V_142_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_143_ -> L -> L=5
+Valid candidate under b: L, chain: V_144_ -> V_145_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_146_ -> V_147_=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_144_ -> V_145_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_146_ -> V_147_=9
+Valid candidate under b: L, chain: V_148_ -> V_149_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_150_ -> L=6
+CHECKING A CANDIDATE UNDER b: L, chain: V_148_ -> V_149_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_150_ -> L=5
+Valid candidate under b: L, chain: V_151_ -> V_152_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_153_=6
+CHECKING A CANDIDATE UNDER b: L, chain: V_151_ -> V_152_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_153_=5
+Valid candidate under b: L, chain: V_154_ -> V_155_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=4
+CHECKING A CANDIDATE UNDER b: L, chain: V_154_ -> V_155_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=3
+Valid candidate under b: L, chain: V_156_ -> L -> V_157_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_158_ -> V_159_ -> V_160_ -> V_161_=50
+CHECKING A CANDIDATE UNDER b: L, chain: V_156_ -> L -> V_157_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_158_ -> V_159_ -> V_160_ -> V_161_=49
+Valid candidate under b: L, chain: V_162_ -> L -> V_163_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_164_ -> V_165_ -> V_166_ -> L=20
+CHECKING A CANDIDATE UNDER b: L, chain: V_162_ -> L -> V_163_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_164_ -> V_165_ -> V_166_ -> L=19
+Valid candidate under b: L, chain: V_167_ -> L -> V_168_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_169_ -> V_170_ -> L -> V_171_=20
+CHECKING A CANDIDATE UNDER b: L, chain: V_167_ -> L -> V_168_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_169_ -> V_170_ -> L -> V_171_=19
+Valid candidate under b: L, chain: V_172_ -> L -> V_173_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_174_ -> V_175_ -> L -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_172_ -> L -> V_173_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_174_ -> V_175_ -> L -> L=9
+Valid candidate under b: L, chain: V_176_ -> L -> V_177_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_178_ -> L -> V_179_ -> V_180_=20
+CHECKING A CANDIDATE UNDER b: L, chain: V_176_ -> L -> V_177_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_178_ -> L -> V_179_ -> V_180_=19
+Valid candidate under b: L, chain: V_181_ -> L -> V_182_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_183_ -> L -> V_184_ -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_181_ -> L -> V_182_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_183_ -> L -> V_184_ -> L=9
+Valid candidate under b: L, chain: V_185_ -> L -> V_186_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_187_ -> L -> L -> V_188_=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_185_ -> L -> V_186_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_187_ -> L -> L -> V_188_=9
+Valid candidate under b: L, chain: V_189_ -> L -> V_190_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_191_ -> L -> L -> L=6
+CHECKING A CANDIDATE UNDER b: L, chain: V_189_ -> L -> V_190_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_191_ -> L -> L -> L=5
+Valid candidate under b: L, chain: V_192_ -> L -> V_193_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_194_ -> V_195_ -> V_196_=20
+CHECKING A CANDIDATE UNDER b: L, chain: V_192_ -> L -> V_193_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_194_ -> V_195_ -> V_196_=19
+Valid candidate under b: L, chain: V_197_ -> L -> V_198_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_199_ -> V_200_ -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_197_ -> L -> V_198_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_199_ -> V_200_ -> L=9
+Valid candidate under b: L, chain: V_201_ -> L -> V_202_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_203_ -> L -> V_204_=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_201_ -> L -> V_202_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_203_ -> L -> V_204_=9
+Valid candidate under b: L, chain: V_205_ -> L -> V_206_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_207_ -> L -> L=6
+CHECKING A CANDIDATE UNDER b: L, chain: V_205_ -> L -> V_206_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_207_ -> L -> L=5
+Valid candidate under b: L, chain: V_208_ -> L -> V_209_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_210_ -> V_211_=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_208_ -> L -> V_209_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_210_ -> V_211_=9
+Valid candidate under b: L, chain: V_212_ -> L -> V_213_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_214_ -> L=6
+CHECKING A CANDIDATE UNDER b: L, chain: V_212_ -> L -> V_213_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_214_ -> L=5
+Valid candidate under b: L, chain: V_215_ -> L -> V_216_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_217_=6
+CHECKING A CANDIDATE UNDER b: L, chain: V_215_ -> L -> V_216_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_217_=5
+Valid candidate under b: L, chain: V_218_ -> L -> V_219_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=4
+CHECKING A CANDIDATE UNDER b: L, chain: V_218_ -> L -> V_219_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=3
+Valid candidate under b: L, chain: V_220_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_221_ -> V_222_ -> V_223_ -> V_224_=25
+CHECKING A CANDIDATE UNDER b: L, chain: V_220_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_221_ -> V_222_ -> V_223_ -> V_224_=24
+Valid candidate under b: L, chain: V_225_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_226_ -> V_227_ -> V_228_ -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_225_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_226_ -> V_227_ -> V_228_ -> L=9
+Valid candidate under b: L, chain: V_229_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_230_ -> V_231_ -> L -> V_232_=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_229_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_230_ -> V_231_ -> L -> V_232_=9
+Valid candidate under b: L, chain: V_233_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_234_ -> V_235_ -> L -> L=5
+CHECKING A CANDIDATE UNDER b: L, chain: V_233_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_234_ -> V_235_ -> L -> L=4
+Valid candidate under b: L, chain: V_236_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_237_ -> L -> V_238_ -> V_239_=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_236_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_237_ -> L -> V_238_ -> V_239_=9
+Valid candidate under b: L, chain: V_240_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_241_ -> L -> V_242_ -> L=5
+CHECKING A CANDIDATE UNDER b: L, chain: V_240_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_241_ -> L -> V_242_ -> L=4
+Valid candidate under b: L, chain: V_243_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_244_ -> L -> L -> V_245_=5
+CHECKING A CANDIDATE UNDER b: L, chain: V_243_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_244_ -> L -> L -> V_245_=4
+Valid candidate under b: L, chain: V_246_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_247_ -> L -> L -> L=3
+CHECKING A CANDIDATE UNDER b: L, chain: V_246_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_247_ -> L -> L -> L=2
+Valid candidate under b: L, chain: V_248_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_249_ -> V_250_ -> V_251_=10
+CHECKING A CANDIDATE UNDER b: L, chain: V_248_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_249_ -> V_250_ -> V_251_=9
+Valid candidate under b: L, chain: V_252_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_253_ -> V_254_ -> L=5
+CHECKING A CANDIDATE UNDER b: L, chain: V_252_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_253_ -> V_254_ -> L=4
+Valid candidate under b: L, chain: V_255_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_256_ -> L -> V_257_=5
+CHECKING A CANDIDATE UNDER b: L, chain: V_255_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_256_ -> L -> V_257_=4
+Valid candidate under b: L, chain: V_258_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_259_ -> L -> L=3
+CHECKING A CANDIDATE UNDER b: L, chain: V_258_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_259_ -> L -> L=2
+Valid candidate under b: L, chain: V_260_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_261_ -> V_262_=5
+CHECKING A CANDIDATE UNDER b: L, chain: V_260_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_261_ -> V_262_=4
+Valid candidate under b: L, chain: V_263_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_264_ -> L=3
+CHECKING A CANDIDATE UNDER b: L, chain: V_263_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_264_ -> L=2
+Valid candidate under b: L, chain: V_265_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_266_=3
+CHECKING A CANDIDATE UNDER b: L, chain: V_265_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_266_=2
+Valid candidate under b: L, chain: V_267_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=2
+CHECKING A CANDIDATE UNDER b: L, chain: V_267_ -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=1
+Valid candidate under b: L, chain: L -> V_268_ -> V_269_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_270_ -> V_271_ -> V_272_ -> V_273_=50
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_268_ -> V_269_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_270_ -> V_271_ -> V_272_ -> V_273_=49
+Valid candidate under b: L, chain: L -> V_274_ -> V_275_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_276_ -> V_277_ -> V_278_ -> L=20
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_274_ -> V_275_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_276_ -> V_277_ -> V_278_ -> L=19
+Valid candidate under b: L, chain: L -> V_279_ -> V_280_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_281_ -> V_282_ -> L -> V_283_=20
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_279_ -> V_280_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_281_ -> V_282_ -> L -> V_283_=19
+Valid candidate under b: L, chain: L -> V_284_ -> V_285_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_286_ -> V_287_ -> L -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_284_ -> V_285_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_286_ -> V_287_ -> L -> L=9
+Valid candidate under b: L, chain: L -> V_288_ -> V_289_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_290_ -> L -> V_291_ -> V_292_=20
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_288_ -> V_289_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_290_ -> L -> V_291_ -> V_292_=19
+Valid candidate under b: L, chain: L -> V_293_ -> V_294_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_295_ -> L -> V_296_ -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_293_ -> V_294_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_295_ -> L -> V_296_ -> L=9
+Valid candidate under b: L, chain: L -> V_297_ -> V_298_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_299_ -> L -> L -> V_300_=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_297_ -> V_298_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_299_ -> L -> L -> V_300_=9
+Valid candidate under b: L, chain: L -> V_301_ -> V_302_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_303_ -> L -> L -> L=6
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_301_ -> V_302_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_303_ -> L -> L -> L=5
+Valid candidate under b: L, chain: L -> V_304_ -> V_305_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_306_ -> V_307_ -> V_308_=20
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_304_ -> V_305_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_306_ -> V_307_ -> V_308_=19
+Valid candidate under b: L, chain: L -> V_309_ -> V_310_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_311_ -> V_312_ -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_309_ -> V_310_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_311_ -> V_312_ -> L=9
+Valid candidate under b: L, chain: L -> V_313_ -> V_314_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_315_ -> L -> V_316_=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_313_ -> V_314_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_315_ -> L -> V_316_=9
+Valid candidate under b: L, chain: L -> V_317_ -> V_318_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_319_ -> L -> L=6
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_317_ -> V_318_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_319_ -> L -> L=5
+Valid candidate under b: L, chain: L -> V_320_ -> V_321_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_322_ -> V_323_=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_320_ -> V_321_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_322_ -> V_323_=9
+Valid candidate under b: L, chain: L -> V_324_ -> V_325_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_326_ -> L=6
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_324_ -> V_325_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_326_ -> L=5
+Valid candidate under b: L, chain: L -> V_327_ -> V_328_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_329_=6
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_327_ -> V_328_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_329_=5
+Valid candidate under b: L, chain: L -> V_330_ -> V_331_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=4
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_330_ -> V_331_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=3
+Valid candidate under b: L, chain: L -> V_332_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_333_ -> V_334_ -> V_335_ -> V_336_=25
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_332_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_333_ -> V_334_ -> V_335_ -> V_336_=24
+Valid candidate under b: L, chain: L -> V_337_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_338_ -> V_339_ -> V_340_ -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_337_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_338_ -> V_339_ -> V_340_ -> L=9
+Valid candidate under b: L, chain: L -> V_341_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_342_ -> V_343_ -> L -> V_344_=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_341_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_342_ -> V_343_ -> L -> V_344_=9
+Valid candidate under b: L, chain: L -> V_345_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_346_ -> V_347_ -> L -> L=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_345_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_346_ -> V_347_ -> L -> L=4
+Valid candidate under b: L, chain: L -> V_348_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_349_ -> L -> V_350_ -> V_351_=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_348_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_349_ -> L -> V_350_ -> V_351_=9
+Valid candidate under b: L, chain: L -> V_352_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_353_ -> L -> V_354_ -> L=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_352_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_353_ -> L -> V_354_ -> L=4
+Valid candidate under b: L, chain: L -> V_355_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_356_ -> L -> L -> V_357_=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_355_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_356_ -> L -> L -> V_357_=4
+Valid candidate under b: L, chain: L -> V_358_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_359_ -> L -> L -> L=3
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_358_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_359_ -> L -> L -> L=2
+Valid candidate under b: L, chain: L -> V_360_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_361_ -> V_362_ -> V_363_=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_360_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_361_ -> V_362_ -> V_363_=9
+Valid candidate under b: L, chain: L -> V_364_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_365_ -> V_366_ -> L=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_364_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_365_ -> V_366_ -> L=4
+Valid candidate under b: L, chain: L -> V_367_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_368_ -> L -> V_369_=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_367_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_368_ -> L -> V_369_=4
+Valid candidate under b: L, chain: L -> V_370_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_371_ -> L -> L=3
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_370_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_371_ -> L -> L=2
+Valid candidate under b: L, chain: L -> V_372_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_373_ -> V_374_=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_372_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_373_ -> V_374_=4
+Valid candidate under b: L, chain: L -> V_375_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_376_ -> L=3
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_375_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_376_ -> L=2
+Valid candidate under b: L, chain: L -> V_377_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_378_=3
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_377_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_378_=2
+Valid candidate under b: L, chain: L -> V_379_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=2
+CHECKING A CANDIDATE UNDER b: L, chain: L -> V_379_ -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=1
+Valid candidate under b: L, chain: L -> L -> V_380_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_381_ -> V_382_ -> V_383_ -> V_384_=25
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_380_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_381_ -> V_382_ -> V_383_ -> V_384_=24
+Valid candidate under b: L, chain: L -> L -> V_385_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_386_ -> V_387_ -> V_388_ -> L=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_385_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_386_ -> V_387_ -> V_388_ -> L=9
+Valid candidate under b: L, chain: L -> L -> V_389_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_390_ -> V_391_ -> L -> V_392_=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_389_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_390_ -> V_391_ -> L -> V_392_=9
+Valid candidate under b: L, chain: L -> L -> V_393_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_394_ -> V_395_ -> L -> L=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_393_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_394_ -> V_395_ -> L -> L=4
+Valid candidate under b: L, chain: L -> L -> V_396_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_397_ -> L -> V_398_ -> V_399_=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_396_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_397_ -> L -> V_398_ -> V_399_=9
+Valid candidate under b: L, chain: L -> L -> V_400_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_401_ -> L -> V_402_ -> L=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_400_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_401_ -> L -> V_402_ -> L=4
+Valid candidate under b: L, chain: L -> L -> V_403_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_404_ -> L -> L -> V_405_=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_403_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_404_ -> L -> L -> V_405_=4
+Valid candidate under b: L, chain: L -> L -> V_406_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_407_ -> L -> L -> L=3
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_406_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_407_ -> L -> L -> L=2
+Valid candidate under b: L, chain: L -> L -> V_408_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_409_ -> V_410_ -> V_411_=10
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_408_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_409_ -> V_410_ -> V_411_=9
+Valid candidate under b: L, chain: L -> L -> V_412_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_413_ -> V_414_ -> L=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_412_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_413_ -> V_414_ -> L=4
+Valid candidate under b: L, chain: L -> L -> V_415_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_416_ -> L -> V_417_=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_415_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_416_ -> L -> V_417_=4
+Valid candidate under b: L, chain: L -> L -> V_418_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_419_ -> L -> L=3
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_418_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_419_ -> L -> L=2
+Valid candidate under b: L, chain: L -> L -> V_420_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_421_ -> V_422_=5
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_420_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_421_ -> V_422_=4
+Valid candidate under b: L, chain: L -> L -> V_423_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_424_ -> L=3
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_423_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_424_ -> L=2
+Valid candidate under b: L, chain: L -> L -> V_425_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_426_=3
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_425_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_426_=2
+Valid candidate under b: L, chain: L -> L -> V_427_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=2
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> V_427_, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=1
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_428_ -> V_429_ -> V_430_ -> V_431_=24
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_428_ -> V_429_ -> V_430_ -> V_431_=23
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_432_ -> V_433_ -> V_434_ -> L=9
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_432_ -> V_433_ -> V_434_ -> L=8
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_435_ -> V_436_ -> L -> V_437_=9
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_435_ -> V_436_ -> L -> V_437_=8
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_438_ -> V_439_ -> L -> L=4
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_438_ -> V_439_ -> L -> L=3
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_440_ -> L -> V_441_ -> V_442_=9
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_440_ -> L -> V_441_ -> V_442_=8
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_443_ -> L -> V_444_ -> L=4
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_443_ -> L -> V_444_ -> L=3
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_445_ -> L -> L -> V_446_=4
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_445_ -> L -> L -> V_446_=3
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_447_ -> L -> L -> L=2
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: V_447_ -> L -> L -> L=1
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_448_ -> V_449_ -> V_450_=9
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_448_ -> V_449_ -> V_450_=8
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_451_ -> V_452_ -> L=4
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_451_ -> V_452_ -> L=3
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_453_ -> L -> V_454_=4
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_453_ -> L -> V_454_=3
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_455_ -> L -> L=2
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> V_455_ -> L -> L=1
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_456_ -> V_457_=4
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_456_ -> V_457_=3
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_458_ -> L=2
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> V_458_ -> L=1
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_459_=2
+CHECKING A CANDIDATE UNDER b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> V_459_=1
+Valid candidate under b: L, chain: L -> L -> L, dbb: L, dbi: L, dib: L, dii: L, i: L, put: L -> L -> L -> L=1
+Valid candidate under b: L0[], chain: L1[_0_, _1_] -> L1[_2_, _3_] -> L1[_4_, _5_], dbb: L1[_6_, _7_], dbi: L1[_8_, _9_], dib: L1[_10_, _11_], dii: L1[_12_, _13_], i: L8[], put: L1[_14_, _15_] -> V0 -> V1 -> L1[_16_, _17_]=603638
+CHECKING A CANDIDATE UNDER b: L0[], chain: L1[_0_, _1_] -> L1[_2_, _3_] -> L1[_4_, _5_], dbb: L1[_6_, _7_], dbi: L1[_8_, _9_], dib: L1[_10_, _11_], dii: L1[_12_, _13_], i: L8[], put: L1[_14_, _15_] -> V0 -> V1 -> L1[_16_, _17_]=818645
+[12:11:51.253924]	Total time: 203535 ms

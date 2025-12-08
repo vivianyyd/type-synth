@@ -1,0 +1,11 @@
+dictchain
+Running CVC: true
+Max depth: 4
+=====
+
+[12:37:56.118900]	Counts:
+CHECKING A CANDIDATE UNDER {b=L0, chain=L1 -> 1_0, dbb=L1, dbi=L1, dib=L1, dii=L1, i=L2, put=L1 -> 7_0}=16
+CHECKING A CANDIDATE UNDER {b=L0, chain=L1 -> 1_0, dbb=L1, dbi=L1, dib=L1, dii=L1, i=L2, put=L1 -> 7_0 -> 7_1 -> L1}=5120
+CHECKING A CANDIDATE UNDER {b=L0, chain=L1 -> L1 -> L1, dbb=L1, dbi=L1, dib=L1, dii=L1, i=L2, put=L1 -> 7_0}=16588800
+CHECKING A CANDIDATE UNDER {b=L0, chain=L1 -> L1 -> L1, dbb=L1, dbi=L1, dib=L1, dii=L1, i=L2, put=L1 -> 7_0 -> 7_1 -> L1}=13271040
+[12:37:56.120771]	Total time: 130339 ms
