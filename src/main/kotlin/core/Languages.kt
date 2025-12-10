@@ -465,7 +465,7 @@ class ConcreteHole(
             if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return variableExpansions(vars)
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
-                }) return variableExpansions(vars) + fnExpansion // TODO Think about this
+                }) return listOf(fnExpansion) + variableExpansions(vars)  // TODO Think about this
             if (mustBeCompatible.first() is ConcreteConstrL && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) {
@@ -761,7 +761,7 @@ open class SketchHole(
             if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } }) return variableExpansions(vars)
             if (mustBeCompatible.first() is CArrow && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
-                }) return listOf(fnExpansion)
+                }) return listOf(fnExpansion) + variableExpansions(vars)  // TODO Think about this
             if (mustBeCompatible.first() is SketchConstrL && mustBeCompatible.all {
                     mustBeCompatible.first().match(it)
                 }) {
