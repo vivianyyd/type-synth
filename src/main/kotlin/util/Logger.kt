@@ -49,6 +49,8 @@ class Logger(
         if (s != stage) error("Stopped a stage that wasn't started: $stage")
         dedent()
         log("END $stage : ${System.currentTimeMillis() - t} ms")
+        log(counts.entries.filter { it.value > 50 }.joinToString(separator = "\n", prefix = "Counts:\n"))
+        log("Elapsed time: ${System.currentTimeMillis() - startTime} ms")
     }
 
     private val counts = mutableMapOf<String, Int>()

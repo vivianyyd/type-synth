@@ -32,52 +32,29 @@ class DFSPriorityEnumerator<L : Language>(
     private fun commitPriority(
         c: Candidate<L>, unification: Unification<L>, sizeBound: Int, hardDepthBound: Int
     ): Sequence<Candidate<L>> {
-        logger.count("Cands under $seedCandidate")
+        logger.log("$c")
         if (c.full()) return sequenceOf(c)
 
-        if (c.toString().contains("put: L1[V0, V1] -> V0 -> V1 -> L1[V0, V1]")) {
-            TODO(
-                "At this point, we can kinda figure out chain even if we only have a guess for put" +
-                        "(and can infer types for the dictionary literals), but only by doing something analogous " +
-                        "to dependency analysis at one level down." +
-                        "Orthogonally, we can iteratively fast forward by first fast forwarding the things that we know" +
-                        "filtering out the null things we don't know, then see if the newly fast forwarded stuff" +
-                        "helps us figure out how to fast forward the stuff we returned null for before." +
-                        "But here, I've done a hack where I make all nullaries blanks immediately" +
-                        "Since we still have this issue with chain even if we figure out all the dictionary literals" +
-                        "first; the problem is we need to do an analysis of when exactly the concrete types of arguments" +
-                        "change."
-            )
-        }
-
-        if (c.toString().contains("put: L1[V0, V1] -> V0 -> V1 -> L1[V0, V1]") && c.toString()
-                .contains("chain: L1[V0, V1] -> L1[V1, V2] -> L1[V0, V2]")
-        ) {
-            println("HELLO I am $c")
-            println("Fast forward:")
-            println(c.fastForward(unification))
-            TODO()
-        }
-
         if (sizeBound == 0) {
-            logger.log("Trying ff on $c")
-            logger.count("Hit size bound under $seedCandidate")
-            logger.count("Trying ff for $seedCandidate")
+//            logger.log("Trying ff on $c")
+//            logger.count("Trying ff for $seedCandidate")
             val ff = c.fastForward(unification) ?: return sequenceOf()
             return if (ff.full()) {
-                logger.count("Successful fast forward for $seedCandidate")
+//                logger.log("Ff to $ff")
+//                logger.count("Successful fast forward for $seedCandidate")
                 sequenceOf(ff)
             } else sequenceOf()
         }
 
         if (c.types.all { it.fillable().isEmpty() }) {
-            logger.count("Only blanks left under $seedCandidate, but size budget not used up: we explored this already!")
             return sequenceOf()
         }
 
         return fill(c, unification, sizeBound <= 1).flatMap { (newCand, cost) ->
+            logger.count("Total candidates for $seedCandidate")
             if (newCand.depth() > hardDepthBound) emptySequence()
             else {
+//                logger.count("Calls to check for $seedCandidate")
                 // TODO spawnAndRefine is slow for eager unification since we make a duplicate candidate.
                 //      but making a new unification is slow for other unifs.
                 val u = unification(newCand, query.posExsBeforeSubexprs)

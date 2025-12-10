@@ -75,7 +75,8 @@ fun run(config: ConfigForOld, logger: Logger) {
             outlinesPruned[candidate],
             lSizes,
             aritiesToDeps[outlinesPruned[candidate].arities]!!,
-            oracle
+            oracle,
+            logger
         )
     }
     for (i in 1..config.maxDepth) {
