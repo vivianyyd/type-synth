@@ -87,17 +87,14 @@ class DFSPriorityEnumerator<L : Language>(
                         acc.replace(commitment.first, commitment.second as SearchNode<L>)
                     }
                 })
-            val justParams = commitPriority(
+            return commitPriority(
                 inferNullaries, unification(seedCandidate, query.posExsBeforeSubexprs), sizeBound, hardDepthBound
             ).filter { c -> check(c) }.toList()
-            return justParams.ifEmpty {
-                println("dummy")
-                commitPriority(
-                    seedCandidate, unification(seedCandidate, query.posExsBeforeSubexprs), sizeBound, hardDepthBound
-                ).filter { c -> check(c) }.toList()
-            }
-        } else return commitPriority(
-            seedCandidate, unification(seedCandidate, query.posExsBeforeSubexprs), sizeBound, hardDepthBound
-        ).filter { c -> check(c) }.toList()
+            // TODO If no solution skipping nullaries with max size budget, we might need to try one last time with
+            //   no skipping. We need this if the nullary types contain variables which are not the default variable
+        } else
+            return commitPriority(
+                seedCandidate, unification(seedCandidate, query.posExsBeforeSubexprs), sizeBound, hardDepthBound
+            ).filter { c -> check(c) }.toList()
     }
 }
