@@ -1,6 +1,8 @@
 package core.enumerate
 
-import core.*
+import core.languages.*
+import core.unification.Unification
+import core.unification.UnificationForCandidate
 import query.Query
 import util.Logger
 
@@ -32,7 +34,7 @@ class DFSPriorityEnumerator<L : Language>(
     private fun commitPriority(
         c: Candidate<L>, unification: Unification<L>, sizeBound: Int, hardDepthBound: Int
     ): Sequence<Candidate<L>> {
-        logger.log("$c")
+//        logger.log("$c")
         if (c.full()) return sequenceOf(c)
 
         if (sizeBound == 0) {

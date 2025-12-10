@@ -1,9 +1,9 @@
 package core.enumerate
 
-import core.Candidate
-import core.Language
-import core.Unification
-import core.UnificationForCandidate
+import core.languages.Candidate
+import core.languages.Language
+import core.unification.Unification
+import core.unification.UnificationForCandidate
 import query.Query
 import util.Logger
 

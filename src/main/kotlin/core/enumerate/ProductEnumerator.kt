@@ -1,8 +1,8 @@
 package core.enumerate
 
-import core.Candidate
-import core.Language
-import core.SearchNode
+import core.languages.Candidate
+import core.languages.Language
+import core.languages.SearchNode
 import query.Query
 
 data class PortNode<L : Language>(val options: List<MutableList<PortNode<L>>>) {

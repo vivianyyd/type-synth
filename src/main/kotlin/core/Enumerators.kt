@@ -3,6 +3,9 @@ package core
 import core.enumerate.EnumeratorTag
 import core.enumerate.enumerator
 import core.enumerate.solutions
+import core.languages.*
+import core.unification.UnificationTag
+import core.unification.unification
 import query.App
 import query.Name
 import query.parseTest

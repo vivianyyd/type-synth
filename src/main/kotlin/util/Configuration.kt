@@ -1,7 +1,7 @@
 package util
 
-import core.UnificationTag
 import core.enumerate.EnumeratorTag
+import core.unification.UnificationTag
 import test.Test
 
 interface Config

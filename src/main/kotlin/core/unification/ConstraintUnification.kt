@@ -1,5 +1,6 @@
-package core
+package core.unification
 
+import core.languages.*
 import query.App
 import query.Example
 import query.Name

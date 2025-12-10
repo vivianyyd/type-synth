@@ -1,5 +1,6 @@
 package core
 
+import core.languages.*
 import dependencyanalysis.DependencyAnalysis
 import util.DependencyEdge
 import util.ParameterNode
