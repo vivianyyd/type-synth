@@ -173,6 +173,7 @@ class ConcreteEnumerator(
             is ConcreteVar -> setOf(varId)
             is ConcreteF -> params.flatMap { it.vars() }.toSet()
             is ConcreteL -> params.flatMap { it.vars() }.toSet()
+            else -> TODO("Try skipping nullaries then fast forwarding at the end")
         }
     }
 
@@ -223,7 +224,8 @@ class ConcreteEnumerator(
                         }
                     }).map { ConcreteF(it.toList()) }
                 }
-                is L, is Var -> t.concretizations()
+                is L -> sequenceOf(ConcreteHole)
+                is Var -> sequenceOf(ConcreteHole) // t.concretizations()
                 is Hole -> throw Exception("Can't happen")
             }
         }
@@ -267,6 +269,7 @@ class ConcreteEnumerator(
                 is ConcreteL -> ConcreteL(t.label, t.params.map { applyBinding(it, varId, sub) })
                 is ConcreteF -> ConcreteF(t.params.map { applyBinding(it, varId, sub) })
                 is ConcreteVar -> if (t.varId == varId) sub else t  // TODO t should never be a binding variable and hit this case; reason about it a bit more
+                else -> TODO("Try skipping nullaries then fast forwarding at the end")
             }
         }
     }
@@ -299,6 +302,7 @@ class ConcreteEnumerator(
                     }
                 }
                 is ConcreteF, is ConcreteVar -> null
+                else -> TODO("Try skipping nullaries then fast forwarding at the end")
             }
             is ConcreteF -> when (arg) {
                 is ConcreteL, is ConcreteVar -> null
@@ -314,7 +318,9 @@ class ConcreteEnumerator(
                     }
                     bindings
                 }
+                else -> TODO("Try skipping nullaries then fast forwarding at the end")
             }
+            else -> TODO("Try skipping nullaries then fast forwarding at the end")
         }
         unify[param to arg] = result
         return result
@@ -399,4 +405,8 @@ data class ConcreteF(val params: List<ConcreteNode>) : ConcreteNode {
 data class ConcreteVar(val varId: Int) : ConcreteNode {
     override val hasVar = true
     override fun toString(): String = "$varId"
+}
+
+object ConcreteHole : ConcreteNode {
+    override val hasVar = false
 }
