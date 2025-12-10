@@ -27,7 +27,7 @@ fun main() {
 
     val logger = Logger(
         configuration = configuration,
-        logFilename = "dictchain-sketches.log",
+        logFilename = "tmp.log",
         logToFile = true,
         verbosity = 5
     )
@@ -69,7 +69,7 @@ fun run(configuration: Configuration, logger: Logger) {
             false,
             configuration.sizeBound,
             configuration.depthBound,
-            skipSizeIfCantFillAll = true,
+            fastForward = false,
             iterative = false,
             logger
         )
@@ -83,7 +83,7 @@ fun run(configuration: Configuration, logger: Logger) {
             configuration.sizeBound,
             configuration.depthBound,
             iterative = false,
-            skipSizeIfCantFillAll = true,
+            fastForward = false,
             logger = logger
         )
     }
@@ -112,7 +112,7 @@ fun run(configuration: Configuration, logger: Logger) {
             configuration.sizeBound,
             configuration.depthBound,
             iterative = true,
-            skipSizeIfCantFillAll = !configuration.finalRoundSketches,
+            fastForward = configuration.finalRoundSketches,
             logger = logger
         )
     }

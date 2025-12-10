@@ -2,7 +2,6 @@ package core.enumerate
 
 import core.Candidate
 import core.Language
-import core.NArrow
 import core.UnificationForCandidate
 import core.enumerate.EnumeratorTag.*
 import query.Query
@@ -36,7 +35,7 @@ fun <L : Language> solutions(
     sketches: Boolean,
     sizeBound: Int,
     hardDepthBound: Int,
-    skipSizeIfCantFillAll: Boolean,
+    fastForward: Boolean,
     iterative: Boolean,
     logger: Logger
 ): List<Candidate<L>> {
@@ -51,17 +50,7 @@ fun <L : Language> solutions(
                 logger.start("Size $size")
                 val currSols = enumerators
                     .filter {
-                        if (skipSizeIfCantFillAll) it.seedCandidate.holes <= size
-                        // TODO this skips the size unless we can fill all functions,
-                        //  which is not better than above / it's not what we want for blank trees
-                        else if (sketches) enumerators.minOf {
-                            it.seedCandidate.types.fold(0) { acc, t ->
-                                acc + when (t) {
-                                    is NArrow -> t.holes()
-                                    else -> 0
-                                }
-                            }
-                        } <= size
+                        if (!fastForward) it.seedCandidate.holes <= size
                         else true
                     }
                     .flatMap { it.enumerate(sketches, size, depth) }
