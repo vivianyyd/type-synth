@@ -1,4 +1,48 @@
 /** AI-generated code I was toying with */
+import java.io.File
+
+fun f(line: String): String {
+    return line.split(": ").map {
+        val noHoles = it.replace(Regex("_[0-9]+_"), "_")
+            .replace(Regex("☐[0-9]+"), "_")
+        val regex = Regex("V\\d+")
+
+        val vars = mutableMapOf<String, String>()
+        var counter = 0
+        fun g(x: String): String =
+            vars.getOrPut(x) { "V${counter++}" }
+
+        val result = regex.replace(noHoles) { match ->
+            g(match.value)
+        }
+        result
+
+    }.joinToString(separator = ": ")
+}
+
+fun processFile(inputPath: String, outputPath: String) {
+    File(inputPath).useLines { lines ->
+        File(outputPath).printWriter().use { writer ->
+            lines.forEach { line ->
+//                writer.println("Was: $line")
+//                writer.println("Now: ${f(line)}")
+                if ("Now:" in line) {
+                    writer.println(
+                        line.replace("b: L0[], ", "")
+                            .replace("dbb: L1[_, _], dbi: L1[_, _], dib: L1[_, _], dii: L1[_, _], i: L8[], ", "")
+                    )
+                }
+            }
+        }
+    }
+}
+
+fun main() {
+    processFile("canonicalized.txt", "only-canonicalized.txt")
+
+//    println(commitLeftmost(List(3) { Hole.new() }, 3).take(200).joinToString(separator = "\n"))
+}
+
 
 //interface P {
 //    fun expansions(bound: Int): List<P>
@@ -40,11 +84,4 @@
 //        commitLeftmost(newCandidate, recursionBound)
 //    }
 //}
-
-
-fun main() {
-
-//    println(commitLeftmost(List(3) { Hole.new() }, 3).take(200).joinToString(separator = "\n"))
-}
-
 

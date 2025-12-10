@@ -15,8 +15,13 @@ with open(filename, "r") as f:
         line_map[line].append(i)
 
 # Find and display duplicates
-print("Duplicated lines (unique):\n")
+print("Duplicated/extraneous lines:")
+count = 0
 for line, nums in line_map.items():
+   # if (len(nums) > 1):
+    #   count += len(nums) - 1 
     if len(nums) > 1:
         print(f"{line!r}  →  lines {nums}")
+
+print(count)
 
