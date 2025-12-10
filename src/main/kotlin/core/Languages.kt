@@ -6,6 +6,8 @@ import query.Query
 import stc.Var
 import util.*
 
+sealed interface Language
+
 /** Defines locations of type constructors vs variables and function arities */
 object Init : Language
 
