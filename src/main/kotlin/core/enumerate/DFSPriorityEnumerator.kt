@@ -40,7 +40,7 @@ class DFSPriorityEnumerator<L : Language>(
         if (sizeBound == 0) {
 //            logger.log("Trying ff on $c")
 //            logger.count("Trying ff for $seedCandidate")
-            val ff = c.fastForward(unification) ?: return sequenceOf()
+            val ff = c.fastForward { unification(it, query.posExsBeforeSubexprs) } ?: return sequenceOf()
             return if (ff.full()) {
 //                logger.log("Ff to $ff")
 //                logger.count("Successful fast forward for $seedCandidate")

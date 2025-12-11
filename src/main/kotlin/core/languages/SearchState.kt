@@ -336,17 +336,21 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
         types.all { it.variableNames().size == (it.variableNames().maxOrNull() ?: -1) + 1 }
     // We can also add it.noFreshSoleVarOnRHS()
 
-    fun fastForward(unification: Unification<L>): Candidate<L>? {
-        // TODO continue to commit until either full or null
-        val commitments =
-            types.map { t -> t.listHoles().map { it to it.fastForward(unification, t.variableNames().size) } }
-        return if (commitments.any { it.any { it.second == null } }) null
-        else Candidate(
-            names,
-            types.zip(commitments).map { (t, commits) ->
-                commits.fold(t) { acc: SearchNode<L>, commitment: Pair<Hole<L>, SearchNode<L>?> ->
-                    acc.replace(commitment.first, commitment.second!!)
-                }
-            })
+    fun fastForward(unification: (Candidate<L>) -> Unification<L>): Candidate<L>? {
+        var curr = this
+        do {
+            val u = unification(curr)
+            val commitments =
+                curr.types.map { t -> t.listHoles().map { it to it.fastForward(u, t.variableNames().size) } }
+            curr = Candidate(
+                names,
+                curr.types.zip(commitments).map { (t, commits) ->
+                    commits.fold(t) { acc: SearchNode<L>, commitment: Pair<Hole<L>, SearchNode<L>?> ->
+                        if (commitment.second == null) acc
+                        else acc.replace(commitment.first, commitment.second!!)
+                    }
+                })
+        } while (commitments.any { it.isNotEmpty() && it.any { it.second != null } })
+        return curr
     }
 }
