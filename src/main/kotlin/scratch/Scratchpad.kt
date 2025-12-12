@@ -1,4 +1,5 @@
 /** AI-generated code I was toying with */
+import util.partitions
 import java.io.File
 
 fun f(line: String): String {
@@ -38,7 +39,14 @@ fun processFile(inputPath: String, outputPath: String) {
 }
 
 fun main() {
-    processFile("canonicalized.txt", "only-canonicalized.txt")
+//    processFile("canonicalized.txt", "only-canonicalized.txt")
+
+    var count = 0
+    partitions(listOf(1, 2, 3, 4, 5, 6)).forEach {
+        println(it)
+        count++
+    }
+    println(count)
 
 //    println(commitLeftmost(List(3) { Hole.new() }, 3).take(200).joinToString(separator = "\n"))
 }

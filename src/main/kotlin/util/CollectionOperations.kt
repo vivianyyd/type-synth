@@ -18,6 +18,44 @@ fun <T> equivalenceClasses(elems: Collection<T>, equals: (T, T) -> Boolean): Set
 
 fun <T> Collection<T>.eqClasses(equals: (T, T) -> Boolean) = equivalenceClasses(this, equals)
 
+/** LLM generated */
+fun <T> partitions(list: List<T>): Sequence<List<List<T>>> {
+    val n = list.size
+
+    // P(n, k) = all partitions of first n elements into k blocks
+    fun gen(n: Int, k: Int): Sequence<List<List<T>>> {
+        if (n == 0) {
+            return if (k == 0) sequenceOf(emptyList()) else emptySequence()
+        }
+        if (k == 0) return emptySequence()
+
+        val elem = list[n - 1]
+
+        return sequence {
+            // Case 1: element starts a new block
+            for (p in gen(n - 1, k - 1)) {
+                yield(p + listOf(listOf(elem)))
+            }
+
+            // Case 2: element joins one of the existing blocks
+            for (p in gen(n - 1, k)) {
+                for (i in p.indices) {
+                    val newBlock = p[i] + elem
+                    val newPart = p.toMutableList().also { it[i] = newBlock }.toList()
+                    yield(newPart)
+                }
+            }
+        }
+    }
+
+    // yield all partitions by increasing k
+    return sequence {
+        for (k in 1..n) {
+            yieldAll(gen(n, k))
+        }
+    }
+}
+
 fun main() {
 //    val s = listOf(0, 1, 2, 3)
 //    val repetitions = 3
