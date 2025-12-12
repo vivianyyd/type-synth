@@ -14,18 +14,6 @@ sealed interface SearchNode<L : Language> {
 
     fun replaceWithAll(hole: Hole<L>, nodes: List<SearchNode<L>>): List<SearchNode<L>>
 
-    fun dfsLeftExpansions(
-        unification: Unification<L>,
-        vars: Int = 0,
-        recursionBound: Int? = null
-    ): List<Pair<SearchNode<L>, Commitment<L>>>
-
-    fun dfsPriorityExpansions(
-        unification: Unification<L>,
-        vars: Int = 0,
-        recursionBound: Int? = null
-    ): List<Pair<SearchNode<L>, Commitment<L>>>
-
     /** The priority is the max number of conflicts that some hole in this subtree participates in.
      * TODO: maybe it should be sum instead of max. */
     fun priority(): Int
@@ -74,6 +62,18 @@ sealed interface SearchNode<L : Language> {
         }
         else -> true
     }
+
+    fun dfsLeftExpansions(
+        unification: Unification<L>,
+        vars: Int = 0,
+        recursionBound: Int? = null
+    ): List<Pair<SearchNode<L>, Commitment<L>>>
+
+    fun dfsPriorityExpansions(
+        unification: Unification<L>,
+        vars: Int = 0,
+        recursionBound: Int? = null
+    ): List<Pair<SearchNode<L>, Commitment<L>>>
 }
 
 sealed class Branch<L : Language>(open val params: List<SearchNode<L>>) : SearchNode<L> {
