@@ -11,28 +11,29 @@ No, you're not allowed to use lambdas either. You can only do function applicati
 
  */
 
-
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-val exs = listOf(
-    "(+ (c z (c z a)))",
-    "(+ (c a (c a b)))",
-    "(- (c a z))",
-    "(- (c b a))",
-    "(+ (c b))",
-    "(+ (c (c z a)))",
-    "(+ (c t (c t d)))",
-    "(- (c z d))",
-    "(- (c t a))",
-    "(- (c z b))",
-    "(- (c t b))",
-    "(- (c t (c z a)))"
-)
+val exs =
+    listOf(
+        "(+ (c z (c z a)))",
+        "(+ (c a (c a b)))",
+        "(- (c a z))",
+        "(- (c b a))",
+        "(+ (c b))",
+        "(+ (c (c z a)))",
+        "(+ (c t (c t d)))",
+        "(- (c z d))",
+        "(- (c t a))",
+        "(- (c z b))",
+        "(- (c t b))",
+        "(- (c t (c z a)))"
+    )
 
 /*
 1. cons : ∀a. (a × List<a>) → List<a>
@@ -44,72 +45,77 @@ val exs = listOf(
  */
 fun main() {
     val apiKey = System.getenv("OPENAI_API_KEY") ?: error("OPENAI_API_KEY not set")
-//    val client = OkHttpClient()  // Default client has 10s timeout
-    val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)  // time to connect
-        .readTimeout(2, TimeUnit.MINUTES)      // time waiting for response body
-        .writeTimeout(2, TimeUnit.MINUTES)     // time sending request body
-        .build()
+    //    val client = OkHttpClient()  // Default client has 10s timeout
+    val client =
+        OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS) // time to connect
+            .readTimeout(2, TimeUnit.MINUTES) // time waiting for response body
+            .writeTimeout(2, TimeUnit.MINUTES) // time sending request body
+            .build()
 
-    val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
+    val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 
-    val requestBodyJson = mapOf(
-        "model" to "gpt-5-mini",
-        "messages" to listOf(
-            mapOf(
-                "role" to "system",
-                "content" to "Respond with only the text requested and no explanation."
-            ),
-            mapOf(
-                "role" to "user", "content" to "Below are a list of example programs, which apply a fixed set of " +
-                        "functions and values. " +
-                        "Some of them are well-typed under Hindley-Milner typing rules; they are prefixed with a +. " +
-                        "Others are ill-typed, and are prefixed with a -." +
-                        "Determine the Hindley-Milner types of all program components that appear in the examples, " +
-                        "that is, all unique symbols other than whitespace and parentheses. " +
-                        "Some of the types may be parameterized: For instance, they may be of the form L<a> " +
-                        "where a is a type variable, or L<B> where B is a primitive type." +
-                        "You may need to invent appropriate type constructors, which may have any name or have any " +
-                        "number of type parameters." +
-                        exs.joinToString(prefix = "\n", separator = "\n")
-            )
-            // TODO
+    val requestBodyJson =
+        mapOf(
+            "model" to "gpt-5-mini",
+            "messages" to
+                    listOf(
+                        mapOf(
+                            "role" to "system",
+                            "content" to "Respond with only the text requested and no explanation."
+                        ),
+                        mapOf(
+                            "role" to "user",
+                            "content" to
+                                    "Below are a list of example programs, which apply a fixed set of " +
+                                    "functions and values. " +
+                                    "Some of them are well-typed under Hindley-Milner typing rules; they are prefixed with a +. " +
+                                    "Others are ill-typed, and are prefixed with a -." +
+                                    "Determine the Hindley-Milner types of all program components that appear in the examples, " +
+                                    "that is, all unique symbols other than whitespace and parentheses. " +
+                                    "Some of the types may be parameterized: For instance, they may be of the form L<a> " +
+                                    "where a is a type variable, or L<B> where B is a primitive type." +
+                                    "You may need to invent appropriate type constructors, which may have any name or have any " +
+                                    "number of type parameters." +
+                                    exs.joinToString(prefix = "\n", separator = "\n")
+                        )
+                        // TODO
+                    )
         )
-    )
 
     val jsonAdapter = moshi.adapter(Map::class.java)
-    val body = RequestBody.create(
-        "application/json".toMediaType(),
-        jsonAdapter.toJson(requestBodyJson)
-    )
+    val body =
+        jsonAdapter.toJson(requestBodyJson).toRequestBody("application/json".toMediaType())
 
-    val request = Request.Builder()
-        .url("https://api.openai.com/v1/chat/completions")
-        .addHeader("Authorization", "Bearer $apiKey")
-        .addHeader("Content-Type", "application/json")
-        .post(body)
-        .build()
+    val request =
+        Request.Builder()
+            .url("https://api.openai.com/v1/chat/completions")
+            .addHeader("Authorization", "Bearer $apiKey")
+            .addHeader("Content-Type", "application/json")
+            .post(body)
+            .build()
 
-    client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            e.printStackTrace()
-        }
-
-        override fun onResponse(call: Call, response: Response) {
-            response.use {
-                if (!it.isSuccessful) {
-                    println("Request failed: ${it.code} ${it.message}")
-                } else {
-                    val adapter = moshi.adapter(ChatCompletionResponse::class.java)
-                    val parsed = adapter.fromJson(it.body?.string() ?: "")
-                    val reply = parsed?.choices?.firstOrNull()?.message?.content
-                    println(reply ?: "(No content returned)")
+    client
+        .newCall(request)
+        .enqueue(
+            object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    e.printStackTrace()
                 }
-            }
-        }
-    })
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use {
+                        if (!it.isSuccessful) {
+                            println("Request failed: ${it.code} ${it.message}")
+                        } else {
+                            val adapter = moshi.adapter(ChatCompletionResponse::class.java)
+                            val parsed = adapter.fromJson(it.body?.string() ?: "")
+                            val reply = parsed?.choices?.firstOrNull()?.message?.content
+                            println(reply ?: "(No content returned)")
+                        }
+                    }
+                }
+            })
 }
 
 /*

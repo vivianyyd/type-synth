@@ -15,7 +15,8 @@ class FlowDotWriter {
             "rankdir=LR; ordering=out;",
             "node [shape = record, height=.1];",
             "graph [ratio=0.7]"
-        ).forEach { sb.append("\t$it\n") }
+        )
+            .forEach { sb.append("\t$it\n") }
     }
 
     fun writeNode(nodeName: String, label: String) {

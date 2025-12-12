@@ -6,7 +6,9 @@ import java.io.FileOutputStream
 import java.io.PrintWriter
 
 fun viz(query: Query, fileName: String = "examples") = ExampleVisualizer(query).viz(fileName)
-fun vizUndir(query: Query, fileName: String = "examples") = ExampleVisualizer(query).vizUndir(fileName)
+
+fun vizUndir(query: Query, fileName: String = "examples") =
+    ExampleVisualizer(query).vizUndir(fileName)
 
 class ExampleVisualizer(val query: Query) {
     // TODO Wanna graph examples with subexprs or without?
@@ -14,7 +16,10 @@ class ExampleVisualizer(val query: Query) {
     private val dw = FlowDotWriter()
     private var ctr = 0
 
-    /** Adds the graphviz code that draws [this] node, and returns the name of the graphviz node representing [this]. */
+    /**
+     * Adds the graphviz code that draws [this] node, and returns the name of the graphviz node
+     * representing [this].
+     */
     private fun String.display(): String {
         val gNode = "n${ctr++}"
         dw.writeNode(gNode, this)
@@ -29,12 +34,14 @@ class ExampleVisualizer(val query: Query) {
         dw.startGraph()
         val nodeLabels = query.names.associateWith { it.display() }
 
-        fun Example.leftmostName(): String = when (this) {
-            is Name -> this.name
-            is App -> this.fn.leftmostName()
-        }
+        fun Example.leftmostName(): String =
+            when (this) {
+                is Name -> this.name
+                is App -> this.fn.leftmostName()
+            }
 
-        // Not obvious bc some applications could have happened not bc of the fn at the head but bc an argument passed to it allowed the output to be a fn type
+        // Not obvious bc some applications could have happened not bc of the fn at the head but bc
+        // an argument passed to it allowed the output to be a fn type
         fun edges(app: App): List<Pair<String, String>> {
             val sink = app.leftmostName()
             return app.arg.names.map { src ->
@@ -44,7 +51,12 @@ class ExampleVisualizer(val query: Query) {
             }
         }
 
-        val allEdges = query.posExsBeforeSubexprs.filterIsInstance<App>().flatMap { edges(it) }.toSet().toList()
+        val allEdges =
+            query.posExsBeforeSubexprs
+                .filterIsInstance<App>()
+                .flatMap { edges(it) }
+                .toSet()
+                .toList()
 
         println("In degrees:")
         println(inDegrees)
@@ -72,16 +84,18 @@ class ExampleVisualizer(val query: Query) {
             }
         }
 
-        val allEdges = query.posExsBeforeSubexprs.filterIsInstance<App>().flatMap { edges(it) }.toSet().toList()
+        val allEdges =
+            query.posExsBeforeSubexprs
+                .filterIsInstance<App>()
+                .flatMap { edges(it) }
+                .toSet()
+                .toList()
         dw.writeEdges(allEdges, false, "uses")
         dw.finishGraph()
         val out = dw.output()
         dw.restart()
 
-
         degrees.entries.sortedByDescending { it.value }.forEach { (k, v) -> println("$k -> $v") }
-
-
 
         return out
     }
@@ -93,5 +107,6 @@ class ExampleVisualizer(val query: Query) {
     }
 
     fun viz(fileID: String) = writeDotOutput(visualize(), fileID)
+
     fun vizUndir(fileID: String) = writeDotOutput(visualizeUndirected(), fileID)
 }

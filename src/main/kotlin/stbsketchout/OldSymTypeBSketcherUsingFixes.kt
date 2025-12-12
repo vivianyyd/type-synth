@@ -17,12 +17,14 @@ class OldSymTypeBSketcherUsingFixes(
     private val rounds: Int? = null
 ) {
     fun parse(skOut: String) = SketchParser(skOut).parseAll
+
     fun sketchInput() = SketchWriter(rounds).make
 
     private val sketchNames = mutableMapOf<String, String>()
 
     /** Use me wisely */
     private fun sk(name: String) = sketchNames[name]!!
+
     private var fresh = 0
 
     init {
@@ -36,19 +38,23 @@ class OldSymTypeBSketcherUsingFixes(
     private inner class SketchWriter(rounds: Int? = null) {
         private val w = Writer()
 
-        private fun gen(name: String) = if (nullary(name)) "${sk(name)}_final" else "${sk(name)}_gen"
+        private fun gen(name: String) =
+            if (nullary(name)) "${sk(name)}_final" else "${sk(name)}_gen"
+
         private val localNumVars = "lVars"
 
         /** An upper bound on the number of candidate contexts for this query. */
         private val rounds: Int by lazy {
-            if (rounds != null) rounds else {
+            if (rounds != null) rounds
+            else {
                 fun <T> List<T>.mapSum(f: (T) -> Int) = this.map(f).fold(0) { a, b -> a + b }
-                fun bound(t: sta.SymTypeA): Int = when (t) {
-                    is Function -> t.left.mapSum(::bound) * t.rite.mapSum(::bound)
-                    is sta.Label -> 1
-                    is sta.Variable -> 3
-                    is sta.Hole -> 4
-                }
+                fun bound(t: sta.SymTypeA): Int =
+                    when (t) {
+                        is Function -> t.left.mapSum(::bound) * t.rite.mapSum(::bound)
+                        is sta.Label -> 1
+                        is sta.Variable -> 3
+                        is sta.Hole -> 4
+                    }
                 query.names.map { state.read()[it]!!.mapSum(::bound) }.fold(1) { a, b -> a * b }
             }
         }
@@ -71,15 +77,18 @@ class OldSymTypeBSketcherUsingFixes(
 
         private fun header() {
             w.include("/home/vivianyyd/type-synth/src/main/sketch/symbolicgen/symbolictypes.sk")
-            w.comment(listOf("NAME\t\tSKETCHNAME\t\tDUMMY") + sketchNames.map { (k, v) ->
-                "$k\t\t\t$v\t\t\t${
-                    if (nullary(k)) oracle.dummy(Name(k)) else ""
-                }"
-            })
+            w.comment(
+                listOf("NAME\t\tSKETCHNAME\t\tDUMMY") +
+                        sketchNames.map { (k, v) ->
+                            "$k\t\t\t$v\t\t\t${
+                                if (nullary(k)) oracle.dummy(Name(k)) else ""
+                            }"
+                        })
         }
 
         // GENERATORS
         private var typeId = 0
+
         private fun generator(name: String) {
             if (nullary(name)) {
                 w.singleLineBlock(
@@ -93,8 +102,11 @@ class OldSymTypeBSketcherUsingFixes(
                 w.lines(
                     listOf(
                         "Type root",
-                        // TODO canBeFresh need not be in Sketch, it is a property of the tree shape not choices
-                        "boolean canBeFresh = false", "boolean canBeBoundInLabel = false", "int $localNumVars = 0"
+                        // TODO canBeFresh need not be in Sketch, it is a property of the tree shape
+                        // not choices
+                        "boolean canBeFresh = false",
+                        "boolean canBeBoundInLabel = false",
+                        "int $localNumVars = 0"
                     )
                 )
                 w.newLine()
@@ -103,11 +115,18 @@ class OldSymTypeBSketcherUsingFixes(
             }
         }
 
-        /** typeId is used to distinguish variables - avoids capture by making their id include which type they're part of */
-        private fun chooseFromOptions(portSketchName: String, options: List<sta.SymTypeA>, typeId: Int) {
+        /**
+         * typeId is used to distinguish variables - avoids capture by making their id include which
+         * type they're part of
+         */
+        private fun chooseFromOptions(
+            portSketchName: String,
+            options: List<sta.SymTypeA>,
+            typeId: Int
+        ) {
             val flag = "flag_$portSketchName"
             if (options.size == 1) {
-                pickOption(portSketchName, options[0], typeId)  // Makes code shorter
+                pickOption(portSketchName, options[0], typeId) // Makes code shorter
                 return
             }
             w.lines(
@@ -121,57 +140,60 @@ class OldSymTypeBSketcherUsingFixes(
             }
         }
 
-        private fun pickOption(portSketchName: String, t: sta.SymTypeA, typeId: Int): Unit = when (t) {
-            is sta.Hole -> {
-                val hole = "${portSketchName}_hole"
-                w.line("Type $hole")
-                w.line("bit ${hole}_flag = ??")
-                w.block("if (${hole}_flag)") { pickOption(hole, sta.Label(), typeId) }
-                w.block("else") { pickOption(hole, sta.Variable(), typeId) }
-                w.line("$portSketchName = $hole")
-                // TODO test me!
-            }
-            is sta.Label -> w.lines(
-                listOf(
-                    "$portSketchName = new Label()", "canBeBoundInLabel = true"
-                )
-            )
-            is sta.Variable -> {
-                val vFlag = "v_$portSketchName"
-                w.lines(
-                    listOf(
-                        "int $vFlag = ??",
-                        "assert ($vFlag >= 0 && $vFlag < $localNumVars + 2)",
-                        "if (!canBeFresh) assert ($vFlag != $localNumVars)",
-                        "if (!canBeBoundInLabel) assert ($vFlag != $localNumVars + 1)"
-                    )
-                )
-                w.singleLineBlock(
-                    "if ($vFlag < $localNumVars)", "$portSketchName = new VarRef(vId=$vFlag, tId=$typeId)"
-                )
-                w.block("else if ($vFlag == $localNumVars)") {
+        private fun pickOption(portSketchName: String, t: sta.SymTypeA, typeId: Int): Unit =
+            when (t) {
+                is sta.Hole -> {
+                    val hole = "${portSketchName}_hole"
+                    w.line("Type $hole")
+                    w.line("bit ${hole}_flag = ??")
+                    w.block("if (${hole}_flag)") { pickOption(hole, sta.Label(), typeId) }
+                    w.block("else") { pickOption(hole, sta.Variable(), typeId) }
+                    w.line("$portSketchName = $hole")
+                    // TODO test me!
+                }
+                is sta.Label ->
+                    w.lines(listOf("$portSketchName = new Label()", "canBeBoundInLabel = true"))
+                is sta.Variable -> {
+                    val vFlag = "v_$portSketchName"
                     w.lines(
                         listOf(
-                            "$portSketchName = new VarBind(vId=$localNumVars, tId=$typeId)", "$localNumVars++"
+                            "int $vFlag = ??",
+                            "assert ($vFlag >= 0 && $vFlag < $localNumVars + 2)",
+                            "if (!canBeFresh) assert ($vFlag != $localNumVars)",
+                            "if (!canBeBoundInLabel) assert ($vFlag != $localNumVars + 1)"
                         )
                     )
+                    w.singleLineBlock(
+                        "if ($vFlag < $localNumVars)",
+                        "$portSketchName = new VarRef(vId=$vFlag, tId=$typeId)"
+                    )
+                    w.block("else if ($vFlag == $localNumVars)") {
+                        w.lines(
+                            listOf(
+                                "$portSketchName = new VarBind(vId=$localNumVars, tId=$typeId)",
+                                "$localNumVars++"
+                            )
+                        )
+                    }
+                    w.singleLineBlock(
+                        "else if ($vFlag == $localNumVars + 1)",
+                        "$portSketchName = new VarLabelBound()"
+                    )
+                    w.line("else assert false")
                 }
-                w.singleLineBlock("else if ($vFlag == $localNumVars + 1)", "$portSketchName = new VarLabelBound()")
-                w.line("else assert false")
+                is Function -> {
+                    val leftName = "${portSketchName}l"
+                    val riteName = "${portSketchName}r"
+                    w.line("Type $leftName; Type $riteName")
+                    w.lineComment("input type")
+                    w.line("canBeFresh = true")
+                    chooseFromOptions(leftName, t.left, typeId)
+                    w.lineComment("output type")
+                    w.line("canBeFresh = false")
+                    chooseFromOptions(riteName, t.rite, typeId)
+                    w.line("$portSketchName = new Function(left=$leftName, rite=$riteName)")
+                }
             }
-            is Function -> {
-                val leftName = "${portSketchName}l"
-                val riteName = "${portSketchName}r"
-                w.line("Type $leftName; Type $riteName")
-                w.lineComment("input type")
-                w.line("canBeFresh = true")
-                chooseFromOptions(leftName, t.left, typeId)
-                w.lineComment("output type")
-                w.line("canBeFresh = false")
-                chooseFromOptions(riteName, t.rite, typeId)
-                w.line("$portSketchName = new Function(left=$leftName, rite=$riteName)")
-            }
-        }
 
         // EXAMPLES
         private fun posExampleAssertions(ex: App) =
@@ -187,7 +209,9 @@ class OldSymTypeBSketcherUsingFixes(
             }
 
         private fun flags() {
-            w.block("generator bit i()") { w.lines(listOf("bit i = ??", "minimize (1 - i)", "return i")) }
+            w.block("generator bit i()") {
+                w.lines(listOf("bit i = ??", "minimize (1 - i)", "return i"))
+            }
             repeat(rounds) { w.singleLineBlock("bit ${flag(it)}", "return i()") }
             // This doesn't seem to actually make generation any faster. So TODO removeme?
             w.block("harness void dontEvenTry()") {
@@ -205,16 +229,15 @@ class OldSymTypeBSketcherUsingFixes(
                 query.posExamples.forEach { posExample(it, r) }
                 w.block("harness void EXAMPLE_WRAPPER_$r()") {
                     w.block("if (${flag(r)})") {
-                        w.lines((0 until r).map {
-                            "assert (${flag(it)})"
-                        })
-                        w.lines(query.posExamples.flatMap { ex ->
-                            if (ex is Name && !nullary(ex.name)) {
-                                (0 until r).map {
-                                    "assert (!eq(${exWithRound(ex, r)}(), ${exWithRound(ex, it)}()))"
-                                }
-                            } else listOf("${exWithRound(ex, r)}()")
-                        })
+                        w.lines((0 until r).map { "assert (${flag(it)})" })
+                        w.lines(
+                            query.posExamples.flatMap { ex ->
+                                if (ex is Name && !nullary(ex.name)) {
+                                    (0 until r).map {
+                                        "assert (!eq(${exWithRound(ex, r)}(), ${exWithRound(ex, it)}()))"
+                                    }
+                                } else listOf("${exWithRound(ex, r)}()")
+                            })
                     }
                 }
             }
@@ -224,24 +247,28 @@ class OldSymTypeBSketcherUsingFixes(
             val exRound = exWithRound(ex, round)
             when (ex) {
                 is Name -> {
-                    if (!nullary(ex.name)) w.block("Type $exRound() fixes $exRound") {
-                        w.line("return ${gen(ex.name)}()")
-                    }
+                    if (!nullary(ex.name))
+                        w.block("Type $exRound() fixes $exRound") {
+                            w.line("return ${gen(ex.name)}()")
+                        }
                 }
-                is App -> w.singleLineBlock(
-                    "Type $exRound()", "return ${assertions(ex)}(${
-                        exWithRound(ex.fn, round)
-                    }(), ${
-                        exWithRound(ex.arg, round)
-                    }())"
-                )
+                is App ->
+                    w.singleLineBlock(
+                        "Type $exRound()",
+                        "return ${assertions(ex)}(${
+                            exWithRound(ex.fn, round)
+                        }(), ${
+                            exWithRound(ex.arg, round)
+                        }())"
+                    )
             }
         }
 
-        private fun sk(ex: Example): String = when (ex) {
-            is Name -> sk(ex.name)
-            is App -> "oo${sk(ex.fn)}co${sk(ex.arg)}cc"
-        }
+        private fun sk(ex: Example): String =
+            when (ex) {
+                is Name -> sk(ex.name)
+                is App -> "oo${sk(ex.fn)}co${sk(ex.arg)}cc"
+            }
 
         private fun assertions(ex: App) = sk(ex)
 
@@ -256,6 +283,7 @@ class OldSymTypeBSketcherUsingFixes(
             private var indentLevel = 0
 
             fun indent() = indentLevel++
+
             fun dedent() = indentLevel--
 
             fun newLine() = sb.appendLine()
@@ -297,56 +325,71 @@ class OldSymTypeBSketcherUsingFixes(
 
     private inner class SketchParser(private val sketch: String) {
         val parseAll by lazy {
-            functions.keys.associateWith { parseToAssignments(it) }
+            functions.keys
+                .associateWith { parseToAssignments(it) }
                 .filter { (_, v) -> v.isNotEmpty() }
                 .mapValues { (_, v) -> typeAfterSubs(v) } to
-                    (lines.first { "Total time = " in it }
-                        .substringAfter("Total time = ")
-                        .toInt() / 1000.0).roundToInt()
+                    (lines.first { "Total time = " in it }.substringAfter("Total time = ").toInt() /
+                            1000.0)
+                        .roundToInt()
         }
 
-        val lines = sketch.lines().map { it.replace(";", "").replace("Type@ANONYMOUS", "").trim() }
-            .filter { it.isNotEmpty() && it.first() != '@' }
+        val lines =
+            sketch
+                .lines()
+                .map { it.replace(";", "").replace("Type@ANONYMOUS", "").trim() }
+                .filter { it.isNotEmpty() && it.first() != '@' }
 
-        // TODO only parse if the output is length more than 3. Then if there's any errors we can just abort
+        // TODO only parse if the output is length more than 3. Then if there's any errors we can
+        // just abort
         private fun parseToAssignments(sketchName: String) =
-            functions[sketchName]!!.filter { it.contains("=") && it.contains("(") }.associate {
-                it.replace("new ", "").split(" = ").let { (lhs, rhs) ->
-                    // TODO make a function that parses args more prettily
-                    val (t, a) = rhs.split("(")
-                    val args = a.replace(")", "")
-                    val skTy = when (t) {
-                        "Label" -> L
-                        "Function" -> {
-                            val (l, r) = args.replace("left=", "").replace("rite=", "").split(", ")
-                            F(left = N(l), rite = N(r))
-                        }
-                        "VarBind" -> {
-                            val (v, tId) = args.replace("vId=", "").replace("tId=", "").split(", ")
-                            VB(vId = v.toInt(), tId = tId.toInt())
-                        }
-                        "VarRef" -> {
-                            val (v, tId) = args.replace("vId=", "").replace("tId=", "").split(", ")
-                            VR(vId = v.toInt(), tId = tId.toInt())
-                        }
-                        "VarLabelBound" -> {
-                            val (v, tId) = args.replace("vId=", "").replace("tId=", "").split(", ")
-                            VR(vId = v.toInt(), tId = tId.toInt())
-                        }
-                        "ConcreteLabel" -> CL(dummy = args.replace("dummy=", "").toInt())
-                        else -> throw Exception("Parsing error")
+            functions[sketchName]!!
+                .filter { it.contains("=") && it.contains("(") }
+                .associate {
+                    it.replace("new ", "").split(" = ").let { (lhs, rhs) ->
+                        // TODO make a function that parses args more prettily
+                        val (t, a) = rhs.split("(")
+                        val args = a.replace(")", "")
+                        val skTy =
+                            when (t) {
+                                "Label" -> L
+                                "Function" -> {
+                                    val (l, r) =
+                                        args.replace("left=", "").replace("rite=", "").split(", ")
+                                    F(left = N(l), rite = N(r))
+                                }
+                                "VarBind" -> {
+                                    val (v, tId) =
+                                        args.replace("vId=", "").replace("tId=", "").split(", ")
+                                    VB(vId = v.toInt(), tId = tId.toInt())
+                                }
+                                "VarRef" -> {
+                                    val (v, tId) =
+                                        args.replace("vId=", "").replace("tId=", "").split(", ")
+                                    VR(vId = v.toInt(), tId = tId.toInt())
+                                }
+                                "VarLabelBound" -> {
+                                    val (v, tId) =
+                                        args.replace("vId=", "").replace("tId=", "").split(", ")
+                                    VR(vId = v.toInt(), tId = tId.toInt())
+                                }
+                                "ConcreteLabel" -> CL(dummy = args.replace("dummy=", "").toInt())
+                                else -> throw Exception("Parsing error")
+                            }
+                        (if (skTy is CL) "root" else lhs) to skTy
                     }
-                    (if (skTy is CL) "root" else lhs) to skTy
                 }
-            }
 
-        private fun typeAfterSubs(l: Map<String, OldSymTypeB>): OldSymTypeB =
-            sub(l["root"]!!, l)
+        private fun typeAfterSubs(l: Map<String, OldSymTypeB>): OldSymTypeB = sub(l["root"]!!, l)
 
         private fun sub(t: OldSymTypeB, l: Map<String, OldSymTypeB>): OldSymTypeB =
             when (t) {
                 is N -> sub(l[t.name]!!, l)
-                is L, is VL, is VB, is VR, is CL -> t
+                is L,
+                is VL,
+                is VB,
+                is VR,
+                is CL -> t
                 is F -> F(sub(t.left, l), sub(t.rite, l))
             }
 
@@ -358,7 +401,8 @@ class OldSymTypeBSketcherUsingFixes(
         }
 
         private val functions: Map<String, List<String>> by lazy {
-            functionsFirstPass.mapKeys { (k, _) -> k.split(" ")[1] }
+            functionsFirstPass
+                .mapKeys { (k, _) -> k.split(" ")[1] }
                 .mapValues { (_, v) -> v.filter { it.contains("=") } }
         }
 

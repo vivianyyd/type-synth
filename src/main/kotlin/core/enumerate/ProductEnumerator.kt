@@ -5,9 +5,7 @@ import core.languages.Language
 import core.languages.SearchNode
 import query.Query
 
-data class PortNode<L : Language>(val options: List<MutableList<PortNode<L>>>) {
-
-}
+data class PortNode<L : Language>(val options: List<MutableList<PortNode<L>>>)
 
 class ProductEnumerator<L : Language>(
     val query: Query,
@@ -37,25 +35,30 @@ class ProductEnumerator<L : Language>(
         TODO()
     }
 
-    override fun enumerate(sketches: Boolean, sizeBound: Int, hardDepthBound: Int): List<Candidate<L>> {
+    override fun enumerate(
+        sketches: Boolean,
+        sizeBound: Int,
+        hardDepthBound: Int
+    ): List<Candidate<L>> {
         TODO()
 
-
-//        // 1. Get constraints for each function from Unification
-//        val constrs = unification(seedCandidate, query.posExsBeforeSubexprs).get() ?: return listOf()
-//        // 2. For each function, enumerate possible building blocks (expansions)
-//        val optionsPerFunction = seedCandidate.types.mapIndexed { i, node ->
-//            node.expansions(constrs, node.variableNames(), maxDepth).map { it.first }
-//        }
-//        // 3. Generate all combinations (cartesian product) of building blocks
-//        val candidates = lazyCartesianProduct(optionsPerFunction).map { Candidate(seedCandidate.names, it) }
-//        // 4. Filter candidates by constraints and examples
-//        return candidates.filter { c ->
-//            c.canonical() &&
-//                    unification(c, query.posExsBeforeSubexprs).get() != null &&
-//                    (if (mustPassNegatives) query.negExamples.all {
-//                        unification(c, listOf(it)).get() == null
-//                    } else true)
-//        }.toList()
+        //        // 1. Get constraints for each function from Unification
+        //        val constrs = unification(seedCandidate, query.posExsBeforeSubexprs).get() ?:
+        // return listOf()
+        //        // 2. For each function, enumerate possible building blocks (expansions)
+        //        val optionsPerFunction = seedCandidate.types.mapIndexed { i, node ->
+        //            node.expansions(constrs, node.variableNames(), maxDepth).map { it.first }
+        //        }
+        //        // 3. Generate all combinations (cartesian product) of building blocks
+        //        val candidates = lazyCartesianProduct(optionsPerFunction).map {
+        // Candidate(seedCandidate.names, it) }
+        //        // 4. Filter candidates by constraints and examples
+        //        return candidates.filter { c ->
+        //            c.canonical() &&
+        //                    unification(c, query.posExsBeforeSubexprs).get() != null &&
+        //                    (if (mustPassNegatives) query.negExamples.all {
+        //                        unification(c, listOf(it)).get() == null
+        //                    } else true)
+        //        }.toList()
     }
 }

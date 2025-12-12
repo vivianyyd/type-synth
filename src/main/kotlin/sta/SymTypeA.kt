@@ -7,7 +7,10 @@ sealed interface SymTypeA {
     var parent: Parent?
 }
 
-/** The symbolic type if we decide to use this node. Kills all port siblings along the path to this node */
+/**
+ * The symbolic type if we decide to use this node. Kills all port siblings along the path to this
+ * node
+ */
 fun SymTypeA.determinedTypeSoFar(): SymTypeA {
     if (this is Error) return this
     if (this.parent == null) return this
@@ -31,8 +34,7 @@ class Function(
     val left: PortContents = mutableListOf(),
     val rite: PortContents = mutableListOf(),
     override var parent: Parent? = null
-) :
-    AbstractType(parent) {
+) : AbstractType(parent) {
     init {
         left.forEach { it.parent = Parent(this, 0) }
         rite.forEach { it.parent = Parent(this, 1) }
@@ -51,25 +53,14 @@ class Hole(override var parent: Parent? = null) : AbstractType(parent) {
 
 fun main() {
     val special = Label()
-    val t = Function(
-        mutableListOf(
-            Variable(),
-            Label()
-        ),
-        mutableListOf(
-            Variable(),
-            Function(
-                mutableListOf(
-                    Variable(),
-                    Label()
-                ),
-                mutableListOf(
-                    special,
-                    Variable()
-                )
+    val t =
+        Function(
+            mutableListOf(Variable(), Label()),
+            mutableListOf(
+                Variable(),
+                Function(mutableListOf(Variable(), Label()), mutableListOf(special, Variable()))
             )
         )
-    )
     println(t)
     println(special.determinedTypeSoFar())
 }

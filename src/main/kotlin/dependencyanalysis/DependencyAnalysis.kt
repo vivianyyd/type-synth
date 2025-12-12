@@ -11,10 +11,13 @@ import java.lang.Integer.max
 
 sealed interface DependencyConstraint
 
-// TODO MustContainVariables, MustSuperSet/SubSet. Currently don't really know how to use these anyway
+// TODO MustContainVariables, MustSuperSet/SubSet. Currently don't really know how to use these
+// anyway
 //   so not implemented yet
 object ContainsNoVariables : DependencyConstraint
+
 data class ContainsOnly(val vId: Int, val tId: Int) : DependencyConstraint
+
 data class MustContainVariables(val vars: List<Pair<Int, Int>>) : DependencyConstraint
 
 // TODO make it map from ParameterNodes
@@ -22,28 +25,32 @@ fun constraints(outline: Projection, deps: DependencyAnalysis) =
     outline.outline.keys.associateWith { name ->
         val graph = deps.graphs[name]!!
         val constrs = mutableMapOf<Int, DependencyConstraint>()
-        graph.loops.forEach {
-            constrs[it.node.i] = ContainsNoVariables
-        }
+        graph.loops.forEach { constrs[it.node.i] = ContainsNoVariables }
         graph.deps.forEach {
             val sup = outline.parameterToType[it.sup]!!
             if (sup is Var) constrs[it.sub.i] = ContainsOnly(sup.vId, sup.tId)
         }
-        equivalenceClasses(graph.deps) { e1, e2 -> e1.sup == e2.sup }.forEach {
-            val sink = it.first().sup
-            val containedVars =
-                it.map { outline.parameterToType[it.sub]!! }.filterIsInstance<Var>().map { it.vId to it.tId }
-            if (outline.parameterToType[sink]!! !is Var && containedVars.isNotEmpty()) {
-                if (sink.i !in constrs) constrs[sink.i] = MustContainVariables(containedVars)
+        equivalenceClasses(graph.deps) { e1, e2 -> e1.sup == e2.sup }
+            .forEach {
+                val sink = it.first().sup
+                val containedVars =
+                    it.map { outline.parameterToType[it.sub]!! }
+                        .filterIsInstance<Var>()
+                        .map { it.vId to it.tId }
+                if (outline.parameterToType[sink]!! !is Var && containedVars.isNotEmpty()) {
+                    if (sink.i !in constrs) constrs[sink.i] = MustContainVariables(containedVars)
+                }
             }
-        }
         constrs
     }
 
 class DependencyAnalysis(
-    private val query: Query, arities: Map<String, Int>, private val oracle: Oracle
+    private val query: Query,
+    arities: Map<String, Int>,
+    private val oracle: Oracle
 ) {
-    private val nodes = arities.flatMap { (name, arity) -> (0 until arity).map { ParameterNode(name, it) } }
+    private val nodes =
+        arities.flatMap { (name, arity) -> (0 until arity).map { ParameterNode(name, it) } }
 
     fun nodes(name: String) = nodes.filter { it.f == name }
 
@@ -55,18 +62,21 @@ class DependencyAnalysis(
     }
 
     private fun flatExs(name: String, exs: Collection<Example>) =
-        equivalenceClasses(exs.map { it.flatten() }) { e1, e2 -> e1.name == e2.name }.associateBy { it.first().name }[name]
-            ?: setOf()
+        equivalenceClasses(exs.map { it.flatten() }) { e1, e2 -> e1.name == e2.name }
+            .associateBy { it.first().name }[name] ?: setOf()
 
     val all by lazy { query.names.associateWith { findEdges(it) } }
 
     fun mayHaveFresh(name: String, param: Int) = mayHaveFresh(ParameterNode(name, param))
+
     fun mayHaveFresh(p: ParameterNode) = p in all[p.f]!!.third
 
     /** Requires: i is in bounds for ex. */
     private fun arg(ex: FlatApp, i: Int) = if (i == ex.args.size) ex else ex.args[i]
 
-    private fun findEdges(name: String): Triple<Set<DependencyEdge>, Set<SelfLoop>, Set<ParameterNode>> {
+    private fun findEdges(
+        name: String
+    ): Triple<Set<DependencyEdge>, Set<SelfLoop>, Set<ParameterNode>> {
         val nodes = nodes(name)
         val deps = mutableSetOf<DependencyEdge>()
         val loops = mutableSetOf<SelfLoop>()
@@ -81,7 +91,8 @@ class DependencyAnalysis(
             val i = pi.i
 
             fun relevantExs(paramIndex: Int, exs: Collection<FlatApp>) =
-                if (paramIndex < nodes.size - 1) exs.filter { it.args.size > paramIndex && it.args.size < nodes.size }
+                if (paramIndex < nodes.size - 1)
+                    exs.filter { it.args.size > paramIndex && it.args.size < nodes.size }
                 else exs.filter { it.args.size == paramIndex }
 
             val pos = relevantExs(i, posExs)
@@ -95,34 +106,37 @@ class DependencyAnalysis(
             }
 
             /**
-             * In each equivalence class, the type of the function that the arg at [argIndex] is applied to is the same
-             * */
+             * In each equivalence class, the type of the function that the arg at [argIndex] is
+             * applied to is the same
+             */
             fun groupExsByTypeBeforeArg(argIndex: Int, exs: Collection<FlatApp>) =
                 equivalenceClasses(exs) { e1, e2 ->
                     oracle.flatEqual(
                         FlatApp(e1.name, e1.args.subList(0, argIndex)),
                         FlatApp(e2.name, e2.args.subList(0, argIndex))
                     )
-                    // Weaker test: all args prior to the ith have the same type. Use this if the oracle
+                    // Weaker test: all args prior to the ith have the same type. Use this if the
+                    // oracle
                     //   doesn't work for arbitrary subexpressions.. But it should.
-//                    e1.args.subList(0, argIndex).zip(e2.args.subList(0, argIndex))
-//                        .all { (a1, a2) -> oracle.flatEqual(a1, a2) }
+                    //                    e1.args.subList(0, argIndex).zip(e2.args.subList(0,
+                    // argIndex))
+                    //                        .all { (a1, a2) -> oracle.flatEqual(a1, a2) }
                 }
 
             /**
              * Node p3 has F tag when there exist
-             *  + f t1 t2 t3
-             *  + f t1 t2 t3'
-             * where t3 =/= t3', i.e. there are still degrees of flexibility (unbound variables) in the parameter
+             * + f t1 t2 t3
+             * + f t1 t2 t3' where t3 =/= t3', i.e. there are still degrees of flexibility (unbound
+             *   variables) in the parameter
              */
             val fTag =
                 if (i == nodes.size - 1)
-                    false  // No additional arguments to take in, so fully determined. TODO Assumes nullary contains no variables
-                else groupExsByTypeBeforeArg(i, pos).any { c ->
-                    c.any { e1 ->
-                        c.any { e2 -> !oracle.flatEqual(arg(e1, i), arg(e2, i)) }
+                    false // No additional arguments to take in, so fully determined. TODO Assumes
+                // nullary contains no variables
+                else
+                    groupExsByTypeBeforeArg(i, pos).any { c ->
+                        c.any { e1 -> c.any { e2 -> !oracle.flatEqual(arg(e1, i), arg(e2, i)) } }
                     }
-                }
             if (fTag) mayHaveFresh.add(pi)
 
             for (pj in parameters) {
@@ -130,15 +144,17 @@ class DependencyAnalysis(
                 if (j == i) continue
 
                 fun depEdge(source: Int, sink: Int): Boolean {
-                    val posGroupedBySink = equivalenceClasses(relevantExs(max(i, j), pos)) { e1, e2 ->
-                        oracle.flatEqual(arg(e1, sink), arg(e2, sink))
-                    }
-                    val sourceChangesWhileSinkConstant = posGroupedBySink.any { eqClass ->
-                        eqClass.any {
-                            val arbitraryElem = arg(eqClass.first(), source)
-                            !oracle.flatEqual(arg(it, source), arbitraryElem)
+                    val posGroupedBySink =
+                        equivalenceClasses(relevantExs(max(i, j), pos)) { e1, e2 ->
+                            oracle.flatEqual(arg(e1, sink), arg(e2, sink))
                         }
-                    }
+                    val sourceChangesWhileSinkConstant =
+                        posGroupedBySink.any { eqClass ->
+                            eqClass.any {
+                                val arbitraryElem = arg(eqClass.first(), source)
+                                !oracle.flatEqual(arg(it, source), arbitraryElem)
+                            }
+                        }
                     return !sourceChangesWhileSinkConstant
                 }
                 if (depEdge(i, j)) {

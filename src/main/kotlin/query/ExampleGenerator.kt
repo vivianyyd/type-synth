@@ -8,47 +8,61 @@ import java.util.*
 
 class ExampleGenerator(
     private val MAX_TYPE_DEPTH: Int,
-    private val MAX_DEPTH: Int,  // todo assert this is at least the max depth of any parameter type!
+    private val MAX_DEPTH: Int, // todo assert this is at least the max depth of any parameter type!
     private val ERROR_COVERAGE_CAPACITY: Int,
     private val namedFns: List<Pair<Type, String?>>
 ) {
     private var name = 0
+
     private fun freshValue() = "${name++}"
+
     private val types = namedFns.map { it.first }
 
     /**
-     * A type is observable as long as it is a function, or it is *not* only ever seen as the output of a function.
-     * We unwrap functions to get arguments, but we don't include results of partial application to avoid blowup.
+     * A type is observable as long as it is a function, or it is *not* only ever seen as the output
+     * of a function. We unwrap functions to get arguments, but we don't include results of partial
+     * application to avoid blowup.
      */
-    private val observableNonFunctionTypes: Set<Type> = types.fold(setOf()) { a, it ->
-        when (it) {
-            is Function -> {
-                fun args(f: Function): Set<Type> =
-                    setOf(f.left) + (if (f.rite is Function) args(f.rite) else setOf())
-                a + setOf(it) + args(it)
+    private val observableNonFunctionTypes: Set<Type> =
+        types.fold(setOf()) { a, it ->
+            when (it) {
+                is Function -> {
+                    fun args(f: Function): Set<Type> =
+                        setOf(f.left) + (if (f.rite is Function) args(f.rite) else setOf())
+                    a + setOf(it) + args(it)
+                }
+                is Variable,
+                is LabelNode -> a + it
+                is TypeHole,
+                is Error -> throw Exception("no way")
             }
-            is Variable, is LabelNode -> a + it
-            is TypeHole, is Error -> throw Exception("no way")
         }
-    }
 
     fun examples(): Pair<Query, Assignment> {
         if (types.isEmpty()) return Pair(Query(), mapOf())
 
-        // Explode parameterized labelled types into concrete types and give them dummies, skip functions for now
-        val (primitives, parameterized) = observableNonFunctionTypes.filterIsInstance<LabelNode>()
-            .partition { it.params.isEmpty() }
+        // Explode parameterized labelled types into concrete types and give them dummies, skip
+        // functions for now
+        val (primitives, parameterized) =
+            observableNonFunctionTypes.filterIsInstance<LabelNode>().partition {
+                it.params.isEmpty()
+            }
         val typeAndDepth = primitives.associateWith { 0 }.toMutableMap()
         // Explode label nodes
         for (d in 1..MAX_TYPE_DEPTH) {
             for (label in parameterized) {
-                // TODO Bug: We generate small examples many times - we want to product big new exprs w small ones,
-                //  so we keep smaller ones in the pool, but then we frequently make products which only contain small ones
+                // TODO Bug: We generate small examples many times - we want to product big new
+                // exprs w small ones,
+                //  so we keep smaller ones in the pool, but then we frequently make products which
+                // only contain small ones
                 //  need to enforce output is SxSx...xS - sxsx...xs where s subset S.
-                //  Solution: doesn't matter until last index, at which point if we've only picked from s we can only pick S.
-                val paramAssignments = reflexiveNaryProduct(
-                    typeAndDepth.filter { (_, v) -> v + 1 <= d }.keys.toList(), label.params.size
-                )
+                //  Solution: doesn't matter until last index, at which point if we've only picked
+                // from s we can only pick S.
+                val paramAssignments =
+                    reflexiveNaryProduct(
+                        typeAndDepth.filter { (_, v) -> v + 1 <= d }.keys.toList(),
+                        label.params.size
+                    )
                 for (args in paramAssignments) {
                     val ty = LabelNode(label.label, args)
                     if (ty !in typeAndDepth) typeAndDepth[ty] = d
@@ -56,25 +70,32 @@ class ExampleGenerator(
             }
         }
         val namedFnsMap =
-            namedFns.filter { it.second != null }.map { it.second!!.filter { it != '(' && it != ')' } to it.first }
+            namedFns
+                .filter { it.second != null }
+                .map { it.second!!.filter { it != '(' && it != ')' } to it.first }
                 .toMap()
 
         val nonFns = typeAndDepth.keys
         val fns = types.filterIsInstance<Function>()
-        val dummies = namedFnsMap + (nonFns + fns).filter { it !in namedFnsMap.values }.associateBy { freshValue() }
+        val dummies =
+            namedFnsMap +
+                    (nonFns + fns).filter { it !in namedFnsMap.values }.associateBy { freshValue() }
 
-        // We don't want functions to be subexprs in expressions yet, so only add nonFns when initializing posExamples
+        // We don't want functions to be subexprs in expressions yet, so only add nonFns when
+        // initializing posExamples
         //  fn dummies are added as positive examples at the end
         //  TODO Need to change this to support HOFs
         val posExamples = mutableMapOf<Type, MutableList<Example>>()
 
         fun addPos(t: Type, ex: Example) {
             if (ex.size() < 4 || (1..10).random() < 3) {
-                if (t in posExamples) posExamples[t]!!.add(ex) else posExamples[t] = mutableListOf(ex)
+                if (t in posExamples) posExamples[t]!!.add(ex)
+                else posExamples[t] = mutableListOf(ex)
             }
         }
         dummies.forEach { (n, t) -> addPos(t, Name(n)) }
-//        dummies.filter { it.value is LabelNode }.forEach { (n, t) -> addPos(t, Name(n) as Example) }
+        //        dummies.filter { it.value is LabelNode }.forEach { (n, t) -> addPos(t, Name(n) as
+        // Example) }
         val negExamples = EnumMap(ErrorCategory.values().associateWith { mutableSetOf<Example>() })
 
         fun addNeg(err: ErrorCategory, ex: Example) {
@@ -84,68 +105,102 @@ class ExampleGenerator(
         }
         // BEGIN COMPOSITION LOOP
         for (i in 1..MAX_DEPTH) {
-            dummies.filter { it.value is Function }.forEach { (name, dummyTy) ->
-                val inProgress: MutableList<Pair<Example, Function>> = mutableListOf(Name(name) to dummyTy as Function)
-                while (inProgress.isNotEmpty()) {
-                    val (currEx, currTy) = inProgress.removeFirst()
+            dummies
+                .filter { it.value is Function }
+                .forEach { (name, dummyTy) ->
+                    val inProgress: MutableList<Pair<Example, Function>> =
+                        mutableListOf(Name(name) to dummyTy as Function)
+                    while (inProgress.isNotEmpty()) {
+                        val (currEx, currTy) = inProgress.removeFirst()
 
-                    // TODO I make this restriction to produce fewer negative examples and speed up generation, but
-                    //  this change eliminates an entire class of negative examples and I should next implement
-                    //  a deliberate adding back of these negexs
-                    val funcDummies =
-                        dummies.mapNotNull { (n, t) -> if (t is Function) t to listOf(Name(n)) else null }.toMap()
-                    // This forces that we can't pass partially applied stuff as an argument
-                    val possArgs =
-                        if (currTy.left is LabelNode) posExamples.filter { (t, _) -> t is LabelNode && currTy.left.label == t.label } else if (currTy.left is Function) funcDummies else /*funcDummies letting arbitrary functions in the place of alpha takes too long+ */ posExamples.filterKeys { it !is Function }
-                    val (goodArgs, badArgs) = possArgs.entries.associate { (t, exs) ->
-                        exs.filter { it.depth() < MAX_DEPTH } to applyOrError(currTy, t)
-                    }.filterKeys { it.isNotEmpty() }.entries.partition { it.value !is Err }
-                    val tmp = mutableListOf<Pair<Type, Example>>()
-                    goodArgs.map { it.key to (it.value as Ok).result }.forEach { (args, typeAfterArg) ->
-                        args.forEach {
-                            val ex = App(currEx, it)
-                            tmp.add(typeAfterArg to ex)
-                            // TODO there is a more efficient way probably since there are multiple examples with same fn type
-                            if (typeAfterArg is Function)
-                                inProgress.add(ex to typeAfterArg)
+                        // TODO I make this restriction to produce fewer negative examples and speed
+                        // up generation, but
+                        //  this change eliminates an entire class of negative examples and I should
+                        // next implement
+                        //  a deliberate adding back of these negexs
+                        val funcDummies =
+                            dummies
+                                .mapNotNull { (n, t) ->
+                                    if (t is Function) t to listOf(Name(n)) else null
+                                }
+                                .toMap()
+                        // This forces that we can't pass partially applied stuff as an argument
+                        val possArgs =
+                            if (currTy.left is LabelNode)
+                                posExamples.filter { (t, _) ->
+                                    t is LabelNode && currTy.left.label == t.label
+                                }
+                            else if (currTy.left is Function) funcDummies
+                            else /*funcDummies letting arbitrary functions in the place of alpha takes too long+ */
+                                posExamples.filterKeys { it !is Function }
+                        val (goodArgs, badArgs) =
+                            possArgs.entries
+                                .associate { (t, exs) ->
+                                    exs.filter { it.depth() < MAX_DEPTH } to applyOrError(currTy, t)
+                                }
+                                .filterKeys { it.isNotEmpty() }
+                                .entries
+                                .partition { it.value !is Err }
+                        val tmp = mutableListOf<Pair<Type, Example>>()
+                        goodArgs
+                            .map { it.key to (it.value as Ok).result }
+                            .forEach { (args, typeAfterArg) ->
+                                args.forEach {
+                                    val ex = App(currEx, it)
+                                    tmp.add(typeAfterArg to ex)
+                                    // TODO there is a more efficient way probably since there are
+                                    // multiple examples with same fn type
+                                    if (typeAfterArg is Function) inProgress.add(ex to typeAfterArg)
+                                }
+                            }
+                        tmp.forEach { // I think this avoids concurrentmodificationexcedption
+                            println("Posex ${it.second}")
+                            addPos(it.first, it.second)
                         }
-                    }
-                    tmp.forEach {  // I think this avoids concurrentmodificationexcedption
-                        println("Posex ${it.second}")
-                        addPos(it.first, it.second)
-                    }
 
-                    badArgs.flatMap { it.key.map { k -> k to it.value as Err } }
-                        .forEach { (ex, err) -> addNeg(err.error, App(currEx, ex)) }
+                        badArgs
+                            .flatMap { it.key.map { k -> k to it.value as Err } }
+                            .forEach { (ex, err) -> addNeg(err.error, App(currEx, ex)) }
+                    }
                 }
-            }
-            // TODO we can purposefully add some negative examples where we apply too many arguments, although
+            // TODO we can purposefully add some negative examples where we apply too many
+            // arguments, although
             //  it shouldn't be necessary}
         }
-//        dummies.filter { it.value is Function }.forEach { (n, t) -> addPos(t, Name(n)) }
+        //        dummies.filter { it.value is Function }.forEach { (n, t) -> addPos(t, Name(n)) }
 
         println(negExamples.entries.map { "${it.key}\t${it.value.size}" })
 
-        return Pair(Query(posExamples.values.flatten(), negExamples.values.flatten(), includesSubexprs = true), dummies)
-        // TODO Want minimal negexs. Also, instead of keeping all, we could discard if we have >5 for that error type for that fn name already! actually we want >5 of them for that parameter of that fn. if fn has 5 params we want few examples of each being wrong
+        return Pair(
+            Query(
+                posExamples.values.flatten(),
+                negExamples.values.flatten(),
+                includesSubexprs = true
+            ),
+            dummies
+        )
+        // TODO Want minimal negexs. Also, instead of keeping all, we could discard if we have >5
+        // for that error type for that fn name already! actually we want >5 of them for that
+        // parameter of that fn. if fn has 5 params we want few examples of each being wrong
     }
 }
 
 fun main() {
-//    val groundTruth = listOf("(i)", "(b)", "(-> a (-> (l a) (l a)))")
-    val groundTruth = listOf(
-        "(i)", "(b)",
-        "(d (i) (b))",
-        "(d (b) (i))",
-        "(d (i) (i))",
-        "(d (b) (b))",
-        "(-> (d k v) (-> k (-> v (d k v))))"
-    )
+    //    val groundTruth = listOf("(i)", "(b)", "(-> a (-> (l a) (l a)))")
+    val groundTruth =
+        listOf(
+            "(i)",
+            "(b)",
+            "(d (i) (b))",
+            "(d (b) (i))",
+            "(d (i) (i))",
+            "(d (b) (b))",
+            "(-> (d k v) (-> k (-> v (d k v))))"
+        )
 
-    val (query, context) = ExampleGenerator(2,
-        2,
-        200,
-        groundTruth.map { SExprParser(it).parse().toType() to null }).examples()
+    val (query, context) =
+        ExampleGenerator(2, 2, 200, groundTruth.map { SExprParser(it).parse().toType() to null })
+            .examples()
     println(context.toList().joinToString(separator = "\n"))
     println("Positive examples:")
     println(query.posExamples.size)
@@ -155,7 +210,8 @@ fun main() {
 
 fun printInvertDummies(exs: Collection<FlatApp>, context: Assignment): String {
     fun replaceDummiesWithTypeString(app: FlatApp): FlatApp =
-        FlatApp(if (app.args.isEmpty()) "${context[app.name]}" else "(${context[app.name]}). ",
+        FlatApp(
+            if (app.args.isEmpty()) "${context[app.name]}" else "(${context[app.name]}). ",
             app.args.map { replaceDummiesWithTypeString(it) })
     return exs.map { replaceDummiesWithTypeString(it) }.joinToString(separator = "\n")
 }

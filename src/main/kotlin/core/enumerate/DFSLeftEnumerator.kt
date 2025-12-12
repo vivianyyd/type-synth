@@ -19,42 +19,45 @@ class DFSLeftEnumerator<L : Language>(
         unification: Unification<L>,
         recursionBound: Int
     ): Sequence<Candidate<L>> {
-        val (changeInd, leftmostNode) = c.types.withIndex().firstOrNull { (_, it) -> it.holes() > 0 }
-            ?: return sequenceOf(c)
+        val (changeInd, leftmostNode) =
+            c.types.withIndex().firstOrNull { (_, it) -> it.holes() > 0 } ?: return sequenceOf(c)
 
         val optionsForLeftmost =
-            leftmostNode.dfsLeftExpansions(unification, leftmostNode.variableNames().size, recursionBound).asSequence()
+            leftmostNode
+                .dfsLeftExpansions(unification, leftmostNode.variableNames().size, recursionBound)
+                .asSequence()
 
         return optionsForLeftmost.flatMap { (newLeftMost, commit) ->
-            val newCandidate = Candidate(c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newLeftMost else p })
+            val newCandidate =
+                Candidate(
+                    c.names, c.types.mapIndexed { i, p -> if (changeInd == i) newLeftMost else p })
             if (commit == null) {
                 require(newCandidate == c)
-                emptySequence() // this call made no changes, but we don't want to hit it again TODO verify this doesn't break completeness
+                emptySequence() // this call made no changes, but we don't want to hit it again TODO
+                // verify this doesn't break completeness
             } else {
-                // We reconstruct Unification every time because we don't want different child branches to
+                // We reconstruct Unification every time because we don't want different child
+                // branches to
                 //  affect one another, and Unification is stateful.
                 val u = unification.spawnAndRefine(listOf(commit))
-                if (u.ok())
-                    commitLeftmost(newCandidate, u, recursionBound)
-                else emptySequence()
+                if (u.ok()) commitLeftmost(newCandidate, u, recursionBound) else emptySequence()
             }
         }
     }
 
-    override fun enumerate(sketches: Boolean, sizeBound: Int, hardDepthBound: Int): List<Candidate<L>> {
+    override fun enumerate(
+        sketches: Boolean,
+        sizeBound: Int,
+        hardDepthBound: Int
+    ): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
             unification(c, query.posExsBeforeSubexprs).ok() &&
-                    (if (mustPassNegatives)
-                        query.negExamples.all { !unification(c, listOf(it)).ok() }
+                    (if (mustPassNegatives) query.negExamples.all { !unification(c, listOf(it)).ok() }
                     else true)
 
         val u = unification(seedCandidate, query.posExsBeforeSubexprs)
         if (!u.ok()) return listOf()
 
-        return commitLeftmost(
-            seedCandidate,
-            u,
-            hardDepthBound
-        ).filter { c -> check(c) }.toList()
+        return commitLeftmost(seedCandidate, u, hardDepthBound).filter { c -> check(c) }.toList()
     }
 }

@@ -9,10 +9,16 @@ class CVCParser(input: String) {
         val (paramSetsE, rest) = map(input).entries.partition { it.key.startsWith('p') }
         val (sizesE, varsE) = rest.partition { it.key.startsWith("size") }
 
-        paramSets = paramSetsE.associate { it.key to parseSet(it.value) }  // constrGen.pyParamToNode(it.key)
-        sizes = sizesE.associate { it.key to it.value.toInt() }  // constrGen.pySizeToL(it.key) to it.value.toInt()
+        paramSets =
+            paramSetsE.associate { it.key to parseSet(it.value) } // constrGen.pyParamToNode(it.key)
+        sizes =
+            sizesE.associate {
+                it.key to it.value.toInt()
+            } // constrGen.pySizeToL(it.key) to it.value.toInt()
         varDummies =
-            varsE.associate { it.key to it.value.toInt() }  // Var(constrGen.pyVarToIds(it.key)) to it.value.toInt()
+            varsE.associate {
+                it.key to it.value.toInt()
+            } // Var(constrGen.pyVarToIds(it.key)) to it.value.toInt()
     }
 
     fun print() {
@@ -22,7 +28,11 @@ class CVCParser(input: String) {
     }
 
     private fun map(input: String): Map<String, String> =
-        split(input).map { it.split("=") }.filter { it.size == 2 }.map { it[0].trim() to it[1].trim() }.toMap()
+        split(input)
+            .map { it.split("=") }
+            .filter { it.size == 2 }
+            .map { it[0].trim() to it[1].trim() }
+            .toMap()
 
     private fun split(input: String): List<String> {
         val trimmed = input.trim().removePrefix("[").removeSuffix("]")
@@ -59,9 +69,10 @@ class CVCParser(input: String) {
                 when (s[i]) {
                     '(' -> depth++
                     ')' -> depth--
-                    ',' -> if (depth == 0) {
-                        return s.substring(0, i).trim() to s.substring(i + 1).trim()
-                    }
+                    ',' ->
+                        if (depth == 0) {
+                            return s.substring(0, i).trim() to s.substring(i + 1).trim()
+                        }
                 }
             }
             error("Could not find top-level comma in: $s")

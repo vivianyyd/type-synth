@@ -8,27 +8,31 @@ import util.SExpr
 import util.SExprParser
 import util.readExamples
 
-fun sexpsFromExamples(exs: Collection<Example>, pos: Boolean): Collection<SExpr> = exs.map {
-    SExpr.Lst(listOf(SExpr.Atm(if (pos) "+" else "-"), it.flatten().toSExpr()))
-}
+fun sexpsFromExamples(exs: Collection<Example>, pos: Boolean): Collection<SExpr> =
+    exs.map { SExpr.Lst(listOf(SExpr.Atm(if (pos) "+" else "-"), it.flatten().toSExpr())) }
 
 private fun FlatApp.toSExpr(): SExpr =
-    if (this.args.isEmpty()) SExpr.Atm(name) else SExpr.Lst(listOf(SExpr.Atm(name)) + args.map { it.toSExpr() })
+    if (this.args.isEmpty()) SExpr.Atm(name)
+    else SExpr.Lst(listOf(SExpr.Atm(name)) + args.map { it.toSExpr() })
 
-fun parseExamples(sexps: Collection<String>): Query = examplesFromSexps(sexps.map { SExprParser(it).parse() })
+fun parseExamples(sexps: Collection<String>): Query =
+    examplesFromSexps(sexps.map { SExprParser(it).parse() })
 
 fun parseTest(name: String): Test {
     val exs = readExamples(name)
-    return TestPair(name, parseExamples(exs.second.filter { it.isNotBlank() }), oracleFromAssignment(exs.first))
+    return TestPair(
+        name, parseExamples(exs.second.filter { it.isNotBlank() }), oracleFromAssignment(exs.first)
+    )
 }
 
 fun oracleFromAssignment(context: String) = CheckingOracle(assignment(context))
 
-private fun assignment(context: String) = context.split('\t').associate {
-    val assign = SExprParser(it).parse()
-    assert(assign is SExpr.Lst && assign.elements.size == 2 && assign.elements[0] is SExpr.Atm)
-    ((assign as SExpr.Lst).elements[0] as SExpr.Atm).value to assign.elements[1].toType()
-}
+private fun assignment(context: String) =
+    context.split('\t').associate {
+        val assign = SExprParser(it).parse()
+        assert(assign is SExpr.Lst && assign.elements.size == 2 && assign.elements[0] is SExpr.Atm)
+        ((assign as SExpr.Lst).elements[0] as SExpr.Atm).value to assign.elements[1].toType()
+    }
 
 private fun examplesFromSexps(sexps: Collection<SExpr>): Query {
     val exsWithNames = sexps.map { it.toSignedExample() }
@@ -38,9 +42,7 @@ private fun examplesFromSexps(sexps: Collection<SExpr>): Query {
     return Query(pos, neg, names.toList(), false)
 }
 
-/**
- * Posex, negex, names mentioned
- */
+/** Posex, negex, names mentioned */
 private fun splitExamples(exs: List<Pair<Example, Boolean>>): Pair<List<Example>, List<Example>> {
     val (pos, neg) = exs.partition { (_, sign) -> sign }
     return Pair(
@@ -49,36 +51,34 @@ private fun splitExamples(exs: List<Pair<Example, Boolean>>): Pair<List<Example>
     )
 }
 
-private fun SExpr.toSignedExample(): Triple<Boolean, Example, Set<String>> = when (this) {
-    is SExpr.Atm -> {
-        throw Exception("Not an example")
+private fun SExpr.toSignedExample(): Triple<Boolean, Example, Set<String>> =
+    when (this) {
+        is SExpr.Atm -> {
+            throw Exception("Not an example")
+        }
+        is SExpr.Lst -> {
+            assert(this.elements.size == 2)
+            assert(this.elements[0] is SExpr.Atm)
+            val sign = (this.elements[0] as SExpr.Atm).value
+            assert(sign == "+" || sign == "-")
+            val (ex, names) = this.elements[1].toExpression()
+            Triple(sign == "+", ex, names)
+        }
     }
-    is SExpr.Lst -> {
-        assert(this.elements.size == 2)
-        assert(this.elements[0] is SExpr.Atm)
-        val sign = (this.elements[0] as SExpr.Atm).value
-        assert(sign == "+" || sign == "-")
-        val (ex, names) = this.elements[1].toExpression()
-        Triple(sign == "+", ex, names)
-    }
-}
 
-fun SExpr.toExpression(): Pair<Example, Set<String>> = when (this) {
-    is SExpr.Atm -> {
-        Pair(Name(this.value), setOf(this.value))
+fun SExpr.toExpression(): Pair<Example, Set<String>> =
+    when (this) {
+        is SExpr.Atm -> {
+            Pair(Name(this.value), setOf(this.value))
+        }
+        is SExpr.Lst -> {
+            assert(this.elements.isNotEmpty())
+            val (apps, names) = this.elements.map { it.toExpression() }.unzip()
+            fun leftAssocApp(apps: List<Example>): Example =
+                if (apps.size == 1) apps[0] else App(leftAssocApp(apps.dropLast(1)), apps.last())
+            Pair(leftAssocApp(apps), names.fold(setOf()) { a, n -> a.union(n) })
+        }
     }
-    is SExpr.Lst -> {
-        assert(this.elements.isNotEmpty())
-        val (apps, names) = this.elements.map { it.toExpression() }.unzip()
-        fun leftAssocApp(apps: List<Example>): Example =
-            if (apps.size == 1) apps[0] else
-                App(leftAssocApp(apps.dropLast(1)), apps.last())
-        Pair(
-            leftAssocApp(apps),
-            names.fold(setOf()) { a, n -> a.union(n) }
-        )
-    }
-}
 
 fun parseApp(s: String) = SExprParser(s).parse().toSignedExample().second
 
@@ -93,10 +93,10 @@ private fun flatExamplesFromSexps(sexps: Collection<SExpr>): FlatQuery {
     return FlatQuery(pos, neg, names.toList())
 }
 
-/**
- * Posex, negex, names mentioned
- */
-private fun splitFlatExamples(exs: List<Pair<FlatApp, Boolean>>): Pair<List<FlatApp>, List<FlatApp>> {
+/** Posex, negex, names mentioned */
+private fun splitFlatExamples(
+    exs: List<Pair<FlatApp, Boolean>>
+): Pair<List<FlatApp>, List<FlatApp>> {
     val (pos, neg) = exs.partition { (_, sign) -> sign }
     return Pair(
         pos.map { (ex, _) -> ex },
@@ -104,33 +104,38 @@ private fun splitFlatExamples(exs: List<Pair<FlatApp, Boolean>>): Pair<List<Flat
     )
 }
 
-private fun SExpr.toFlatExample(): Triple<Boolean, FlatApp, Set<String>> = when (this) {
-    is SExpr.Atm -> {
-        throw Exception("Not an example")
+private fun SExpr.toFlatExample(): Triple<Boolean, FlatApp, Set<String>> =
+    when (this) {
+        is SExpr.Atm -> {
+            throw Exception("Not an example")
+        }
+        is SExpr.Lst -> {
+            assert(this.elements.size == 2)
+            assert(this.elements[0] is SExpr.Atm)
+            val sign = (this.elements[0] as SExpr.Atm).value
+            assert(sign == "+" || sign == "-")
+            val (ex, names) = this.elements[1].toFlatApplication()
+            Triple(sign == "+", ex, names)
+        }
     }
-    is SExpr.Lst -> {
-        assert(this.elements.size == 2)
-        assert(this.elements[0] is SExpr.Atm)
-        val sign = (this.elements[0] as SExpr.Atm).value
-        assert(sign == "+" || sign == "-")
-        val (ex, names) = this.elements[1].toFlatApplication()
-        Triple(sign == "+", ex, names)
-    }
-}
 
-private fun SExpr.toFlatApplication(): Pair<FlatApp, Set<String>> = when (this) {
-    is SExpr.Atm -> {
-        Pair(FlatApp(this.value), setOf(this.value))
+private fun SExpr.toFlatApplication(): Pair<FlatApp, Set<String>> =
+    when (this) {
+        is SExpr.Atm -> {
+            Pair(FlatApp(this.value), setOf(this.value))
+        }
+        is SExpr.Lst -> {
+            assert(this.elements.isNotEmpty())
+            val (apps, names) = this.elements.map { it.toFlatApplication() }.unzip()
+            if (elements[0] is SExpr.Atm)
+                Pair(
+                    FlatApp((elements[0] as SExpr.Atm).value, apps.drop(1)),
+                    names.fold(setOf()) { a, n -> a.union(n) })
+            else
+                TODO(
+                    "Not yet implemented: Parsing application where the function is the result of an application"
+                ) // Pair(Application(apps[0]))
+        }
     }
-    is SExpr.Lst -> {
-        assert(this.elements.isNotEmpty())
-        val (apps, names) = this.elements.map { it.toFlatApplication() }.unzip()
-        if (elements[0] is SExpr.Atm) Pair(
-            FlatApp((elements[0] as SExpr.Atm).value, apps.drop(1)),
-            names.fold(setOf()) { a, n -> a.union(n) })
-        else
-            TODO("Not yet implemented: Parsing application where the function is the result of an application")  // Pair(Application(apps[0]))
-    }
-}
 
 fun parseFlatApp(s: String) = SExprParser(s).parse().toFlatApplication().first

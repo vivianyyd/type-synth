@@ -8,18 +8,25 @@ object Init : Language
 
 object InitV : Leaf<Init> {
     override fun toString() = "V"
+
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Init> = InitConstrV
+
     override fun variableNames() = emptySet<Int>()
 }
 
 object InitL : Leaf<Init> {
     override fun toString() = "L"
+
     override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Init> = InitConstrL
+
     override fun variableNames() = emptySet<Int>()
 }
 
 class InitHole : Hole<Init>() {
-    /** val so we can prioritize holes correctly, but must be lazy, we only use it when expanding, otherwise stackoverflow lol */
+    /**
+     * val so we can prioritize holes correctly, but must be lazy, we only use it when expanding,
+     * otherwise stackoverflow lol
+     */
     val fnExpansion by lazy { NArrow(InitHole(), InitHole(), true) }
 
     override fun expansions(
@@ -28,8 +35,9 @@ class InitHole : Hole<Init>() {
         mustBeLeaf: Boolean
     ): List<SearchNode<Init>> {
         val mustBeCompatible = unification.holeEqualsConstructors(this)
-        val fn = if (mustBeLeaf) listOf()
-        else if (mustBeCompatible.any { it is CArrow }) listOf(fnExpansion) else listOf()
+        val fn =
+            if (mustBeLeaf) listOf()
+            else if (mustBeCompatible.any { it is CArrow }) listOf(fnExpansion) else listOf()
         return listOf(InitV, InitL) + fn
     }
 

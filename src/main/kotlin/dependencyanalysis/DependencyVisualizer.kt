@@ -14,7 +14,10 @@ object DependencyVisualizer {
     private var ctr = 0
     private val dw = FlowDotWriter()
 
-    /** Adds the graphviz code that draws [this] node, and returns the name of the graphviz node representing [this]. */
+    /**
+     * Adds the graphviz code that draws [this] node, and returns the name of the graphviz node
+     * representing [this].
+     */
     private fun ParameterNode.display(): String {
         val gNode = "n${ctr++}"
         dw.writeNode(gNode, "${this.f}-${this.i}")
@@ -26,8 +29,12 @@ object DependencyVisualizer {
     private fun visualize(graph: DependencyGraph): String {
         dw.startGraph()
         val nodeLabels = graph.nodes.associateWith { it.display() }
-        dw.writeEdges(graph.deps.map { Pair(nodeLabels[it.sub]!!, nodeLabels[it.sup]!!) }, true, "deps")
-        dw.writeEdges(graph.loops.map { Pair(nodeLabels[it.node]!!, nodeLabels[it.node]!!) }, true, "loops")
+        dw.writeEdges(
+            graph.deps.map { Pair(nodeLabels[it.sub]!!, nodeLabels[it.sup]!!) }, true, "deps"
+        )
+        dw.writeEdges(
+            graph.loops.map { Pair(nodeLabels[it.node]!!, nodeLabels[it.node]!!) }, true, "loops"
+        )
         dw.finishGraph()
         val out = dw.output()
         dw.restart()

@@ -5,6 +5,7 @@ sealed class Writer {
     private var indentLevel = 0
 
     fun indent() = indentLevel++
+
     fun dedent() = indentLevel--
 
     fun newLine() = sb.appendLine()

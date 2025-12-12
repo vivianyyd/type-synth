@@ -8,5 +8,6 @@ object InitConstrV : CVariable<Init>() {
 
 object InitConstrL : CTypeConstructor<Init>(mutableListOf()) {
     override fun match(other: CTypeConstructor<Init>): Boolean = other is InitConstrL
+
     override fun toString() = "L"
 }

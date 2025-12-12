@@ -9,5 +9,6 @@ data class ElabConstrV(val v: Int, val instId: Int) : Substitutable<Elab>() {
 
 object ElabConstrL : CTypeConstructor<Elab>(mutableListOf()) {
     override fun match(other: CTypeConstructor<Elab>): Boolean = other is ElabConstrL
+
     override fun toString() = "L"
 }
