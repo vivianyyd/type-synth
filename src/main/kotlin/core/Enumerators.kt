@@ -20,10 +20,10 @@ fun main() {
 
     val configuration = Configuration(
         test = testFromFile,
-        runCVC = false,
+        runCVC = true,
         enumeratorTag = EnumeratorTag.DFSPriority,
         unificationTag = UnificationTag.Eager,
-        finalRoundSketches = true,
+        finalRoundSketches = false,
         sizeBound = 20,
         depthBound = 4
     )

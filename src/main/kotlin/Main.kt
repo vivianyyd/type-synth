@@ -15,7 +15,8 @@ fun main() {
 
     val logger = Logger(
         configuration = config,
-        logToFile = false
+        logToFile = true,
+        logFilename = "dictchain-product.log"
     )
 
     run(config, logger)
