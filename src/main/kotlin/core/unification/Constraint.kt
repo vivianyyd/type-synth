@@ -52,10 +52,6 @@ data class Instantiation<L : Language>(
     override fun toString() = "inst$holeId-$inst"
 }
 
-data class ProofVariable<L : Language>(val id: Int) : Substitutable<L>() {
-    override fun toString() = "T$id"
-}
-
 sealed interface Constraint<L : Language> {
     fun trivial(): Boolean
     fun copy(): Constraint<L>
@@ -78,13 +74,11 @@ typealias Commitment<L> = Pair<Hole<L>, SearchNode<L>>?
 typealias UnificationForCandidate<L> = (Candidate<L>, List<Example>) -> Unification<L>
 
 enum class UnificationTag {
-    Eager, UnionFind, Constraint
+    Eager
 }
 
 fun <L : Language> unification(tag: UnificationTag): UnificationForCandidate<L> = when (tag) {
     UnificationTag.Eager -> ::EagerUnification
-    UnificationTag.UnionFind -> ::UFUnification
-    UnificationTag.Constraint -> ::ConstraintUnification
 }
 
 interface Unification<L : Language> {
@@ -115,13 +109,11 @@ fun main() {
             NArrow(
                 ConcreteV(0), NArrow(
                     ConcreteL(1, listOf(ConcreteV(0))),
-                    ConcreteL(1, listOf(ConcreteHole(false, null, mapOf(0 to 0, 1 to 1, 2 to 0)))),
+                    ConcreteL(1, listOf(ConcreteHole(false, null, mapOf(0 to 0, 1 to 1, 2 to 0), false))),
                     false
                 ), false
             ),
             ConcreteL(2, listOf())
         )
     )
-    val constrs = ConstraintUnification(ty, t.query.posExsBeforeSubexprs).get()
-    println(constrs)
 }

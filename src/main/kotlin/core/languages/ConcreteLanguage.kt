@@ -5,15 +5,33 @@ import util.Counter
 
 object Concrete : Language
 
-/** ConcreteNode interface - helps maintain what variables have already been chosen in the type.
- * We need a way to check alpha equivalence
- * helper function for expansions()?
- * Each node stores numVars in the type it's in. This shouldn't affect equals since types equal implies num vars equal.
- * */
+class Blank(
+    mayHaveFresh: Boolean,
+    constraint: Dependency?,
+    labelArities: Map<Int, Int>,
+    emitBlanks: Boolean
+) : ConcreteHole(mayHaveFresh, constraint, labelArities, emitBlanks) {
+    override fun conflict() = 0
+    override fun priority() = 0
+    override fun costToCommit(): Int = 0
+    override fun fillable(): List<Hole<Concrete>> = listOf()
+    override fun holes() = 1 // TODO not sure about this one
+    override fun full() = false // TODO also not sure about this one
+
+    override fun expansions(
+        unification: Unification<Concrete>,
+        vars: Int,
+        mustBeLeaf: Boolean
+    ): List<SearchNode<Concrete>> = listOf(this)
+
+    override fun toString() = "☐$holeId"
+}
 
 data class ConcreteV(val v: Int) : Leaf<Concrete> {
     override fun toString() = "V$v"
-    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Concrete> = ConcreteConstrV(v, instId)
+    override fun instantiate(freshIdGen: Counter, instId: Int): ConstraintType<Concrete> =
+        ConcreteConstrV(v, instId)
+
     override fun variableNames() = setOf(v)
 }
 
@@ -69,10 +87,11 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
     }
 }
 
-class ConcreteHole(
-    private val mayHaveFresh: Boolean,
-    private val constraint: Dependency?,
-    private val labelArities: Map<Int, Int>,
+open class ConcreteHole(
+    protected val mayHaveFresh: Boolean,
+    protected val constraint: Dependency?,
+    protected val labelArities: Map<Int, Int>,
+    protected val emitBlanks: Boolean
 ) : Hole<Concrete>() {
     override fun expansions(
         unification: Unification<Concrete>,
@@ -89,9 +108,10 @@ class ConcreteHole(
             }
         } else expansionsNoBound(unification, vars)
 
-    private fun hole() = ConcreteHole(mayHaveFresh, constraint, labelArities)
+    private fun hole() = ConcreteHole(mayHaveFresh, constraint, labelArities, emitBlanks)
     private val fnExpansion by lazy { NArrow(hole(), hole(), true) }
     private val labelExpansions by lazy { labelArities.map { ConcreteL(it.key, List(it.value) { hole() }) } }
+    val blankExpansion by lazy { Blank(mayHaveFresh, constraint, labelArities, emitBlanks) }
     private fun variableExpansions(vars: Int) = when (constraint) {  // TODO weird that vars need to be sorted
         null, is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { ConcreteV(it) }
         NoVariables -> listOf()
@@ -116,14 +136,8 @@ class ConcreteHole(
                 // TODO labelExpansions should be an array or something
                 return labelExpansions.filter { it.id == label } + variableExpansions(vars)
             }
-            // TODO can't do this for labels bc sometimes we have less constraints bc of lack of earlier commitments.
-            //   we might erroneously commit to list of int bc we haven't yet committed to a different thing being list of bool.
-            //   AH, but, *if* there is only one label here, the only label expansion we could have is that label!
-            //       and we can say this recursively too
         }
-
-        // TODO hilariously, I think the order makes a difference here. we should sort by size tbh
-        return labelExpansions + variableExpansions(vars) + fnExpansion
+        return (if (emitBlanks) listOf(blankExpansion) else listOf()) + labelExpansions + variableExpansions(vars) + fnExpansion
     }
 
     /** Returns the first node if top-level constructors all match; null if mismatch or empty. */
@@ -143,20 +157,6 @@ class ConcreteHole(
 
         val insts = exprs.filterIsInstance<Instantiation<Concrete>>()
         val constructors = exprs.filterIsInstance<CTypeConstructor<Concrete>>()
-
-        /** insts might point to more insts; follow all pointers and collect them.
-         * no need til fixpt, just keep separate unseen set and only add those' ptrs
-         * TABLED for now, since I think this is a waste of time when all we want is an approximation */
-        fun followInstPointers(
-            acc: List<Instantiation<Concrete>>, new: List<Instantiation<Concrete>>
-        ): List<Instantiation<Concrete>> = TODO()
-
-        val instsPointTo = insts.mapNotNull {
-            val instEqs = unification.holeEquals(it.holeId)
-            // Ignore the other insts if unconstrained, if it can be a variable, or constructors mismatch
-            if (instEqs.any { it is ConcreteConstrV }) null
-            else takeFirstIfMatch(instEqs.filterIsInstance<CTypeConstructor<Concrete>>())
-        }
 
         if (constructors.isEmpty() || constructors.any { a -> constructors.any { b -> !a.match(b) } })
             return defaultVariable
@@ -183,10 +183,18 @@ class ConcreteHole(
             else -> error("Unreachable pattern match")
         }
 
-        return if (auConstrs != null) takeFirstIfMatch(listOf(auConstrs) + instsPointTo) else null
+        return if (auConstrs != null) {
+            val instsPointTo = insts.mapNotNull {
+                val instEqs = unification.holeEquals(it.holeId)
+                // Ignore the other insts if unconstrained, if it can be a variable, or constructors mismatch
+                if (instEqs.any { it is ConcreteConstrV }) null
+                else takeFirstIfMatch(instEqs.filterIsInstance<CTypeConstructor<Concrete>>())
+            }
+            takeFirstIfMatch(listOf(auConstrs) + instsPointTo)
+        } else null
     }
 
-    fun ConstraintType<Concrete>.toNode(): SearchNode<Concrete> = when (this) {
+    private fun ConstraintType<Concrete>.toNode(): SearchNode<Concrete> = when (this) {
         is CArrow -> NArrow(
             this.l.toNode(),
             this.r.toNode(),
@@ -195,7 +203,6 @@ class ConcreteHole(
         is ConcreteConstrL -> ConcreteL(this.label, this.params.map { it.toNode() })
         is ConcreteConstrV -> ConcreteV(this.v)
         is Instantiation -> error("Unreachable pattern match - convert Instantiation to node")
-        is ProofVariable -> error("Unreachable pattern match - convert ProofVariable to node")
         else -> error("Unreachable pattern match")
     }
 
@@ -203,10 +210,9 @@ class ConcreteHole(
         val vExp = variableExpansions(vars)
         val defaultVariable =
             if (vExp.isNotEmpty()) ConcreteConstrV(vExp.first().v, instId = 0)  // instId shouldn't matter, dummy here
-            else null  // Not sure if we want this
+            else null
 
         val antiunifies = unification.holeEquals(this)
-            .filter { it !is ProofVariable }  // let's ignore proof variables TODO this can be cleaned up but I don't wanna deal with it rn
         return antiunify(antiunifies, unification, defaultVariable)?.toNode()
     }
 }

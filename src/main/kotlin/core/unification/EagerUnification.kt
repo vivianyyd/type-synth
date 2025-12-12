@@ -44,9 +44,6 @@ class EagerUnification<L : Language>(
             is ConcreteL -> ConcreteL(
                 n.id,
                 n.params.map { refine(it as SearchNode<L>) } as List<SearchNode<Concrete>>) as SearchNode<L>
-            is SketchL -> SketchL(
-                n.id,
-                n.params.map { refine(it as SearchNode<L>) } as List<SearchNode<Sketch>>) as SearchNode<L>
         }
 
         return EagerUnification(Candidate(candidate.names, candidate.types.map { refine(it) }), exs)
@@ -82,12 +79,10 @@ class EagerUnification<L : Language>(
 
     /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible. */
     fun unify(param: ConstraintType<L>, arg: ConstraintType<L>): List<Binding<L>>? = when (param) {
-        is ProofVariable -> error("No proof variables arise in eager unification")
         is Substitutable ->
             if (param in arg.substitutable()) null
             else listOf(Binding(param, arg))
         is CTypeConstructor -> when (arg) {
-            is ProofVariable -> error("No proof variables arise in eager unification")
             is CTypeConstructor -> {
                 val split = param.split(arg)
                 if (split == null) {
@@ -137,7 +132,6 @@ class EagerUnification<L : Language>(
                 (when (t) {
                     is CArrow -> CArrow(p)
                     is ConcreteConstrL -> ConcreteConstrL(t.label, p as List<ConstraintType<Concrete>>)
-                    is SketchConstrL -> SketchConstrL(t.label, p as List<ConstraintType<Sketch>>)
                     InitConstrL, ElabConstrL, is ElaboratedConstrL -> error("hasSubstitutable should have been false")
                 } as ConstraintType<L>)
             }

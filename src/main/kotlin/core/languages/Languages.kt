@@ -213,11 +213,11 @@ data class ElaboratedInfo(
     val constraints: Map<ParameterNode, Dependency>
 )
 
-fun compileToConcrete(info: ElaboratedInfo) =
+fun compileToConcrete(info: ElaboratedInfo, emitBlanks: Boolean) =
     Candidate(
         info.candidate.names,
         info.candidate.names.zip(info.candidate.types).map { (name, ty) ->
-            compileConcreteType(name, 0, ty, info.labelArities, info.deps, info.constraints)
+            compileConcreteType(name, 0, ty, info.labelArities, info.deps, info.constraints, emitBlanks)
         })
 
 fun compileConcreteParameter(
@@ -225,17 +225,18 @@ fun compileConcreteParameter(
     parameter: ParameterNode,
     labelArities: Map<Int, Int>,
     deps: DependencyAnalysis,
-    constraints: Map<ParameterNode, Dependency>
+    constraints: Map<ParameterNode, Dependency>,
+    emitBlanks: Boolean
 ): SearchNode<Concrete> = when (node) {
     is ElaboratedV -> ConcreteV(node.v)
     is ElaboratedL -> ConcreteL(
         node.label,
         List(labelArities[node.label]!!) {  // TODO If unconstrained, 0 params?
-            ConcreteHole(deps.mayHaveFresh(parameter), constraints[parameter], labelArities)
+            ConcreteHole(deps.mayHaveFresh(parameter), constraints[parameter], labelArities, emitBlanks)
         })
     is NArrow -> NArrow(
-        compileConcreteParameter(node.l, parameter, labelArities, deps, constraints),
-        compileConcreteParameter(node.r, parameter, labelArities, deps, constraints),
+        compileConcreteParameter(node.l, parameter, labelArities, deps, constraints, emitBlanks),
+        compileConcreteParameter(node.r, parameter, labelArities, deps, constraints, emitBlanks),
         true
     )
     else -> throw Exception("Will never happen")
@@ -247,69 +248,20 @@ fun compileConcreteType(
     seed: SearchNode<Elaborated>,
     labelArities: Map<Int, Int>,
     deps: DependencyAnalysis,
-    constraints: Map<ParameterNode, Dependency>
+    constraints: Map<ParameterNode, Dependency>,
+    emitBlanks: Boolean
 ): SearchNode<Concrete> = when (seed) {
     is ElaboratedV, is ElaboratedL -> compileConcreteParameter(
         seed,
         ParameterNode(name, paramsSoFar),
         labelArities,
         deps,
-        constraints
+        constraints,
+        emitBlanks
     )
     is NArrow -> NArrow(
-        compileConcreteParameter(seed.l, ParameterNode(name, paramsSoFar), labelArities, deps, constraints),
-        compileConcreteType(name, paramsSoFar + 1, seed.r, labelArities, deps, constraints), false
-    )
-    is Hole -> throw Exception("Invariant broken")
-    else -> throw Exception("Will never happen due to types")
-}
-
-fun compileToSketch(info: ElaboratedInfo) =
-    Candidate(
-        info.candidate.names,
-        info.candidate.names.zip(info.candidate.types).map { (name, ty) ->
-            compileSketchType(name, 0, ty, info.labelArities, info.deps, info.constraints)
-        })
-
-fun compileSketchParameter(
-    node: SearchNode<Elaborated>,
-    parameter: ParameterNode,
-    labelArities: Map<Int, Int>,
-    deps: DependencyAnalysis,
-    constraints: Map<ParameterNode, Dependency>
-): SearchNode<Sketch> = when (node) {
-    is ElaboratedV -> SketchV(node.v)
-    is ElaboratedL -> SketchL(
-        node.label,
-        List(labelArities[node.label]!!) {  // TODO If unconstrained, 0 params?
-            SketchHole(deps.mayHaveFresh(parameter), constraints[parameter], labelArities)
-        })
-    is NArrow -> NArrow(
-        compileSketchParameter(node.l, parameter, labelArities, deps, constraints),
-        compileSketchParameter(node.r, parameter, labelArities, deps, constraints),
-        true
-    )
-    else -> throw Exception("Will never happen")
-}
-
-fun compileSketchType(
-    name: String,
-    paramsSoFar: Int,
-    seed: SearchNode<Elaborated>,
-    labelArities: Map<Int, Int>,
-    deps: DependencyAnalysis,
-    constraints: Map<ParameterNode, Dependency>
-): SearchNode<Sketch> = when (seed) {
-    is ElaboratedV, is ElaboratedL -> compileSketchParameter(
-        seed,
-        ParameterNode(name, paramsSoFar),
-        labelArities,
-        deps,
-        constraints
-    )
-    is NArrow -> NArrow(
-        compileSketchParameter(seed.l, ParameterNode(name, paramsSoFar), labelArities, deps, constraints),
-        compileSketchType(name, paramsSoFar + 1, seed.r, labelArities, deps, constraints), false
+        compileConcreteParameter(seed.l, ParameterNode(name, paramsSoFar), labelArities, deps, constraints, emitBlanks),
+        compileConcreteType(name, paramsSoFar + 1, seed.r, labelArities, deps, constraints, emitBlanks), false
     )
     is Hole -> throw Exception("Invariant broken")
     else -> throw Exception("Will never happen due to types")

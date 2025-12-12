@@ -103,8 +103,7 @@ fun run(configuration: Configuration, logger: Logger) {
                 configuration.runCVC
             )
         }
-        if (configuration.finalRoundSketches) info.map { compileToSketch(it) }
-        else info.map { compileToConcrete(it) }
+        info.map { compileToConcrete(it, configuration.finalRoundSketches) }
     }
     println(concSeeds.joinToString(separator = "\n"))
 
