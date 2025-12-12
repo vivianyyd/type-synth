@@ -13,3 +13,5 @@ profiling
 results/logs/big
 *.hi
 *.o
+*.cache*
+tmp.log
