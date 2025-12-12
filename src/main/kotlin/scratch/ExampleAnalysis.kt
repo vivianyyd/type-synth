@@ -34,7 +34,6 @@ fun main() {
         }
     }
 
-
     val (A, B) = balancedMinCut(matrix, cushion = 3, iterations = 20)
     println("Set A: ${A.map { query.names[it] }}}")
     println("Set B: ${B.map { query.names[it] }}}")
@@ -43,12 +42,12 @@ fun main() {
     val cutWeight = A.sumOf { i -> B.sumOf { j -> matrix[i][j] } }
     println("Cut weight: $cutWeight")
 
-//    val G = Graph(n, matrix)
-//    val subset = findDenseWeaklyConnectedSubset(G)
-//
-//    println("Chosen subset: ${subset.map { query.names[it] }}")
-//    println("Internal density = ${internalDensity(G, subset)}")
-//    println("External density = ${externalDensity(G, subset)}")
+    //    val G = Graph(n, matrix)
+    //    val subset = findDenseWeaklyConnectedSubset(G)
+    //
+    //    println("Chosen subset: ${subset.map { query.names[it] }}")
+    //    println("Internal density = ${internalDensity(G, subset)}")
+    //    println("External density = ${externalDensity(G, subset)}")
 }
 
 fun balancedMinCut(
@@ -78,7 +77,8 @@ fun balancedMinCut(
         for (i in nodes) {
             val fromSet = if (A.contains(i)) A else B
             val toSet = if (fromSet === A) B else A
-            if (fromSet.size - 1 < portion - cushion || fromSet.size - 1 > portion + cushion) continue
+            if (fromSet.size - 1 < portion - cushion || fromSet.size - 1 > portion + cushion)
+                continue
 
             val internal = fromSet.sumOf { j -> matrix[i][j] }
             val external = toSet.sumOf { j -> matrix[i][j] }
@@ -152,10 +152,11 @@ fun findDenseWeaklyConnectedSubset(G: Graph): Set<Int> {
         while (improved) {
             improved = false
             val candidates = (0 until G.n).toSet() - current
-            val next = candidates.maxByOrNull { v ->
-                val newSet = current + v
-                internalDensity(G, newSet) - externalDensity(G, newSet)
-            }
+            val next =
+                candidates.maxByOrNull { v ->
+                    val newSet = current + v
+                    internalDensity(G, newSet) - externalDensity(G, newSet)
+                }
             if (next != null) {
                 val newSet = current + next
                 val score = internalDensity(G, newSet) - externalDensity(G, newSet)
@@ -165,7 +166,9 @@ fun findDenseWeaklyConnectedSubset(G: Graph): Set<Int> {
                 }
             }
         }
-        val score = (internalDensity(G, current) - 0.3 * externalDensity(G, current)) * Math.log(1.0 + current.size)
+        val score =
+            (internalDensity(G, current) - 0.3 * externalDensity(G, current)) *
+                    Math.log(1.0 + current.size)
         val epsilon = 10 // TODO tunable
         if (score >= bestScore - epsilon) {
             bestScore = score

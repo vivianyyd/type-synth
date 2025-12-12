@@ -4,21 +4,23 @@ import stc.SymTypeC
 
 /** Symbolic types with annotations on variables and labels: F/L with label/Var */
 sealed interface SymTypeDFlat
+
 sealed interface NotF : SymTypeDFlat
 
-fun SymTypeC.flatten(): SymTypeDFlat = when (this) {
-    is stc.F -> {
-        var curr = this
-        val args = mutableListOf<SymTypeC>()
-        while (curr is stc.F) {
-            args.add(curr.left)
-            curr = curr.rite
+fun SymTypeC.flatten(): SymTypeDFlat =
+    when (this) {
+        is stc.F -> {
+            var curr = this
+            val args = mutableListOf<SymTypeC>()
+            while (curr is stc.F) {
+                args.add(curr.left)
+                curr = curr.rite
+            }
+            F(args.map { it.flatten() }, curr.flatten() as NotF)
         }
-        F(args.map { it.flatten() }, curr.flatten() as NotF)
+        is stc.L -> L(this.label)
+        is stc.Var -> Var(this.vId, this.tId)
     }
-    is stc.L -> L(this.label)
-    is stc.Var -> Var(this.vId, this.tId)
-}
 
 data class F(val args: List<SymTypeDFlat>, val rite: NotF) : SymTypeDFlat {
     override fun toString(): String =

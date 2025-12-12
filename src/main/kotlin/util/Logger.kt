@@ -21,7 +21,8 @@ class Logger(
     val verbosity: Int = MAX_VERBOSITY
 ) : Writer() {
     private val stages = Stack<Pair<String, Long>>()
-    private val logStream = if (logToFile) PrintStream(File(logFilename).outputStream(), false) else System.out
+    private val logStream =
+        if (logToFile) PrintStream(File(logFilename).outputStream(), false) else System.out
     private val startTime = System.currentTimeMillis()
 
     init {
@@ -49,15 +50,18 @@ class Logger(
         if (s != stage) error("Stopped a stage that wasn't started: $stage")
         dedent()
         log("END $stage : ${System.currentTimeMillis() - t} ms")
-        log(counts.entries.filter { it.value > 50 }.joinToString(separator = "\n", prefix = "Counts:\n"))
+        log(
+            counts.entries
+                .filter { it.value > 50 }
+                .joinToString(separator = "\n", prefix = "Counts:\n"))
         log("Elapsed time: ${System.currentTimeMillis() - startTime} ms")
     }
 
     private val counts = mutableMapOf<String, Int>()
+
     fun count(value: String) {
         if (verbosity > 4) {
-            if (value in counts) counts[value] = counts[value]!! + 1
-            else counts[value] = 1
+            if (value in counts) counts[value] = counts[value]!! + 1 else counts[value] = 1
         }
     }
 

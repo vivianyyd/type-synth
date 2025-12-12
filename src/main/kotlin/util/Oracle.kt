@@ -6,13 +6,15 @@ import types.checkApplication
 
 interface Oracle {
     fun equal(a: Example, b: Example): Boolean
+
     fun flatEqual(a: FlatApp, b: FlatApp): Boolean = equal(a.unflatten(), b.unflatten())
+
     fun dummy(e: Example): Int
 }
 
 /**
- * Requires [secret[app]] is null iff [app] is a negative example
- * Requires a mapping of *all* positive applications (including all subexpressions) to their dummy types
+ * Requires [secret[app]] is null iff [app] is a negative example Requires a mapping of *all*
+ * positive applications (including all subexpressions) to their dummy types
  */
 class ScrappyNewOracle(private val secret: Map<Example, String?>) : Oracle {
     private var fresh = 0
@@ -29,9 +31,7 @@ interface EqualityOracle {
     fun equal(a: FlatApp, b: FlatApp): Boolean
 }
 
-/**
- * Computes types of applications based on types of named values, given as [secret]
- */
+/** Computes types of applications based on types of named values, given as [secret] */
 class CheckingOracle(private val secret: Map<String, Type>) : Oracle {
     // flatEqual(a.flatten(), b.flatten()) works too. Idk why I did this
     override fun equal(a: Example, b: Example): Boolean {
@@ -52,14 +52,14 @@ class CheckingOracle(private val secret: Map<String, Type>) : Oracle {
 }
 
 /**
- * Requires [secretTypes[app]] is null iff [app] is a negative example
- * Requires a mapping of *all* applications (including all subexpressions) to their dummy types
+ * Requires [secretTypes[app]] is null iff [app] is a negative example Requires a mapping of *all*
+ * applications (including all subexpressions) to their dummy types
  */
 class ScrappyOracle(private val secret: Map<FlatApp, String?>) : EqualityOracle {
     override fun equal(a: FlatApp, b: FlatApp): Boolean =
         if (secret[a] == null || secret[b] == null) false else secret[a] == secret[b]
 }
 
-class PairwiseCheckOracle() : EqualityOracle {
+class PairwiseCheckOracle : EqualityOracle {
     override fun equal(a: FlatApp, b: FlatApp): Boolean = TODO("memoize results")
 }

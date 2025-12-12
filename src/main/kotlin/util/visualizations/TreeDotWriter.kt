@@ -10,11 +10,8 @@ class TreeDotWriter {
     fun startGraph() {
         sb.append("digraph g {")
         sb.appendLine()
-        listOf(
-            "splines=false;",
-            "rankdir=TD; ordering=out;",
-            "node [shape = record, height=.1];"
-        ).forEach { sb.append("\t$it\n") }
+        listOf("splines=false;", "rankdir=TD; ordering=out;", "node [shape = record, height=.1];")
+            .forEach { sb.append("\t$it\n") }
     }
 
     fun writeNode(nodeName: String, label: String) {
@@ -23,10 +20,10 @@ class TreeDotWriter {
 
     fun writeTypeNode(nodeName: String, type: String, ports: List<String>) =
         if (ports.isEmpty()) writeNode(nodeName, type)
-        else writeNode(
-            nodeName,
-            "{ $type | { ${ports.joinToString(separator = " | ") { "<$it>" }} } }"
-        )
+        else
+            writeNode(
+                nodeName, "{ $type | { ${ports.joinToString(separator = " | ") { "<$it>" }} } }"
+            )
 
     fun writeEdge(sourceName: String, sinkName: String) =
         sb.append("\t$sourceName:s -> $sinkName:n;\n")

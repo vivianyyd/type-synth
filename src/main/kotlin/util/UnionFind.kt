@@ -47,7 +47,9 @@ class IntUnionFind {
 
     /** Ensure value exists in structure; returns its index. */
     fun add(value: Int): Int {
-        indexOf[value]?.let { return it } // already present
+        indexOf[value]?.let {
+            return it
+        } // already present
         val idx = parent.size
         parent.add(idx)
         treeSize.add(1)
@@ -62,7 +64,7 @@ class IntUnionFind {
         var x = i
         // find root
         while (parent[x] != x) {
-            x = parent[x]!!
+            x = parent[x]
         }
         val root = x
         // path-compress
@@ -75,8 +77,10 @@ class IntUnionFind {
         return root
     }
 
-    /** Find the canonical (smallest) integer for the set containing [value].
-     *  Returns null if [value] is not present. */
+    /**
+     * Find the canonical (smallest) integer for the set containing [value]. Returns null if [value]
+     * is not present.
+     */
     fun find(value: Int): Int? {
         val idx = indexOf[value] ?: return null
         val root = findRootIndex(idx)
@@ -91,9 +95,8 @@ class IntUnionFind {
     }
 
     /**
-     * Union the sets containing a and b.
-     * If a or b are not present, they are added.
-     * The resulting set's canonical element will be the smaller of the two set canonicals.
+     * Union the sets containing a and b. If a or b are not present, they are added. The resulting
+     * set's canonical element will be the smaller of the two set canonicals.
      */
     fun union(a: Int, b: Int) {
         val ia = add(a)
@@ -105,7 +108,8 @@ class IntUnionFind {
         val valA = values[ra]
         val valB = values[rb]
 
-        // Always attach the root with larger canonical value under the root with smaller canonical value.
+        // Always attach the root with larger canonical value under the root with smaller canonical
+        // value.
         if (valA <= valB) {
             parent[rb] = ra
             treeSize[ra] = treeSize[ra] + treeSize[rb]
@@ -137,9 +141,7 @@ class IntUnionFind {
         get() = parent.size
 }
 
-class UnionFind<T>(
-    private val isTypeConstructor: (T) -> Boolean
-) {
+class UnionFind<T>(private val isTypeConstructor: (T) -> Boolean) {
     class Node<T>(var value: T) {
         var parent: Node<T> = this
         var rank: Int = 0
@@ -149,27 +151,28 @@ class UnionFind<T>(
 
     fun copy(): UnionFind<T> {
         val new = UnionFind(isTypeConstructor)
-        nodes.forEach { (t, _) ->
-            new.union(t, find(t))
-        }
+        nodes.forEach { (t, _) -> new.union(t, find(t)) }
         return new
     }
 
-    fun rootsFor(selector: (T) -> Boolean) = nodes.mapNotNull { if (selector(it.key)) find(it.value).value else null }
+    fun rootsFor(selector: (T) -> Boolean) =
+        nodes.mapNotNull { if (selector(it.key)) find(it.value).value else null }
 
     fun filterNodes(selector: (T) -> Boolean) = nodes.keys.filter { selector(it) }
 
     fun replaceRoots(transform: Map<T, T>) {
-        val toTransform = nodes.toList()
-            .filter { it.second.parent == it.second && it.first in transform }  // two conditions should be equiv
-//        val newNodesToMapTo =
+        val toTransform =
+            nodes.toList().filter {
+                it.second.parent == it.second && it.first in transform
+            } // two conditions should be equiv
+        //        val newNodesToMapTo =
         toTransform.forEach { (k, v) ->
             v.value = transform[k]!!
             nodes.remove(k)
             nodes[v.value] = v
         }
-//        toTransform.forEach{nodes.remove(it.key)}
-//        newNodesToMapTo
+        //        toTransform.forEach{nodes.remove(it.key)}
+        //        newNodesToMapTo
     }
 
     fun allRootValues() = nodes.values.filter { it.parent == it }.map { it.value }.toSet()
@@ -182,7 +185,7 @@ class UnionFind<T>(
 
     private fun find(node: Node<T>): Node<T> {
         if (node.parent != node) {
-            node.parent = find(node.parent)  // Path compression
+            node.parent = find(node.parent) // Path compression
         }
         return node.parent
     }
@@ -204,7 +207,9 @@ class UnionFind<T>(
 
         when {
             xMustBeRoot && yMustBeRoot -> {
-                throw IllegalStateException("Invariant violated: more than one constructor in the same class")
+                throw IllegalStateException(
+                    "Invariant violated: more than one constructor in the same class"
+                )
             }
             xMustBeRoot -> rootY.parent = rootX // x remains root
             yMustBeRoot -> rootX.parent = rootY // y remains root
@@ -277,7 +282,6 @@ fun main() {
     uf.remove(1)
     try {
         println(uf.connected(1, 1)) // false (1 removed)
-
     } catch (e: Exception) {
         println("ok")
     }

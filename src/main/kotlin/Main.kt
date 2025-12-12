@@ -7,17 +7,10 @@ fun main() {
     val smallTest = DictTest
     val testFromFile = parseTest("dictchain")
 
-    val config = ConfigForOld(
-        test = testFromFile,
-        runCVC = true,
-        maxDepth = 4
-    )
+    val config = ConfigForOld(test = testFromFile, runCVC = true, maxDepth = 4)
 
-    val logger = Logger(
-        configuration = config,
-        logToFile = true,
-        logFilename = "dictchain-product.log"
-    )
+    val logger =
+        Logger(configuration = config, logToFile = true, logFilename = "dictchain-product.log")
 
     run(config, logger)
 }

@@ -23,14 +23,13 @@ data class Configuration(
             unificationTag,
             "Size bound: $sizeBound",
             "Depth bound: $depthBound"
-        ).joinToString(
-            separator = "\n",
-            postfix = "\n=====\n"
         )
+            .joinToString(separator = "\n", postfix = "\n=====\n")
 }
 
 data class Bound(val b: Int, val type: BoundTag)
 
 enum class BoundTag {
-    Depth, Choice
+    Depth,
+    Choice
 }

@@ -2,8 +2,7 @@ package query
 
 data class FlatApp(val name: String, val args: List<FlatApp> = listOf()) {
     override fun toString(): String {
-        return if (args.isEmpty()) name else
-            "($name ${(args.joinToString(separator = " "))})"
+        return if (args.isEmpty()) name else "($name ${(args.joinToString(separator = " "))})"
     }
 }
 
@@ -17,8 +16,12 @@ class FlatQuery(
     names: List<String> = listOf()
 ) {
     val posExamples: Set<FlatApp> = (posExamples.toSet() + names.map { FlatApp(it) }.toSet())
-    val names: List<String> = posExamples.fold(setOf<String>()) { acc, ex ->
-        fun names(app: FlatApp): Set<String> = app.args.fold(setOf(app.name)) { a, arg -> a + names(arg) }
-        acc + names(ex)
-    }.toList()
+    val names: List<String> =
+        posExamples
+            .fold(setOf<String>()) { acc, ex ->
+                fun names(app: FlatApp): Set<String> =
+                    app.args.fold(setOf(app.name)) { a, arg -> a + names(arg) }
+                acc + names(ex)
+            }
+            .toList()
 }

@@ -5,7 +5,8 @@ import types.LabelNode
 import types.Type
 import types.Variable
 
-fun parseHaskellTypes(signatures: List<String>): List<Pair<Type, String>> = signatures.map { parseTypeSignature(it) }
+fun parseHaskellTypes(signatures: List<String>): List<Pair<Type, String>> =
+    signatures.map { parseTypeSignature(it) }
 
 fun parseTypeSignature(signature: String): Pair<Type, String> {
     val typePart = signature.substringAfter("::").trim()
@@ -16,11 +17,17 @@ fun parseTypeSignature(signature: String): Pair<Type, String> {
 
 sealed class Token {
     data class Ident(val value: String) : Token()
-    object Arrow : Token()              // ->
-    object LParen : Token()            // (
-    object RParen : Token()            // )
-    object LBracket : Token()  // [
-    object RBracket : Token()  // ]
+
+    object Arrow : Token() // ->
+
+    object LParen : Token() // (
+
+    object RParen : Token() // )
+
+    object LBracket : Token() // [
+
+    object RBracket : Token() // ]
+
     object Comma : Token()
 }
 
@@ -70,6 +77,7 @@ class Parser(private val tokens: List<Token>) {
     private var index = 0
 
     private fun peek(): Token? = tokens.getOrNull(index)
+
     private fun consume(): Token = tokens[index++]
 
     fun parseType(): Type = parseArrowType()
@@ -87,43 +95,44 @@ class Parser(private val tokens: List<Token>) {
     private fun parseApplicationType(): Type {
         val parts = mutableListOf<Type>()
         while (true) {
-            val part = when (val token = peek()) {
-                is Token.Ident -> {
-                    consume()
-                    if (token.value.first().isUpperCase()) {
-                        // Capitalized word — treat as LabelNode with no parameters
-                        LabelNode(token.value, listOf())
-                    } else {
-                        // Lowercase — treat as variable
-                        Variable(token.value)
+            val part =
+                when (val token = peek()) {
+                    is Token.Ident -> {
+                        consume()
+                        if (token.value.first().isUpperCase()) {
+                            // Capitalized word — treat as LabelNode with no parameters
+                            LabelNode(token.value, listOf())
+                        } else {
+                            // Lowercase — treat as variable
+                            Variable(token.value)
+                        }
                     }
-                }
-                Token.LParen -> {
-                    consume()
-                    val elements = mutableListOf<Type>()
-                    elements.add(parseType())
-
-                    while (peek() == Token.Comma) {
-                        consume() // consume comma
+                    Token.LParen -> {
+                        consume()
+                        val elements = mutableListOf<Type>()
                         elements.add(parseType())
-                    }
 
-                    expect<Token.RParen>("Expected ')' to close tuple or group")
+                        while (peek() == Token.Comma) {
+                            consume() // consume comma
+                            elements.add(parseType())
+                        }
 
-                    when (elements.size) {
-                        1 -> elements[0] // parenthesized type
-                        2 -> LabelNode("Pair", elements)
-                        else -> error("Tuples with arity ${elements.size} are not supported")
+                        expect<Token.RParen>("Expected ')' to close tuple or group")
+
+                        when (elements.size) {
+                            1 -> elements[0] // parenthesized type
+                            2 -> LabelNode("Pair", elements)
+                            else -> error("Tuples with arity ${elements.size} are not supported")
+                        }
                     }
+                    Token.LBracket -> {
+                        consume()
+                        val inner = parseType()
+                        expect<Token.RBracket>("Expected ']'")
+                        LabelNode("List", listOf(inner))
+                    }
+                    else -> break
                 }
-                Token.LBracket -> {
-                    consume()
-                    val inner = parseType()
-                    expect<Token.RBracket>("Expected ']'")
-                    LabelNode("List", listOf(inner))
-                }
-                else -> break
-            }
             parts.add(part)
         }
 
@@ -150,23 +159,24 @@ class Parser(private val tokens: List<Token>) {
 }
 
 fun main() {
-//    val inputs = listOf(
-//        "either :: (a -> c) -> (b -> c) -> Either a b -> c",
-//        "f :: a -> b -> c",
-//        "g :: Maybe (a -> b) -> c",
-//        "f :: [a] -> b",
-//        "f :: (a, b) -> c"
-//    )
-    val inputs = listOf(
-        "either :: (a -> c) -> (b -> c) -> Either a b -> c",
-        "lefts :: [Either a b] -> [a]",
-        "rights :: [Either a b] -> [b]",
-        "isLeft :: Either a b -> Bool",
-        "isRight :: Either a b -> Bool",
-        "fromLeft :: a -> Either a b -> a",
-        "fromRight :: b -> Either a b -> b",
-        "partitionEithers :: [Either a b] -> ([a], [b])"
-    )
+    //    val inputs = listOf(
+    //        "either :: (a -> c) -> (b -> c) -> Either a b -> c",
+    //        "f :: a -> b -> c",
+    //        "g :: Maybe (a -> b) -> c",
+    //        "f :: [a] -> b",
+    //        "f :: (a, b) -> c"
+    //    )
+    val inputs =
+        listOf(
+            "either :: (a -> c) -> (b -> c) -> Either a b -> c",
+            "lefts :: [Either a b] -> [a]",
+            "rights :: [Either a b] -> [b]",
+            "isLeft :: Either a b -> Bool",
+            "isRight :: Either a b -> Bool",
+            "fromLeft :: a -> Either a b -> a",
+            "fromRight :: b -> Either a b -> b",
+            "partitionEithers :: [Either a b] -> ([a], [b])"
+        )
 
     for (input in inputs) {
         val parsed = parseTypeSignature(input)

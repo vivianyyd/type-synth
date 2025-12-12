@@ -1,7 +1,7 @@
 package util
 
 fun <T> equivalenceClasses(elems: Collection<T>, equals: (T, T) -> Boolean): Set<Set<T>> {
-    val result = mutableSetOf<MutableSet<T>>()  // Invariant: No element of the set is empty
+    val result = mutableSetOf<MutableSet<T>>() // Invariant: No element of the set is empty
     elems.forEach { elem ->
         var foundOne = false
         for (eqClass in result) {
@@ -57,15 +57,15 @@ fun <T> partitions(list: List<T>): Sequence<List<List<T>>> {
 }
 
 fun main() {
-//    val s = listOf(0, 1, 2, 3)
-//    val repetitions = 3
-//    val seq = reflexiveNaryProduct(s, repetitions)
-//    println("Total: ${seq.toList().size}")
-//    println("Total: ${seq.toSet().size}")
-//    val slowGroundTruth = naryCartesianProduct((1..repetitions).map { s }).toSet()
-//    assert(seq.toSet() == slowGroundTruth)
-//    println(seq.toSet().size)
-//    println(seq.toList().map { it.reversed() })
+    //    val s = listOf(0, 1, 2, 3)
+    //    val repetitions = 3
+    //    val seq = reflexiveNaryProduct(s, repetitions)
+    //    println("Total: ${seq.toList().size}")
+    //    println("Total: ${seq.toSet().size}")
+    //    val slowGroundTruth = naryCartesianProduct((1..repetitions).map { s }).toSet()
+    //    assert(seq.toSet() == slowGroundTruth)
+    //    println(seq.toSet().size)
+    //    println(seq.toList().map { it.reversed() })
 
     /*
     [1, 3, 5]
@@ -77,7 +77,6 @@ fun main() {
 
     lazySeqCartesianProduct(sets).forEach { println(it) }
 }
-
 
 fun <T> reflexiveNaryProduct(elems: List<T>, n: Int): Sequence<List<T>> = sequence {
     val indices = Array(n) { 0 }
@@ -93,7 +92,7 @@ fun <T> reflexiveNaryProduct(elems: List<T>, n: Int): Sequence<List<T>> = sequen
                 indices[0] = base - 1
             } else {
                 if (indices[0] < base - 1) indices[0] = indices[0] + 1
-                else {  // carry
+                else { // carry
                     var ptr = 0
                     while (indices[ptr] == base - 1) {
                         indices[ptr] = 0
@@ -111,28 +110,28 @@ fun <T> reflexiveNaryProduct(elems: List<T>, n: Int): Sequence<List<T>> = sequen
     }
 }
 
-
 fun <T> lazyCartesianProduct(sets: List<List<T>>): Sequence<List<T>> =
     lazySeqCartesianProduct(sets.map { it.asSequence() })
 
 fun <T> lazySeqCartesianProduct(choices: List<Sequence<T>>): Sequence<List<T>> {
     if (choices.isEmpty()) return emptySequence()
     return choices.fold(sequenceOf(emptyList())) { acc, choice ->
-        acc.flatMap { partial ->
-            choice.map { option -> partial + option }
-        }
+        acc.flatMap { partial -> choice.map { option -> partial + option } }
     }
 }
 
-/** [trace]: The ids of nodes from root to this product.
+/**
+ * [trace]: The ids of nodes from root to this product.
+ *
  * @yields pairs of child choices and the traces associated with them
- * */
-//fun nodeProduct(
+ */
+// fun nodeProduct(
 //    ports: List<Sequence<ConcreteNode>>,
 //    trace: List<Int>,
 //    conflicts: List<List<Int>>
-//): Sequence<Pair<List<ConcreteNode>, List<Int>>> {
-//    fun conflict(trace: List<Int>, conflicts: List<List<Int>>) = conflicts.any { it.all { it in trace } }
+// ): Sequence<Pair<List<ConcreteNode>, List<Int>>> {
+//    fun conflict(trace: List<Int>, conflicts: List<List<Int>>) = conflicts.any { it.all { it in
+// trace } }
 //
 //    if (ports.isEmpty() || conflict(trace, conflicts)) return emptySequence()
 //    return ports.fold(sequenceOf(emptyList<ConcreteNode>() to trace)) { acc, port ->
@@ -144,7 +143,7 @@ fun <T> lazySeqCartesianProduct(choices: List<Sequence<T>>): Sequence<List<T>> {
 //            }
 //        }
 //    }
-//}
+// }
 
 fun <T> naryCartesianProduct(sets: List<List<T>>): Set<List<T>> {
     if (sets.isEmpty()) return setOf()
@@ -161,20 +160,20 @@ fun <T> binaryCartesianProduct(a: Set<List<T>>, b: Collection<T>): Set<List<T>> 
     val result = mutableSetOf<List<T>>()
     a.forEach { ita -> b.forEach { itb -> result.add(ita + itb) } }
     return result
-//    return a.flatMap { ita -> b.asSequence().map { itb -> ita + itb } }
+    //    return a.flatMap { ita -> b.asSequence().map { itb -> ita + itb } }
 }
 
 /**
- * Returns a list of lists, each built from elements of all lists with the same indexes.
- * Output has length of shortest input list.
+ * Returns a list of lists, each built from elements of all lists with the same indexes. Output has
+ * length of shortest input list.
  */
 fun <T> zip(vararg lists: List<T>): List<List<T>> {
     return zip(*lists, transform = { it })
 }
 
 /**
- * Returns a list of values built from elements of all lists with same indexes using provided [transform].
- * Output has length of shortest input list.
+ * Returns a list of values built from elements of all lists with same indexes using provided
+ * [transform]. Output has length of shortest input list.
  */
 inline fun <T, V> zip(vararg lists: List<T>, transform: (List<T>) -> V): List<V> {
     val minSize = lists.minOfOrNull(List<T>::size) ?: return emptyList()

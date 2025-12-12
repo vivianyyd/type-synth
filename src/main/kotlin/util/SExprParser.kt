@@ -38,7 +38,8 @@ class SExprParser(private val input: String) {
         while (position < input.length && !isDelimiter(currentChar())) {
             position++
         }
-        if (start == position) throw IllegalArgumentException("Unexpected character at position $position")
+        if (start == position)
+            throw IllegalArgumentException("Unexpected character at position $position")
         return SExpr.Atm(input.substring(start, position))
     }
 
@@ -59,7 +60,9 @@ class SExprParser(private val input: String) {
 
     private fun consumeChar(expected: Char) {
         if (currentChar() != expected) {
-            throw IllegalArgumentException("Expected '$expected' but found '${currentChar()}' at position $position")
+            throw IllegalArgumentException(
+                "Expected '$expected' but found '${currentChar()}' at position $position"
+            )
         }
         position++
     }
