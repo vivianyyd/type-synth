@@ -36,7 +36,7 @@ class DFSPriorityEnumerator<L : Language>(
             .map { (newType, cost) ->
                 Candidate(
                     c.names, c.types.mapIndexed { i, p -> if (iToFill == i) newType else p }) to
-                        cost
+                    cost
             }
     }
 
