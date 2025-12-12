@@ -5,7 +5,9 @@ import query.parseApp
 import query.parseExamples
 import util.ScrappyNewOracle
 
-object IdTest {
+object IdTest : Test {
+    override val name = "Id&inc"
+
     /*
      inc: int -> int
      n: int
@@ -40,6 +42,6 @@ object IdTest {
         "(+ (inc (id n)))" to "int",
     )
 
-    val query: Query = parseExamples(examples.keys)
-    val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
+    override val query: Query = parseExamples(examples.keys)
+    override val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
 }

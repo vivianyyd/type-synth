@@ -5,7 +5,8 @@ import query.parseExamples
 import types.parseType
 import util.CheckingOracle
 
-object DictTest {
+object DictTest : Test {
+    override val name = "Dict"
     private val basics = listOf(
         "(+ 0)",
         "(+ 1)",
@@ -80,8 +81,8 @@ object DictTest {
 
     val examples = basics + put
 
-    val query: Query = parseExamples(examples)
-    val oracle = CheckingOracle(mapOf(
+    override val query: Query = parseExamples(examples)
+    override val oracle = CheckingOracle(mapOf(
         "0" to "(i)",
         "1" to "(i)",
         "tr" to "(b)",

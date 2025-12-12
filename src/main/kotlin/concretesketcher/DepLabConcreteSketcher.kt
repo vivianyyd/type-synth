@@ -6,7 +6,7 @@ import query.Example
 import query.Name
 import query.Query
 import stc.*
-import util.EqualityNewOracle
+import util.Oracle
 import util.SketchWriter
 import java.lang.Integer.max
 
@@ -15,7 +15,7 @@ class DepLabConcreteSketcher(
     private val contextOutline: Projection,
     private val dependencies: DependencyAnalysis,
     private val varTypeIds: Map<String, Int>,
-    private val oracle: EqualityNewOracle
+    private val oracle: Oracle
 ) {
     private val sw = ConcreteSketchWriter()
     private val sketchNames = mutableMapOf<String, String>()

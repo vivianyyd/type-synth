@@ -48,9 +48,13 @@ data class Var(val varId: Int, override val id: Int) : Node {
 }
 
 class ConcreteEnumerator(
-    val query: Query, contextOutline: Projection,
+    val query: Query,
+    val contextOutline: Projection,
     /** Map from label ids to number of parameters */
-    inLabels: Map<stc.L, Int>, private val dependencies: DependencyAnalysis, private val oracle: EqualityNewOracle
+    inLabels: Map<stc.L, Int>,
+    private val dependencies: DependencyAnalysis,
+    private val oracle: Oracle,
+    private val logger: Logger
 ) {
     private val state: MutableMap<String, Node> = mutableMapOf()
     private val variablesInScope: Map<String, MutableList<Int>> = query.names.associateWith { mutableListOf() }
@@ -134,7 +138,7 @@ class ConcreteEnumerator(
             }
             else root.enumerate(f, 0)
         }
-        println(state)
+        println("State: $state")
 
         val contexts = contexts(pos, neg)
         if (contexts.isNotEmpty()) {
@@ -169,6 +173,7 @@ class ConcreteEnumerator(
             is ConcreteVar -> setOf(varId)
             is ConcreteF -> params.flatMap { it.vars() }.toSet()
             is ConcreteL -> params.flatMap { it.vars() }.toSet()
+            else -> TODO("Try skipping nullaries then fast forwarding at the end")
         }
     }
 
@@ -194,7 +199,7 @@ class ConcreteEnumerator(
         val concreteOptions = state.mapValues { it.value.holelessCopy() }
         if (concreteOptions.values.any { it == null }) return emptySet()
 
-        println("Concrete: $concreteOptions")
+//        println("Concrete: $concreteOptions")
 //        println(query.names)  // TODO WHY ARE THESE IN A DIFFERENT ORDER
 //        val conflicts = mutableListOf<List<Int>>()
 
@@ -219,11 +224,14 @@ class ConcreteEnumerator(
                         }
                     }).map { ConcreteF(it.toList()) }
                 }
-                is L, is Var -> t.concretizations()
+                is L -> sequenceOf(ConcreteHole)
+                is Var -> sequenceOf(ConcreteHole) // t.concretizations()
                 is Hole -> throw Exception("Can't happen")
             }
         }
         return lazySeqCartesianProduct(possTys).map { concreteOptions.keys.zip(it).toMap() }.filter {
+            logger.count("CHECKING A CANDIDATE UNDER ${contextOutline.outline}")
+            TODO("Try skipping nullaries then fast forwarding at the end")
             checkOnly(it, pos, neg)
         }.toSet()
     }
@@ -261,6 +269,7 @@ class ConcreteEnumerator(
                 is ConcreteL -> ConcreteL(t.label, t.params.map { applyBinding(it, varId, sub) })
                 is ConcreteF -> ConcreteF(t.params.map { applyBinding(it, varId, sub) })
                 is ConcreteVar -> if (t.varId == varId) sub else t  // TODO t should never be a binding variable and hit this case; reason about it a bit more
+                else -> TODO("Try skipping nullaries then fast forwarding at the end")
             }
         }
     }
@@ -293,6 +302,7 @@ class ConcreteEnumerator(
                     }
                 }
                 is ConcreteF, is ConcreteVar -> null
+                else -> TODO("Try skipping nullaries then fast forwarding at the end")
             }
             is ConcreteF -> when (arg) {
                 is ConcreteL, is ConcreteVar -> null
@@ -308,7 +318,9 @@ class ConcreteEnumerator(
                     }
                     bindings
                 }
+                else -> TODO("Try skipping nullaries then fast forwarding at the end")
             }
+            else -> TODO("Try skipping nullaries then fast forwarding at the end")
         }
         unify[param to arg] = result
         return result
@@ -331,8 +343,17 @@ class ConcreteEnumerator(
         return result
     }
 
+    private fun instantiate(n: ConcreteNode): ConcreteNode =
+        when (n) {
+            is ConcreteF -> ConcreteF(n.params.map { instantiate(it) })
+            is ConcreteL -> ConcreteL(n.label, n.params.map { instantiate(it) })
+            is ConcreteVar -> n
+            // TODO This is not actually doing anything but it should take the same amount of time as a real instantiation pass so it's ok just here as proof of concept
+            else -> TODO("Try skipping nullaries then fast forwarding at the end")
+        }
+
     fun type(context: Map<String, ConcreteNode>, example: Example): ConcreteNode? = when (example) {
-        is Name -> context[example.name]
+        is Name -> context[example.name]?.let { instantiate(it) } // context[example.name]
         is App -> type(context, example.fn).let { f ->
             type(context, example.arg)?.let { arg ->
                 if (f is ConcreteF) newApply(f, arg) else null
@@ -384,4 +405,8 @@ data class ConcreteF(val params: List<ConcreteNode>) : ConcreteNode {
 data class ConcreteVar(val varId: Int) : ConcreteNode {
     override val hasVar = true
     override fun toString(): String = "$varId"
+}
+
+object ConcreteHole : ConcreteNode {
+    override val hasVar = false
 }

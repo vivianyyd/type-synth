@@ -6,14 +6,14 @@ import query.Name
 import query.Query
 import sta.Function
 import sta.State
-import util.EqualityNewOracle
-import util.UnionFind
+import util.OldUnionFind
+import util.Oracle
 import util.lazyCartesianProduct
 
 class SymTypeCEnumerator(
     val query: Query,
     state: State,
-    private val oracle: EqualityNewOracle,
+    private val oracle: Oracle,
 ) {
     private val state = state.read()
 
@@ -33,7 +33,7 @@ class SymTypeCEnumerator(
      * checks positive examples, and introduces label equivalences as needed
      */
     private fun checkPosExsAndMergeLabels(context: MutableMap<String, SymTypeC>): Boolean {
-        val labelClasses = UnionFind(freshLabel)
+        val labelClasses = OldUnionFind(freshLabel)
 
         // TODO so hacky. There must be a more principled way...
         context.toList().forEachIndexed { i, (n1, t1) ->

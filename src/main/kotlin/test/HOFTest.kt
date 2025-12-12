@@ -5,7 +5,9 @@ import query.parseApp
 import query.parseExamples
 import util.ScrappyNewOracle
 
-object HOFTest {
+object HOFTest : Test {
+    override val name = "HOFs"
+
     /*
      f: a -> b
      g: (a -> b) -> c
@@ -23,6 +25,6 @@ object HOFTest {
         "(- (g a))" to null,
     )
 
-    val query: Query = parseExamples(examples.keys)
-    val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
+    override val query: Query = parseExamples(examples.keys)
+    override val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
 }

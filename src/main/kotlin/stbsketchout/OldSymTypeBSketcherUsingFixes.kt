@@ -6,14 +6,14 @@ import query.Name
 import query.Query
 import sta.Function
 import sta.State
-import util.EqualityNewOracle
+import util.Oracle
 import kotlin.math.roundToInt
 
 // TODO style: can inline tests into the harness that wraps all the tests
 class OldSymTypeBSketcherUsingFixes(
     val query: Query,
     private val state: State,
-    private val oracle: EqualityNewOracle,
+    private val oracle: Oracle,
     private val rounds: Int? = null
 ) {
     fun parse(skOut: String) = SketchParser(skOut).parseAll

@@ -1,22 +1,18 @@
 package util
 
-import constraints.LabelConstraintGenerator
-import stc.L
-import std.Var
-
-class CVCParser(input: String, constrGen: LabelConstraintGenerator) {
-    val paramSets: Map<ParameterNode, Set<Int>>
-    val sizes: Map<L, Int>
-    val varDummies: Map<Var, Int>
+class CVCParser(input: String) {
+    private val paramSets: Map<String, Set<Int>>
+    val sizes: Map<String, Int>
+    private val varDummies: Map<String, Int>
 
     init {
         val (paramSetsE, rest) = map(input).entries.partition { it.key.startsWith('p') }
         val (sizesE, varsE) = rest.partition { it.key.startsWith("size") }
 
-        paramSets = paramSetsE.associate { constrGen.pyParamToNode(it.key) to parseSet(it.value) }
-        sizes = sizesE.associate { constrGen.pySizeToL(it.key) to it.value.toInt() }
-        varDummies = varsE.associate { Var(constrGen.pyVarToIds(it.key)) to it.value.toInt() }
-
+        paramSets = paramSetsE.associate { it.key to parseSet(it.value) }  // constrGen.pyParamToNode(it.key)
+        sizes = sizesE.associate { it.key to it.value.toInt() }  // constrGen.pySizeToL(it.key) to it.value.toInt()
+        varDummies =
+            varsE.associate { it.key to it.value.toInt() }  // Var(constrGen.pyVarToIds(it.key)) to it.value.toInt()
     }
 
     fun print() {

@@ -1,3 +1,5 @@
+package scratch
+
 /*
 From the following Haskell type signatures, give me some examples of expressions that I might see in a reasonable program such that *all* functions and values I list are used somewhere in some example.
 No, you're not allowed to use anything that isn't in the list I gave. For example, you created the list [6,7], but that's not allowed. If you want a list of ints, you can construct one from 0, IL, and/or some other functions like (++) and (:). Write everything in prefix notation
@@ -18,20 +20,28 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 val exs = listOf(
-    "(+ (cons 0 (cons 0 Li)))",
-    "(+ (cons Li (cons Li LLi)))",
-    "(- (cons Li 0))",
-    "(- (cons LLi Li))",
-    "(+ (cons LLi))",
-    "(+ (cons (cons 0 Li)))",
-    "(+ (cons tr (cons tr []b)))",
-    "(- (cons 0 []b))",
-    "(- (cons tr Li))",
-    "(- (cons 0 LLi))",
-    "(- (cons tr LLi))",
-    "(- (cons tr (cons 0 Li)))"
+    "(+ (c z (c z a)))",
+    "(+ (c a (c a b)))",
+    "(- (c a z))",
+    "(- (c b a))",
+    "(+ (c b))",
+    "(+ (c (c z a)))",
+    "(+ (c t (c t d)))",
+    "(- (c z d))",
+    "(- (c t a))",
+    "(- (c z b))",
+    "(- (c t b))",
+    "(- (c t (c z a)))"
 )
 
+/*
+1. cons : ∀a. (a × List<a>) → List<a>
+2. [] : List<a>
+3. 0 : Int
+4. true : Bool
+5. Lb : Bool
+6. [[]] : List<List<a>>
+ */
 fun main() {
     val apiKey = System.getenv("OPENAI_API_KEY") ?: error("OPENAI_API_KEY not set")
 //    val client = OkHttpClient()  // Default client has 10s timeout
@@ -46,7 +56,7 @@ fun main() {
         .build()
 
     val requestBodyJson = mapOf(
-        "model" to "gpt-4o-mini",
+        "model" to "gpt-5-mini",
         "messages" to listOf(
             mapOf(
                 "role" to "system",
@@ -58,12 +68,11 @@ fun main() {
                         "Some of them are well-typed under Hindley-Milner typing rules; they are prefixed with a +. " +
                         "Others are ill-typed, and are prefixed with a -." +
                         "Determine the Hindley-Milner types of all program components that appear in the examples, " +
-                        "that is, all of the unique symbols other than whitespace and parentheses. " +
+                        "that is, all unique symbols other than whitespace and parentheses. " +
                         "Some of the types may be parameterized: For instance, they may be of the form L<a> " +
-                        "where a is a type variable, or L<Int> where Int is a primitive type. In this example, these" +
-                        "types could represent lists. " +
-                        "You may need to invent and assign appropriate type constructors like the ones in that example. " +
-                        "However, they might have any name or have any number of type parameters." +
+                        "where a is a type variable, or L<B> where B is a primitive type." +
+                        "You may need to invent appropriate type constructors, which may have any name or have any " +
+                        "number of type parameters." +
                         exs.joinToString(prefix = "\n", separator = "\n")
             )
             // TODO

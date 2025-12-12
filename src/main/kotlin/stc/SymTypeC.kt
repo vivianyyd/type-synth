@@ -1,6 +1,6 @@
 package stc
 
-import util.UnionFind
+import util.OldUnionFind
 
 /** Symbolic types with annotations on variables and labels: F/L with label/VB/VR/VL */
 sealed interface SymTypeC
@@ -66,7 +66,7 @@ TODO {f=0_0 -> 0_0, g=1_0 -> 1_0, h=(2_0 -> 2_0) -> 2_0, a=L} with example (h f)
 /** Returns a list of bindings resulting from unifying [arg] with [param], or null if they are incompatible.
  * @modifies [labelClasses]
  * */
-fun unify(param: SymTypeC, arg: SymTypeC, labelClasses: UnionFind): List<Binding>? =
+fun unify(param: SymTypeC, arg: SymTypeC, labelClasses: OldUnionFind): List<Binding>? =
     when (param) {
         is VB -> listOf(Binding(param.vId, param.tId, arg))
         is L -> when (arg) {
@@ -95,7 +95,7 @@ fun unify(param: SymTypeC, arg: SymTypeC, labelClasses: UnionFind): List<Binding
  * Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is invalid for [fn].
  * @modifies [labelClasses]
  */
-fun apply(fn: F, arg: SymTypeC, labelClasses: UnionFind): SymTypeC? {
+fun apply(fn: F, arg: SymTypeC, labelClasses: OldUnionFind): SymTypeC? {
     if (arg is VR) throw Exception("Invariant broken")
     return unify(fn.left, arg, labelClasses)?.let {
         applyBindings(fn.rite, it)

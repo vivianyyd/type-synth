@@ -14,15 +14,12 @@ sealed class Writer {
         sb.appendLine(l)
     }
 
-    abstract fun line(l: String)
-    abstract fun lines(l: Collection<String>)
+    open fun line(l: String) = lineNoSemi(l)
+
+    fun lines(l: Collection<String>) = l.forEach { line(it) }
 }
 
 class PyWriter : Writer() {
-    override fun line(l: String) = lineNoSemi(l)
-
-    override fun lines(l: Collection<String>) = l.forEach { line(it) }
-
     fun comment(l: String) = line("# $l")
 
     fun import(l: String) {
@@ -52,8 +49,6 @@ class PyWriter : Writer() {
 
 class SketchWriter : Writer() {
     override fun line(l: String) = lineNoSemi("$l;")
-
-    override fun lines(l: Collection<String>) = l.forEach { line(it) }
 
     fun include(l: String) {
         line("include \"$l\"")

@@ -3,10 +3,15 @@
 build
 src/main/python/input/generated/
 src/main/sketch/concretize/generated
-*results/
+*results/intermediate
 *__pycache__/
 *output/
 .ipynb_checkpoints/
 profiling
 *.dot
 *.png
+results/logs/big
+*.hi
+*.o
+*.cache*
+tmp.log
