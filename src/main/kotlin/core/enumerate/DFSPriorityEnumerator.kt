@@ -6,6 +6,9 @@ import core.unification.UnificationForCandidate
 import query.Query
 import util.Logger
 
+/**
+ * Fills one hole at a time, in DFS priority order.
+ */
 class DFSPriorityEnumerator<L : Language>(
     val query: Query,
     override val seedCandidate: Candidate<L>,
@@ -76,27 +79,22 @@ class DFSPriorityEnumerator<L : Language>(
                         query.negExamples.all { !unification(c, listOf(it)).ok() }
                     else true)
 
-        if (sketches) {
-            val commitBlanksForNullaries = seedCandidate.types.map { t ->
-                when (t) {
-                    is NArrow -> listOf()
-                    else -> t.listHoles().map { it to (it as SketchHole).blankExpansion }
+        val seed = Candidate(  // infer nullaries
+            seedCandidate.names,
+            seedCandidate.types.map { t ->
+                val commits: List<Pair<Hole<L>, Blank>> = when (t) {
+                    is NArrow<*> -> listOf()
+                    else -> t.listHoles().map { it to (it as ConcreteHole).blankExpansion }
+                }
+                commits.fold(t) { acc: SearchNode<L>, commitment: Pair<Hole<L>, Blank> ->
+                    acc.replace(commitment.first, commitment.second as SearchNode<L>)  // TODO Extremely messy
                 }
             }
-            val inferNullaries =
-                Candidate(seedCandidate.names, seedCandidate.types.zip(commitBlanksForNullaries).map { (t, commits) ->
-                    commits.fold(t) { acc: SearchNode<L>, commitment: Pair<Hole<L>, Blank> ->
-                        acc.replace(commitment.first, commitment.second as SearchNode<L>)
-                    }
-                })
-            return commitPriority(
-                inferNullaries, unification(seedCandidate, query.posExsBeforeSubexprs), sizeBound, hardDepthBound
-            ).filter { c -> check(c) }.toList()
-            // TODO If no solution skipping nullaries with max size budget, we might need to try one last time with
-            //   no skipping. We need this if the nullary types contain variables which are not the default variable
-        } else
-            return commitPriority(
-                seedCandidate, unification(seedCandidate, query.posExsBeforeSubexprs), sizeBound, hardDepthBound
-            ).filter { c -> check(c) }.toList()
+        )
+        // TODO bug: inferring nullaries can fail if there are multiple possible assignments of variables to a nullary
+        //      value. fix this later, solution is in notes
+        return commitPriority(
+            seed, unification(seedCandidate, query.posExsBeforeSubexprs), sizeBound, hardDepthBound
+        ).filter { c -> check(c) }.toList()
     }
 }
