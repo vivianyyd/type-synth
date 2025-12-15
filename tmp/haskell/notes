@@ -1,0 +1,96 @@
+
+
+Read
+    Workflow
+    Big picture to code
+    https://downloads.haskell.org/ghc/7.0.1/docs/users_guide.pdf#page=101&zoom=100,76,513
+        4.18.3 How to read Core syntax (from some -ddump flags)
+
+GHC IRs:
+    Parsed
+    Renamed - names/scopes resolved, unique identifiers
+    Typechecked
+    Core - System F
+    STG - Spineless tagless G-machine, low-level functional exposing laziness, closures
+    Cmm - low-level imperative IR, interface to LLVM/native
+
+Access typechecked: GHC API’s TypecheckedModule, GHC typechecker dumps
+
+
+4.18.1 Dumping out compiler intermediate structures
+-ddump-pass Make a debugging dump after pass <pass> (may be common enough to need a short form. . . ). You can get
+all of these at once (lots of output) by using -v5, or most of them with -v4. Some of the most useful ones are:
+-ddump-rn: renamer output
+-ddump-tc: typechecker output
+-ddump-splices: Dump Template Haskell expressions that we splice in, and what Haskell code the expression
+evaluates to.
+-ddump-types: Dump a type signature for each value defined at the top level of the module. The list is sorted
+alphabetically. Using -dppr-debug dumps a type signature for all the imported and system-defined things as well;
+useful for debugging the compiler.
+-ddump-deriv: derived instances
+-ddump-ds: desugarer output
+-ddump-spec: output of specialisation pass
+-ddump-rules: dumps all rewrite rules specified in this module; see Section 7.14.6.
+-ddump-simpl: simplifier output (Core-to-Core passes)
+-ddump-prep: output of core preparation pass
+-ddump-flatC: flattened Abstract C
+-ddump-tc-trace Make the type checker be *real* chatty about what it is upto.
+
+GHC API: internal compiler shipped with each release - parse, typecheck, Core, parts of pipeline, plugins, compile code dynamically. unstable, highly coupled to installed version, platform-specific dependencies
+ghc-lib: decoupled, non-compiling library for API - use front-end (parse, rename, typecheck) without dependencies on specific version. no code-generation
+    used for tools like linter, lsp, static tools
+    includes generating TcEvBinds - evidence bindings, HsTypechecked, CoreExpr
+        explicit dictionary bindings, coercion evidence, EvVar and EvTerm structure, ModGuts (Core + binds + rules) after desugaring
+        coercion evidence includes solved equality constraints like a~Bool recorded as EvTerms
+        type class dicts store evidence for type equalities, functional dependencies
+        EvVar is a variable whose type is an evidence type, like dictionary for class constraint. constraint solver binds EvVar to EvTerm. EvTerm constructs or provides evidence. dictionary construction - evidence for class with methods based on superclasses. dictionary selection - extract superclass dictionary from class constraint. coercion - witness for type equality.
+Using ghc-lib you can:
+Run the parser → HsParsedModule
+Run the renamer → HsRenamed
+Run the typechecker → TcGblEnv, containing evidence bindings
+    TcGblEnv has all typechecker info for current module, equiv ModGuts but before desugar
+    central state threaded thru.
+    Typechecked declarations in Haskell syntax (not Core)
+    type, class, instance decls
+    evidence bindings
+    top-level identifiers w types
+    fields of TcGblEnv:
+        tcg_binds :: LHsBinds GhcTc  - Every top-level binding, typechecked, but still in Tc syntax.
+        tcg_tcs :: [TyCon]
+        tcg_insts :: [InstInfo]
+        tcg_fam_insts :: [FamInst]
+        tcg_exports, tcg_imports
+        ^ all type decls, class insts, families defined in module
+        tcg_ev_binds :: Bag EvBind
+        tcg_ev_binds_var :: EvVar -- the top-level evidence binder
+        ^ evidence produced by typechecking: dicts, coercions, equality proofs
+        global reader environment - names and scopes for identifiers
+    typechecked AST, HsSyn GhcTc is desugared, rewritten, expanded, and normalized in many places:
+Do-notation is rewritten into binds.
+List comprehensions are transformed.
+Pattern matches become case trees.
+Type applications are inserted.
+Implicit arguments and dictionaries are added.
+Rebindable syntax is resolved.
+Operator fixities may not match original grouping.
+Layout information (indentation) is lost.
+Original parentheses are gone
+Run the desugarer → ModGuts, containing dictionaries as CoreExprs
+
+Prettyprint typechecked program: 
+pprLHsBinds tcg_binds
+ppr (tcg_binds :: LHsBinds GhcTc)
+Haskell-like, desugars to explicit >>=, contains typechecker artifacts like wrappers and evidence passing
+
+
+Evidence binding:
+f :: Eq a => a -> a -> Bool
+f x y = x == y
+Typechecker introduces a dictionary variable for the Eq a constraint (ev_eq_a :: Eq a).
+The function is represented as:
+f = \ev_eq_a x y -> eq# ev_eq_a x y
+ev_eq_a is the EvVar (the binder for the evidence)
+It is passed explicitly as a function argument
+This is “evidence passing”
+
+

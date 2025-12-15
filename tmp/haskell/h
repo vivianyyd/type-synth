@@ -1,0 +1,2 @@
+ghc $1 -fforce-recomp -ddump-ds -O0 -outputdir build
+
