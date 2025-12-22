@@ -1,6 +1,11 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE KindSignatures #-}
 module Simple where
+
+a = do x <- [3..4]
+       [1..2]
+       return (x, 42)
+
 inc :: Int -> Int
 inc x = x + 1
 
