@@ -1,0 +1,81 @@
+Build profile: -w ghc-9.6.7 -O1
+In order, the following will be built (use -v for more details):
+ - benchmarks-0.1.0.0 (lib) (file src/Lib.hs changed)
+ - benchmarks-0.1.0.0 (exe:benchmarks) (dependency rebuilt)
+Preprocessing library for benchmarks-0.1.0.0...
+Building library for benchmarks-0.1.0.0...
+[1 of 2] Compiling ModuleA          ( src/ModuleA.hs, /home/vivianyyd/type-synth/src/main/haskell/dist-newstyle/build/x86_64-linux/ghc-9.6.7/benchmarks-0.1.0.0/build/ModuleA.o, /home/vivianyyd/type-synth/src/main/haskell/dist-newstyle/build/x86_64-linux/ghc-9.6.7/benchmarks-0.1.0.0/build/ModuleA.dyn_o )
+
+==================== Desugar (after optimization) ====================
+Result size of Desugar (after optimization)
+  = {terms: 12, types: 5, coercions: 0, joins: 0/0}
+
+greet = \ name_ah0 -> ++ (unpackCString# "Hello, "#) name_ah0
+
+$trModule
+  = Module
+      (TrNameS "benchmarks-0.1.0.0-inplace"#) (TrNameS "ModuleA"#)
+
+
+
+[2 of 2] Compiling Lib              ( src/Lib.hs, /home/vivianyyd/type-synth/src/main/haskell/dist-newstyle/build/x86_64-linux/ghc-9.6.7/benchmarks-0.1.0.0/build/Lib.o, /home/vivianyyd/type-synth/src/main/haskell/dist-newstyle/build/x86_64-linux/ghc-9.6.7/benchmarks-0.1.0.0/build/Lib.dyn_o )
+
+==================== Desugar (after optimization) ====================
+Result size of Desugar (after optimization)
+  = {terms: 23, types: 23, coercions: 0, joins: 0/0}
+
+renderMarkdown
+  = \ input_a2Hy ->
+      $ runPure
+        (>>=
+           $fMonadPandocPure
+           (readMarkdown
+              $fPandocMonadPandocPure
+              $fToSourcesText
+              (def $fDefaultReaderOptions)
+              (pack input_a2Hy))
+           (writeHtml5String
+              $fPandocMonadPandocPure (def $fDefaultWriterOptions)))
+
+$trModule
+  = Module (TrNameS "benchmarks-0.1.0.0-inplace"#) (TrNameS "Lib"#)
+
+
+
+Preprocessing executable 'benchmarks' for benchmarks-0.1.0.0...
+Building executable 'benchmarks' for benchmarks-0.1.0.0...
+[1 of 1] Compiling Main             ( app/Main.hs, /home/vivianyyd/type-synth/src/main/haskell/dist-newstyle/build/x86_64-linux/ghc-9.6.7/benchmarks-0.1.0.0/x/benchmarks/build/benchmarks/benchmarks-tmp/Main.o )
+
+==================== Desugar (after optimization) ====================
+Result size of Desugar (after optimization)
+  = {terms: 13, types: 6, coercions: 0, joins: 0/0}
+
+main = putStrLn (unpackCString# "Hello, Haskell!"#)
+
+main = runMainIO main
+
+$trModule
+  = Module
+      (TrNameS "benchmarks-0.1.0.0-inplace-benchmarks"#)
+      (TrNameS "Main"#)
+
+
+
+[1 of 2] Compiling Main             ( app/Main.hs, /home/vivianyyd/type-synth/src/main/haskell/dist-newstyle/build/x86_64-linux/ghc-9.6.7/benchmarks-0.1.0.0/x/benchmarks/build/benchmarks/benchmarks-tmp/Main.o )
+
+==================== Desugar (after optimization) ====================
+Result size of Desugar (after optimization)
+  = {terms: 13, types: 6, coercions: 0, joins: 0/0}
+
+main = putStrLn (unpackCString# "Hello, Haskell!"#)
+
+main = runMainIO main
+
+$trModule
+  = Module
+      (TrNameS "benchmarks-0.1.0.0-inplace-benchmarks"#)
+      (TrNameS "Main"#)
+
+
+
+[2 of 2] Linking /home/vivianyyd/type-synth/src/main/haskell/dist-newstyle/build/x86_64-linux/ghc-9.6.7/benchmarks-0.1.0.0/x/benchmarks/build/benchmarks/benchmarks [Objects changed]

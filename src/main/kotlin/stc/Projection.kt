@@ -1,6 +1,6 @@
 package stc
 
-import util.ParameterNode
+import dependencyanalysis.ParameterNode
 
 class Projection(
     val outline: Map<String, SymTypeC>,

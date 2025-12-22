@@ -2,10 +2,10 @@ package core
 
 import core.languages.*
 import dependencyanalysis.DependencyAnalysis
-import util.DependencyEdge
-import util.ParameterNode
+import dependencyanalysis.DependencyEdge
+import dependencyanalysis.ParameterNode
+import dependencyanalysis.SelfLoop
 import util.PyWriter
-import util.SelfLoop
 
 class LabelArityConstraints(
     private val cand: Candidate<Elaborated>,

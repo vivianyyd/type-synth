@@ -1,8 +1,8 @@
 package core.languages
 
 import core.unification.*
+import dependencyanalysis.ParameterNode
 import util.Counter
-import util.ParameterNode
 import java.lang.Integer.max
 
 /**

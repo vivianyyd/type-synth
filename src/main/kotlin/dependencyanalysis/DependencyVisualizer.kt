@@ -1,7 +1,5 @@
 package dependencyanalysis
 
-import util.DependencyGraph
-import util.ParameterNode
 import util.visualizations.FlowDotWriter
 import java.io.File
 import java.io.FileOutputStream

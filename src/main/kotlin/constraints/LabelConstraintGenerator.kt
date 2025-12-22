@@ -1,13 +1,13 @@
 package constraints
 
 import dependencyanalysis.DependencyAnalysis
+import dependencyanalysis.DependencyEdge
+import dependencyanalysis.ParameterNode
+import dependencyanalysis.SelfLoop
 import stc.L
 import stc.Projection
 import stc.Var
-import util.DependencyEdge
-import util.ParameterNode
 import util.PyWriter
-import util.SelfLoop
 
 class LabelConstraintGenerator(private val hyp: Projection, private val dep: DependencyAnalysis) {
     private val pyName = mutableMapOf<String, String>()

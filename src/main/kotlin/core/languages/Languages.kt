@@ -3,6 +3,7 @@ package core.languages
 import core.LabelArityConstraints
 import core.unification.*
 import dependencyanalysis.DependencyAnalysis
+import dependencyanalysis.ParameterNode
 import query.Name
 import query.Query
 import stc.Var
