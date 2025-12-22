@@ -13,7 +13,7 @@ import java.lang.Integer.max
 class DepLabConcreteSketcher(
     val query: Query,
     private val contextOutline: Projection,
-    private val dependencies: DependencyAnalysis,
+    private val dependencies: ArrowDependencyAnalysis,
     private val varTypeIds: Map<String, Int>,
     private val oracle: Oracle
 ) {

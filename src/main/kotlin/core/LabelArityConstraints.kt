@@ -1,7 +1,7 @@
 package core
 
 import core.languages.*
-import dependencyanalysis.DependencyAnalysis
+import dependencyanalysis.ArrowDependencyAnalysis
 import dependencyanalysis.DependencyEdge
 import dependencyanalysis.ParameterNode
 import dependencyanalysis.SelfLoop
@@ -9,7 +9,7 @@ import util.PyWriter
 
 class LabelArityConstraints(
     private val cand: Candidate<Elaborated>,
-    private val dep: DependencyAnalysis
+    private val dep: ArrowDependencyAnalysis
 ) {
 
     private val pyName = mutableMapOf<String, String>()

@@ -103,17 +103,17 @@ private fun aritiesToDeps(
     query: Query,
     oracle: Oracle,
     outlines: List<Projection>
-): Map<Map<String, Int>, DependencyAnalysis> =
-    outlines.map { it.arities }.toSet().associateWith { DependencyAnalysis(query, it, oracle) }
+): Map<Map<String, Int>, ArrowDependencyAnalysis> =
+    outlines.map { it.arities }.toSet().associateWith { ArrowDependencyAnalysis(query, it, oracle) }
 
 private fun vizDeps(
     components: List<String>,
-    aritiesToDeps: Map<Map<String, Int>, DependencyAnalysis>
+    aritiesToDeps: Map<Map<String, Int>, ArrowDependencyAnalysis>
 ) = aritiesToDeps.entries.mapIndexed { i, it -> components.map { f -> viz(f, it.value, "$f$i") } }
 
 private fun assignLabelSizes(
     outlines: List<Projection>,
-    aritiesToDeps: Map<Map<String, Int>, DependencyAnalysis>,
+    aritiesToDeps: Map<Map<String, Int>, ArrowDependencyAnalysis>,
     runCVC: Boolean
 ): Map<Int, Map<L, Int>> {
     val cvcGens =

@@ -2,7 +2,7 @@ package core.languages
 
 import core.LabelArityConstraints
 import core.unification.*
-import dependencyanalysis.DependencyAnalysis
+import dependencyanalysis.ArrowDependencyAnalysis
 import dependencyanalysis.ParameterNode
 import query.Name
 import query.Query
@@ -41,7 +41,7 @@ private fun compileElabIntermediate(seed: Candidate<Elab>): Candidate<Elaborated
 }
 
 object Elaborated : Language {
-    val aritiesToDeps = mutableMapOf<List<Int>, DependencyAnalysis>()
+    val aritiesToDeps = mutableMapOf<List<Int>, ArrowDependencyAnalysis>()
 
     private var id = 0
 
@@ -112,7 +112,7 @@ fun typeOfParam(candidate: Candidate<Elab>, param: ParameterNode): SearchNode<El
  */
 fun constraints(
     candidate: Candidate<Elab>,
-    deps: DependencyAnalysis
+    deps: ArrowDependencyAnalysis
 ): Map<ParameterNode, Dependency> {
     val constraints = mutableMapOf<ParameterNode, Dependency>()
     candidate.names.forEach { name ->
@@ -149,7 +149,7 @@ fun compileElabToInfo(
 ): ElaboratedInfo? {
     val deps =
         Elaborated.aritiesToDeps.getOrPut(seed.arities()) {
-            DependencyAnalysis(query, seed.names.zip(seed.arities()).toMap(), oracle)
+            ArrowDependencyAnalysis(query, seed.names.zip(seed.arities()).toMap(), oracle)
         }
 
     val constraints = constraints(seed, deps)
@@ -236,7 +236,7 @@ fun compileElabToInfo(
 data class ElaboratedInfo(
     val candidate: Candidate<Elaborated>,
     val labelArities: Map<Int, Int>,
-    val deps: DependencyAnalysis,
+    val deps: ArrowDependencyAnalysis,
     val constraints: Map<ParameterNode, Dependency>
 )
 
@@ -253,7 +253,7 @@ fun compileConcreteParameter(
     node: SearchNode<Elaborated>,
     parameter: ParameterNode,
     labelArities: Map<Int, Int>,
-    deps: DependencyAnalysis,
+    deps: ArrowDependencyAnalysis,
     constraints: Map<ParameterNode, Dependency>,
     emitBlanks: Boolean
 ): SearchNode<Concrete> =
@@ -288,7 +288,7 @@ fun compileConcreteType(
     paramsSoFar: Int,
     seed: SearchNode<Elaborated>,
     labelArities: Map<Int, Int>,
-    deps: DependencyAnalysis,
+    deps: ArrowDependencyAnalysis,
     constraints: Map<ParameterNode, Dependency>,
     emitBlanks: Boolean
 ): SearchNode<Concrete> =

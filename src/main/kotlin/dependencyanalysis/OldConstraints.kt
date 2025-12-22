@@ -18,7 +18,7 @@ data class MustContainVariables(val vars: List<Pair<Int, Int>>) : DependencyCons
  * Take a dependency analysis (arrows on an arity hypothesis) and outline (hypothesis of label and
  * variable locations) and produce explicit variable constraints for each parameter in the outline.
  */
-fun constraintsForOldPipeline(outline: Projection, deps: DependencyAnalysis) =
+fun constraintsForOldPipeline(outline: Projection, deps: ArrowDependencyAnalysis) =
     outline.outline.keys.associateWith { name ->
         val graph = deps.graphs[name]!!
         val constrs = mutableMapOf<Int, DependencyConstraint>()

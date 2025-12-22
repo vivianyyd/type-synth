@@ -57,7 +57,7 @@ class ConcreteEnumerator(
     val contextOutline: Projection,
     /** Map from label ids to number of parameters */
     inLabels: Map<stc.L, Int>,
-    private val dependencies: DependencyAnalysis,
+    private val dependencies: ArrowDependencyAnalysis,
     private val oracle: Oracle,
     private val logger: Logger
 ) {
@@ -323,8 +323,7 @@ class ConcreteEnumerator(
                 is ConcreteF -> ConcreteF(t.params.map { applyBinding(it, varId, sub) })
                 is ConcreteVar ->
                     if (t.varId == varId) sub
-                    else
-                        t // TODO t should never be a binding variable and hit this case; reason
+                    else t // TODO t should never be a binding variable and hit this case; reason
                 // about it a bit more
                 else -> TODO("Try skipping nullaries then fast forwarding at the end")
             }

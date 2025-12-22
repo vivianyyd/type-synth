@@ -5,10 +5,10 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintWriter
 
-fun viz(name: String, da: DependencyAnalysis, fileName: String = name) =
-    DependencyVisualizer.viz(da.graphs[name]!!, fileName)
+fun viz(name: String, da: ArrowDependencyAnalysis, fileName: String = name) =
+    ArrowDependencyVisualizer.viz(da.graphs[name]!!, fileName)
 
-object DependencyVisualizer {
+object ArrowDependencyVisualizer {
     private var ctr = 0
     private val dw = FlowDotWriter()
 
@@ -22,9 +22,9 @@ object DependencyVisualizer {
         return gNode
     }
 
-    fun viz(graph: DependencyGraph, fileID: String) = writeDotOutput(visualize(graph), fileID)
+    fun viz(graph: ArrowDependencyGraph, fileID: String) = writeDotOutput(visualize(graph), fileID)
 
-    private fun visualize(graph: DependencyGraph): String {
+    private fun visualize(graph: ArrowDependencyGraph): String {
         dw.startGraph()
         val nodeLabels = graph.nodes.associateWith { it.display() }
         dw.writeEdges(

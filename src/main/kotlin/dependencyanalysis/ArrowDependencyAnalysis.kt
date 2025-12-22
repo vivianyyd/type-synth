@@ -8,7 +8,7 @@ import util.Oracle
 import util.equivalenceClasses
 import java.lang.Integer.max
 
-class DependencyAnalysis(
+class ArrowDependencyAnalysis(
     private val query: Query,
     arities: Map<String, Int>,
     private val oracle: Oracle
@@ -18,10 +18,10 @@ class DependencyAnalysis(
 
     fun nodes(name: String) = nodes.filter { it.f == name }
 
-    val graphs: Map<String, DependencyGraph> by lazy {
+    val graphs: Map<String, ArrowDependencyGraph> by lazy {
         query.names.associateWith { name ->
             val (deps, loops) = findEdges(name)
-            DependencyGraph(name, nodes(name).toSet(), deps, loops)
+            ArrowDependencyGraph(name, nodes(name).toSet(), deps, loops)
         }
     }
 

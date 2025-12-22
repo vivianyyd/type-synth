@@ -21,7 +21,7 @@ data class SelfLoop(val node: ParameterNode) : Edge
 
 // TODO decide if nodes/edges should be constructed in init block or by DepAnalysis class and only
 // stored here
-class DependencyGraph(
+class ArrowDependencyGraph(
     val name: String,
     val nodes: Set<ParameterNode>,
     val deps: Set<DependencyEdge>,
