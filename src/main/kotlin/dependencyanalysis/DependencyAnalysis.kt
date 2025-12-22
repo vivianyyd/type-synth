@@ -11,9 +11,7 @@ import java.lang.Integer.max
 
 sealed interface DependencyConstraint
 
-// TODO MustContainVariables, MustSuperSet/SubSet. Currently don't really know how to use these
-// anyway
-//   so not implemented yet
+// TODO MustSuperSet/SubSet. Don't really know how to use these anyway so not implemented yet
 object ContainsNoVariables : DependencyConstraint
 
 data class ContainsOnly(val vId: Int, val tId: Int) : DependencyConstraint
@@ -21,7 +19,11 @@ data class ContainsOnly(val vId: Int, val tId: Int) : DependencyConstraint
 data class MustContainVariables(val vars: List<Pair<Int, Int>>) : DependencyConstraint
 
 // TODO make it map from ParameterNodes
-fun constraints(outline: Projection, deps: DependencyAnalysis) =
+/**
+ * Take a dependency analysis (arrows on an arity hypothesis) and outline (hypothesis of label and
+ * variable locations) and produce explicit variable constraints for each parameter in the outline.
+ */
+fun constraintsForOldPipeline(outline: Projection, deps: DependencyAnalysis) =
     outline.outline.keys.associateWith { name ->
         val graph = deps.graphs[name]!!
         val constrs = mutableMapOf<Int, DependencyConstraint>()

@@ -104,6 +104,11 @@ fun typeOfParam(candidate: Candidate<Elab>, param: ParameterNode): SearchNode<El
     return curr
 }
 
+/**
+ * Take a dependency analysis (arrows on an arity hypothesis) and Elab candidate (hypothesis of
+ * label and variable locations) and produce explicit variable constraints for each parameter in the
+ * outline.
+ */
 fun constraints(
     candidate: Candidate<Elab>,
     deps: DependencyAnalysis
@@ -111,10 +116,14 @@ fun constraints(
     val constraints = mutableMapOf<ParameterNode, Dependency>()
     candidate.names.forEach { name ->
         val graph = deps.graphs[name]!!
-        graph.loops.forEach { constraints[ParameterNode(name, it.node.i)] = NoVariables }
+        graph.loops.forEach {
+            // Nullaries may not have loops, since we have simply observed their witnesses are
+            // type-equal to themselves
+            if (candidate.searchNodeOf(it.node.f) is NArrow) constraints[it.node] = NoVariables
+        }
         graph.deps.forEach {
             val sup = typeOfParam(candidate, it.sup)
-            if (sup is ElabV) constraints[ParameterNode(name, it.sub.i)] = Only(sup.v)
+            if (sup is ElabV) constraints[it.sub] = Only(sup.v)
         }
         equivalenceClasses(graph.deps) { e1, e2 -> e1.sup == e2.sup }
             .forEach {

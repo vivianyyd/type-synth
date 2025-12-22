@@ -41,7 +41,7 @@ fun run(config: ConfigForOld, logger: Logger) {
     val outlinesPruned =
         outlines.filter {
             val deps = aritiesToDeps[it.arities]!!
-            val constrs = constraints(it, deps)
+            val constrs = constraintsForOldPipeline(it, deps)
             it.parameterToType.all { (p, t) ->
                 val c = constrs[p.f]?.get(p.i)
                 when (c) {

@@ -77,7 +77,7 @@ class ConcreteEnumerator(
     private fun varId(name: String, vid: Int, tid: Int) = oldVarsToNewVars[name]!![vid to tid]!!
 
     init {
-        val constraints = constraints(contextOutline, dependencies)
+        val constraints = constraintsForOldPipeline(contextOutline, dependencies)
         contextOutline.outline.forEach { (name, ty) ->
             val constrs = constraints[name]!!
 
