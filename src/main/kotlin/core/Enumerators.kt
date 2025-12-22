@@ -13,19 +13,20 @@ import test.*
 import util.Configuration
 import util.Logger
 import util.clearCVC
+import util.lazyCartesianProduct
 
 fun main() {
-    val tests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
+    val tests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest, PolymorphicNil)
     val testFromFile = parseTest("dictchain")
 
     val configuration =
         Configuration(
-            test = testFromFile,
+            test = PolymorphicNil,
             runCVC = true,
             enumeratorTag = EnumeratorTag.DFSPriority,
             unificationTag = UnificationTag.Eager,
-            finalRoundSketches = false,
-            sizeBound = 20,
+            finalRoundSketches = true,
+            sizeBound = 4,
             depthBound = 4
         )
 
@@ -97,8 +98,8 @@ fun run(configuration: Configuration, logger: Logger) {
 
     val concSeeds =
         time("Compile Elab to Concrete") {
-            val info =
-                elabSols.mapNotNull {
+            elabSols
+                .mapNotNull {
                     compileElabToInfo(
                         it,
                         query,
@@ -107,7 +108,12 @@ fun run(configuration: Configuration, logger: Logger) {
                         configuration.runCVC
                     )
                 }
-            info.map { compileToConcrete(it, configuration.finalRoundSketches) }
+                .flatMap { info ->
+                    lazyCartesianProduct(info.labelArities.values.map { (0..it).toList() }).map {
+                        info.copy(labelArities = info.labelArities.keys.zip(it).toMap())
+                    }
+                }  // TODO reorder these simplest to most complex
+                .map { compileToConcrete(it, configuration.finalRoundSketches) }
         }
     println(concSeeds.joinToString(separator = "\n"))
 

@@ -45,6 +45,7 @@ fun <L : Language> solutions(
     iterative: Boolean,
     logger: Logger
 ): List<Candidate<L>> {
+    if (enumerators.isEmpty()) return listOf()
     val holes = enumerators.map { it.seedCandidate.holes }
     if (holes.min() > sizeBound)
         throw IllegalArgumentException("Size bound not large enough for any concrete types")
