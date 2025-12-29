@@ -51,11 +51,11 @@ class DFSLeftEnumerator<L : Language>(
         hardDepthBound: Int
     ): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
-            unification(c, query.posExsBeforeSubexprs).ok() &&
-                    (if (mustPassNegatives) query.negExamples.all { !unification(c, listOf(it)).ok() }
+            unification(c, query.posNoSubexprs).ok() &&
+                    (if (mustPassNegatives) query.neg.all { !unification(c, listOf(it)).ok() }
                     else true)
 
-        val u = unification(seedCandidate, query.posExsBeforeSubexprs)
+        val u = unification(seedCandidate, query.posNoSubexprs)
         if (!u.ok()) return listOf()
 
         return commitLeftmost(seedCandidate, u, hardDepthBound).filter { c -> check(c) }.toList()

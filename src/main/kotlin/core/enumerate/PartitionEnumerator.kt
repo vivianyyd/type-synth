@@ -68,8 +68,7 @@ class PartitionEnumerator<L : Language>(
         if (c.full()) return sequenceOf(c)
 
         if (sizeBound == 0) {
-            val ff =
-                c.fastForward { unification(it, query.posExsBeforeSubexprs) } ?: return sequenceOf()
+            val ff = c.fastForward { unification(it, query.posNoSubexprs) } ?: return sequenceOf()
             return if (ff.full()) {
                 sequenceOf(ff)
             } else sequenceOf()
@@ -86,7 +85,7 @@ class PartitionEnumerator<L : Language>(
                 // TODO spawnAndRefine is slow for eager unification since we make a duplicate
                 // candidate.
                 //      but making a new unification is slow for other unifs.
-                val u = unification(newCand, query.posExsBeforeSubexprs)
+                val u = unification(newCand, query.posNoSubexprs)
                 if (u.ok()) {
                     if (newCand.satisfiesDependencies()) { // TODO ablate this
                         commitPriority(newCand, u, sizeBound - cost, hardDepthBound)
@@ -102,8 +101,8 @@ class PartitionEnumerator<L : Language>(
         hardDepthBound: Int
     ): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
-            unification(c, query.posExsBeforeSubexprs).ok() &&
-                    (if (mustPassNegatives) query.negExamples.all { !unification(c, listOf(it)).ok() }
+            unification(c, query.posNoSubexprs).ok() &&
+                    (if (mustPassNegatives) query.neg.all { !unification(c, listOf(it)).ok() }
                     else true)
 
         val seed =
@@ -130,10 +129,7 @@ class PartitionEnumerator<L : Language>(
                 // the default variable
             } else seedCandidate
         return commitPriority(
-            seed,
-            unification(seedCandidate, query.posExsBeforeSubexprs),
-            sizeBound,
-            hardDepthBound
+            seed, unification(seedCandidate, query.posNoSubexprs), sizeBound, hardDepthBound
         )
             .filter { c -> check(c) }
             .toList()

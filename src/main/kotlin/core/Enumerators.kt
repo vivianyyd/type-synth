@@ -26,7 +26,7 @@ fun main() {
             enumeratorTag = EnumeratorTag.DFSPriority,
             unificationTag = UnificationTag.Eager,
             finalRoundSketches = true,
-            sizeBound = 4,
+            sizeBound = 20,
             depthBound = 4
         )
 
@@ -63,7 +63,7 @@ fun run(configuration: Configuration, logger: Logger) {
         Candidate(
             query.names,
             query.names.map { name ->
-                if (query.posExamples.any { it is App && it.fn is Name && it.fn.name == name })
+                if (query.posWithSubexprs.any { it is App && it.fn is Name && it.fn.name == name })
                     InitHole().fnExpansion
                 else InitL
             })

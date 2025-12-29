@@ -52,11 +52,7 @@ class ExampleVisualizer(val query: Query) {
         }
 
         val allEdges =
-            query.posExsBeforeSubexprs
-                .filterIsInstance<App>()
-                .flatMap { edges(it) }
-                .toSet()
-                .toList()
+            query.posNoSubexprs.filterIsInstance<App>().flatMap { edges(it) }.toSet().toList()
 
         println("In degrees:")
         println(inDegrees)
@@ -85,11 +81,7 @@ class ExampleVisualizer(val query: Query) {
         }
 
         val allEdges =
-            query.posExsBeforeSubexprs
-                .filterIsInstance<App>()
-                .flatMap { edges(it) }
-                .toSet()
-                .toList()
+            query.posNoSubexprs.filterIsInstance<App>().flatMap { edges(it) }.toSet().toList()
         dw.writeEdges(allEdges, false, "uses")
         dw.finishGraph()
         val out = dw.output()

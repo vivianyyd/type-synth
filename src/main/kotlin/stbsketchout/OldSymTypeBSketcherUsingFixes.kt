@@ -64,7 +64,7 @@ class OldSymTypeBSketcherUsingFixes(
 
             header()
             query.names.forEach { generator(it) }
-            query.posExamples.filterIsInstance<App>().forEach { posExampleAssertions(it) }
+            query.posWithSubexprs.filterIsInstance<App>().forEach { posExampleAssertions(it) }
             flags()
             harnesses()
             w.s()
@@ -226,12 +226,12 @@ class OldSymTypeBSketcherUsingFixes(
 
         private fun harnesses() {
             repeat(rounds) { r ->
-                query.posExamples.forEach { posExample(it, r) }
+                query.posWithSubexprs.forEach { posExample(it, r) }
                 w.block("harness void EXAMPLE_WRAPPER_$r()") {
                     w.block("if (${flag(r)})") {
                         w.lines((0 until r).map { "assert (${flag(it)})" })
                         w.lines(
-                            query.posExamples.flatMap { ex ->
+                            query.posWithSubexprs.flatMap { ex ->
                                 if (ex is Name && !nullary(ex.name)) {
                                     (0 until r).map {
                                         "assert (!eq(${exWithRound(ex, r)}(), ${exWithRound(ex, it)}()))"

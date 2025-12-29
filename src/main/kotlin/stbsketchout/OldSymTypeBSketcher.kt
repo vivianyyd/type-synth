@@ -48,7 +48,7 @@ class OldSymTypeBSketcher(val query: Query, private val state: State, private va
         fun make(): String {
             header()
             query.names.forEach { generator(it) }
-            query.posExamples.forEach { posExample(it) }
+            query.posWithSubexprs.forEach { posExample(it) }
             return w.s()
         }
 

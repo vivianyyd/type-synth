@@ -23,7 +23,7 @@ fun main() {
     val n = query.names.size
     val matrix = Array(n) { IntArray(n) { 0 } }
     val indices = query.names.withIndex().associate { (i, n) -> n to i }
-    query.posExsBeforeSubexprs.filterIsInstance<App>().forEach {
+    query.posNoSubexprs.filterIsInstance<App>().forEach {
         it.names.forEach { n1 ->
             it.names.forEach { n2 ->
                 val i1 = indices[n1]!!

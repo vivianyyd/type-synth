@@ -157,7 +157,7 @@ class SymTypeABuilder(val query: Query) {
             if (param in paramToArgs) paramToArgs[param]!!.add(arg)
             else paramToArgs[param] = mutableSetOf(arg)
         }
-        query.posExamples.filterIsInstance<App>().forEach { (fn, arg) ->
+        query.posWithSubexprs.filterIsInstance<App>().forEach { (fn, arg) ->
             val f = s.exprToChoice(fn)
             val a = s.exprToChoice(arg)
             if (f != null && a != null) {
@@ -180,7 +180,7 @@ class SymTypeABuilder(val query: Query) {
         // the choice for param MUST permit AT LEAST ONE of the subtrees for arg (if hole, expand to
         // permit all)
 
-        query.negExamples.forEach {
+        query.neg.forEach {
             // the choice for param CAN'T permit at least one of the subtrees for arg
             //               ^ that's too strong, we don't have to deal with negexs if we don't want
             // to
@@ -246,7 +246,7 @@ class SymTypeABuilder(val query: Query) {
     }
 
     private fun readAllExamples() {
-        val expandedApps = query.posExamples.filterIsInstance<App>()
+        val expandedApps = query.posWithSubexprs.filterIsInstance<App>()
         // TODO check if the nullary pass is good, refactor to make it nicer
         query.names
             .filter { expandedApps.none { app -> app.fn is Name && app.fn.name == it } }

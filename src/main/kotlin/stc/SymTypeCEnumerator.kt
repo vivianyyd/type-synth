@@ -58,7 +58,7 @@ class SymTypeCEnumerator(
                 }
             }
 
-        val pass = query.posExamples.all { check(it) != null }
+        val pass = query.posWithSubexprs.all { check(it) != null }
         val canonicalized = mutableMapOf<Int, Int>()
         var freshLabel = 0
         fun updateLs(t: SymTypeC): SymTypeC =

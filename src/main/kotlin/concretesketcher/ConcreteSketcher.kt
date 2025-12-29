@@ -106,8 +106,8 @@ class ConcreteSketcher(
         }
 
         private fun obeysOracle() {
-            query.posExamples.forEachIndexed { i, a ->
-                query.posExamples.forEachIndexed { j, b ->
+            query.posWithSubexprs.forEachIndexed { i, a ->
+                query.posWithSubexprs.forEachIndexed { j, b ->
                     if (i < j) {
                         if (oracle.equal(a, b)) {
                             w.line("assert(${sk(a)} == ${sk(b)})")
@@ -132,9 +132,9 @@ class ConcreteSketcher(
                             query.names.map { "Type ${sk(it)} = ${sk(it)}(register, numLKs)" })
                 w.lines(
                     LinkedHashSet(
-                        query.posExamples.filterIsInstance<App>().flatMap { posExample(it) })
+                        query.posWithSubexprs.filterIsInstance<App>().flatMap { posExample(it) })
                 )
-                query.negExamples.filterIsInstance<App>().forEach { negExample(it) }
+                query.neg.filterIsInstance<App>().forEach { negExample(it) }
                 obeysOracle()
             }
 

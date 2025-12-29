@@ -171,14 +171,7 @@ class ExampleGenerator(
 
         println(negExamples.entries.map { "${it.key}\t${it.value.size}" })
 
-        return Pair(
-            Query(
-                posExamples.values.flatten(),
-                negExamples.values.flatten(),
-                includesSubexprs = true
-            ),
-            dummies
-        )
+        return Pair(Query(posExamples.values.flatten(), negExamples.values.flatten()), dummies)
         // TODO Want minimal negexs. Also, instead of keeping all, we could discard if we have >5
         // for that error type for that fn name already! actually we want >5 of them for that
         // parameter of that fn. if fn has 5 params we want few examples of each being wrong
@@ -203,9 +196,9 @@ fun main() {
             .examples()
     println(context.toList().joinToString(separator = "\n"))
     println("Positive examples:")
-    println(query.posExamples.size)
-    println(printInvertDummies(query.posExamples.map { it.flatten() }, context))
-    println(query.negExamples.size)
+    println(query.posWithSubexprs.size)
+    println(printInvertDummies(query.posWithSubexprs.map { it.flatten() }, context))
+    println(query.neg.size)
 }
 
 fun printInvertDummies(exs: Collection<FlatApp>, context: Assignment): String {

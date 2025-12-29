@@ -65,8 +65,8 @@ class SketchEnumerator<L : Language>(
         hardDepthBound: Int
     ): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
-            unification(c, query.posExsBeforeSubexprs).ok() &&
-                    (if (mustPassNegatives) query.negExamples.all { !unification(c, listOf(it)).ok() }
+            unification(c, query.posNoSubexprs).ok() &&
+                    (if (mustPassNegatives) query.neg.all { !unification(c, listOf(it)).ok() }
                     else true)
 
         return TODO()

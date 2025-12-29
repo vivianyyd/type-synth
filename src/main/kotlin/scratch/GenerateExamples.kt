@@ -33,15 +33,15 @@ fun main() {
     val test = groundTruth
     val (query, context) = generate(test)
     val generatedExs =
-        (sexpsFromExamples(query.posExamples, true) + sexpsFromExamples(query.negExamples, false))
+        (sexpsFromExamples(query.posWithSubexprs, true) + sexpsFromExamples(query.neg, false))
             .joinToString(separator = "\n")
     writeExamples("${context.toSExprStrs()}\n$generatedExs", "prelude-random-subset")
 }
 
 fun generate(types: List<Pair<Type, String?>>): Pair<Query, Assignment> {
     val (query, context) = ExampleGenerator(1, 2, 500, types).examples()
-    println("Positive examples: ${query.posExamples.size}")
-    println("Negative examples: ${query.negExamples.size}")
+    println("Positive examples: ${query.posWithSubexprs.size}")
+    println("Negative examples: ${query.neg.size}")
     return query to context
 }
 

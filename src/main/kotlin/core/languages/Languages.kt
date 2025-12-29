@@ -176,9 +176,8 @@ fun compileElabToInfo(
 
     val elaborated = compileElabIntermediate(seed)
     val uf = IntUnionFind()
-    (unification(elaborated, query.posExsBeforeSubexprs)
-        .constraints()
-        ?.filterIsInstance<LabelConstraint>() ?: throw Exception("Invariant broken"))
+    (unification(elaborated, query.posNoSubexprs).constraints()?.filterIsInstance<LabelConstraint>()
+        ?: throw Exception("Invariant broken"))
         .forEach { uf.union(it.a, it.b) }
 
     // TODO this is very hacky. Need it to collect little ones like 0 = 1

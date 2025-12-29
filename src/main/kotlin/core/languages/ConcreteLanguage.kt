@@ -75,7 +75,7 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
                         .dfsLeftExpansions(unification, vars, recursionBound?.let { it - 1 })
                         .map { (node, commit) ->
                             ConcreteL(id, params.mapIndexed { j, p -> if (j == i) node else p }) to
-                                    commit
+                                commit
                         }
                 cont = exp.size <= 1
                 exp

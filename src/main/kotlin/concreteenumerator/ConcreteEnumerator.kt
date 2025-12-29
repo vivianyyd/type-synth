@@ -122,8 +122,8 @@ class ConcreteEnumerator(
 
         fun random(l: Collection<Example>) = firstN(l.shuffled())
         fun smallest(l: Collection<Example>) = firstN(l.sortedBy { it.size() })
-        pos = smallest(query.posExamples)
-        neg = smallest(query.negExamples)
+        pos = smallest(query.posWithSubexprs)
+        neg = smallest(query.neg)
     }
 
     /**
@@ -434,9 +434,9 @@ class ConcreteEnumerator(
         }
 
     private fun checkAll(context: Map<String, ConcreteNode>): Pair<Example, Boolean>? {
-        val ctrPosEx = query.posExamples.firstOrNull { type(context, it) == null }
+        val ctrPosEx = query.posWithSubexprs.firstOrNull { type(context, it) == null }
         if (ctrPosEx != null) return ctrPosEx to true
-        val ctrNegEx = query.negExamples.firstOrNull { type(context, it) != null }
+        val ctrNegEx = query.neg.firstOrNull { type(context, it) != null }
         if (ctrNegEx != null) return ctrNegEx to false
         return null
     }
@@ -448,8 +448,8 @@ class ConcreteEnumerator(
     ): Boolean = pos.all { type(context, it) != null } && neg.all { type(context, it) == null }
 
     fun check(context: Map<String, ConcreteNode> /*, conflicts: MutableList<List<Int>>*/): Boolean {
-        return query.posExamples.all { type(context, it) != null } &&
-                query.negExamples.all { type(context, it) == null }
+        return query.posWithSubexprs.all { type(context, it) != null } &&
+                query.neg.all { type(context, it) == null }
     }
 }
 

@@ -3,7 +3,6 @@ package dependencyanalysis
 import query.Example
 import query.FlatApp
 import query.Query
-import query.flatten
 import util.Oracle
 import util.equivalenceClasses
 import java.lang.Integer.max
@@ -47,8 +46,8 @@ class ArrowDependencyAnalysis(
         val mayHaveFresh = mutableSetOf<ParameterNode>()
 
         // TODO I think we don't actually need all subexprs in posexs here
-        val posExs = flatExs(name, query.posExamples)
-        val negExs = flatExs(name, query.negExamples)
+        val posExs = flatExs(name, query.posWithSubexprs)
+        val negExs = flatExs(name, query.neg)
         val parameters = nodes.filter { it.f == name }
 
         for (pi in parameters) {

@@ -1,6 +1,13 @@
 package query
 
 data class FlatApp(val name: String, val args: List<FlatApp> = listOf()) {
+    fun depth(): Int = args.maxOfOrNull { it.depth() + 1 } ?: 0
+
+    fun unflatten(): Example {
+        if (this.args.isEmpty()) return Name(this.name)
+        return App(FlatApp(this.name, this.args.dropLast(1)).unflatten(), this.args.last().unflatten())
+    }
+
     override fun toString(): String {
         return if (args.isEmpty()) name else "($name ${(args.joinToString(separator = " "))})"
     }
