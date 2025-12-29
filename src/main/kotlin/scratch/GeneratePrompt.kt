@@ -78,11 +78,22 @@ fun main() {
     val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 
     val prompt =
-        "Use only prefix notation. Parentheses are used around function names which consist of symbols when used as prefix operators." +
-                "You may only use the names/functions which appear in the examples provided." +
-                "Generate text that is in the same format as the examples given. Your response should include only" +
-                "the words that appear in the seed examples, parentheses, spaces, and each example separated by a newline." +
-                "Do not use any characters which do not appear in the examples; not even numbers nor list literals which use brackets []."
+    //        "What are the most commonly used Pandoc library functions in Haskell? List enough
+    // that you could reasonably write a program with them. Mark the ones that are used for
+    // similar purpose but just have different types. A list of reasonable length has at most 50
+        // functions."
+        "Generate 30 examples of small Haskell expressions which employ the Pandoc library. You need only include the imports once. Keep the examples simple - use as few different functions as possible, just a small subset that's used most often in practice. "
+
+    //        "Use only prefix notation. Parentheses are used around function names which consist of
+    // symbols when used as prefix operators." +
+    //                "You may only use the names/functions which appear in the examples provided."
+    // +
+    //                "Generate text that is in the same format as the examples given. Your response
+    // should include only" +
+    //                "the words that appear in the seed examples, parentheses, spaces, and each
+    // example separated by a newline." +
+    //                "Do not use any characters which do not appear in the examples; not even
+    // numbers nor list literals which use brackets []."
 
     val requestBodyJson =
         mapOf(
@@ -94,23 +105,27 @@ fun main() {
                             "content" to "Respond with only the text requested and no explanation."
                         ),
                         mapOf(
-                            "role" to "user",
-                            "content" to
-                                    "Below are a list of example programs, which apply a fixed set of " +
-                                    "functions and values. Generate 100 additional examples which are similarly reasonable, that is, " +
-                                    "they seem they might type check given the examples you've seen. They should be separated by " +
-                                    "newlines. Then add an extra newline, then provide 100 examples which do NOT seem reasonable, " +
-                                    "that is, they might perform an application which is ill-typed." +
-                                    prompt +
-                                    seeds.joinToString(prefix = "\n", separator = "\n")
+                            "role" to "user", "content" to prompt
+                            //                                    "Below are a list of example programs,
+                            // which apply a fixed set of " +
+                            //                                    "functions and values. Generate 100
+                            // additional examples which are similarly reasonable, that is, " +
+                            //                                    "they seem they might type check given
+                            // the examples you've seen. They should be separated by " +
+                            //                                    "newlines. Then add an extra newline,
+                            // then provide 100 examples which do NOT seem reasonable, " +
+                            //                                    "that is, they might perform an
+                            // application which is ill-typed." +
+                            //                                    prompt +
+                            //                                    seeds.joinToString(prefix = "\n",
+                            // separator = "\n")
                         )
                         // TODO
                     )
         )
 
     val jsonAdapter = moshi.adapter(Map::class.java)
-    val body =
-        jsonAdapter.toJson(requestBodyJson).toRequestBody("application/json".toMediaType())
+    val body = jsonAdapter.toJson(requestBodyJson).toRequestBody("application/json".toMediaType())
 
     val request =
         Request.Builder()
