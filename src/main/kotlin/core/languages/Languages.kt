@@ -6,7 +6,6 @@ import dependencyanalysis.ArrowDependencyAnalysis
 import dependencyanalysis.ParameterNode
 import query.Name
 import query.Query
-import stc.Var
 import util.*
 
 sealed interface Language
@@ -131,7 +130,7 @@ fun constraints(
                 val sink = it.first().sup
                 val containedVars =
                     it.map { typeOfParam(candidate, it.sub) }.filterIsInstance<ElabV>().map { it.v }
-                if (typeOfParam(candidate, sink) !is Var && containedVars.isNotEmpty()) {
+                if (typeOfParam(candidate, sink) !is ElabV && containedVars.isNotEmpty()) {
                     val p = ParameterNode(name, sink.i)
                     if (p !in constraints) constraints[p] = MustContain(containedVars)
                 }
