@@ -5,12 +5,8 @@ import util.Counter
 
 object Concrete : Language
 
-class Blank(
-    mayHaveFresh: Boolean,
-    constraint: Dependency?,
-    labelArities: Map<Int, Int>,
-    emitBlanks: Boolean
-) : ConcreteHole(mayHaveFresh, constraint, labelArities, emitBlanks) {
+class Blank(mayHaveFresh: Boolean, labelArities: Map<Int, Int>, emitBlanks: Boolean) :
+    ConcreteHole(mayHaveFresh, labelArities, emitBlanks) {
     override fun conflict() = 0
 
     override fun priority() = 0
@@ -111,7 +107,6 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
 
 open class ConcreteHole(
     protected val mayHaveFresh: Boolean,
-    protected val constraint: Dependency?,
     protected val labelArities: Map<Int, Int>,
     protected val emitBlanks: Boolean
 ) : Hole<Concrete>() {
@@ -132,21 +127,16 @@ open class ConcreteHole(
             }
         else expansionsNoBound(unification, vars)
 
-    private fun hole() = ConcreteHole(mayHaveFresh, constraint, labelArities, emitBlanks)
+    private fun hole() = ConcreteHole(mayHaveFresh, labelArities, emitBlanks)
 
     private val fnExpansion by lazy { NArrow(hole(), hole(), true) }
     private val labelExpansions by lazy {
         labelArities.map { ConcreteL(it.key, List(it.value) { hole() }) }
     }
-    val blankExpansion by lazy { Blank(mayHaveFresh, constraint, labelArities, emitBlanks) }
+    val blankExpansion by lazy { Blank(mayHaveFresh, labelArities, emitBlanks) }
 
     private fun variableExpansions(vars: Int) =
-        when (constraint) { // TODO weird that vars need to be sorted
-            null,
-            is MustContain -> (0 until (if (mayHaveFresh) vars + 1 else vars)).map { ConcreteV(it) }
-            NoVariables -> listOf()
-            is Only -> listOf(ConcreteV(constraint.v))
-        }
+        (0 until (if (mayHaveFresh) vars + 1 else vars)).map { ConcreteV(it) }
 
     private fun expansionsNoBound(
         unification: Unification<Concrete>,
