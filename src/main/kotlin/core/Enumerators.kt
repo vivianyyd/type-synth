@@ -22,7 +22,7 @@ fun main() {
 
     val configuration =
         Configuration(
-            test = PolymorphicDict,
+            test = DictTest,
             runCVC = true,
             enumeratorTag = EnumeratorTag.DFSPriority,
             unificationTag = UnificationTag.Eager,
@@ -113,9 +113,8 @@ fun run(configuration: Configuration, logger: Logger) {
                     lazyCartesianProduct(info.labelArities.values.map { (0..it).toList() }).map {
                         info.copy(labelArities = info.labelArities.keys.zip(it).toMap())
                     }
-                } // TODO reorder these simplest to most complex. also, we should do this in compile
-                //     elab to info maybe
-                .map { compileToConcrete(it, configuration.finalRoundSketches) }
+                } // TODO reorder these simplest to most complex
+                .map { compileToConcrete(it, emitBlanks = false) }
         }
     println(concSeeds.joinToString(separator = "\n"))
 
