@@ -3,14 +3,19 @@ package dependencyanalysis
 import query.FlatApp
 import query.Query
 import util.Oracle
+import util.PrefixBruteForce
+import util.PrefixContainment
+import util.equivalenceClasses
 
-data class EquivalenceClass(val representative: FlatApp, val representativeID: Int) {
-    val exampleIDs = mutableSetOf(representativeID)
+class EquivalenceRelation(private val oracle: Oracle) {
+    private val representatives = mutableListOf<FlatApp>()
 
-    fun eq(example: FlatApp, oracle: Oracle) = oracle.flatEqual(example, representative)
+    fun addExample(arg: FlatApp) {
+        if (!match(arg)) representatives.add(arg)
+    }
 
-    fun add(exampleID: Int) {
-        exampleIDs.add(exampleID)
+    fun match(arg: FlatApp) = representatives.any {
+        oracle.flatEqual(it, arg)
     }
 }
 
@@ -24,117 +29,43 @@ class ParameterwiseDependencyAnalysis(
 
     fun nodes(name: String) = nodes.filter { it.f == name }
 
-    val links: Map<String, List<Link>> by lazy { query.names.associateWith { findEdges(it) } }
+    val fresh = query.names.associateWith { Array(arities[it]!!) { false } }
+    val constrained = query.names.associateWith { Array(arities[it]!!) { false } }
 
-    fun mayHaveFresh(parameterNode: ParameterNode): Boolean = true // TODO TODO TODO TODO()
+    init {
+        query.names.forEach { name ->
+            val posExs = query.flatPosNoSubexprs(name)
+            val negExs = query.flatNeg(name)
 
-    // TODO each name will have an associated boolean array for its parameters mayhavefresh and constraint flags.
+            val prefixChecker: PrefixContainment = PrefixBruteForce(oracle)
+            prefixChecker.addAll(posExs)
 
-    private fun findEdges(name: String): List<Link> {
-
-
-        val arity = arities[name]!!
-        val nullary = arity != 0
-        val posExs = query.flatPosNoSubexprs(name)
-        val negExs = query.flatNeg(name)
-
-        // [argument index] to [[eqClasses of arg values] to [indices of corresponding positive
-        // examples]]
-        // posByArguments[i][eqClass] = set (or bitset) of blue tuple IDs
-        val posByArguments = Array(arity) { mutableListOf<EquivalenceClass>() }
-
-        fun MutableList<EquivalenceClass>.addExample(arg: FlatApp, exID: Int) {
-            var match =
-                this.any {
-                    if (oracle.flatEqual(it.representative, arg)) {
-                        it.add(exID)
-                        true
-                    } else false
-                }
-            if (!match) this.add(EquivalenceClass(arg, exID))
-        }
-
-        posExs.forEachIndexed { exInd, pos ->
-            pos.args.forEachIndexed { argIndex, arg ->
-                // it's only a witness if it's passed in argument position, not more than fully
-                // applied
-                if (argIndex < arity - 1) posByArguments[argIndex].addExample(arg, exInd)
+            negExs.forEach { neg ->
+                // requires: negative examples only fail on the LAST argument
+                if (prefixChecker.lookup(FlatApp(neg.name, neg.args.dropLast(1))))
+                    TODO("Add a constraint in the appropriate place")
             }
-            /*
-            // If the function was MORE than fully applied, the example up to the index at which it
-            // was fully applied is a witness for the output type
-            if (pos.args.size >= arity - 1) {
-                val thepartialapplication = FlatApp(name, pos.args.take(arity - 1))
-                posByArguments[arity - 1].getOrPut(TODO()) { mutableSetOf() }.add(TODO())
-            }
-             */
-            /*
-                   Never mind.
-                   We can't find dependencies for output/nullary types this way, since we don't have
-                   negative examples for output types.
-                   We could do mayHaveFresh analysis for outputs.
-                   The old way is ok, but what about returning polymorphic nil or hofs?
-                   mayhavefresh doesn't really work for polymorphic nullaries but it's ok bc honestly i'm not sure it was
-                   that helpful to begin with idk maybe it was
 
-            // TODO does mayhavefresh even work for HOFs either, I don't think so since they don't bind
-            // variables
-            //   so we may erroneously think a hole may have fresh when it is actually bound in a HOF
-            // argument.
-            // TODO if the first parameter is a function do we allow it to have infinite variables if it
-            // has no constraint?
-                */
+            TODO("Fresh variable analysis")
         }
-
-        val link = Array(arity) { Array(arity) { false } }
-        negExs.forEach { neg ->
-            // negative examples only fail on the LAST argument
-            val j = neg.args.size - 1
-            println("Examining negex $neg for links from $j")
-            if (j < arity - 1) { // TODO think about this and the above check...
-                val b =
-                    posByArguments[j].firstOrNull { it.eq(neg.args[j], oracle) }?.exampleIDs
-                        ?: emptySet()
-
-                println("\tposexs with the same final arg: ${b.map { posExs[it] }}")
-
-                if (b.isNotEmpty()) {
-                    for (i in 0 until neg.args.size) {
-                        println("testing index $i link")
-                        // skip if the negex is bad bc overapplied
-                        if (i < arity - 1 && i != j) {
-                            val a =
-                                posByArguments[i]
-                                    .firstOrNull { it.eq(neg.args[i], oracle) }
-                                    ?.exampleIDs ?: emptySet()
-
-                            println("\tposexs with the same arg at $i: ${a.map { posExs[it] }}")
-
-                            if (a.isEmpty()) continue
-
-                            if (a != b || a.size > 1) {
-                                println("Putting link $i--$j")
-                                link[i][j] = true
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        val links = mutableListOf<Link>()
-        for (i in 0 until arity) {
-            for (j in 0 until arity) {
-                if (link[i][j]) {
-                    links.add(Link(i, j))
-                }
-            }
-        }
-
-        println("$name\t$links")
-
-        return links
     }
+
+    /**
+     * In each equivalence class, the type of the function that the arg at [argIndex] is applied
+     * to is the same
+     */
+    fun groupExsByTypeBeforeArg(argIndex: Int, exs: Collection<FlatApp>) =
+    // TODO A weaker version of this is to check that all the arguments themselves are obs
+    //      equivalent. Tradeoffs? Use that if the oracle doesn't work for arbitrary
+    //      subexpressions.. But it should.
+    //      e1.args.subList(0, argIndex).zip(e2.args.subList(0, argIndex)).all { (a1, a2) ->
+        //          oracle.flatEqual(a1, a2) }
+        equivalenceClasses(exs) { e1, e2 ->
+            oracle.flatEqual(
+                FlatApp(e1.name, e1.args.subList(0, argIndex)),
+                FlatApp(e2.name, e2.args.subList(0, argIndex))
+            )
+        }
 }
 
 /*

@@ -4,6 +4,16 @@ import query.FlatApp
 import query.Query
 import util.Oracle
 
+data class LinkEquivalenceClass(val representative: FlatApp, val representativeID: Int) {
+    val exampleIDs = mutableSetOf(representativeID)
+
+    fun eq(example: FlatApp, oracle: Oracle) = oracle.flatEqual(example, representative)
+
+    fun add(exampleID: Int) {
+        exampleIDs.add(exampleID)
+    }
+}
+
 class LinkDependencyAnalysis(
     private val query: Query,
     private val arities: Map<String, Int>,
@@ -27,9 +37,9 @@ class LinkDependencyAnalysis(
         // [argument index] to [[eqClasses of arg values] to [indices of corresponding positive
         // examples]]
         // posByArguments[i][eqClass] = set (or bitset) of blue tuple IDs
-        val posByArguments = Array(arity) { mutableListOf<EquivalenceClass>() }
+        val posByArguments = Array(arity) { mutableListOf<LinkEquivalenceClass>() }
 
-        fun MutableList<EquivalenceClass>.addExample(arg: FlatApp, exID: Int) {
+        fun MutableList<LinkEquivalenceClass>.addExample(arg: FlatApp, exID: Int) {
             var match =
                 this.any {
                     if (oracle.flatEqual(it.representative, arg)) {
@@ -37,7 +47,7 @@ class LinkDependencyAnalysis(
                         true
                     } else false
                 }
-            if (!match) this.add(EquivalenceClass(arg, exID))
+            if (!match) this.add(LinkEquivalenceClass(arg, exID))
         }
 
         posExs.forEachIndexed { exInd, pos ->
