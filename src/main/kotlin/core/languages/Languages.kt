@@ -105,6 +105,34 @@ fun typeOfParam(candidate: Candidate<Elab>, param: ParameterNode): SearchNode<El
 }
 
 /**
+ * A candidate is *inconsistent* if two parameters are the same variable, but their witnesses are
+ * not observationally equivalent
+ */
+fun topLevelVariablesConsistent(seed: Candidate<Elab>, query: Query, oracle: Oracle): Boolean {
+    seed.names.zip(seed.types).forEach { (name, ty) ->
+        val groupedVariableParams =
+            seed
+                .params(ty)
+                .withIndex()
+                .filter { it.value is ElabV }
+                .eqClasses { (_, p1), (_, p2) -> (p1 as ElabV).v == (p2 as ElabV).v }
+                .map { it.map { it.index } }
+
+        val posExs = query.flatPosNoSubexprs(name)
+        posExs.forEach {
+            TODO(
+                "query can memoize witnesses for each parameter under arity assumption?" +
+                        "I can also do this during dependency analysis, then it's only done once per arity"
+            )
+        }
+    }
+
+    TODO(
+        "We can prune a candidate if two parameters are the same variable, but their witnesses are not observationally equivalent"
+    )
+}
+
+/**
  * Take a dependency analysis (arrows on an arity hypothesis) and Elab candidate (hypothesis of
  * label and variable locations) and produce explicit variable constraints for each parameter in the
  * outline.
@@ -116,6 +144,16 @@ fun compileElabToInfo(
     unification: UnificationForCandidate<Elaborated>,
     callSolver: Boolean
 ): ElaboratedInfo? {
+    // begin by pruning candidates with a fresh variable as output type
+    if (seed.types.any {
+            val params = seed.params(it)
+            val lastParam = params.last()
+            lastParam is ElabV && lastParam.v !in params.dropLast(1).flatMap { it.variableNames() }
+        })
+        return null
+
+    if (!topLevelVariablesConsistent(seed, query, oracle)) return null
+
     val deps =
         Elaborated.aritiesToDeps.getOrPut(seed.arities()) {
             ParameterwiseDependencyAnalysis(query, seed.names.zip(seed.arities()).toMap(), oracle)

@@ -61,36 +61,37 @@ class NewLabelArityConstraints(
 
         constrs.addAll(varsDistinct + labelsMatchConstrs + varsAreSingletons)
 
-        // Translate dependency info into set constraints
-        dep.links.forEach { (name, links) ->
+        /** Union parameters [0 to n) */
+        fun union(name: String, n: Int): String {
+            require(n > 0)
+            return if (n == 1) py(ParameterNode(name, 0))
+            else "SetUnion(${union(name, n - 1)}, ${py(ParameterNode(name, n - 1))})"
+        }
+
+        cand.names.forEach { name ->
             val nodes = dep.nodes(name)
             decls.addAll(nodes.map { "${py(it)} = Const('${py(it)}', SetSort(IntSort()))" })
-
-            val edgeConstrs =
-                links.map { (a, b) ->
-                    val p1 = ParameterNode(name, a)
-                    val p2 = ParameterNode(name, b)
-                    "SetIntersect(${py(p1)}, ${py(p2)}) != EmptySet(IntSort())"
-                }
-
-            val freshConstrs =
-                nodes.mapNotNull { p ->
-                    if (p.i == 0) null
-                    else {
-                        /** Union parameters [0 to n) */
-                        fun union(n: Int): String {
-                            return if (n == 1) py(ParameterNode(p.f, 0))
-                            else "SetUnion(${union(n - 1)}, ${py(ParameterNode(p.f, n - 1))})"
-                        }
-
-                        val diffPrev = "SetMinus(${py(p)}, ${union(p.i)})"
-                        //                    val rel = if (p in fresh) "!=" else "=="
-                        val empty = "EmptySet(IntSort())"
-                        if (dep.mayHaveFresh(p)) "$diffPrev == $empty" else null
-                    }
-                }
-            constrs.addAll(edgeConstrs + freshConstrs)
         }
+
+        // Translate dependency info into set constraints
+        val fixedConstrs =
+            dep.fixed.flatMap { (name, a) ->
+                // if fixed, vars for this param are a subset of union of previous ones
+                a.mapIndexedNotNull { i, fixed ->
+                    if (fixed && i > 0) {
+                        "IsSubset(${py(ParameterNode(name, i))}, ${union(name, i)})"
+                    } else null
+                }
+            }
+        val constrainedConstrs =
+            dep.constrained.flatMap { (name, a) ->
+                a.mapIndexedNotNull { i, constrained ->
+                    if (constrained && i > 0) {
+                        "SetIntersect(${py(ParameterNode(name, i))}, ${union(name, i)}) != EmptySet(IntSort())"
+                    } else null // TODO not sure if we can introduce an == constraint in this case
+                }
+            }
+        constrs.addAll(fixedConstrs + constrainedConstrs)
     }
 
     fun pyParamToNode(p: String) =
