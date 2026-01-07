@@ -79,11 +79,12 @@ class ParameterwiseDependencyAnalysis(
                 }
             }
 
-            for (i in 0 until arity) {
-                for (j in 0 until arity) {
-                    TODO("Check for observational equivalence")
-                }
-            }
+            //            for (i in 0 until arity) {
+            //                for (j in 0 until arity) {
+            //                    TODO("Check for observational equivalences and store for later
+            // checking top-level variables consistent")
+            //                }
+            //            }
         }
     }
 

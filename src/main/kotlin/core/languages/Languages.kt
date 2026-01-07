@@ -109,6 +109,7 @@ fun typeOfParam(candidate: Candidate<Elab>, param: ParameterNode): SearchNode<El
  * not observationally equivalent
  */
 fun topLevelVariablesConsistent(seed: Candidate<Elab>, query: Query, oracle: Oracle): Boolean {
+    return true
     seed.names.zip(seed.types).forEach { (name, ty) ->
         val groupedVariableParams =
             seed
@@ -122,7 +123,7 @@ fun topLevelVariablesConsistent(seed: Candidate<Elab>, query: Query, oracle: Ora
         posExs.forEach {
             TODO(
                 "query can memoize witnesses for each parameter under arity assumption?" +
-                        "I can also do this during dependency analysis, then it's only done once per arity"
+                        "^^^Do this during dependency analysis, then it's only done once per arity"
             )
         }
     }
@@ -156,7 +157,17 @@ fun compileElabToInfo(
 
     val deps =
         Elaborated.aritiesToDeps.getOrPut(seed.arities()) {
-            ParameterwiseDependencyAnalysis(query, seed.names.zip(seed.arities()).toMap(), oracle)
+            val tmp =
+                ParameterwiseDependencyAnalysis(
+                    query, seed.names.zip(seed.arities()).toMap(), oracle
+                )
+            println(
+                "Constrained: ${tmp.constrained.mapValues { it.value.joinToString(prefix = "[", postfix = "]") }}"
+            )
+            println(
+                "Fixed: ${tmp.fixed.mapValues { it.value.joinToString(prefix = "[", postfix = "]") }}"
+            )
+            tmp
         }
 
     fun satisfiesDependencies(): Boolean {
