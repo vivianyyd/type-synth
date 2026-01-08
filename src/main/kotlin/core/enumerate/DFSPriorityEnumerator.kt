@@ -46,7 +46,7 @@ class DFSPriorityEnumerator<L : Language>(
         sizeBound: Int,
         hardDepthBound: Int
     ): Sequence<Candidate<L>> {
-        //        logger.log("$c")
+        // if (c.toString().contains("put: L2")) logger.log("$c")
         if (c.full()) return sequenceOf(c)
 
         if (sizeBound == 0) {

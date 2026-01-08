@@ -100,7 +100,7 @@ data class ConcreteL(val id: Int, override val params: List<SearchNode<Concrete>
                             .map { (node, commit) ->
                                 ConcreteL(
                                     id, params.mapIndexed { j, p -> if (j == i) node else p }) to
-                                        commit
+                                    commit
                             }
                     cont = exp.size <= 1
                     exp
@@ -169,8 +169,7 @@ open class ConcreteHole(
                 return labelExpansions.filter { it.id == label } + variableExpansions(vars)
             }
         }
-        return (if (emitBlanks) listOf(blankExpansion) else listOf()) +
-                labelExpansions +
+        return labelExpansions + // (if (emitBlanks) listOf(blankExpansion) else listOf()) +
                 variableExpansions(vars) +
                 fnExpansion
     }

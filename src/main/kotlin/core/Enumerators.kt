@@ -16,12 +16,13 @@ import util.clearCVC
 import util.lazyCartesianProduct
 
 fun main() {
-    val tests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest, PolymorphicNil)
+    val tests =
+        listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest, PolymorphicNil, PolymorphicDict)
     val testFromFile = parseTest("dictchain")
 
     val configuration =
         Configuration(
-            test = PolymorphicNil,
+            test = PolymorphicDict,
             runCVC = true,
             enumeratorTag = EnumeratorTag.DFSPriority,
             unificationTag = UnificationTag.Eager,
@@ -112,7 +113,7 @@ fun run(configuration: Configuration, logger: Logger) {
                     lazyCartesianProduct(info.labelArities.values.map { (0..it).toList() }).map {
                         info.copy(labelArities = info.labelArities.keys.zip(it).toMap())
                     }
-                }  // TODO reorder these simplest to most complex
+                } // TODO reorder these simplest to most complex
                 .map { compileToConcrete(it, configuration.finalRoundSketches) }
         }
     println(concSeeds.joinToString(separator = "\n"))
