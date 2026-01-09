@@ -113,7 +113,8 @@ fun run(configuration: Configuration, logger: Logger) {
                     lazyCartesianProduct(info.labelArities.values.map { (0..it).toList() }).map {
                         info.copy(labelArities = info.labelArities.keys.zip(it).toMap())
                     }
-                } // TODO reorder these simplest to most complex
+                } // TODO reorder these simplest to most complex. also, we should do this in compile
+                //     elab to info maybe
                 .map { compileToConcrete(it, configuration.finalRoundSketches) }
         }
     println(concSeeds.joinToString(separator = "\n"))

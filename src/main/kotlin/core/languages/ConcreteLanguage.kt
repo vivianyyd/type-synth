@@ -158,20 +158,18 @@ open class ConcreteHole(
             if (mustBeCompatible.any { a -> mustBeCompatible.any { b -> !a.match(b) } })
                 return variableExpansions(vars)
             if (mustBeCompatible.first() is CArrow &&
-                mustBeCompatible.all { mustBeCompatible.first().match(it) }
-            )
+                mustBeCompatible.all { mustBeCompatible.first().match(it) })
                 return listOf(fnExpansion) + variableExpansions(vars) // TODO Think about this
             if (mustBeCompatible.first() is ConcreteConstrL &&
-                mustBeCompatible.all { mustBeCompatible.first().match(it) }
-            ) {
+                mustBeCompatible.all { mustBeCompatible.first().match(it) }) {
                 val label = (mustBeCompatible.first() as ConcreteConstrL).label
                 // TODO labelExpansions should be an array or something
                 return labelExpansions.filter { it.id == label } + variableExpansions(vars)
             }
         }
         return labelExpansions + // (if (emitBlanks) listOf(blankExpansion) else listOf()) +
-                variableExpansions(vars) +
-                fnExpansion
+            variableExpansions(vars) +
+            fnExpansion
     }
 
     /** Returns the first node if top-level constructors all match; null if mismatch or empty. */
@@ -198,8 +196,7 @@ open class ConcreteHole(
         val constructors = exprs.filterIsInstance<CTypeConstructor<Concrete>>()
 
         if (constructors.isEmpty() ||
-            constructors.any { a -> constructors.any { b -> !a.match(b) } }
-        )
+            constructors.any { a -> constructors.any { b -> !a.match(b) } })
             return defaultVariable
 
         // We know they match now
@@ -209,22 +206,20 @@ open class ConcreteHole(
                     antiunify(constructors.map { (it as CArrow).l }, unification, defaultVariable)
                         ?.let { l ->
                             antiunify(
-                                constructors.map { (it as CArrow).r },
-                                unification,
-                                defaultVariable
-                            )
+                                    constructors.map { (it as CArrow).r },
+                                    unification,
+                                    defaultVariable)
                                 ?.let { r -> CArrow(l, r) }
                         }
                 }
                 is ConcreteConstrL -> {
                     val params =
                         List(constructors.first().params.size) { i ->
-                            antiunify(
-                                constructors.map { (it as ConcreteConstrL).params[i] },
-                                unification,
-                                defaultVariable
-                            )
-                        }
+                                antiunify(
+                                    constructors.map { (it as ConcreteConstrL).params[i] },
+                                    unification,
+                                    defaultVariable)
+                            }
                             .filterNotNull()
                     if (params.size != constructors.first().params.size) null
                     else ConcreteConstrL((constructors.first() as ConcreteConstrL).label, params)
@@ -234,13 +229,16 @@ open class ConcreteHole(
 
         return if (auConstrs != null) {
             val instsPointTo =
-                insts.mapNotNull {
-                    val instEqs = unification.holeEquals(it.holeId)
-                    // Ignore the other insts if unconstrained, if it can be a variable, or
-                    // constructors mismatch
-                    if (instEqs.any { it is ConcreteConstrV }) null
-                    else takeFirstIfMatch(instEqs.filterIsInstance<CTypeConstructor<Concrete>>())
-                }
+                insts
+                    .mapNotNull {
+                        // todo this is not efficient, if you read it you'll see we examine things multiple times
+                        val instEqs = unification.holeEquals(it.holeId)
+                        // Ignore the other insts if unconstrained, if it can be a variable, or
+                        // constructors mismatch
+                        if (instEqs.any { it is ConcreteConstrV }) null
+                        else
+                            takeFirstIfMatch(instEqs.filterIsInstance<CTypeConstructor<Concrete>>())
+                    }
             takeFirstIfMatch(listOf(auConstrs) + instsPointTo)
         } else null
     }
@@ -251,8 +249,7 @@ open class ConcreteHole(
                 NArrow(
                     this.l.toNode(),
                     this.r.toNode(),
-                    contributesToDepth = false
-                ) // depth arg not quite right here, but good enough
+                    contributesToDepth = false) // depth arg not quite right here, but good enough
             is ConcreteConstrL -> ConcreteL(this.label, this.params.map { it.toNode() })
             is ConcreteConstrV -> ConcreteV(this.v)
             is Instantiation -> error("Unreachable pattern match - convert Instantiation to node")
