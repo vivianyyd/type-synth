@@ -364,7 +364,7 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
 
     // We can also add it.noFreshSoleVarOnRHS()
 
-    fun fastForward(unification: (Candidate<L>) -> Unification<L>): Candidate<L>? {
+    fun fastForward(unification: (Candidate<L>) -> Unification<L>): Candidate<L> {
         var curr = this
         do {
             val u = unification(curr)
