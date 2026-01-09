@@ -1,6 +1,11 @@
 package oneast
 
-interface Type {
+/** TODO change me, I'm just here to make some stuff type check for now */
+class SearchState {
+    val types: List<Type> = listOf()
+}
+
+sealed interface Type {
     fun instantiate(instId: Int): ConstraintTy
 }
 
@@ -40,14 +45,22 @@ class TypeHole : THole()
 
 class UnnamedLabel : THole()
 
-interface ConstraintTy
+sealed interface ConstraintTy {
+    fun variables(): List<ConstraintVariable>
+}
 
 // TODO Consider whether I want two different types of instantiations for TypeHoles vs
 //   UnnamedLabels. UnnamedLabels behave differently from TypeHoles because while their
 //   instantiated types can differ, they always have the same root. Does it matter?
-data class InstantiationTy(val hole: THole, val instId: Int) : ConstraintTy
+data class InstantiationTy(val hole: THole, val instId: Int) : ConstraintTy {
+    override fun variables() = emptyList<ConstraintVariable>()
+}
 
-data class ConstraintVariable(val v: Int, val instId: Int) : ConstraintTy
+data class ConstraintVariable(val v: Int, val instId: Int) : ConstraintTy {
+    private val variables by lazy { listOf(this) }
+
+    override fun variables() = variables
+}
 
 sealed class TypeConstructor(open val params: List<ConstraintTy>) : ConstraintTy {
     /** Whether this node shallow matches with [other]. */
@@ -56,10 +69,22 @@ sealed class TypeConstructor(open val params: List<ConstraintTy>) : ConstraintTy
     open fun split(other: TypeConstructor) {
         if (match(other)) params.zip(other.params).map { (a, b) -> TODO() } else null
     }
+
+    private val variables by lazy { params.flatMap { it.variables() } }
+
+    override fun variables() = variables
 }
 
-data class ConstraintArrow(val l: ConstraintTy, val r: ConstraintTy) :
-    TypeConstructor(listOf(l, r)) {
+data class ConstraintArrow(override val params: List<ConstraintTy>) : TypeConstructor(params) {
+    init {
+        require(params.size == 2)
+    }
+
+    val l = params[0]
+    val r = params[2]
+
+    constructor(l: ConstraintTy, r: ConstraintTy) : this(listOf(l, r))
+
     override fun match(other: TypeConstructor) = other is ConstraintArrow
 }
 
