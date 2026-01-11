@@ -2,7 +2,10 @@ package oneast
 
 /** TODO change me, I'm just here to make some stuff type check for now */
 class SearchState {
+    val names: List<String> = listOf()
     val types: List<Type> = listOf()
+    
+    fun typeOf(name: String) = types[names.indexOf(name)]
 }
 
 sealed interface Type {
@@ -49,6 +52,10 @@ sealed interface ConstraintTy {
     fun variables(): List<ConstraintVariable>
 }
 
+object Bottom : ConstraintTy {
+    override fun variables() = emptyList<ConstraintVariable>()
+}
+
 // TODO Consider whether I want two different types of instantiations for TypeHoles vs
 //   UnnamedLabels. UnnamedLabels behave differently from TypeHoles because while their
 //   instantiated types can differ, they always have the same root. Does it matter?
@@ -90,5 +97,6 @@ data class ConstraintArrow(override val params: List<ConstraintTy>) : TypeConstr
 
 data class ConstraintLabel(val label: Int, override val params: List<ConstraintTy>) :
     TypeConstructor(params) {
-    override fun match(other: TypeConstructor) = other is ConstraintLabel && label == other.label
+    override fun match(other: TypeConstructor) =
+        other is ConstraintLabel && label == other.label && params.size == other.params.size
 }
