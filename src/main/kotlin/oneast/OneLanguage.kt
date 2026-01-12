@@ -1,32 +1,83 @@
 package oneast
 
+import java.lang.Integer.max
+
 /** TODO change me, I'm just here to make some stuff type check for now */
-class SearchState {
-    val names: List<String> = listOf()
-    val types: List<Type> = listOf()
-    
+class SearchState(val names: List<String> = listOf(), val types: List<Type> = listOf()) {
+    val labelArities: Map<Int, Int> = mapOf(TODO())
+
+    fun noFillableHoles() = types.all { it.shallowestFillableHole() == null }
+
+    fun noHoles() = types.all { it.noHoles() }
+
     fun typeOf(name: String) = types[names.indexOf(name)]
+
+    fun maxParamHeight() = types.maxOf { it.maxParamHeight(countArrow = false) }
 }
 
 sealed interface Type {
+    fun maxParamHeight(countArrow: Boolean): Int
+
     fun instantiate(instId: Int): ConstraintTy
+
+    fun noHoles(): Boolean = allHoles().isEmpty()
+
+    fun allHoles(): List<THole>
+
+    fun shallowestFillableHole(): Pair<THole, Int>?
+
+    fun variables(): Set<Int>
+
+    fun replace(hole: THole, replacement: Type): Type
 }
 
-sealed class BranchType(open val params: List<Type>) : Type
+sealed class BranchType(open val params: List<Type>) : Type {
+    override fun allHoles() = params.flatMap { it.allHoles() }
+
+    override fun shallowestFillableHole() =
+        params
+            .mapNotNull { it.shallowestFillableHole() }
+            .minByOrNull { it.second }
+            ?.let { it.first to it.second + 1 }
+
+    override fun variables() = params.flatMap { it.variables() }.toSet()
+}
 
 data class Variable(val v: Int) : Type {
+    override fun maxParamHeight(countArrow: Boolean) = 1
+
+    override fun allHoles() = emptyList<THole>()
+
     override fun instantiate(instId: Int): ConstraintTy = ConstraintVariable(v, instId)
+
+    override fun shallowestFillableHole() = null
+
+    override fun variables() = setOf(this.v)
+
+    override fun replace(hole: THole, replacement: Type) = this
 }
 
 data class Arrow(val l: Type, val r: Type) : BranchType(listOf(l, r)) {
+    override fun maxParamHeight(countArrow: Boolean) =
+        (if (countArrow) 1 else 0) + max(l.maxParamHeight(true), r.maxParamHeight(countArrow))
+
     override fun instantiate(instId: Int): ConstraintTy =
         ConstraintArrow(l.instantiate(instId), r.instantiate(instId))
+
+    override fun replace(hole: THole, replacement: Type) =
+        Arrow(l.replace(hole, replacement), r.replace(hole, replacement))
 }
 
 /** Could also be called DefinedLabel? */
 data class NamedLabel(val label: Int, override val params: List<Type>) : BranchType(params) {
+    override fun maxParamHeight(countArrow: Boolean) =
+        1 + (params.maxOfOrNull { it.maxParamHeight(countArrow) } ?: 0)
+
     override fun instantiate(instId: Int): ConstraintTy =
         ConstraintLabel(label, params.map { it.instantiate(instId) })
+
+    override fun replace(hole: THole, replacement: Type) =
+        copy(params = params.map { it.replace(hole, replacement) })
 }
 
 sealed class THole : Type {
@@ -41,12 +92,182 @@ sealed class THole : Type {
 
     val id = nextId++
 
+    override fun maxParamHeight(countArrow: Boolean) = 1
+
+    override fun allHoles() = listOf(this)
+
     override fun instantiate(instId: Int): ConstraintTy = InstantiationTy(this, instId)
+
+    override fun variables() = emptySet<Int>()
+
+    override fun replace(hole: THole, replacement: Type) = if (hole == this) replacement else this
+
+    abstract fun expansions(
+        unification: OneUnification,
+        labelArities: Map<Int, Int>,
+        vars: Int,
+        mustBeLeaf: Boolean
+    ): List<Type>
+
+    fun fastForward(unification: OneUnification): Type? {
+        val defaultVariable = ConstraintVariable(0, instId = 0) // instId shouldn't matter, dummy here
+
+        val antiunifies = unification.holeEquals(this)
+        return antiunify(antiunifies, unification, defaultVariable)?.toNode()
+    }
+
+    private fun antiunify(
+        exprs: List<ConstraintTy>,
+        unification: OneUnification,
+        defaultVariable: ConstraintVariable?
+    ): ConstraintTy? {
+        if (exprs.isEmpty()) return defaultVariable // might as well give this a try
+        if (exprs.any { it is ConstraintVariable }) return defaultVariable
+
+        val insts = exprs.filterIsInstance<InstantiationTy>()
+        val constructors = exprs.filterIsInstance<TypeConstructor>()
+
+        if (constructors.isEmpty() ||
+            constructors.any { a -> constructors.any { b -> !a.match(b) } }
+        )
+            return defaultVariable
+
+        // We know they match now
+        val auConstrs =
+            when (constructors.first()) {
+                is ConstraintArrow -> {
+                    antiunify(constructors.map { (it as ConstraintArrow).l }, unification, defaultVariable)
+                        ?.let { l ->
+                            antiunify(
+                                constructors.map { (it as ConstraintArrow).r },
+                                unification,
+                                defaultVariable
+                            )
+                                ?.let { r -> ConstraintArrow(l, r) }
+                        }
+                }
+                is ConstraintLabel -> {
+                    val params =
+                        List(constructors.first().params.size) { i ->
+                            antiunify(
+                                constructors.map { (it as ConstraintLabel).params[i] },
+                                unification,
+                                defaultVariable
+                            )
+                        }
+                            .filterNotNull()
+                    if (params.size != constructors.first().params.size) null
+                    else ConstraintLabel((constructors.first() as ConstraintLabel).label, params)
+                }
+            }
+
+        return if (auConstrs != null) {
+            val instsPointTo =
+                insts
+                    .mapNotNull {
+                        // todo this is not efficient, if you read it you'll see we examine things multiple times
+                        val instEqs = unification.holeEquals(it.hole)
+                        // Ignore the other insts if unconstrained, if it can be a variable, or
+                        // constructors mismatch
+                        if (instEqs.any { it is ConstraintVariable }) null
+                        else
+                            takeFirstIfMatch(instEqs.filterIsInstance<TypeConstructor>())
+                    }
+            takeFirstIfMatch(listOf(auConstrs) + instsPointTo)
+        } else null
+    }
+
+    /** Returns the first node if top-level constructors all match; null if mismatch or empty. */
+    private fun takeFirstIfMatch(
+        constrs: List<TypeConstructor>
+    ): TypeConstructor? {
+        return if (constrs.isEmpty()) null
+        else if (constrs.all { a -> constrs.all { b -> a.match(b) } }) {
+            // we only care about the top-level constructor, so it suffices to return an arbitrary
+            // element
+            constrs.first()
+        } else null
+    }
+
+    private fun ConstraintTy.toNode(): Type =
+        when (this) {
+            is ConstraintArrow -> Arrow(this.l.toNode(), this.r.toNode())
+            is ConstraintLabel -> NamedLabel(this.label, this.params.map { it.toNode() })
+            is ConstraintVariable -> Variable(this.v)
+            is InstantiationTy -> error("Unreachable pattern match - convert Instantiation to node")
+            Bottom -> error("Antiunifying should never produce Bottom")
+        }
 }
 
-class TypeHole : THole()
+class TypeHole : THole() {
+    override fun shallowestFillableHole() = this to 0
 
-class UnnamedLabel : THole()
+    override fun expansions(
+        unification: OneUnification,
+        labelArities: Map<Int, Int>,
+        vars: Int,
+        mustBeLeaf: Boolean
+    ): List<Type> =
+        if (mustBeLeaf)
+            expansionsNoBound(unification, labelArities, vars).filter {
+                when (it) {
+                    is Variable -> true
+                    is NamedLabel -> it.params.isEmpty()
+                    is Arrow -> false
+                    is Blank -> true
+                    is TypeHole -> throw Exception("Expansions cannot include type holes")
+                }
+            }
+        else expansionsNoBound(unification, labelArities, vars)
+
+    private fun expansionsNoBound(
+        unification: OneUnification,
+        labelArities: Map<Int, Int>,
+        vars: Int
+    ): List<Type> {
+        val variableExps = (0 until vars + 1).map { Variable(it) }
+        val fnExpansion = Arrow(TypeHole(), TypeHole())
+        val labelExpansions =
+            labelArities
+                .map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
+                .ifEmpty {
+                    TODO(
+                        "If there are no existing labels, we need to learn them. Should we use a blank, or another special type of hole here?"
+                    )
+                    listOf(Blank())
+                }
+
+        val instances = unification.holeEqualsConstructors(this)
+        val constructorTypes = // this would be cleaner if implemented as a filter
+            if (instances.isNotEmpty()) {
+                val arbitraryInstance = instances.first()
+                if (instances.any { a -> instances.any { b -> !a.match(b) } }) emptyList()
+                else if (arbitraryInstance is ConstraintArrow &&
+                    instances.all { arbitraryInstance.match(it) }
+                )
+                    listOf(fnExpansion)
+                else if (arbitraryInstance is ConstraintLabel &&
+                    instances.all { arbitraryInstance.match(it) }
+                ) {
+                    labelExpansions.filterIsInstance<NamedLabel>().filter {
+                        it.label == arbitraryInstance.label
+                    }
+                } else labelExpansions + fnExpansion
+            } else labelExpansions + fnExpansion
+        return constructorTypes + variableExps
+    }
+}
+
+class Blank : THole() {
+    override fun shallowestFillableHole() = null
+
+    override fun expansions(
+        unification: OneUnification,
+        labelArities: Map<Int, Int>,
+        vars: Int,
+        mustBeLeaf: Boolean
+    ) = listOf(this)
+}
 
 sealed interface ConstraintTy {
     fun variables(): List<ConstraintVariable>

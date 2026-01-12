@@ -18,7 +18,14 @@ class OneUnification(private val candidate: SearchState, private val exs: List<E
 
     private val insts = Counter() // Number of times any top-level type has been instantiated
 
-    fun holeEquals(hole: Int): List<ConstraintTy> =
+    private fun holeEqualsConstructors(hole: Int): List<TypeConstructor> =
+        holeEquals(hole).filterIsInstance<TypeConstructor>()
+
+    fun holeEqualsConstructors(hole: THole): List<TypeConstructor> = holeEqualsConstructors(hole.id)
+
+    fun holeEquals(hole: THole): List<ConstraintTy> = holeEquals(hole.id)
+
+    private fun holeEquals(hole: Int): List<ConstraintTy> =
         if (ok()) holeConstraints[hole] ?: listOf() else listOf()
 
     fun ok(): Boolean {
@@ -90,11 +97,13 @@ class OneUnification(private val candidate: SearchState, private val exs: List<E
                         // e.g. a function expects param (int -> int) and we pass ('a -> 'a)
                         if (arg in param.variables()) null else listOf(Binding(arg, param))
                     is InstantiationTy -> {
+                        TODO("If we try to unify an UnknownLabel with an Arrow, we should fail")
                         holeConstraint(arg, param)
                         listOf()
                     }
                 }
             is InstantiationTy -> {
+                TODO("If we try to unify an UnknownLabel with an Arrow, we should fail")
                 holeConstraint(param, arg)
                 listOf()
             }
