@@ -3,7 +3,7 @@ package oneast
 import java.lang.Integer.max
 
 /** TODO change me, I'm just here to make some stuff type check for now */
-class SearchState(val names: List<String> = listOf(), val types: List<Type> = listOf()) {
+class SearchState(val names: List<String>, val types: List<Type>) {
     val labelArities: Map<Int, Int> = mapOf(TODO())
 
     fun noFillableHoles() = types.all { it.shallowestFillableHole() == null }
@@ -106,11 +106,13 @@ sealed class THole : Type {
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
+        allowBlanks: Boolean,
         mustBeLeaf: Boolean
     ): List<Type>
 
     fun fastForward(unification: OneUnification): Type? {
-        val defaultVariable = ConstraintVariable(0, instId = 0) // instId shouldn't matter, dummy here
+        val defaultVariable =
+            ConstraintVariable(0, instId = 0) // instId shouldn't matter, dummy here
 
         val antiunifies = unification.holeEquals(this)
         return antiunify(antiunifies, unification, defaultVariable)?.toNode()
@@ -136,7 +138,11 @@ sealed class THole : Type {
         val auConstrs =
             when (constructors.first()) {
                 is ConstraintArrow -> {
-                    antiunify(constructors.map { (it as ConstraintArrow).l }, unification, defaultVariable)
+                    antiunify(
+                        constructors.map { (it as ConstraintArrow).l },
+                        unification,
+                        defaultVariable
+                    )
                         ?.let { l ->
                             antiunify(
                                 constructors.map { (it as ConstraintArrow).r },
@@ -163,24 +169,21 @@ sealed class THole : Type {
 
         return if (auConstrs != null) {
             val instsPointTo =
-                insts
-                    .mapNotNull {
-                        // todo this is not efficient, if you read it you'll see we examine things multiple times
-                        val instEqs = unification.holeEquals(it.hole)
-                        // Ignore the other insts if unconstrained, if it can be a variable, or
-                        // constructors mismatch
-                        if (instEqs.any { it is ConstraintVariable }) null
-                        else
-                            takeFirstIfMatch(instEqs.filterIsInstance<TypeConstructor>())
-                    }
+                insts.mapNotNull {
+                    // todo this is not efficient, if you read it you'll see we examine things
+                    //  multiple times
+                    val instEqs = unification.holeEquals(it.hole)
+                    // Ignore the other insts if unconstrained, if it can be a variable, or
+                    // constructors mismatch
+                    if (instEqs.any { it is ConstraintVariable }) null
+                    else takeFirstIfMatch(instEqs.filterIsInstance<TypeConstructor>())
+                }
             takeFirstIfMatch(listOf(auConstrs) + instsPointTo)
         } else null
     }
 
     /** Returns the first node if top-level constructors all match; null if mismatch or empty. */
-    private fun takeFirstIfMatch(
-        constrs: List<TypeConstructor>
-    ): TypeConstructor? {
+    private fun takeFirstIfMatch(constrs: List<TypeConstructor>): TypeConstructor? {
         return if (constrs.isEmpty()) null
         else if (constrs.all { a -> constrs.all { b -> a.match(b) } }) {
             // we only care about the top-level constructor, so it suffices to return an arbitrary
@@ -206,10 +209,11 @@ class TypeHole : THole() {
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
+        allowBlanks: Boolean,
         mustBeLeaf: Boolean
     ): List<Type> =
         if (mustBeLeaf)
-            expansionsNoBound(unification, labelArities, vars).filter {
+            expansionsNoBound(unification, labelArities, vars, allowBlanks).filter {
                 when (it) {
                     is Variable -> true
                     is NamedLabel -> it.params.isEmpty()
@@ -218,53 +222,50 @@ class TypeHole : THole() {
                     is TypeHole -> throw Exception("Expansions cannot include type holes")
                 }
             }
-        else expansionsNoBound(unification, labelArities, vars)
+        else expansionsNoBound(unification, labelArities, vars, allowBlanks)
 
     private fun expansionsNoBound(
         unification: OneUnification,
         labelArities: Map<Int, Int>,
-        vars: Int
+        vars: Int,
+        allowBlanks: Boolean
     ): List<Type> {
         val variableExps = (0 until vars + 1).map { Variable(it) }
         val fnExpansion = Arrow(TypeHole(), TypeHole())
-        val labelExpansions =
-            labelArities
-                .map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
-                .ifEmpty {
-                    TODO(
-                        "If there are no existing labels, we need to learn them. Should we use a blank, or another special type of hole here?"
-                    )
-                    listOf(Blank())
-                }
+        val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
+        // If there are no existing labels, we need to learn them.
+        // For now, instead we will explicitly introduce only blanks for expansions
+        // An alternate implementation might introduce a blank if [labelExpansions] is empty
 
         val instances = unification.holeEqualsConstructors(this)
         val constructorTypes = // this would be cleaner if implemented as a filter
             if (instances.isNotEmpty()) {
-                val arbitraryInstance = instances.first()
-                if (instances.any { a -> instances.any { b -> !a.match(b) } }) emptyList()
-                else if (arbitraryInstance is ConstraintArrow &&
-                    instances.all { arbitraryInstance.match(it) }
-                )
-                    listOf(fnExpansion)
-                else if (arbitraryInstance is ConstraintLabel &&
-                    instances.all { arbitraryInstance.match(it) }
-                ) {
-                    labelExpansions.filterIsInstance<NamedLabel>().filter {
-                        it.label == arbitraryInstance.label
+                val i = instances.first()
+                if (instances.any { !i.match(it) }) emptyList()
+                else
+                    when (i) {
+                        is ConstraintArrow -> listOf(fnExpansion)
+                        is ConstraintLabel -> labelExpansions.filter { it.label == i.label }
                     }
-                } else labelExpansions + fnExpansion
             } else labelExpansions + fnExpansion
-        return constructorTypes + variableExps
+        return constructorTypes +
+                variableExps +
+                listOfNotNull(Blank(labelOnly = allowBlanks).takeIf { allowBlanks })
     }
 }
 
-class Blank : THole() {
+/**
+ * [labelOnly] denotes whether this Blank may fast forward to any type or only labels. It's an
+ * optimization; it is equivalent to fast forward to all types, but that will produce duplicates.
+ */
+class Blank(val labelOnly: Boolean) : THole() {
     override fun shallowestFillableHole() = null
 
     override fun expansions(
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
+        allowBlanks: Boolean,
         mustBeLeaf: Boolean
     ) = listOf(this)
 }

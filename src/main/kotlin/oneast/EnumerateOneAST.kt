@@ -6,42 +6,18 @@ import util.Logger
 /** Fills one hole at a time, in DFS priority order. */
 class EnumerateOneAST(
     val query: Query,
-    val seed: SearchState,
-    private val mustPassNegatives: Boolean,
+    private val hardSizeBound: Int,
+    private val hardDepthBound: Int,
     private val logger: Logger,
 ) {
     // TODO can also implement a stateful version where we mutate the tree by picking a hole which
     //   has a parent pointer, for each of the expansions, modify the parent and recurse. when done,
     //   restore tree to original state
-    /** The possible SearchStates resulting from filling one hole. */
-    private fun fill(
+    private fun commit(
         c: SearchState,
         unification: OneUnification,
-        mustBeLeaf: Boolean
-    ): Sequence<SearchState> {
-        // todo can we remove bound on iterative deepening bc we fill shallowest hole first?
-        val (iToFill, holeWithDepth) =
-            c.types.mapNotNull { it.shallowestFillableHole() }.withIndex().minBy { it.value.second }
-        val (hole, _) = holeWithDepth
-
-        return hole
-            .expansions(
-                unification, seed.labelArities, c.types[iToFill].variables().size, mustBeLeaf)
-            .asSequence()
-            .map {
-                SearchState(
-                    c.names,
-                    c.types.mapIndexed { i, p -> if (iToFill == i) p.replace(hole, it) else p })
-            }
-        // TODO merge this function with commitPriority so that if our commitment was a labelhole,
-        // we don't reduce the size bound?
-    }
-
-    private fun commitPriority(
-        c: SearchState,
-        unification: OneUnification,
-        sizeBound: Int,
-        hardDepthBound: Int
+        allowBlanks: Boolean,
+        sizeBound: Int
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
 
@@ -50,25 +26,55 @@ class EnumerateOneAST(
             return if (ff.noHoles()) sequenceOf(ff) else sequenceOf()
         }
 
-        return fill(c, unification, sizeBound <= 1).flatMap { newCand ->
-            logger.count("Total candidates for $seed")
-            if (newCand.maxParamHeight() > hardDepthBound) emptySequence()
-            else {
-                val u = OneUnification(newCand, query.posNoSubexprs)
-                if (u.ok())
-                    commitPriority(newCand, u, sizeBound - 1, hardDepthBound)
-                else emptySequence()
+        val (iToFill, holeWithDepth) =
+            c.types.mapNotNull { it.shallowestFillableHole() }.withIndex().minBy { it.value.second }
+        val (hole, depth) = holeWithDepth
+
+        return hole
+            .expansions(
+                unification = unification,
+                labelArities = c.labelArities,
+                vars = c.types[iToFill].variables().size,
+                allowBlanks = allowBlanks,
+                mustBeLeaf = sizeBound <= 1 || depth > hardDepthBound
+            )
+            .asSequence()
+            .map {
+                SearchState(
+                    c.names,
+                    c.types.mapIndexed { i, p -> if (iToFill == i) p.replace(hole, it) else p })
             }
-        }
+            .flatMap { newCandidate ->
+                logger.count("Total candidates for $seed")
+                // todo the below check is commented out bc the mustBeLeaf flag includes depth now,
+                //  check if that works
+                // if (newCand.maxParamHeight() > hardDepthBound) emptySequence()
+                val u = OneUnification(newCandidate, query.posNoSubexprs)
+                if (u.ok()) commit(newCandidate, u, allowBlanks, sizeBound - 1) else emptySequence()
+            }
     }
 
-    fun enumerate(sketches: Boolean, sizeBound: Int, hardDepthBound: Int): List<SearchState> {
+    fun enumerate(): List<SearchState> {
         fun check(c: SearchState) =
             OneUnification(c, query.posNoSubexprs).ok() &&
-                (if (mustPassNegatives) query.neg.all { !OneUnification(c, listOf(it)).ok() }
-                else true)
+                    (if (mustPassNegatives) query.neg.all { !OneUnification(c, listOf(it)).ok() }
+                    else true)
 
-        val seed =
+        val seed = SearchState(query.names, query.names.map { TypeHole() })
+        val firstRound =
+            commit(
+                seed, OneUnification(seed, query.posNoSubexprs), allowBlanks = true, hardSizeBound
+            )
+        val solveLabels = TODO()
+        val searchfornonnullary =
+            TODO("manually set holes in nullaries to blanks, then call commit with allowBlanks=false")
+        val searchForNullary = TODO(
+            "Once we have exhausted the search space for non-nullaries / found solutions, at that point" +
+                    "we transform blanks back into normal holes and enumerate for them"
+        )
+
+
+        val blanknullaryseed =
             SearchState( // infer nullaries
                 seed.names,
                 seed.types.map { t ->
@@ -86,8 +92,9 @@ class EnumerateOneAST(
         // TODO bug: inferring nullaries can fail if there are multiple possible assignments of
         // variables to a nullary
         //      value. fix this later, solution is in notes
-        return commitPriority(
-                seed, OneUnification(this.seed, query.posNoSubexprs), sizeBound, hardDepthBound)
+        return commit(
+            seed, OneUnification(this.seed, query.posNoSubexprs), sizeBound, hardDepthBound
+        )
             .filter { c -> check(c) }
             .toList()
     }
