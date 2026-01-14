@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Text.Pandoc
+import Text.Pandoc.Writers.Markdown
 import Text.Pandoc.Error
 import qualified Data.Text as T
 
@@ -17,11 +18,12 @@ markdownToHtml :: T.Text -> T.Text
 markdownToHtml md = pandocToHtml (markdownToPandoc md)
 
 -- Example 4: Read a Markdown file and convert it to HTML
-markdownFileToHtml :: FilePath -> IO T.Text
+{-
+ - markdownFileToHtml :: FilePath -> IO T.Text
 markdownFileToHtml path = do
     md <- T.readFile path
     return (markdownToHtml md)
-
+-}
 -- Example 5: Convert a list of strings to a Pandoc unordered list
 stringsToList :: [T.Text] -> Pandoc
 stringsToList items = Plain (map (Plain . Str) items)
@@ -46,25 +48,21 @@ simpleDoc = Pandoc nullMeta [Header 1 nullAttr [Str "Welcome"], Plain [Str "This
 simpleDocToHtml :: T.Text
 simpleDocToHtml = writeHtml def simpleDoc
 
-```haskell
-import Text.Pandoc
-import Text.Pandoc.Writers.Markdown
-
 -- 1. Convert plain text to Pandoc
 plainTextToPandoc :: Pandoc
 plainTextToPandoc = Pandoc nullMeta ["Hello, World!"] []
 
 -- 2. Convert a Markdown string to Pandoc
-markdownToPandoc :: Pandoc
-markdownToPandoc = readMarkdown def "# Header"
+markdownToPandoc1 :: Pandoc
+markdownToPandoc1 = readMarkdown def "# Header"
 
 -- 3. Convert Pandoc to Markdown
 pandocToMarkdown :: String
 pandocToMarkdown = writeMarkdown def (Pandoc nullMeta ["Hello, World!"] [])
 
 -- 4. Create a simple document with a paragraph
-simpleDoc :: Pandoc
-simpleDoc = Pandoc nullMeta [Plain [Str "This is a simple document."]]
+simpleDoc1 :: Pandoc
+simpleDoc1 = Pandoc nullMeta [Plain [Str "This is a simple document."]]
 
 -- 5. Create a document with a header and a paragraph
 headerAndParagraph :: Pandoc
@@ -102,8 +100,8 @@ htmlToPandoc :: Pandoc
 htmlToPandoc = readHtml def "<p>Hello, HTML!</p>"
 
 -- 13. Convert a Pandoc document to HTML
-pandocToHtml :: String
-pandocToHtml = writeHtml def (Pandoc nullMeta [Plain [Str "Hello, HTML!"]])
+pandocToHtml1 :: String
+pandocToHtml1 = writeHtml def (Pandoc nullMeta [Plain [Str "Hello, HTML!"]])
 
 -- 14. Create an image
 image :: Pandoc
@@ -180,55 +178,55 @@ sourceCode = Pandoc nullMeta [CodeBlock (Ident "hs" ["haskell"]) "let x = 5"]
 -- 30. Create a paragraph with inline elements
 inlineElements :: Pandoc
 inlineElements = Pandoc nullMeta [Plain [Str "Using ", Emph [Str "inline"], Str " elements."]]
-```
 
-1. runPure
-2. readMarkdown
-3. writeMarkdown
-4. readLaTeX
-5. writeLaTeX
-6. readHTML
-7. writeHTML
-8. readRST
-9. writeRST
-10. readOrg
-11. writeOrg
-12. readText
-13. writeText
-14. readDocx
-15. writeDocx
-16. readEPUB
-17. writeEPUB
-18. readODT
-19. writeODT
-20. readMediaWiki
-21. writeMediaWiki
-22. readCSV
-23. writeCSV
-24. readJSON
-25. writeJSON
-26. readConfluence
-27. writeConfluence
-28. readGitHubMarkdown
-29. writeGitHubMarkdown
-30. runConvert
-31. readPandoc
-32. writePandoc
-33. setOptions
-34. addAttribute
-35. inlineCode
-36. blockQuote
-37. emph
-38. strong
-39. hyperlink
-40. list
-41. table
-42. header
-43. plain
-44. rawBlock
-45. rawInline
-46. joinBlocks
-47. extractMeta
-48. setMeta
-49. applyReaderOptions
-50. applyWriterOptions
+--- 1. runPure
+--- 2. readMarkdown
+--- 3. writeMarkdown
+--- 4. readLaTeX
+--- 5. writeLaTeX
+--- 6. readHTML
+--- 7. writeHTML
+--- 8. readRST
+--- 9. writeRST
+--- 10. readOrg
+--- 11. writeOrg
+--- 12. readText
+--- 13. writeText
+--- 14. readDocx
+--- 15. writeDocx
+--- 16. readEPUB
+--- 17. writeEPUB
+--- 18. readODT
+--- 19. writeODT
+--- 20. readMediaWiki
+--- 21. writeMediaWiki
+--- 22. readCSV
+--- 23. writeCSV
+--- 24. readJSON
+--- 25. writeJSON
+--- 26. readConfluence
+--- 27. writeConfluence
+--- 28. readGitHubMarkdown
+--- 29. writeGitHubMarkdown
+--- 30. runConvert
+--- 31. readPandoc
+--- 32. writePandoc
+--- 33. setOptions
+--- 34. addAttribute
+--- 35. inlineCode
+--- 36. blockQuote
+--- 37. emph
+--- 38. strong
+--- 39. hyperlink
+--- 40. list
+--- 41. table
+--- 42. header
+--- 43. plain
+--- 44. rawBlock
+--- 45. rawInline
+--- 46. joinBlocks
+--- 47. extractMeta
+--- 48. setMeta
+--- 49. applyReaderOptions
+--- 50. applyWriterOptions
+---
