@@ -8,7 +8,11 @@ class SearchState(
     val types: List<Type>,
     val labelArities: Map<Int, Int> = mapOf(TODO())
 ) {
+    fun fnArities(): Map<String, Int> = TODO()
+
     fun noFillableHoles() = types.all { it.shallowestFillableHole() == null }
+
+    fun blanks() = types.flatMap { it.allHoles() }.filterIsInstance<Blank>()
 
     fun noHoles() = types.all { it.noHoles() }
 
