@@ -22,7 +22,7 @@ fun main() {
 
     val configuration =
         Configuration(
-            test = PolymorphicDict,
+            test = IdTest,
             runCVC = true,
             enumeratorTag = EnumeratorTag.DFSPriority,
             unificationTag = UnificationTag.Eager,
@@ -81,6 +81,8 @@ fun run(configuration: Configuration, logger: Logger) {
             )
         }
 
+    println("Init sols:\n${initSols.joinToString(separator = "\n")}")
+
     val elabSeeds = time("Compile Init to Elab") { initSols.map { compileInit(it) } }
     val elabSols =
         time("Elab search") {
@@ -94,6 +96,8 @@ fun run(configuration: Configuration, logger: Logger) {
                 logger = logger
             )
         }
+
+    println("Elab sols:\n${elabSols.withIndex().joinToString(separator = "\n")}")
 
     Hole.resetIds() // quality of life
 
@@ -113,11 +117,10 @@ fun run(configuration: Configuration, logger: Logger) {
                     lazyCartesianProduct(info.labelArities.values.map { (0..it).toList() }).map {
                         info.copy(labelArities = info.labelArities.keys.zip(it).toMap())
                     }
-                } // TODO reorder these simplest to most complex. also, we should do this in compile
-                //     elab to info maybe
-                .map { compileToConcrete(it, configuration.finalRoundSketches) }
+                } // TODO reorder these simplest to most complex
+                .map { compileToConcrete(it, emitBlanks = false) }
         }
-    println(concSeeds.joinToString(separator = "\n"))
+    println("Concrete seeds:\n${concSeeds.joinToString(separator = "\n")}")
 
     val concSols =
         time("Concrete search") {

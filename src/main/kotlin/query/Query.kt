@@ -71,11 +71,11 @@ class Query(pos: Collection<Example> = listOf(), val neg: Collection<Example> = 
     val names: List<String> =
         pos.fold(setOf<String>()) { acc, ex -> acc + ex.names }.toList().sorted()
 
-    fun flatPosNoSubexprs(name: String) = flatPos[name] ?: listOf()
-    fun flatNeg(name: String) = flatNeg[name] ?: listOf()
-    
     private val flatPos = flat(posNoSubexprs)
     private val flatNeg = flat(neg)
+
+    fun flatPosNoSubexprs(name: String) = flatPos[name] ?: listOf()
+    fun flatNeg(name: String) = flatNeg[name] ?: listOf()
 
     private fun flat(exs: Collection<Example>) = exs.map { it.flatten() }.groupBy { it.name }
 }

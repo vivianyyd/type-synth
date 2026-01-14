@@ -46,9 +46,9 @@ sealed interface SearchNode<L : Language> {
     fun full(): Boolean
 
     /** The number of parameters this type has. */
-    fun params(): Int =
+    fun arity(): Int =
         when (this) {
-            is NArrow -> 1 + r.params()
+            is NArrow -> 1 + r.arity()
             else -> 1
         }
 
@@ -355,7 +355,7 @@ data class Candidate<L : Language>(val names: List<String>, val types: List<Sear
 
     val asMap by lazy { names.zip(types).toMap() }
 
-    fun arities() = types.map { it.params() }
+    fun arities() = types.map { it.arity() }
 
     fun full() = types.all { it.full() }
 

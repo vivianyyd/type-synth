@@ -82,7 +82,7 @@ data class EqualityConstraint<L : Language>(var l: ConstraintType<L>, var r: Con
 
     override fun equals(other: Any?): Boolean {
         return other is EqualityConstraint<*> &&
-                ((this.l == other.l && this.r == other.r) || (this.l == other.r && this.r == other.l))
+            ((this.l == other.l && this.r == other.r) || (this.l == other.r && this.r == other.l))
     }
 
     override fun hashCode(): Int = l.hashCode() + r.hashCode()
@@ -138,10 +138,7 @@ fun main() {
                     NArrow(
                         ConcreteL(1, listOf(ConcreteV(0))),
                         ConcreteL(
-                            1,
-                            listOf(
-                                ConcreteHole(false, null, mapOf(0 to 0, 1 to 1, 2 to 0), false)
-                            )
+                            1, listOf(ConcreteHole(false, mapOf(0 to 0, 1 to 1, 2 to 0), false))
                         ),
                         false
                     ),

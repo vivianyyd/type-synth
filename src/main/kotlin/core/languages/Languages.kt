@@ -1,9 +1,9 @@
 package core.languages
 
-import core.LabelArityConstraints
+import core.NewLabelArityConstraints
 import core.unification.*
-import dependencyanalysis.ArrowDependencyAnalysis
 import dependencyanalysis.ParameterNode
+import dependencyanalysis.ParameterwiseDependencyAnalysis
 import query.Name
 import query.Query
 import util.*
@@ -40,7 +40,7 @@ private fun compileElabIntermediate(seed: Candidate<Elab>): Candidate<Elaborated
 }
 
 object Elaborated : Language {
-    val aritiesToDeps = mutableMapOf<List<Int>, ArrowDependencyAnalysis>()
+    val aritiesToDeps = mutableMapOf<List<Int>, ParameterwiseDependencyAnalysis>()
 
     private var id = 0
 
@@ -105,40 +105,39 @@ fun typeOfParam(candidate: Candidate<Elab>, param: ParameterNode): SearchNode<El
 }
 
 /**
+ * A candidate is *inconsistent* if two parameters are the same variable, but their witnesses are
+ * not observationally equivalent
+ */
+fun topLevelVariablesConsistent(seed: Candidate<Elab>, query: Query, oracle: Oracle): Boolean {
+    return true
+    seed.names.zip(seed.types).forEach { (name, ty) ->
+        val groupedVariableParams =
+            seed
+                .params(ty)
+                .withIndex()
+                .filter { it.value is ElabV }
+                .eqClasses { (_, p1), (_, p2) -> (p1 as ElabV).v == (p2 as ElabV).v }
+                .map { it.map { it.index } }
+
+        val posExs = query.flatPosNoSubexprs(name)
+        posExs.forEach {
+            TODO(
+                "query can memoize witnesses for each parameter under arity assumption?" +
+                        "^^^Do this during dependency analysis, then it's only done once per arity"
+            )
+        }
+    }
+
+    TODO(
+        "We can prune a candidate if two parameters are the same variable, but their witnesses are not observationally equivalent"
+    )
+}
+
+/**
  * Take a dependency analysis (arrows on an arity hypothesis) and Elab candidate (hypothesis of
  * label and variable locations) and produce explicit variable constraints for each parameter in the
  * outline.
  */
-fun constraints(
-    candidate: Candidate<Elab>,
-    deps: ArrowDependencyAnalysis
-): Map<ParameterNode, Dependency> {
-    val constraints = mutableMapOf<ParameterNode, Dependency>()
-    candidate.names.forEach { name ->
-        val graph = deps.graphs[name]!!
-        graph.loops.forEach {
-            // Nullaries may not have loops, since we have simply observed their witnesses are
-            // type-equal to themselves
-            if (candidate.searchNodeOf(it.node.f) is NArrow) constraints[it.node] = NoVariables
-        }
-        graph.deps.forEach {
-            val sup = typeOfParam(candidate, it.sup)
-            if (sup is ElabV) constraints[it.sub] = Only(sup.v)
-        }
-        equivalenceClasses(graph.deps) { e1, e2 -> e1.sup == e2.sup }
-            .forEach {
-                val sink = it.first().sup
-                val containedVars =
-                    it.map { typeOfParam(candidate, it.sub) }.filterIsInstance<ElabV>().map { it.v }
-                if (typeOfParam(candidate, sink) !is ElabV && containedVars.isNotEmpty()) {
-                    val p = ParameterNode(name, sink.i)
-                    if (p !in constraints) constraints[p] = MustContain(containedVars)
-                }
-            }
-    }
-    return constraints
-}
-
 fun compileElabToInfo(
     seed: Candidate<Elab>,
     query: Query,
@@ -146,23 +145,33 @@ fun compileElabToInfo(
     unification: UnificationForCandidate<Elaborated>,
     callSolver: Boolean
 ): ElaboratedInfo? {
+    // begin by pruning candidates with a fresh variable as output type
+    if (seed.types.any {
+            val params = seed.params(it)
+            val lastParam = params.last()
+            lastParam is ElabV && lastParam.v !in params.dropLast(1).flatMap { it.variableNames() }
+        })
+        return null
+
+    if (!topLevelVariablesConsistent(seed, query, oracle)) return null
+
     val deps =
         Elaborated.aritiesToDeps.getOrPut(seed.arities()) {
-            ArrowDependencyAnalysis(query, seed.names.zip(seed.arities()).toMap(), oracle)
+            val tmp =
+                ParameterwiseDependencyAnalysis(
+                    query, seed.names.zip(seed.arities()).toMap(), oracle
+                )
+            println(
+                "Constrained: ${tmp.constrained.mapValues { it.value.joinToString(prefix = "[", postfix = "]") }}"
+            )
+            println(
+                "Fixed: ${tmp.fixed.mapValues { it.value.joinToString(prefix = "[", postfix = "]") }}"
+            )
+            tmp
         }
-
-    val constraints = constraints(seed, deps)
 
     fun satisfiesDependencies(): Boolean {
-        val params = seed.types.map { seed.params(it) }
-        return constraints.all { (param, dep) ->
-            val t = params[seed.names.indexOf(param.f)][param.i]
-            when (dep) {
-                is MustContain -> (t !is ElabV) || (dep.vars.size == 1 && t.v == dep.vars[0])
-                NoVariables -> t !is ElabV
-                is Only -> (t !is ElabV) || (dep.v == t.v)
-            }
-        }
+        return true
     }
 
     if (!satisfiesDependencies()) {
@@ -198,7 +207,7 @@ fun compileElabToInfo(
     val elaboratedAfterEquivalences =
         Candidate(elaborated.names, elaborated.types.map { amendWithEquivs(it) })
 
-    val gen = LabelArityConstraints(elaboratedAfterEquivalences, deps)
+    val gen = NewLabelArityConstraints(elaboratedAfterEquivalences, deps)
     val seedId = Elaborated.freshCandidateId()
     if (callSolver) callCVC(gen.initialQuery(), "$seedId")
 
@@ -226,33 +235,27 @@ fun compileElabToInfo(
     val labelArities: Map<Int, Int> =
         CVCParser(readCVC(finalSuccessfulOutput)!!).sizes.mapKeys { gen.pySizeToL(it.key).label }
 
-    if (labelArities.values.all { it > 0 }) return null // TODO I need to change if we allow L<a>
-
-    return ElaboratedInfo(elaboratedAfterEquivalences, labelArities, deps, constraints)
+    return ElaboratedInfo(elaboratedAfterEquivalences, labelArities, deps)
 }
 
 data class ElaboratedInfo(
     val candidate: Candidate<Elaborated>,
     val labelArities: Map<Int, Int>,
-    val deps: ArrowDependencyAnalysis,
-    val constraints: Map<ParameterNode, Dependency>
+    val deps: ParameterwiseDependencyAnalysis,
 )
 
 fun compileToConcrete(info: ElaboratedInfo, emitBlanks: Boolean) =
     Candidate(
         info.candidate.names,
         info.candidate.names.zip(info.candidate.types).map { (name, ty) ->
-            compileConcreteType(
-                name, 0, ty, info.labelArities, info.deps, info.constraints, emitBlanks
-            )
+            compileConcreteType(name, 0, ty, info.labelArities, info.deps, emitBlanks)
         })
 
 fun compileConcreteParameter(
     node: SearchNode<Elaborated>,
     parameter: ParameterNode,
     labelArities: Map<Int, Int>,
-    deps: ArrowDependencyAnalysis,
-    constraints: Map<ParameterNode, Dependency>,
+    deps: ParameterwiseDependencyAnalysis,
     emitBlanks: Boolean
 ): SearchNode<Concrete> =
     when (node) {
@@ -261,21 +264,12 @@ fun compileConcreteParameter(
             ConcreteL(
                 node.label,
                 List(labelArities[node.label]!!) { // TODO If unconstrained, 0 params?
-                    ConcreteHole(
-                        deps.mayHaveFresh(parameter),
-                        constraints[parameter],
-                        labelArities,
-                        emitBlanks
-                    )
+                    ConcreteHole(deps.mayHaveFresh(parameter), labelArities, emitBlanks)
                 })
         is NArrow ->
             NArrow(
-                compileConcreteParameter(
-                    node.l, parameter, labelArities, deps, constraints, emitBlanks
-                ),
-                compileConcreteParameter(
-                    node.r, parameter, labelArities, deps, constraints, emitBlanks
-                ),
+                compileConcreteParameter(node.l, parameter, labelArities, deps, emitBlanks),
+                compileConcreteParameter(node.r, parameter, labelArities, deps, emitBlanks),
                 true
             )
         else -> throw Exception("Will never happen")
@@ -286,29 +280,21 @@ fun compileConcreteType(
     paramsSoFar: Int,
     seed: SearchNode<Elaborated>,
     labelArities: Map<Int, Int>,
-    deps: ArrowDependencyAnalysis,
-    constraints: Map<ParameterNode, Dependency>,
+    deps: ParameterwiseDependencyAnalysis,
     emitBlanks: Boolean
 ): SearchNode<Concrete> =
     when (seed) {
         is ElaboratedV,
         is ElaboratedL ->
             compileConcreteParameter(
-                seed, ParameterNode(name, paramsSoFar), labelArities, deps, constraints, emitBlanks
+                seed, ParameterNode(name, paramsSoFar), labelArities, deps, emitBlanks
             )
         is NArrow ->
             NArrow(
                 compileConcreteParameter(
-                    seed.l,
-                    ParameterNode(name, paramsSoFar),
-                    labelArities,
-                    deps,
-                    constraints,
-                    emitBlanks
+                    seed.l, ParameterNode(name, paramsSoFar), labelArities, deps, emitBlanks
                 ),
-                compileConcreteType(
-                    name, paramsSoFar + 1, seed.r, labelArities, deps, constraints, emitBlanks
-                ),
+                compileConcreteType(name, paramsSoFar + 1, seed.r, labelArities, deps, emitBlanks),
                 false
             )
         is Hole -> throw Exception("Invariant broken")
