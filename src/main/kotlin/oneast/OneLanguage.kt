@@ -3,9 +3,11 @@ package oneast
 import java.lang.Integer.max
 
 /** TODO change me, I'm just here to make some stuff type check for now */
-class SearchState(val names: List<String>, val types: List<Type>) {
+class SearchState(
+    val names: List<String>,
+    val types: List<Type>,
     val labelArities: Map<Int, Int> = mapOf(TODO())
-
+) {
     fun noFillableHoles() = types.all { it.shallowestFillableHole() == null }
 
     fun noHoles() = types.all { it.noHoles() }

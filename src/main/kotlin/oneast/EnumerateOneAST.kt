@@ -65,14 +65,38 @@ class EnumerateOneAST(
             commit(
                 seed, OneUnification(seed, query.posNoSubexprs), allowBlanks = true, hardSizeBound
             )
-        val solveLabels = TODO()
-        val searchfornonnullary =
-            TODO("manually set holes in nullaries to blanks, then call commit with allowBlanks=false")
-        val searchForNullary = TODO(
+
+        TODO("Dependency analysis, then label arity constraints")
+
+        val solveLabels =
+            firstRound.map {
+                TODO(
+                    "Turn all Blanks into Labels to solve for. " +
+                            "When generating named label nodes, give them type holes unless it's in a nullary, " +
+                            "in which case give them Blanks where labelOnly=false"
+                )
+            }
+
+        val secondRounds =
+            solveLabels.flatMap {
+                commit(
+                    it, OneUnification(it, query.posNoSubexprs), allowBlanks = false, hardSizeBound
+                )
+            }
+
+        val finalResults =
+            secondRounds.flatMap {
+                commit(
+                    TODO("[it] with blanks replaced with normal holes again"),
+                    OneUnification(it, query.posNoSubexprs),
+                    allowBlanks = false,
+                    hardSizeBound
+                )
+            }
+        TODO(
             "Once we have exhausted the search space for non-nullaries / found solutions, at that point" +
                     "we transform blanks back into normal holes and enumerate for them"
         )
-
 
         val blanknullaryseed =
             SearchState( // infer nullaries
