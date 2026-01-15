@@ -3,11 +3,18 @@ package oneast
 import java.lang.Integer.max
 
 /** TODO change me, I'm just here to make some stuff type check for now */
-class SearchState(
-    val names: List<String>,
-    val types: List<Type>,
-    val labelArities: Map<Int, Int> = mapOf(TODO())
-) {
+class SearchState(val names: List<String>, val types: List<Type>, val labelArities: Map<Int, Int>) {
+    companion object {
+        var nextId = 0
+
+        /** So the numbers are smaller for readability. Only call me between phases */
+        fun resetIds() {
+            nextId = 0
+        }
+    }
+
+    val id = nextId++
+
     fun fnArities(): Map<String, Int> = TODO()
 
     fun noFillableHoles() = types.all { it.shallowestFillableHole() == null }
@@ -112,7 +119,7 @@ sealed class THole : Type {
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
-        allowBlanks: Boolean,
+        introduceBlanks: Boolean,
         mustBeLeaf: Boolean
     ): List<Type>
 
@@ -215,11 +222,11 @@ class TypeHole : THole() {
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
-        allowBlanks: Boolean,
+        introduceBlanks: Boolean,
         mustBeLeaf: Boolean
     ): List<Type> =
         if (mustBeLeaf)
-            expansionsNoBound(unification, labelArities, vars, allowBlanks).filter {
+            expansionsNoBound(unification, labelArities, vars, introduceBlanks).filter {
                 when (it) {
                     is Variable -> true
                     is NamedLabel -> it.params.isEmpty()
@@ -228,13 +235,13 @@ class TypeHole : THole() {
                     is TypeHole -> throw Exception("Expansions cannot include type holes")
                 }
             }
-        else expansionsNoBound(unification, labelArities, vars, allowBlanks)
+        else expansionsNoBound(unification, labelArities, vars, introduceBlanks)
 
     private fun expansionsNoBound(
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
-        allowBlanks: Boolean
+        introduceBlanks: Boolean
     ): List<Type> {
         val variableExps = (0 until vars + 1).map { Variable(it) }
         val fnExpansion = Arrow(TypeHole(), TypeHole())
@@ -256,7 +263,7 @@ class TypeHole : THole() {
             } else labelExpansions + fnExpansion
         return constructorTypes +
                 variableExps +
-                listOfNotNull(Blank(labelOnly = allowBlanks).takeIf { allowBlanks })
+                listOfNotNull(Blank(labelOnly = true).takeIf { introduceBlanks })
     }
 }
 
@@ -271,7 +278,7 @@ class Blank(val labelOnly: Boolean) : THole() {
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
-        allowBlanks: Boolean,
+        introduceBlanks: Boolean,
         mustBeLeaf: Boolean
     ) = listOf(this)
 }

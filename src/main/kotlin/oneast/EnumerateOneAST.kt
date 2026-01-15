@@ -24,8 +24,10 @@ class EnumerateOneAST(
     private fun commit(
         c: SearchState,
         unification: OneUnification,
-        allowBlanks: Boolean,
-        sizeBound: Int
+        introduceBlanks: Boolean,
+        fastForwardBlanks: Boolean,
+        sizeBound: Int,
+        loggingSeed: SearchState,
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
         // TODO consider if I want to fast forward here, or do it later outside this fn
@@ -34,12 +36,12 @@ class EnumerateOneAST(
         //   on the other hand, in the future iterations, we may as well fast forward outside
         //   this function. And in that case, we can combine this line with the c.noHoles()
         //   check.
-        if (c.noFillableHoles()) return sequenceOf(c)
-
-        if (sizeBound == 0) {
-            val ff = fastForward(c)
-            return if (ff.noHoles()) sequenceOf(ff) else sequenceOf()
+        if (c.noFillableHoles()) {
+            if (fastForwardBlanks) return listOfNotNull(fastForward(c)).asSequence()
+            else return sequenceOf(c)
         }
+
+        if (sizeBound == 0) return listOfNotNull(fastForward(c)).asSequence()
 
         val (iToFill, holeWithDepth) =
             c.types.mapNotNull { it.shallowestFillableHole() }.withIndex().minBy { it.value.second }
@@ -50,22 +52,33 @@ class EnumerateOneAST(
                 unification = unification,
                 labelArities = c.labelArities,
                 vars = c.types[iToFill].variables().size,
-                allowBlanks = allowBlanks,
+                introduceBlanks = introduceBlanks,
                 mustBeLeaf = sizeBound <= 1 || depth > hardDepthBound
             )
             .asSequence()
             .map {
                 SearchState(
                     c.names,
-                    c.types.mapIndexed { i, p -> if (iToFill == i) p.replace(hole, it) else p })
+                    c.types.mapIndexed { i, p -> if (iToFill == i) p.replace(hole, it) else p },
+                    c.labelArities
+                )
             }
             .flatMap { newCandidate ->
-                logger.count("Total candidates for $seed")
+                logger.count("Total candidates for $loggingSeed")
                 // todo the below check is commented out bc the mustBeLeaf flag includes depth now,
                 //  check if that works
                 // if (newCand.maxParamHeight() > hardDepthBound) emptySequence()
                 val u = posUnification(newCandidate)
-                if (u.ok()) commit(newCandidate, u, allowBlanks, sizeBound - 1) else emptySequence()
+                if (u.ok())
+                    commit(
+                        newCandidate,
+                        u,
+                        introduceBlanks,
+                        fastForwardBlanks,
+                        sizeBound - 1,
+                        loggingSeed
+                    )
+                else emptySequence()
             }
     }
 
@@ -108,90 +121,89 @@ class EnumerateOneAST(
                 is Variable -> t
             }
 
-        return SearchState(s.names, s.types.map { assignLabels(it) })
+        return SearchState(s.names, s.types.map { assignLabels(it) }, mapOf())
     }
 
-    fun enumerate(): List<SearchState> {
+    fun enumerate(callSolver: Boolean, numSols: Solutions): List<SearchState> {
         fun check(c: SearchState) =
             posUnification(c).ok() && query.neg.all { !OneUnification(c, listOf(it)).ok() }
 
-        val seed = SearchState(query.names, query.names.map { TypeHole() })
+        val seed = SearchState(query.names, query.names.map { TypeHole() }, mapOf())
         val firstRound =
-            commit(seed, posUnification(seed), allowBlanks = true, hardSizeBound).toList()
+            commit(
+                seed,
+                posUnification(seed),
+                introduceBlanks = true,
+                fastForwardBlanks = false,
+                hardSizeBound,
+                loggingSeed = seed
+            )
+                .toList()
 
         val withLabelClasses = firstRound.mapNotNull { assignLabelClasses(it) }
 
         val dependencyAnalyses = mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
-        val solveLabels = withLabelClasses.map {
-            val arities = it.fnArities()
-            val dep =
-                dependencyAnalyses.getOrPut(arities) {
-                    ParameterwiseDependencyAnalysis(query, arities, oracle)
+        val resolvedLabelArities =
+            withLabelClasses.mapNotNull { s ->
+                val arities = s.fnArities()
+                val dep =
+                    dependencyAnalyses.getOrPut(arities) {
+                        ParameterwiseDependencyAnalysis(query, arities, oracle)
+                    }
+
+                labelArities(s, dep, callSolver)?.let { la ->
+                    SearchState(s.names, s.types.map { it.addParamHoles(la) }, labelArities = la)
                 }
-
-            TODO(
-                "We have to allow ourselves to return things with blanks, so that we" +
-                        "can access constraints on them here"
-            )
-
-            TODO(
-                "Turn all Blanks into Labels to solve for. " +
-                        "Dependency analysis, then find label classes, then label arity constraints" +
-                        "When generating named label nodes, give them type holes unless it's in a nullary, " +
-                        "in which case give them Blanks where labelOnly=false"
-            )
             }
 
+        // Things blow up here, so sequencing
         val secondRounds =
-            solveLabels.flatMap {
-                commit(it, posUnification(it), allowBlanks = false, hardSizeBound)
-            }
-
-        val finalResults =
-            secondRounds.flatMap {
+            resolvedLabelArities.asSequence().flatMap {
                 commit(
-                    TODO("[it] with blanks replaced with normal holes again"),
+                    it,
                     posUnification(it),
-                    allowBlanks = false,
-                    hardSizeBound
+                    introduceBlanks = false,
+                    fastForwardBlanks = true,
+                    hardSizeBound,
+                    it
                 )
             }
-        TODO(
-            "Once we have exhausted the search space for non-nullaries / found solutions, at that point" +
-                    "we transform blanks back into normal holes and enumerate for them"
-        )
 
-        val blanknullaryseed =
-            SearchState( // infer nullaries
-                seed.names,
-                seed.types.map { t ->
-                    val commits: List<Pair<Hole, Blank>> =
-                        when (t) {
-                            is NArrow<*> -> listOf()
-                            else -> t.listHoles().map { it to (it as ConcreteHole).blankExpansion }
-                        }
-                    commits.fold(t) { acc: SearchNode, commitment: Pair<Hole, Blank> ->
-                        acc.replace(
-                            commitment.first,
-                            commitment.second as SearchNode) // TODO Extremely messy
-                    }
-                })
-        // TODO bug: inferring nullaries can fail if there are multiple possible assignments of
-        // variables to a nullary
-        //      value. fix this later, solution is in notes
-        return commit(seed, posUnification(this.seed), sizeBound, hardDepthBound)
-            .filter { c -> check(c) }
-            .toList()
+        // Once we have exhausted the search space for functions, we transform blanks back into
+        // normal holes and enumerate for them
+        val finalResults =
+            secondRounds.flatMap {
+                val blanksReplacedWithHoles =
+                    SearchState(
+                        it.names,
+                        it.types.map { t ->
+                            t.allHoles().fold(t) { acc: Type, h: THole ->
+                                if (h is Blank) acc.replace(h, TypeHole()) else acc
+                            }
+                        },
+                        labelArities = it.labelArities
+                    )
+                commit(
+                    blanksReplacedWithHoles,
+                    posUnification(blanksReplacedWithHoles),
+                    introduceBlanks = false,
+                    fastForwardBlanks = true,
+                    hardSizeBound,
+                    blanksReplacedWithHoles
+                )
+            }
+
+        return when (numSols) {
+            Solutions.ALL_SOLUTIONS -> finalResults.filter { c -> check(c) }.toList()
+            Solutions.ONE_SOLUTION -> listOf(finalResults.first { c -> check(c) })
+        }
     }
 
-    fun fastForward(candidate: SearchState): SearchState {
+    fun fastForward(candidate: SearchState): SearchState? {
         var curr = candidate
         do {
             val u = posUnification(curr)
-            val commitments =
-                curr.types.map { t ->
-                    t.allHoles().map { it to it.fastForward(u, t.variables().size) }
-                }
+            val commitments = curr.types.map { t -> t.allHoles().map { it to it.fastForward(u) } }
             curr =
                 SearchState(
                     curr.names,
@@ -199,8 +211,38 @@ class EnumerateOneAST(
                         commits.fold(t) { acc: Type, (hole, ty): Pair<THole, Type?> ->
                             if (ty == null) acc else acc.replace(hole, ty)
                         }
-                    })
+                    },
+                    curr.labelArities
+                )
         } while (commitments.any { it.isNotEmpty() && it.any { it.second != null } })
-        return curr
+        return if (curr.noHoles()) curr else null
     }
+}
+
+fun Type.addParamHoles(labelArities: Map<Int, Int>, underArrow: Boolean = false): Type =
+    when (this) {
+        is Arrow ->
+            Arrow(
+                l.addParamHoles(labelArities, underArrow = true),
+                r.addParamHoles(labelArities, underArrow = true)
+            )
+        is NamedLabel -> {
+            // Only overwrite parameters if they are wrongly empty
+            if ((labelArities[this.label] ?: 0) > 0 && this.params.isEmpty()) {
+                // Children of labels are type holes if under a function, and blanks with
+                // labelOnly=false if under a nullary
+                this.copy(
+                    params =
+                    List(labelArities[this.label]!!) {
+                        if (underArrow) TypeHole() else Blank(labelOnly = false)
+                    })
+            } else this
+        }
+        is THole,
+        is Variable -> this
+    }
+
+enum class Solutions {
+    ALL_SOLUTIONS,
+    ONE_SOLUTION
 }
