@@ -1,12 +1,9 @@
 package oneast
 
-import query.Query
+import query.Example
+import test.SomeHaskell
+import kotlin.math.min
 
-class Scheduler(val query: Query) {
-    fun nextQuery(): Pair<SearchState, Query> {
-        TODO()
-    }
-}
 /*
 enumeration input should be
     seed search state
@@ -23,13 +20,138 @@ Overall loop to pick subset of examples and enumerate from some known types. USE
 
 btw, use a real logging library
 
-"For big libraries, go in rounds. Isolate a subset which could be independently solved for
-For example, interesting nontrivial functions on Lists of Maybes in the Maybe library, but it's good if we figure out List, int, bool first. Then we'll have examples where we know the types for some subexpressions
-Curriculum design. Most strongly connected subgraphs? Smallest cut"
-	"Partitioning examples: Pick random example, take set of all constructs in that example. Take all examples that involve only those constructs. if examples not big enough add examples that add fewest num new constructs. Or, for each new name, which has the fewest edges to other names not in my set? (did that sentence make sense)
-Can use universe of examples to guide in finding inital set of names with enough support of self contained examples. If we start with 100 examples, want a subset of names for which i can find 20 examples."
-	"Consider how to backtrack if, after coming up with types for subset of examples, we realize something is wrong. Is the only way we can be wrong by over restricting?
+Partitioning examples: Pick random example, take set of all constructs in that example.
+Take all examples that involve only those constructs. if examples not big enough add examples
+that add fewest num new constructs. Or, for each new name, which has the fewest edges to
+other names not in my set? (did that sentence make sense)
+Can use universe of examples to guide in finding initial set of names with enough support of
+self contained examples.
+If we start with 100 examples, want a subset of names for which i can find 20 examples.
+
+
+Consider how to backtrack if, after coming up with types for subset of examples, we realize something is wrong. Is the only way we can be wrong by over restricting?
 Failure mode: Say we pick examples of fns with lists and ints. Might overfit and miss that lists are polymorphic - we will be overly strict
 Then in a CEGISy way, we could try to find some other examples that could force us to turn concrete labels into variables, or bound vars into fresh vars. We can go in and see did I actually make an example for this parameter with more than one type? Was it a coincidence? This counterexample step could be with LLM or not. Prompt: Make something reasonable for the following (candidate) type
 Identify blind spots not tested by examples - generate more in goal directed manner from type system. Shouldn't need to restart from scratch. Only generalizations or refinements"
  */
+
+fun main() {
+    val h = SomeHaskell
+
+    println("Total names: ${h.names.size}")
+
+    val initial = Scheduler().selectNamesSeededGreedy(h.unsignedExamples, h.names.toList(), k = 10)
+    println("Initial selection: $initial")
+
+    // TODO if there are less than k remaining just return all of them
+    val extended =
+        Scheduler().extendSelection(h.unsignedExamples, h.names.toList(), initial, k = 10)
+    println("Extended selection: ${initial + extended}")
+
+    // TODO print covered examples
+}
+
+// TODO: Take query as input, maintain state? or just let it get garbage collected lol
+/** The below code was written by ChatGPT */
+class Scheduler {
+    // --- Generic seeded greedy selection ---
+    private fun seededGreedy(
+        base: Set<String>, // already chosen elements
+        candidates: List<String>, // universe to select from
+        scorer: Scorer,
+        k: Int, // number of elements to add
+        seedSize: Int = 4 // max seed subset size
+    ): Set<String> {
+        // Generate all seeds up to size seedSize
+        var bestSeed: Set<String> = emptySet()
+        var bestScore = scorer.score(base)
+
+        fun backtrack(start: Int, current: MutableList<String>) {
+            if (current.isNotEmpty()) {
+                val candidateSet = base + current
+                val s = scorer.score(candidateSet)
+                if (s > bestScore) {
+                    bestScore = s
+                    bestSeed = current.toSet()
+                }
+            }
+            if (current.size == seedSize) return
+
+            for (i in start until candidates.size) {
+                current.add(candidates[i])
+                backtrack(i + 1, current)
+                current.removeAt(current.size - 1)
+            }
+        }
+
+        backtrack(0, mutableListOf())
+
+        val added = bestSeed.toMutableSet()
+
+        // Greedy continuation up to k
+        while (added.size < k) {
+            var bestName: String? = null
+            var bestGain = 0.0
+            val baseScore = scorer.score(base + added)
+
+            for (name in candidates) {
+                if (added.contains(name)) continue
+                val gain = scorer.score(base + added + name) - baseScore
+                if (gain > bestGain) {
+                    bestGain = gain
+                    bestName = name
+                }
+            }
+
+            if (bestName == null)
+                TODO(
+                    "Originally this was a break, but is that right? If none of the options help, we still want to add until we hit the bound."
+                )
+            added.add(bestName)
+        }
+
+        return added
+    }
+
+    // --- Public wrapper: select from empty ---
+    fun selectNamesSeededGreedy(
+        examples: List<Example>,
+        allNames: List<String>,
+        k: Int,
+        seedSize: Int = 4
+    ): Set<String> {
+        val scorer = Scorer(examples)
+        return seededGreedy(emptySet(), allNames, scorer, k, seedSize)
+    }
+
+    // --- Public wrapper: extend existing selection ---
+    fun extendSelection(
+        examples: List<Example>,
+        allNames: List<String>,
+        fixed: Set<String>,
+        k: Int,
+        seedSize: Int = 4
+    ): Set<String> {
+        val scorer = Scorer(examples)
+        val available = allNames.filterNot { fixed.contains(it) }
+        return seededGreedy(fixed, available, scorer, k, seedSize)
+    }
+}
+
+class Scorer(examples: List<Example>) {
+    // Pre-extract example element sets for efficiency
+    private val exampleElements = examples.map { it.names }
+
+    // relaxed score: fraction of elements covered per example, capped at 1.0
+    fun score(chosen: Set<String>): Double {
+        var score = 0.0
+        for (ci in exampleElements) {
+            var hit = 0
+            for (name in ci) {
+                if (chosen.contains(name)) hit++
+            }
+            score += min(hit.toDouble() / ci.size, 1.0)
+        }
+        return score
+    }
+}
