@@ -2,7 +2,6 @@ package oneast
 
 import java.lang.Integer.max
 
-/** TODO change me, I'm just here to make some stuff type check for now */
 class SearchState(
     /** maps component names to the index of their type in [types]. */
     val names: Map<String, Int>,
@@ -24,6 +23,8 @@ class SearchState(
         fun resetIds() {
             nextId = 0
         }
+
+        val emptyState = SearchState(mapOf(), listOf(), listOf(), mapOf())
     }
 
     val id = nextId++
@@ -45,13 +46,25 @@ class SearchState(
     fun asMap() = asMap
 
     fun mapTypesAndSetLabelArities(newArities: Map<Int, Int>, transform: (Type) -> Type) =
-        SearchState(names = names, types = types.map(transform), rounds = rounds, labelArities = newArities)
+        SearchState(
+            names = names, types = types.map(transform), rounds = rounds, labelArities = newArities
+        )
 
     fun mapTypes(transform: (Type) -> Type): SearchState =
-        SearchState(names = names, types = types.map(transform), rounds = rounds, labelArities = labelArities)
+        SearchState(
+            names = names,
+            types = types.map(transform),
+            rounds = rounds,
+            labelArities = labelArities
+        )
 
     fun mapTypesIndexed(transform: (Int, Type) -> Type): SearchState =
-        SearchState(names = names, types = types.mapIndexed(transform), rounds = rounds, labelArities = labelArities)
+        SearchState(
+            names = names,
+            types = types.mapIndexed(transform),
+            rounds = rounds,
+            labelArities = labelArities
+        )
 }
 
 sealed interface Type {
@@ -94,6 +107,8 @@ data class Variable(val v: Int) : Type {
     override fun variables() = setOf(this.v)
 
     override fun replace(hole: THole, replacement: Type) = this
+
+    override fun toString() = "V$v"
 }
 
 data class Arrow(val l: Type, val r: Type) : BranchType(listOf(l, r)) {
@@ -105,6 +120,8 @@ data class Arrow(val l: Type, val r: Type) : BranchType(listOf(l, r)) {
 
     override fun replace(hole: THole, replacement: Type) =
         Arrow(l.replace(hole, replacement), r.replace(hole, replacement))
+
+    override fun toString() = "${if (l is Arrow) "($l)" else "$l"} -> $r"
 }
 
 /** Could also be called DefinedLabel? */
@@ -117,6 +134,8 @@ data class NamedLabel(val label: Int, override val params: List<Type>) : BranchT
 
     override fun replace(hole: THole, replacement: Type) =
         copy(params = params.map { it.replace(hole, replacement) })
+
+    override fun toString() = "L$label[${params.joinToString(", ")}]"
 }
 
 sealed class THole : Type {

@@ -1,7 +1,9 @@
 package oneast
 
 import query.Example
+import query.Query
 import test.SomeHaskell
+import util.Oracle
 import kotlin.math.min
 
 /*
@@ -40,35 +42,82 @@ fun main() {
 
     val start = System.currentTimeMillis()
 
-    val scheduled = mutableListOf<Set<String>>()
-    val namesPerRound = 10
+    val sched = Scheduler(h.query, h.oracle, namesPerRound = 10)
 
-    // ceiling division for num rounds we need
-    while (scheduled.size < (h.names.size + namesPerRound - 1) / namesPerRound) {
-        scheduled.add(
-            Scheduler()
-                .select(
-                    h.unsignedExamples,
-                    h.names.toList(),
-                    buildSet { scheduled.forEach { addAll(it) } },
-                    namesPerRound
-                )
-        )
-    }
-
-    println("Total names: ${h.names.size}")
-    println(scheduled.joinToString("\n"))
+    sched.queries { q, s -> s }.forEach { if (it is Step.StateReady) println(it.state.names) }
     println("${System.currentTimeMillis() - start} ms")
-
-    println(
-        "Examples for first round:${
-            h.unsignedExamples.filter { scheduled[0].containsAll(it.names) }
-                .joinToString(separator = "\n", prefix = "\n")
-        }")
 }
 
-/** The below code was written by ChatGPT */
-class Scheduler {
+sealed class Step {
+    data class QueryReady(val query: Query) : Step()
+
+    data class StateReady(val state: SearchState) : Step()
+}
+
+class Scheduler(val query: Query, oracle: Oracle, namesPerRound: Int) {
+    // ceiling division
+    val numRounds = (query.names.size + namesPerRound - 1) / namesPerRound
+    val scheduled = mutableListOf<Set<String>>()
+
+    init {
+        while (scheduled.size < numRounds) {
+            scheduled.add(
+                Selector()
+                    .select(
+                        // whether a name occurs in subexprs is good signal for its
+                        // importance.
+                        query.posWithSubexprs,
+                        query.names.toList(),
+                        buildSet { scheduled.forEach { addAll(it) } },
+                        namesPerRound
+                    )
+            )
+        }
+    }
+
+    private fun buildNextQuery(
+        scheduledRound: Set<String>,
+        state: SearchState
+    ): Pair<Query, SearchState> {
+        // TODO I think enumeration doesn't actually need the subexprs, so we should make a separate
+        //   query type which contains only maximal examples so we don't waste so much space
+        val oldSize = state.names.size
+        val newSize = oldSize + scheduledRound.size
+        val newNames = state.names + (scheduledRound.zip(oldSize until newSize))
+
+        fun takeExs(exs: Collection<Example>) = exs.filter { newNames.keys.containsAll(it.names) }
+        val nextState =
+            SearchState(
+                names = newNames,
+                types = List(newSize) { if (it < oldSize) state.types[it] else TypeHole() },
+                rounds = state.rounds + oldSize,
+                labelArities = state.labelArities
+            )
+        val nextQuery = Query(takeExs(query.posNoSubexprs), takeExs(query.neg))
+
+        return nextQuery to nextState
+    }
+
+    private var used = false
+
+    fun queries(solver: (Query, SearchState) -> SearchState): Sequence<Step> {
+        check(!used) { "Scheduled query sequence already created" }
+        used = true
+
+        return sequence {
+            var state = SearchState.emptyState
+
+            for (schedule in scheduled) {
+                val (nextQuery, seed) = buildNextQuery(schedule, state)
+                yield(Step.QueryReady(nextQuery))
+                state = solver(nextQuery, seed)
+                yield(Step.StateReady(state))
+            }
+        }
+    }
+}
+
+class Selector {
     /** Requires: [candidates] and [base] are disjoint. */
     private fun greedy(
         base: Set<String>, // already chosen elements

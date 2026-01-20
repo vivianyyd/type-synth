@@ -3,7 +3,7 @@ package test
 import benchmarking.parseHaskellTypes
 import query.Query
 import query.toExpression
-import util.Oracle
+import util.CheckingOracle
 import util.SExprParser
 
 object SomeHaskell : Test {
@@ -224,8 +224,6 @@ object SomeHaskell : Test {
     val names = exsNames.second.fold(setOf<String>()) { a, s -> a.union(s) }
     override val name: String = "Some Haskell Examples"
 
-    override val query: Query
-        get() = TODO("Not yet implemented")
-    override val oracle: Oracle
-        get() = TODO("Not yet implemented")
+    override val query = Query(unsignedExamples)
+    override val oracle = CheckingOracle(groundTruthMap)
 }
