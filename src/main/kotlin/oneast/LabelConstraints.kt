@@ -18,13 +18,14 @@ class LabelConstraints(
 
     init {
         var pyNameFresh = 0
-        s.names.forEach { name ->
+        s.names.keys.forEach { name ->
             val n = "_${name.filter { it.isLetterOrDigit() }}"
             if (n !in pyName.values) pyName[name] = n else pyName[name] = n + "_${pyNameFresh++}"
         }
 
         val nodeToType =
-            s.names.zip(s.types).fold(mutableMapOf<ParameterNode, Type>()) { m, (name, tree) ->
+            s.names.entries.fold(mutableMapOf<ParameterNode, Type>()) { m, (name, index) ->
+                val tree = s.types[index]
                 var curr = tree
                 var count = 0
                 while (curr is Arrow) {
@@ -68,7 +69,7 @@ class LabelConstraints(
             else "SetUnion(${union(name, n - 1)}, ${py(ParameterNode(name, n - 1))})"
         }
 
-        s.names.forEach { name ->
+        s.names.keys.forEach { name ->
             val nodes = dep.nodes(name)
             decls.addAll(nodes.map { "${py(it)} = Const('${py(it)}', SetSort(IntSort()))" })
         }
@@ -119,7 +120,7 @@ class LabelConstraints(
         decls.add("$py = Int${if (names.size == 1) "" else "s"}('$cvc5')")
     }
 
-    fun initialQuery(): String = PyWriter().query("${s.names.zip(s.types).toMap()}", decls, constrs)
+    fun initialQuery(): String = PyWriter().query("${s.asMap()}", decls, constrs)
 
     private fun smallerQuery(sizes: Map<Int, Int>): String {
         fun or(args: List<String>): String {
@@ -151,8 +152,7 @@ fun labelArities(
         val parser = CVCParser(previousSolution)
         val testName = "$testID-smaller${counter++}"
         val cont =
-            if (parser.sizes.isNotEmpty()) callCVC(gen.smallerQuery(parser), testName)
-            else false
+            if (parser.sizes.isNotEmpty()) callCVC(gen.smallerQuery(parser), testName) else false
         if (cont) {
             lastSuccessful = counter - 1
             previousSolution = readCVC(testName)!! // callCVC returns success code stored in cont

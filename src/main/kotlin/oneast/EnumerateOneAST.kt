@@ -8,8 +8,9 @@ import util.IntUnionFind
 import util.Logger
 import util.Oracle
 
-/** Fills one hole at a time, in DFS priority order. */
+/** Fills one hole at a time, shallowest first, in DFS style. */
 class EnumerateOneAST(
+    val seed: SearchState,
     val query: Query,
     val oracle: Oracle,
     private val hardSizeBound: Int,
@@ -37,8 +38,8 @@ class EnumerateOneAST(
         //   this function. And in that case, we can combine this line with the c.noHoles()
         //   check.
         if (c.noFillableHoles()) {
-            if (fastForwardBlanks) return listOfNotNull(fastForward(c)).asSequence()
-            else return sequenceOf(c)
+            return if (fastForwardBlanks) listOfNotNull(fastForward(c)).asSequence()
+            else sequenceOf(c)
         }
 
         if (sizeBound == 0) return listOfNotNull(fastForward(c)).asSequence()
@@ -56,13 +57,7 @@ class EnumerateOneAST(
                 mustBeLeaf = sizeBound <= 1 || depth > hardDepthBound
             )
             .asSequence()
-            .map {
-                SearchState(
-                    c.names,
-                    c.types.mapIndexed { i, p -> if (iToFill == i) p.replace(hole, it) else p },
-                    c.labelArities
-                )
-            }
+            .map { c.mapTypesIndexed { i, p -> if (iToFill == i) p.replace(hole, it) else p } }
             .flatMap { newCandidate ->
                 logger.count("Total candidates for $loggingSeed")
                 // todo the below check is commented out bc the mustBeLeaf flag includes depth now,
@@ -96,8 +91,10 @@ class EnumerateOneAST(
 
         // TODO It's not really clear why we need this if we've done the previous step properly but
         //   we do sooo that is bad
-        s.names.zip(s.types).forEachIndexed { i, (n1, t1) ->
-            s.names.zip(s.types).forEachIndexed { j, (n2, t2) ->
+        for ((n1, i) in s.names) {
+            for ((n2, j) in s.names) {
+                val t1 = s.types[i]
+                val t2 = s.types[j]
                 if (i < j && t1 is Blank && t2 is Blank && oracle.equal(Name(n1), Name(n2)))
                     uf.union(t1.id, t2.id)
             }
@@ -121,14 +118,13 @@ class EnumerateOneAST(
                 is Variable -> t
             }
 
-        return SearchState(s.names, s.types.map { assignLabels(it) }, mapOf())
+        return s.mapTypesAndSetLabelArities(mapOf()) { assignLabels(it) }
     }
 
     fun enumerate(callSolver: Boolean, numSols: Solutions): List<SearchState> {
         fun check(c: SearchState) =
             posUnification(c).ok() && query.neg.all { !OneUnification(c, listOf(it)).ok() }
 
-        val seed = SearchState(query.names, query.names.map { TypeHole() }, mapOf())
         val firstRound =
             commit(
                 seed,
@@ -152,7 +148,7 @@ class EnumerateOneAST(
                     }
 
                 labelArities(s, dep, callSolver)?.let { la ->
-                    SearchState(s.names, s.types.map { it.addParamHoles(la) }, labelArities = la)
+                    s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) }
                 }
             }
 
@@ -174,15 +170,11 @@ class EnumerateOneAST(
         val finalResults =
             secondRounds.flatMap {
                 val blanksReplacedWithHoles =
-                    SearchState(
-                        it.names,
-                        it.types.map { t ->
-                            t.allHoles().fold(t) { acc: Type, h: THole ->
-                                if (h is Blank) acc.replace(h, TypeHole()) else acc
-                            }
-                        },
-                        labelArities = it.labelArities
-                    )
+                    it.mapTypes { t ->
+                        t.allHoles().fold(t) { acc: Type, h: THole ->
+                            if (h is Blank) acc.replace(h, TypeHole()) else acc
+                        }
+                    }
                 commit(
                     blanksReplacedWithHoles,
                     posUnification(blanksReplacedWithHoles),
@@ -202,19 +194,17 @@ class EnumerateOneAST(
     fun fastForward(candidate: SearchState): SearchState? {
         var curr = candidate
         do {
+            var changed = false
             val u = posUnification(curr)
-            val commitments = curr.types.map { t -> t.allHoles().map { it to it.fastForward(u) } }
             curr =
-                SearchState(
-                    curr.names,
-                    curr.types.zip(commitments).map { (t, commits) ->
-                        commits.fold(t) { acc: Type, (hole, ty): Pair<THole, Type?> ->
-                            if (ty == null) acc else acc.replace(hole, ty)
-                        }
-                    },
-                    curr.labelArities
-                )
-        } while (commitments.any { it.isNotEmpty() && it.any { it.second != null } })
+                curr.mapTypes { t ->
+                    val changes = t.allHoles().map { it to it.fastForward(u) }
+                    if (changes.isNotEmpty() && changes.any { it.second != null }) changed = true
+                    changes.fold(t) { acc: Type, (hole, ty): Pair<THole, Type?> ->
+                        if (ty == null) acc else acc.replace(hole, ty)
+                    }
+                }
+        } while (changed)
         return if (curr.noHoles()) curr else null
     }
 }

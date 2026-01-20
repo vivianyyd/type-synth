@@ -3,7 +3,20 @@ package oneast
 import java.lang.Integer.max
 
 /** TODO change me, I'm just here to make some stuff type check for now */
-class SearchState(val names: List<String>, val types: List<Type>, val labelArities: Map<Int, Int>) {
+class SearchState(
+    /** maps component names to the index of their type in [types]. */
+    val names: Map<String, Int>,
+    /**
+     * contains enumerated types such that all types enumerated in round i appear before all types
+     * enumerated in round j > i.
+     */
+    val types: List<Type>,
+    /** maps round # (index) to the first index of types enumerated in that round. */
+    val rounds: List<Int>,
+    val labelArities: Map<Int, Int>
+    //    val names: List<String>,
+    //    val types: List<Type>
+) {
     companion object {
         var nextId = 0
 
@@ -23,9 +36,22 @@ class SearchState(val names: List<String>, val types: List<Type>, val labelAriti
 
     fun noHoles() = types.all { it.noHoles() }
 
-    fun typeOf(name: String) = types[names.indexOf(name)]
+    fun typeOf(name: String) = types[names[name]!!]
 
     fun maxParamHeight() = types.maxOf { it.maxParamHeight(countArrow = false) }
+
+    private val asMap by lazy { names.mapValues { (_, i) -> types[i] } }
+
+    fun asMap() = asMap
+
+    fun mapTypesAndSetLabelArities(newArities: Map<Int, Int>, transform: (Type) -> Type) =
+        SearchState(names = names, types = types.map(transform), rounds = rounds, labelArities = newArities)
+
+    fun mapTypes(transform: (Type) -> Type): SearchState =
+        SearchState(names = names, types = types.map(transform), rounds = rounds, labelArities = labelArities)
+
+    fun mapTypesIndexed(transform: (Int, Type) -> Type): SearchState =
+        SearchState(names = names, types = types.mapIndexed(transform), rounds = rounds, labelArities = labelArities)
 }
 
 sealed interface Type {
