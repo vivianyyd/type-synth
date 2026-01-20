@@ -1,12 +1,9 @@
 package oneast
 
-import query.Query
+import query.Example
+import test.SomeHaskell
+import kotlin.math.min
 
-class Scheduler(val query: Query) {
-    fun nextQuery(): Pair<SearchState, Query> {
-        TODO()
-    }
-}
 /*
 enumeration input should be
     seed search state
@@ -23,13 +20,159 @@ Overall loop to pick subset of examples and enumerate from some known types. USE
 
 btw, use a real logging library
 
-"For big libraries, go in rounds. Isolate a subset which could be independently solved for
-For example, interesting nontrivial functions on Lists of Maybes in the Maybe library, but it's good if we figure out List, int, bool first. Then we'll have examples where we know the types for some subexpressions
-Curriculum design. Most strongly connected subgraphs? Smallest cut"
-	"Partitioning examples: Pick random example, take set of all constructs in that example. Take all examples that involve only those constructs. if examples not big enough add examples that add fewest num new constructs. Or, for each new name, which has the fewest edges to other names not in my set? (did that sentence make sense)
-Can use universe of examples to guide in finding inital set of names with enough support of self contained examples. If we start with 100 examples, want a subset of names for which i can find 20 examples."
-	"Consider how to backtrack if, after coming up with types for subset of examples, we realize something is wrong. Is the only way we can be wrong by over restricting?
+Partitioning examples: Pick random example, take set of all constructs in that example.
+Take all examples that involve only those constructs. if examples not big enough add examples
+that add fewest num new constructs. Or, for each new name, which has the fewest edges to
+other names not in my set? (did that sentence make sense)
+Can use universe of examples to guide in finding initial set of names with enough support of
+self contained examples.
+If we start with 100 examples, want a subset of names for which i can find 20 examples.
+
+
+Consider how to backtrack if, after coming up with types for subset of examples, we realize something is wrong. Is the only way we can be wrong by over restricting?
 Failure mode: Say we pick examples of fns with lists and ints. Might overfit and miss that lists are polymorphic - we will be overly strict
 Then in a CEGISy way, we could try to find some other examples that could force us to turn concrete labels into variables, or bound vars into fresh vars. We can go in and see did I actually make an example for this parameter with more than one type? Was it a coincidence? This counterexample step could be with LLM or not. Prompt: Make something reasonable for the following (candidate) type
 Identify blind spots not tested by examples - generate more in goal directed manner from type system. Shouldn't need to restart from scratch. Only generalizations or refinements"
  */
+
+fun main() {
+    val h = SomeHaskell
+
+    val start = System.currentTimeMillis()
+
+    val scheduled = mutableListOf<Set<String>>()
+    val namesPerRound = 10
+
+    // ceiling division for num rounds we need
+    while (scheduled.size < (h.names.size + namesPerRound - 1) / namesPerRound) {
+        scheduled.add(
+            Scheduler()
+                .select(
+                    h.unsignedExamples,
+                    h.names.toList(),
+                    buildSet { scheduled.forEach { addAll(it) } },
+                    namesPerRound
+                )
+        )
+    }
+
+    println("Total names: ${h.names.size}")
+    println(scheduled.joinToString("\n"))
+    println("${System.currentTimeMillis() - start} ms")
+
+    println(
+        "Examples for first round:${
+            h.unsignedExamples.filter { scheduled[0].containsAll(it.names) }
+                .joinToString(separator = "\n", prefix = "\n")
+        }")
+}
+
+/** The below code was written by ChatGPT */
+class Scheduler {
+    /** Requires: [candidates] and [base] are disjoint. */
+    private fun greedy(
+        base: Set<String>, // already chosen elements
+        candidates: List<String>, // universe to select from
+        scorer: Scorer,
+        k: Int, // number of elements to add
+    ): Set<String> {
+        if (candidates.size <= k) return candidates.toSet()
+
+        // Initialize coverage from base
+        for (name in base) {
+            scorer.addName(name)
+        }
+        val added = mutableSetOf<String>()
+        while (added.size < k) {
+            var bestName: String? = null
+            var bestGain = 0.0
+            for (name in candidates) {
+                if (added.contains(name)) continue
+                val gain = scorer.marginalGain(name)
+                if (gain > bestGain) {
+                    bestGain = gain
+                    bestName = name
+                }
+            }
+            if (bestName == null)
+                break // this only occurs when none of the names appear in any example
+            scorer.addName(bestName)
+            added.add(bestName)
+        }
+        return added
+    }
+
+    fun select(
+        examples: List<Example>,
+        allNames: List<String>,
+        fixed: Set<String>,
+        k: Int,
+    ): Set<String> {
+        val scorer = Scorer(examples)
+        val available = allNames.filterNot { fixed.contains(it) }
+        return greedy(fixed, available, scorer, k)
+    }
+}
+
+/**
+ * Scorer with coverage counts. Computes the marginal gain of adding a named component to the set.
+ * Uses the invariant that [marginalGain] is only called on names that have not yet been added to
+ * the set, so counting coverage of each example suffices to compute gain.
+ */
+class Scorer(private val examples: List<Example>) {
+    private val m = examples.size
+
+    // For each example, number of elements already chosen
+    val coverage = IntArray(m)
+
+    // Precompute which examples contain each name
+    val nameToExamples: Map<String, List<Int>> = run {
+        val map = mutableMapOf<String, MutableList<Int>>()
+        for ((i, ex) in examples.withIndex()) {
+            for (name in ex.names) {
+                map.computeIfAbsent(name) { mutableListOf() }.add(i)
+            }
+        }
+        map
+    }
+
+    // relaxed score using coverage counts
+    fun score(): Double {
+        var total = 0.0
+        for (i in 0 until m) {
+            total += min(coverage[i].toDouble() / examples[i].names.size, 1.0)
+        }
+        return total
+    }
+
+    // marginal gain of adding a candidate name
+    fun marginalGain(name: String): Double {
+        var gain = 0.0
+        val indices = nameToExamples[name] ?: return 0.0
+        for (i in indices) {
+            if (coverage[i] < examples[i].names.size) {
+                val before = coverage[i].toDouble() / examples[i].names.size
+                val after = (coverage[i] + 1).toDouble() / examples[i].names.size
+                gain += min(after, 1.0) - min(before, 1.0)
+            }
+        }
+        return gain
+    }
+
+    // add a name and update coverage counts
+    fun addName(name: String) {
+        val indices = nameToExamples[name] ?: return
+        for (i in indices) {
+            coverage[i]++
+        }
+    }
+
+    // true objective: number of fully covered examples
+    fun countFullyCovered(): Int {
+        var count = 0
+        for (i in 0 until m) {
+            if (coverage[i] >= examples[i].names.size) count++
+        }
+        return count
+    }
+}

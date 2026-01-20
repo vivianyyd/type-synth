@@ -67,7 +67,8 @@ class Query(pos: Collection<Example> = listOf(), val neg: Collection<Example> = 
         posNoSubexprs = noSubexprs
     }
 
-    val posWithSubexprs: List<Example> = posNoSubexprs.toSet().flatMap { it.subexprs() }.toSet().toList()
+    val posWithSubexprs: List<Example> =
+        posNoSubexprs.toSet().flatMap { it.subexprs() }.toSet().toList()
     val names: List<String> =
         pos.fold(setOf<String>()) { acc, ex -> acc + ex.names }.toList().sorted()
 
@@ -75,6 +76,7 @@ class Query(pos: Collection<Example> = listOf(), val neg: Collection<Example> = 
     private val flatNeg = flat(neg)
 
     fun flatPosNoSubexprs(name: String) = flatPos[name] ?: listOf()
+
     fun flatNeg(name: String) = flatNeg[name] ?: listOf()
 
     private fun flat(exs: Collection<Example>) = exs.map { it.flatten() }.groupBy { it.name }
