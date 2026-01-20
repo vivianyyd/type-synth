@@ -39,46 +39,53 @@ fun main() {
     val h = SomeHaskell
 
     val start = System.currentTimeMillis()
+
+    val scheduled = mutableListOf<Set<String>>()
+    val namesPerRound = 10
+
+    // ceiling division for num rounds we need
+    while (scheduled.size < (h.names.size + namesPerRound - 1) / namesPerRound) {
+        scheduled.add(
+            Scheduler()
+                .select(
+                    h.unsignedExamples,
+                    h.names.toList(),
+                    buildSet { scheduled.forEach { addAll(it) } },
+                    namesPerRound
+                )
+        )
+    }
+
     println("Total names: ${h.names.size}")
+    println(scheduled.joinToString("\n"))
+    println("${System.currentTimeMillis() - start} ms")
 
-    val initial = Scheduler().selectNames(h.unsignedExamples, h.names.toList(), k = 10)
-    println("Initial selection: $initial")
-
-    // TODO if there are less than k remaining just return all of them
-    val extended =
-        Scheduler().extendSelection(h.unsignedExamples, h.names.toList(), initial, k = 10)
-    println("Extended selection: ${initial + extended}")
-    println("${System.currentTimeMillis() - start} ms") // 2000-2300 ms
-    // TODO print covered examples
-    // TODO after getting a selection, save the state of the scorer for later so we can recompute a
-    // little less maybe
-    //      honestly only saves us milliseconds so not a big deal
-    //      if we don't have enough examples for each function, try iteratively increasing k? or
-    // just give user an error message. bc if even for the best examples we don't have enough, we
-    // need more.
+    println(
+        "Examples for first round:${
+            h.unsignedExamples.filter { scheduled[0].containsAll(it.names) }
+                .joinToString(separator = "\n", prefix = "\n")
+        }")
 }
 
-// TODO: Take query as input, maintain state? or just let it get garbage collected lol
 /** The below code was written by ChatGPT */
 class Scheduler {
+    /** Requires: [candidates] and [base] are disjoint. */
     private fun greedy(
         base: Set<String>, // already chosen elements
         candidates: List<String>, // universe to select from
         scorer: Scorer,
         k: Int, // number of elements to add
     ): Set<String> {
-        require(base.all { it !in candidates })
+        if (candidates.size <= k) return candidates.toSet()
+
         // Initialize coverage from base
         for (name in base) {
             scorer.addName(name)
         }
-
         val added = mutableSetOf<String>()
-
         while (added.size < k) {
             var bestName: String? = null
             var bestGain = 0.0
-
             for (name in candidates) {
                 if (added.contains(name)) continue
                 val gain = scorer.marginalGain(name)
@@ -87,29 +94,15 @@ class Scheduler {
                     bestName = name
                 }
             }
-
             if (bestName == null)
-                break // the bestGain is zero only when none of the names appear in any example.
-
+                break // this only occurs when none of the names appear in any example
             scorer.addName(bestName)
             added.add(bestName)
         }
-
         return added
     }
 
-    // --- Public wrapper: select from empty ---
-    fun selectNames(
-        examples: List<Example>,
-        allNames: List<String>,
-        k: Int,
-    ): Set<String> {
-        val scorer = Scorer(examples)
-        return greedy(emptySet(), allNames, scorer, k)
-    }
-
-    // --- Public wrapper: extend existing selection ---
-    fun extendSelection(
+    fun select(
         examples: List<Example>,
         allNames: List<String>,
         fixed: Set<String>,
@@ -121,7 +114,11 @@ class Scheduler {
     }
 }
 
-// Scorer with coverage counts
+/**
+ * Scorer with coverage counts. Computes the marginal gain of adding a named component to the set.
+ * Uses the invariant that [marginalGain] is only called on names that have not yet been added to
+ * the set, so counting coverage of each example suffices to compute gain.
+ */
 class Scorer(private val examples: List<Example>) {
     private val m = examples.size
 
