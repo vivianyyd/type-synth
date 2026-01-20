@@ -3,8 +3,7 @@ import query.ExampleGenerator
 import query.Query
 import query.oracleFromAssignment
 import query.sexpsFromExamples
-import test.groundTruth
-import test.groundTruthMap
+import test.SomeHaskell
 import types.Assignment
 import types.Type
 import types.toSExpr
@@ -21,7 +20,8 @@ fun Assignment.toSExprStrs() =
 fun main() {
     //    println((haskellList + haskellEither + haskellMaybe).joinToString(separator = "\n") { (ty,
     // name) -> "$name :: $ty" })
-    val oracle = oracleFromAssignment(groundTruthMap.toSExprStrs())
+    val h = SomeHaskell
+    val oracle = oracleFromAssignment(h.groundTruthMap.toSExprStrs())
     //    val exs =
     //        examples.map { SExprParser(it).parse().toExpression().first }.filter { it.names.all {
     // it in groundTruth } }
@@ -30,7 +30,7 @@ fun main() {
 
     //    println(groundTruth.size)
 
-    val test = groundTruth
+    val test = h.groundTruth
     val (query, context) = generate(test)
     val generatedExs =
         (sexpsFromExamples(query.posWithSubexprs, true) + sexpsFromExamples(query.neg, false))
