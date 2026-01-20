@@ -38,57 +38,37 @@ Identify blind spots not tested by examples - generate more in goal directed man
 fun main() {
     val h = SomeHaskell
 
+    val start = System.currentTimeMillis()
     println("Total names: ${h.names.size}")
 
-    val initial = Scheduler().selectNamesSeededGreedy(h.unsignedExamples, h.names.toList(), k = 10)
+    val initial = Scheduler().selectNames(h.unsignedExamples, h.names.toList(), k = 10)
     println("Initial selection: $initial")
 
     // TODO if there are less than k remaining just return all of them
     val extended =
         Scheduler().extendSelection(h.unsignedExamples, h.names.toList(), initial, k = 10)
     println("Extended selection: ${initial + extended}")
-
+    println("${System.currentTimeMillis() - start} ms") // 2000-2300 ms
     // TODO print covered examples
+    // TODO after getting a selection, save the state of the scorer for later so we can recompute a
+    // little less maybe
+    //      honestly only saves us milliseconds so not a big deal
+    //      if we don't have enough examples for each function, try iteratively increasing k? or
+    // just give user an error message. bc if even for the best examples we don't have enough, we
+    // need more.
 }
 
 // TODO: Take query as input, maintain state? or just let it get garbage collected lol
 /** The below code was written by ChatGPT */
 class Scheduler {
-    // --- Generic seeded greedy selection ---
-    private fun seededGreedy(
+    private fun greedy(
         base: Set<String>, // already chosen elements
         candidates: List<String>, // universe to select from
         scorer: Scorer,
         k: Int, // number of elements to add
-        seedSize: Int = 4 // max seed subset size
     ): Set<String> {
-        // Generate all seeds up to size seedSize
-        var bestSeed: Set<String> = emptySet()
-        var bestScore = scorer.score(base)
+        val added = mutableSetOf<String>()
 
-        fun backtrack(start: Int, current: MutableList<String>) {
-            if (current.isNotEmpty()) {
-                val candidateSet = base + current
-                val s = scorer.score(candidateSet)
-                if (s > bestScore) {
-                    bestScore = s
-                    bestSeed = current.toSet()
-                }
-            }
-            if (current.size == seedSize) return
-
-            for (i in start until candidates.size) {
-                current.add(candidates[i])
-                backtrack(i + 1, current)
-                current.removeAt(current.size - 1)
-            }
-        }
-
-        backtrack(0, mutableListOf())
-
-        val added = bestSeed.toMutableSet()
-
-        // Greedy continuation up to k
         while (added.size < k) {
             var bestName: String? = null
             var bestGain = 0.0
@@ -104,9 +84,8 @@ class Scheduler {
             }
 
             if (bestName == null)
-                TODO(
-                    "Originally this was a break, but is that right? If none of the options help, we still want to add until we hit the bound."
-                )
+                break // the bestGain is zero only when none of the names appear in any example.
+
             added.add(bestName)
         }
 
@@ -114,14 +93,13 @@ class Scheduler {
     }
 
     // --- Public wrapper: select from empty ---
-    fun selectNamesSeededGreedy(
+    fun selectNames(
         examples: List<Example>,
         allNames: List<String>,
         k: Int,
-        seedSize: Int = 4
     ): Set<String> {
         val scorer = Scorer(examples)
-        return seededGreedy(emptySet(), allNames, scorer, k, seedSize)
+        return greedy(emptySet(), allNames, scorer, k)
     }
 
     // --- Public wrapper: extend existing selection ---
@@ -130,11 +108,10 @@ class Scheduler {
         allNames: List<String>,
         fixed: Set<String>,
         k: Int,
-        seedSize: Int = 4
     ): Set<String> {
         val scorer = Scorer(examples)
         val available = allNames.filterNot { fixed.contains(it) }
-        return seededGreedy(fixed, available, scorer, k, seedSize)
+        return greedy(fixed, available, scorer, k)
     }
 }
 
