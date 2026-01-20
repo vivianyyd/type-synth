@@ -67,16 +67,21 @@ class Scheduler {
         scorer: Scorer,
         k: Int, // number of elements to add
     ): Set<String> {
+        require(base.all { it !in candidates })
+        // Initialize coverage from base
+        for (name in base) {
+            scorer.addName(name)
+        }
+
         val added = mutableSetOf<String>()
 
         while (added.size < k) {
             var bestName: String? = null
             var bestGain = 0.0
-            val baseScore = scorer.score(base + added)
 
             for (name in candidates) {
                 if (added.contains(name)) continue
-                val gain = scorer.score(base + added + name) - baseScore
+                val gain = scorer.marginalGain(name)
                 if (gain > bestGain) {
                     bestGain = gain
                     bestName = name
@@ -86,6 +91,7 @@ class Scheduler {
             if (bestName == null)
                 break // the bestGain is zero only when none of the names appear in any example.
 
+            scorer.addName(bestName)
             added.add(bestName)
         }
 
@@ -115,20 +121,61 @@ class Scheduler {
     }
 }
 
-class Scorer(examples: List<Example>) {
-    // Pre-extract example element sets for efficiency
-    private val exampleElements = examples.map { it.names }
+// Scorer with coverage counts
+class Scorer(private val examples: List<Example>) {
+    private val m = examples.size
 
-    // relaxed score: fraction of elements covered per example, capped at 1.0
-    fun score(chosen: Set<String>): Double {
-        var score = 0.0
-        for (ci in exampleElements) {
-            var hit = 0
-            for (name in ci) {
-                if (chosen.contains(name)) hit++
+    // For each example, number of elements already chosen
+    val coverage = IntArray(m)
+
+    // Precompute which examples contain each name
+    val nameToExamples: Map<String, List<Int>> = run {
+        val map = mutableMapOf<String, MutableList<Int>>()
+        for ((i, ex) in examples.withIndex()) {
+            for (name in ex.names) {
+                map.computeIfAbsent(name) { mutableListOf() }.add(i)
             }
-            score += min(hit.toDouble() / ci.size, 1.0)
         }
-        return score
+        map
+    }
+
+    // relaxed score using coverage counts
+    fun score(): Double {
+        var total = 0.0
+        for (i in 0 until m) {
+            total += min(coverage[i].toDouble() / examples[i].names.size, 1.0)
+        }
+        return total
+    }
+
+    // marginal gain of adding a candidate name
+    fun marginalGain(name: String): Double {
+        var gain = 0.0
+        val indices = nameToExamples[name] ?: return 0.0
+        for (i in indices) {
+            if (coverage[i] < examples[i].names.size) {
+                val before = coverage[i].toDouble() / examples[i].names.size
+                val after = (coverage[i] + 1).toDouble() / examples[i].names.size
+                gain += min(after, 1.0) - min(before, 1.0)
+            }
+        }
+        return gain
+    }
+
+    // add a name and update coverage counts
+    fun addName(name: String) {
+        val indices = nameToExamples[name] ?: return
+        for (i in indices) {
+            coverage[i]++
+        }
+    }
+
+    // true objective: number of fully covered examples
+    fun countFullyCovered(): Int {
+        var count = 0
+        for (i in 0 until m) {
+            if (coverage[i] >= examples[i].names.size) count++
+        }
+        return count
     }
 }
