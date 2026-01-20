@@ -2,7 +2,6 @@ package oneast
 
 import java.lang.Integer.max
 
-/** TODO change me, I'm just here to make some stuff type check for now */
 class SearchState(
     /** maps component names to the index of their type in [types]. */
     val names: Map<String, Int>,
@@ -24,6 +23,8 @@ class SearchState(
         fun resetIds() {
             nextId = 0
         }
+
+        val emptyState = SearchState(mapOf(), listOf(), listOf(), mapOf())
     }
 
     val id = nextId++
@@ -45,13 +46,25 @@ class SearchState(
     fun asMap() = asMap
 
     fun mapTypesAndSetLabelArities(newArities: Map<Int, Int>, transform: (Type) -> Type) =
-        SearchState(names = names, types = types.map(transform), rounds = rounds, labelArities = newArities)
+        SearchState(
+            names = names, types = types.map(transform), rounds = rounds, labelArities = newArities
+        )
 
     fun mapTypes(transform: (Type) -> Type): SearchState =
-        SearchState(names = names, types = types.map(transform), rounds = rounds, labelArities = labelArities)
+        SearchState(
+            names = names,
+            types = types.map(transform),
+            rounds = rounds,
+            labelArities = labelArities
+        )
 
     fun mapTypesIndexed(transform: (Int, Type) -> Type): SearchState =
-        SearchState(names = names, types = types.mapIndexed(transform), rounds = rounds, labelArities = labelArities)
+        SearchState(
+            names = names,
+            types = types.mapIndexed(transform),
+            rounds = rounds,
+            labelArities = labelArities
+        )
 }
 
 sealed interface Type {
