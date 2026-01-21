@@ -10,9 +10,11 @@ fun parseHaskellTypes(signatures: List<String>): List<Pair<Type, String>> {
     return signatures.map { parseTypeSignature(it, context) }
 }
 
+/** Parse a single Haskell type signature into a oneast.Type. */
 fun parseTypeSignature(signature: String): Pair<Type, String> =
     parseTypeSignature(signature, ParseContext())
 
+/** Parse using a shared context so label/variable IDs stay consistent across signatures. */
 fun parseTypeSignature(signature: String, context: ParseContext): Pair<Type, String> {
     val typePart = signature.substringAfter("::").trim()
     val tokens = tokenize(typePart)
@@ -22,6 +24,7 @@ fun parseTypeSignature(signature: String, context: ParseContext): Pair<Type, Str
 
 const val VARIABLE_LABEL_ID_OFFSET = 1_000_000
 
+/** Tracks label/variable IDs while parsing multiple signatures in the same context. */
 data class ParseContext(
     val labelIds: MutableMap<String, Int> = mutableMapOf(),
     val labelNames: MutableMap<Int, String> = mutableMapOf(),
