@@ -1,7 +1,6 @@
 import benchmarking.parseHaskellTypes
 import query.ExampleGenerator
 import query.Query
-import query.oracleFromAssignment
 import query.sexpsFromExamples
 import test.SomeHaskell
 import types.Assignment
@@ -18,20 +17,10 @@ fun Assignment.toSExprStrs() =
     }
 
 fun main() {
-    //    println((haskellList + haskellEither + haskellMaybe).joinToString(separator = "\n") { (ty,
-    // name) -> "$name :: $ty" })
     val h = SomeHaskell
-    val oracle = oracleFromAssignment(h.groundTruthMap.toSExprStrs())
-    //    val exs =
-    //        examples.map { SExprParser(it).parse().toExpression().first }.filter { it.names.all {
-    // it in groundTruth } }
-
-    //    val (pos, neg) = exs.partition { query.check(it, groundTruthMap) != null }
-
-    //    println(groundTruth.size)
 
     val test = h.groundTruth
-    val (query, context) = generate(test)
+    val (query, context) = generate(TODO("pass test here"))
     val generatedExs =
         (sexpsFromExamples(query.posWithSubexprs, true) + sexpsFromExamples(query.neg, false))
             .joinToString(separator = "\n")
@@ -119,39 +108,33 @@ val haskellEither =
             "isRight :: Either a b -> Bool",
             "fromLeft :: a -> Either a b -> a",
             "fromRight :: b -> Either a b -> b",
-            "partitionEithers :: [Either a b] -> ([a], [b])"
+            "partitionEithers :: [Either a b] -> ([a], [b])",
+            "0 :: Int",
+            "True :: Bool",
+            "NilInt :: [Int]",
+            "NilBool :: [Bool]"
         )
-    ) +
-            listOf(
-                "(i)" to "0",
-                "(b)" to "true",
-                "(List (i))" to "NilInt", // Nil Int
-                "(List (b))" to "NilBool", // Nil Bool
-            )
-                .map { SExprParser(it.first).parse().toType() to it.second }
+    )
 
 val haskellMaybe =
-    (listOf(
-        "(-> b (-> (-> a b) (-> (Maybe a) b)))" to
-                "maybe", // maybe :: b -> (a -> b) -> Maybe a -> b
-        "(-> (Maybe a) (b))" to "isJust", // isJust :: Maybe a -> Bool
-        "(-> (Maybe a) (b))" to "isNothing", // isNothing :: Maybe a -> Bool
-        "(-> a (-> (Maybe a) a))" to "fromMaybe", // fromMaybe :: a -> Maybe a -> a
-        "(-> (List a) (Maybe a))" to "listToMaybe", // listToMaybe :: [a] -> Maybe a
-        "(-> (Maybe a) (List a))" to "maybeToList", // maybeToList :: Maybe a -> [a]
-        "(-> (List (Maybe a)) (List a))" to "catMaybes", // catMaybes :: [Maybe a] -> [a]
-        "(-> (-> a (Maybe b)) (-> (List a) (List b)))" to
-                "mapMaybe", // mapMaybe :: (a -> Maybe b) -> [a] -> [b]
-    ) +
-            listOf(
-                "(i)" to "0",
-                "(b)" to "true",
-                "(Maybe (i))" to "NothingInt", // Nothing Int
-                "(Maybe (b))" to "NothingBool", // Nothing Bool
-                "(List (i))" to "NilInt", // Nil Int
-                "(List (b))" to "NilBool", // Nil Bool
-            ))
-        .map { SExprParser(it.first).parse().toType() to it.second }
+    parseHaskellTypes(
+        listOf(
+            "maybe :: b -> (a -> b) -> Maybe a -> b",
+            "isJust :: Maybe a -> Bool",
+            "isNothing :: Maybe a -> Bool",
+            "fromMaybe :: a -> Maybe a -> a",
+            "listToMaybe :: [a] -> Maybe a",
+            "maybeToList :: Maybe a -> [a]",
+            "catMaybes :: [Maybe a] -> [a]",
+            "mapMaybe :: (a -> Maybe b) -> [a] -> [b]",
+            "0 :: Int",
+            "True :: Bool",
+            "NothingInt :: Maybe Int",
+            "NothingBool :: Maybe Bool",
+            "NilInt :: [Int]",
+            "NilBool :: [Bool]"
+        )
+    )
 
 val dict =
     listOf(

@@ -1,9 +1,10 @@
 package test
 
 import benchmarking.parseHaskellTypes
+import query.Example
 import query.Query
 import query.toExpression
-import util.CheckingOracle
+import util.Oracle
 import util.SExprParser
 
 object SomeHaskell : Test {
@@ -225,5 +226,10 @@ object SomeHaskell : Test {
     override val name: String = "Some Haskell Examples"
 
     override val query = Query(unsignedExamples)
-    override val oracle = CheckingOracle(groundTruthMap)
+    override val oracle =
+        object : Oracle {
+            override fun equal(a: Example, b: Example): Boolean = TODO()
+
+            override fun dummy(e: Example): Int = TODO()
+        }
 }
