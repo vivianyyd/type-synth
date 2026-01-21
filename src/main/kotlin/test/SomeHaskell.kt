@@ -77,6 +77,7 @@ object SomeHaskell : Test {
             )
         )
 
+    // TODO: Populate with oneast-aware oracle once legacy types are fully removed.
     val groundTruthMap: Map<String, LegacyType> = emptyMap()
 
     val examples =
