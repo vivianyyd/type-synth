@@ -229,9 +229,11 @@ object SomeHaskell : Test {
     override val oracle =
         object : Oracle {
             // TODO: Replace with oneast-aware oracle logic.
-            override fun equal(a: Example, b: Example): Boolean = false
+            override fun equal(a: Example, b: Example): Boolean =
+                error("oneast oracle not implemented yet")
 
             // TODO: Replace with oneast-aware dummy computation.
-            override fun dummy(e: Example): Int = 0
+            override fun dummy(e: Example): Int =
+                error("oneast oracle dummy not implemented yet")
         }
 }
