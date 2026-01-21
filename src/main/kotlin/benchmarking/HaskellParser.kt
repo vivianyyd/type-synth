@@ -4,37 +4,25 @@ import oneast.Arrow
 import oneast.NamedLabel
 import oneast.Type
 import oneast.Variable
-import types.Function as LegacyFunction
-import types.LabelNode as LegacyLabelNode
-import types.Type as LegacyType
-import types.Variable as LegacyVariable
 
 fun parseHaskellTypes(signatures: List<String>): List<Pair<Type, String>> {
     val context = ParseContext()
     return signatures.map { parseTypeSignature(it, context) }
 }
 
-fun parseHaskellTypesLegacy(signatures: List<String>): List<Pair<LegacyType, String>> {
-    val context = ParseContext()
-    return signatures.map { signature ->
-        val (type, name) = parseTypeSignature(signature, context)
-        type.toLegacyType(context) to name
-    }
-}
-
 fun parseTypeSignature(signature: String): Pair<Type, String> =
     parseTypeSignature(signature, ParseContext())
 
-private fun parseTypeSignature(signature: String, context: ParseContext): Pair<Type, String> {
+fun parseTypeSignature(signature: String, context: ParseContext): Pair<Type, String> {
     val typePart = signature.substringAfter("::").trim()
     val tokens = tokenize(typePart)
     val parser = Parser(tokens, context)
     return parser.parseType() to signature.substringBefore("::").trim()
 }
 
-private const val VARIABLE_LABEL_ID_OFFSET = 1_000_000
+const val VARIABLE_LABEL_ID_OFFSET = 1_000_000
 
-private data class ParseContext(
+data class ParseContext(
     val labelIds: MutableMap<String, Int> = mutableMapOf(),
     val labelNames: MutableMap<Int, String> = mutableMapOf(),
     val variableIds: MutableMap<String, Int> = mutableMapOf(),
@@ -44,20 +32,6 @@ private data class ParseContext(
     var nextVariableId: Int = 0,
     var nextVariableLabelId: Int = VARIABLE_LABEL_ID_OFFSET,
 )
-
-private fun Type.toLegacyType(context: ParseContext): LegacyType =
-    when (this) {
-        is Variable ->
-            LegacyVariable(
-                requireNotNull(context.variableNames[this.v]) { "Missing variable ${this.v}" }
-            )
-        is Arrow -> LegacyFunction(this.l.toLegacyType(context), this.r.toLegacyType(context))
-        is NamedLabel -> {
-            val name = requireNotNull(context.labelNames[this.label]) { "Missing label ${this.label}" }
-            LegacyLabelNode(name, this.params.map { it.toLegacyType(context) })
-        }
-        else -> error("Unsupported oneast type in legacy conversion")
-    }
 
 sealed class Token {
     data class Ident(val value: String) : Token()
