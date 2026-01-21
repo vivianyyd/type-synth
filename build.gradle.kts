@@ -26,6 +26,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.moshi:moshi:1.15.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
 }
 

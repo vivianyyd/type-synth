@@ -1,6 +1,9 @@
 package oneast
 
 import java.lang.Integer.max
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.mutate
+import kotlinx.collections.immutable.persistentListOf
 
 class SearchState(
     /** maps component names to the index of their type in [types]. */
@@ -9,7 +12,7 @@ class SearchState(
      * contains enumerated types such that all types enumerated in round i appear before all types
      * enumerated in round j > i.
      */
-    val types: List<Type>,
+    val types: PersistentList<Type>,
     /** maps round # (index) to the first index of types enumerated in that round. */
     val rounds: List<Int>,
     val labelArities: Map<Int, Int>
@@ -24,7 +27,7 @@ class SearchState(
             nextId = 0
         }
 
-        val emptyState = SearchState(mapOf(), listOf(), listOf(), mapOf())
+        val emptyState = SearchState(mapOf(), persistentListOf(), listOf(), mapOf())
     }
 
     val id = nextId++
@@ -47,13 +50,16 @@ class SearchState(
 
     fun mapTypesAndSetLabelArities(newArities: Map<Int, Int>, transform: (Type) -> Type) =
         SearchState(
-            names = names, types = types.map(transform), rounds = rounds, labelArities = newArities
+            names = names,
+            types = types.mutate { builder -> builder.replaceAll(transform) },
+            rounds = rounds,
+            labelArities = newArities
         )
 
     fun mapTypes(transform: (Type) -> Type): SearchState =
         SearchState(
             names = names,
-            types = types.map(transform),
+            types = types.mutate { builder -> builder.replaceAll(transform) },
             rounds = rounds,
             labelArities = labelArities
         )
@@ -61,7 +67,12 @@ class SearchState(
     fun mapTypesIndexed(transform: (Int, Type) -> Type): SearchState =
         SearchState(
             names = names,
-            types = types.mapIndexed(transform),
+            types =
+                types.mutate { builder ->
+                    builder.forEachIndexed { index, value ->
+                        builder[index] = transform(index, value)
+                    }
+                },
             rounds = rounds,
             labelArities = labelArities
         )
