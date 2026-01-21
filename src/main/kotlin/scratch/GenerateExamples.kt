@@ -1,4 +1,4 @@
-import benchmarking.parseHaskellTypes
+import benchmarking.parseHaskellTypesLegacy
 import query.ExampleGenerator
 import query.Query
 import query.oracleFromAssignment
@@ -49,7 +49,7 @@ fun generateFromSExpr(types: List<Pair<String, String?>>): Pair<Query, Assignmen
     generate(types.map { SExprParser(it.first).parse().toType() to it.second })
 
 val toy =
-    parseHaskellTypes(
+    parseHaskellTypesLegacy(
         listOf(
             "cons :: a -> [a] -> [a]",
             "hd :: [a] -> a",
@@ -63,7 +63,7 @@ val toy =
     )
 
 val haskellList =
-    parseHaskellTypes(
+    parseHaskellTypesLegacy(
         listOf(
             "(:) :: a -> [a] -> [a]",
             //        "foldr :: (a -> b -> b) -> b -> [a] -> b",
@@ -110,7 +110,7 @@ val haskellList =
     )
 
 val haskellEither =
-    parseHaskellTypes(
+    parseHaskellTypesLegacy(
         listOf(
             "either :: (a -> c) -> (b -> c) -> Either a b -> c",
             "lefts :: [Either a b] -> [a]",

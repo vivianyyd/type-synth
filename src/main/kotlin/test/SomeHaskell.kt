@@ -1,6 +1,6 @@
 package test
 
-import benchmarking.parseHaskellTypes
+import benchmarking.parseHaskellTypesLegacy
 import query.Query
 import query.toExpression
 import util.CheckingOracle
@@ -8,7 +8,7 @@ import util.SExprParser
 
 object SomeHaskell : Test {
     val groundTruth =
-        parseHaskellTypes(
+        parseHaskellTypesLegacy(
             listOf(
                 "cons :: a -> [a] -> [a]",
                 "hd :: [a] -> a",

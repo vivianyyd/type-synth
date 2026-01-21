@@ -1,19 +1,56 @@
 package benchmarking
 
-import types.Function
-import types.LabelNode
-import types.Type
-import types.Variable
+import oneast.Arrow
+import oneast.NamedLabel
+import oneast.Type
+import oneast.Variable
+import types.Function as LegacyFunction
+import types.LabelNode as LegacyLabelNode
+import types.Type as LegacyType
+import types.Variable as LegacyVariable
 
-fun parseHaskellTypes(signatures: List<String>): List<Pair<Type, String>> =
-    signatures.map { parseTypeSignature(it) }
+fun parseHaskellTypes(signatures: List<String>): List<Pair<Type, String>> {
+    val context = ParseContext()
+    return signatures.map { parseTypeSignature(it, context) }
+}
 
-fun parseTypeSignature(signature: String): Pair<Type, String> {
+fun parseHaskellTypesLegacy(signatures: List<String>): List<Pair<LegacyType, String>> {
+    val context = ParseContext()
+    return signatures.map { signature ->
+        val (type, name) = parseTypeSignature(signature, context)
+        type.toLegacyType(context) to name
+    }
+}
+
+fun parseTypeSignature(signature: String): Pair<Type, String> =
+    parseTypeSignature(signature, ParseContext())
+
+private fun parseTypeSignature(signature: String, context: ParseContext): Pair<Type, String> {
     val typePart = signature.substringAfter("::").trim()
     val tokens = tokenize(typePart)
-    val parser = Parser(tokens)
+    val parser = Parser(tokens, context)
     return parser.parseType() to signature.substringBefore("::").trim()
 }
+
+private data class ParseContext(
+    val labelIds: MutableMap<String, Int> = mutableMapOf(),
+    val labelNames: MutableMap<Int, String> = mutableMapOf(),
+    val variableIds: MutableMap<String, Int> = mutableMapOf(),
+    val variableNames: MutableMap<Int, String> = mutableMapOf(),
+    var nextLabelId: Int = 0,
+    var nextVariableId: Int = 0,
+)
+
+private fun Type.toLegacyType(context: ParseContext): LegacyType =
+    when (this) {
+        is Variable -> LegacyVariable(context.variableNames[this.v] ?: this.v.toString())
+        is Arrow -> LegacyFunction(this.l.toLegacyType(context), this.r.toLegacyType(context))
+        is NamedLabel -> {
+            val name = context.labelNames[this.label] ?: this.label.toString()
+            LegacyLabelNode(name, this.params.map { it.toLegacyType(context) })
+        }
+        else -> error("Unsupported oneast type in legacy conversion")
+    }
 
 sealed class Token {
     data class Ident(val value: String) : Token()
@@ -73,7 +110,7 @@ fun tokenize(input: String): List<Token> {
     return tokens
 }
 
-class Parser(private val tokens: List<Token>) {
+private class Parser(private val tokens: List<Token>, private val context: ParseContext) {
     private var index = 0
 
     private fun peek(): Token? = tokens.getOrNull(index)
@@ -87,7 +124,7 @@ class Parser(private val tokens: List<Token>) {
         while (peek() == Token.Arrow) {
             consume() // consume ->
             val right = parseArrowType() // right-associative
-            left = Function(left, right)
+            left = Arrow(left, right)
         }
         return left
     }
@@ -101,10 +138,10 @@ class Parser(private val tokens: List<Token>) {
                         consume()
                         if (token.value.first().isUpperCase()) {
                             // Capitalized word — treat as LabelNode with no parameters
-                            LabelNode(token.value, listOf())
+                            NamedLabel(labelId(token.value), listOf())
                         } else {
                             // Lowercase — treat as variable
-                            Variable(token.value)
+                            Variable(variableId(token.value))
                         }
                     }
                     Token.LParen -> {
@@ -121,7 +158,7 @@ class Parser(private val tokens: List<Token>) {
 
                         when (elements.size) {
                             1 -> elements[0] // parenthesized type
-                            2 -> LabelNode("Pair", elements)
+                            2 -> NamedLabel(labelId("Pair"), elements)
                             else -> error("Tuples with arity ${elements.size} are not supported")
                         }
                     }
@@ -129,7 +166,7 @@ class Parser(private val tokens: List<Token>) {
                         consume()
                         val inner = parseType()
                         expect<Token.RBracket>("Expected ']'")
-                        LabelNode("List", listOf(inner))
+                        NamedLabel(labelId("List"), listOf(inner))
                     }
                     else -> break
                 }
@@ -140,15 +177,28 @@ class Parser(private val tokens: List<Token>) {
             parts.isEmpty() -> throw IllegalStateException("Expected a type")
             parts.size == 1 -> parts[0]
             parts[0] is Variable -> {
-                val label = (parts[0] as Variable).id
-                LabelNode(label, parts.drop(1))
+                val head = parts[0] as Variable
+                val labelName = context.variableNames[head.v] ?: head.v.toString()
+                NamedLabel(labelId(labelName), parts.drop(1))
             }
-            parts[0] is LabelNode -> {
-                val head = parts[0] as LabelNode
-                LabelNode(head.label, head.params + parts.drop(1))
+            parts[0] is NamedLabel -> {
+                val head = parts[0] as NamedLabel
+                NamedLabel(head.label, head.params + parts.drop(1))
             }
             else -> throw IllegalStateException("Invalid label node")
         }
+    }
+
+    private fun variableId(name: String): Int = context.variableIds.getOrPut(name) {
+        val id = context.nextVariableId++
+        context.variableNames[id] = name
+        id
+    }
+
+    private fun labelId(name: String): Int = context.labelIds.getOrPut(name) {
+        val id = context.nextLabelId++
+        context.labelNames[id] = name
+        id
     }
 
     private inline fun <reified T : Token> expect(message: String): T {
