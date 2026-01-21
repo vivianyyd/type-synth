@@ -32,6 +32,8 @@ private fun parseTypeSignature(signature: String, context: ParseContext): Pair<T
     return parser.parseType() to signature.substringBefore("::").trim()
 }
 
+private const val VARIABLE_LABEL_ID_OFFSET = 1_000_000
+
 private data class ParseContext(
     val labelIds: MutableMap<String, Int> = mutableMapOf(),
     val labelNames: MutableMap<Int, String> = mutableMapOf(),
@@ -40,7 +42,7 @@ private data class ParseContext(
     val variableLabelIds: MutableMap<String, Int> = mutableMapOf(),
     var nextLabelId: Int = 0,
     var nextVariableId: Int = 0,
-    var nextVariableLabelId: Int = 1_000_000,
+    var nextVariableLabelId: Int = VARIABLE_LABEL_ID_OFFSET,
 )
 
 private fun Type.toLegacyType(context: ParseContext): LegacyType =
@@ -186,7 +188,7 @@ private class Parser(private val tokens: List<Token>, private val context: Parse
                 val labelName = requireNotNull(context.variableNames[head.v]) {
                     "Missing variable ${head.v}"
                 }
-                NamedLabel(labelIdForVariable(labelName), parts.drop(1))
+                NamedLabel(variableApplicationLabelId(labelName), parts.drop(1))
             }
             parts[0] is NamedLabel -> {
                 val head = parts[0] as NamedLabel
@@ -208,9 +210,10 @@ private class Parser(private val tokens: List<Token>, private val context: Parse
         id
     }
 
-    private fun labelIdForVariable(name: String): Int = context.variableLabelIds.getOrPut(name) {
+    private fun variableApplicationLabelId(name: String): Int = context.variableLabelIds.getOrPut(name) {
         val id = context.nextVariableLabelId++
         context.labelNames[id] = name
+        context.labelIds[name] = id
         id
     }
 
