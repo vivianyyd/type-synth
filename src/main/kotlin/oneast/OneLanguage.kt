@@ -1,9 +1,9 @@
 package oneast
 
-import java.lang.Integer.max
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.mutate
 import kotlinx.collections.immutable.persistentListOf
+import java.lang.Integer.max
 
 class SearchState(
     /** maps component names to the index of their type in [types]. */
@@ -80,27 +80,23 @@ class SearchState(
         SearchState(
             names = names,
             types =
-                types.mutate { builder ->
-                    builder.forEachIndexed { index, value ->
-                        val newValue = transform(index, value)
-                        if (newValue != value) builder[index] = newValue
-                    }
-                },
+            types.mutate { builder ->
+                builder.forEachIndexed { index, value ->
+                    val newValue = transform(index, value)
+                    if (newValue != value) builder[index] = newValue
+                }
+            },
             rounds = rounds,
             labelArities = labelArities
         )
 
-    fun updateTypeAt(index: Int, newType: Type): SearchState =
-        if (types[index] == newType) {
-            this
-        } else {
-            SearchState(
-                names = names,
-                types = types.mutate { builder -> builder[index] = newType },
-                rounds = rounds,
-                labelArities = labelArities
-            )
-        }
+    fun updateTypeAt(index: Int, transform: (Type) -> Type): SearchState =
+        SearchState(
+            names = names,
+            types = types.mutate { builder -> builder[index] = transform(builder[index]) },
+            rounds = rounds,
+            labelArities = labelArities
+        )
 }
 
 sealed interface Type {
