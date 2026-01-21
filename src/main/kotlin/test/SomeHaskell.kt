@@ -1,11 +1,11 @@
 package test
 
 import benchmarking.parseHaskellTypes
+import query.Example
 import query.Query
 import query.toExpression
-import util.CheckingOracle
+import util.Oracle
 import util.SExprParser
-import types.Type as LegacyType
 
 object SomeHaskell : Test {
     val groundTruth =
@@ -77,8 +77,7 @@ object SomeHaskell : Test {
             )
         )
 
-    // TODO: Populate with oneast-aware oracle once legacy types are fully removed.
-    val groundTruthMap: Map<String, LegacyType> = emptyMap()
+    val groundTruthMap = groundTruth.map { (t, n) -> n to t }.toMap()
 
     val examples =
         listOf(
@@ -227,5 +226,10 @@ object SomeHaskell : Test {
     override val name: String = "Some Haskell Examples"
 
     override val query = Query(unsignedExamples)
-    override val oracle = CheckingOracle(groundTruthMap)
+    override val oracle =
+        object : Oracle {
+            override fun equal(a: Example, b: Example): Boolean = false
+
+            override fun dummy(e: Example): Int = 0
+        }
 }
