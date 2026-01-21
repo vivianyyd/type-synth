@@ -37,16 +37,21 @@ private data class ParseContext(
     val labelNames: MutableMap<Int, String> = mutableMapOf(),
     val variableIds: MutableMap<String, Int> = mutableMapOf(),
     val variableNames: MutableMap<Int, String> = mutableMapOf(),
+    val variableLabelIds: MutableMap<String, Int> = mutableMapOf(),
     var nextLabelId: Int = 0,
     var nextVariableId: Int = 0,
+    var nextVariableLabelId: Int = 1_000_000,
 )
 
 private fun Type.toLegacyType(context: ParseContext): LegacyType =
     when (this) {
-        is Variable -> LegacyVariable(context.variableNames[this.v] ?: this.v.toString())
+        is Variable ->
+            LegacyVariable(
+                requireNotNull(context.variableNames[this.v]) { "Missing variable ${this.v}" }
+            )
         is Arrow -> LegacyFunction(this.l.toLegacyType(context), this.r.toLegacyType(context))
         is NamedLabel -> {
-            val name = context.labelNames[this.label] ?: this.label.toString()
+            val name = requireNotNull(context.labelNames[this.label]) { "Missing label ${this.label}" }
             LegacyLabelNode(name, this.params.map { it.toLegacyType(context) })
         }
         else -> error("Unsupported oneast type in legacy conversion")
@@ -178,8 +183,10 @@ private class Parser(private val tokens: List<Token>, private val context: Parse
             parts.size == 1 -> parts[0]
             parts[0] is Variable -> {
                 val head = parts[0] as Variable
-                val labelName = context.variableNames[head.v] ?: head.v.toString()
-                NamedLabel(labelId(labelName), parts.drop(1))
+                val labelName = requireNotNull(context.variableNames[head.v]) {
+                    "Missing variable ${head.v}"
+                }
+                NamedLabel(labelIdForVariable(labelName), parts.drop(1))
             }
             parts[0] is NamedLabel -> {
                 val head = parts[0] as NamedLabel
@@ -197,6 +204,12 @@ private class Parser(private val tokens: List<Token>, private val context: Parse
 
     private fun labelId(name: String): Int = context.labelIds.getOrPut(name) {
         val id = context.nextLabelId++
+        context.labelNames[id] = name
+        id
+    }
+
+    private fun labelIdForVariable(name: String): Int = context.variableLabelIds.getOrPut(name) {
+        val id = context.nextVariableLabelId++
         context.labelNames[id] = name
         id
     }
