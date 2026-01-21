@@ -1,5 +1,7 @@
 package query
 
+import java.util.IdentityHashMap
+
 sealed interface Example {
     val names: Set<String>
 
@@ -47,6 +49,69 @@ data class App(val fn: Example, val arg: Example) : Example {
     override val names by lazy { fn.names + arg.names }
 }
 
+private const val HASH_MULTIPLIER = 31
+private const val NAME_TAG = 1
+private const val APP_TAG = 2
+
+private data class ExampleCounts(val example: Example, var subtreeCount: Int = 0, var rootCount: Int = 0)
+
+/**
+ * Returns only examples that are not proper subexpressions of another example in the collection.
+ * This uses bottom-up structural hashing to count subtree and root occurrences, with equality
+ * checks inside hash buckets to guard against collisions.
+ */
+fun filterNonSubexpressions(examples: Collection<Example>): List<Example> {
+    if (examples.isEmpty()) return emptyList()
+    val exampleList = examples.toList()
+    val countsByHash = mutableMapOf<Int, MutableList<ExampleCounts>>()
+    val hashCache = IdentityHashMap<Example, Int>()
+
+    fun entryFor(ex: Example, hash: Int): ExampleCounts {
+        val bucket = countsByHash.getOrPut(hash) { mutableListOf() }
+        val existing = bucket.firstOrNull { it.example == ex }
+        if (existing != null) return existing
+        return ExampleCounts(ex).also { bucket.add(it) }
+    }
+
+    fun computeHash(ex: Example): Int {
+        val cached = hashCache[ex]
+        if (cached != null) return cached
+        val hash =
+            when (ex) {
+                is Name -> HASH_MULTIPLIER * ex.name.hashCode() + NAME_TAG
+                is App -> {
+                    val fnHash = computeHash(ex.fn)
+                    val argHash = computeHash(ex.arg)
+                    HASH_MULTIPLIER * (HASH_MULTIPLIER * fnHash + argHash) + APP_TAG
+                }
+            }
+        hashCache[ex] = hash
+        return hash
+    }
+
+    fun countSubtrees(ex: Example): Int {
+        val hash = computeHash(ex)
+        entryFor(ex, hash).subtreeCount++
+        when (ex) {
+            is Name -> {}
+            is App -> {
+                countSubtrees(ex.fn)
+                countSubtrees(ex.arg)
+            }
+        }
+        return hash
+    }
+
+    val rootEntries = exampleList.map { ex ->
+        val hash = countSubtrees(ex)
+        entryFor(ex, hash).also { it.rootCount++ }
+    }
+
+    return rootEntries.mapNotNull { entry ->
+        entry.example.takeIf { entry.subtreeCount == entry.rootCount }
+    }
+}
+
 /**
  * This is more general than the previous query because we can apply the result of applications
  * without them being explicitly assigned to a name [posWithSubexprs] contains all subexpressions!
@@ -55,16 +120,7 @@ class Query(pos: Collection<Example> = listOf(), val neg: Collection<Example> = 
     val posNoSubexprs: List<Example>
 
     init {
-        // TODO this is not quite right since examples are not flattened.
-        //   instead, we should flatten and eliminate prefixes.
-        val noSubexprs = pos.toMutableList()
-        for (posEx in pos) {
-            when (posEx) {
-                is Name -> noSubexprs.removeAll { it == posEx }
-                is App -> noSubexprs.removeAll { it == posEx.fn || it == posEx.arg }
-            }
-        }
-        posNoSubexprs = noSubexprs
+        posNoSubexprs = filterNonSubexpressions(pos)
     }
 
     val posWithSubexprs: List<Example> = posNoSubexprs.toSet().flatMap { it.subexprs() }.toSet().toList()
