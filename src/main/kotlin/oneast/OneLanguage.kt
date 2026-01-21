@@ -48,16 +48,18 @@ class SearchState(
 
     fun asMap() = asMap
 
+    private fun mapTypesInternal(transform: (Int, Type) -> Type) =
+        types.mutate { builder ->
+            builder.forEachIndexed { index, value ->
+                val newValue = transform(index, value)
+                if (newValue != value) builder[index] = newValue
+            }
+        }
+
     fun mapTypesAndSetLabelArities(newArities: Map<Int, Int>, transform: (Type) -> Type) =
         SearchState(
             names = names,
-            types =
-                types.mutate { builder ->
-                    builder.forEachIndexed { index, value ->
-                        val newValue = transform(value)
-                        if (newValue != value) builder[index] = newValue
-                    }
-                },
+            types = mapTypesInternal { _, value -> transform(value) },
             rounds = rounds,
             labelArities = newArities
         )
@@ -65,13 +67,7 @@ class SearchState(
     fun mapTypes(transform: (Type) -> Type): SearchState =
         SearchState(
             names = names,
-            types =
-                types.mutate { builder ->
-                    builder.forEachIndexed { index, value ->
-                        val newValue = transform(value)
-                        if (newValue != value) builder[index] = newValue
-                    }
-                },
+            types = mapTypesInternal { _, value -> transform(value) },
             rounds = rounds,
             labelArities = labelArities
         )
@@ -79,13 +75,7 @@ class SearchState(
     fun mapTypesIndexed(transform: (Int, Type) -> Type): SearchState =
         SearchState(
             names = names,
-            types =
-            types.mutate { builder ->
-                builder.forEachIndexed { index, value ->
-                    val newValue = transform(index, value)
-                    if (newValue != value) builder[index] = newValue
-                }
-            },
+            types = mapTypesInternal(transform),
             rounds = rounds,
             labelArities = labelArities
         )
