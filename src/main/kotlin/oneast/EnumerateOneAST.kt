@@ -57,7 +57,7 @@ class EnumerateOneAST(
                 mustBeLeaf = sizeBound <= 1 || depth > hardDepthBound
             )
             .asSequence()
-            .map { c.mapTypesIndexed { i, p -> if (iToFill == i) p.replace(hole, it) else p } }
+            .map { replacement -> c.updateTypeAt(iToFill, c.types[iToFill].replace(hole, replacement)) }
             .flatMap { newCandidate ->
                 logger.count("Total candidates for $loggingSeed")
                 // todo the below check is commented out bc the mustBeLeaf flag includes depth now,

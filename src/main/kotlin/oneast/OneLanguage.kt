@@ -51,7 +51,13 @@ class SearchState(
     fun mapTypesAndSetLabelArities(newArities: Map<Int, Int>, transform: (Type) -> Type) =
         SearchState(
             names = names,
-            types = types.mutate { builder -> builder.replaceAll(transform) },
+            types =
+                types.mutate { builder ->
+                    builder.forEachIndexed { index, value ->
+                        val newValue = transform(value)
+                        if (newValue != value) builder[index] = newValue
+                    }
+                },
             rounds = rounds,
             labelArities = newArities
         )
@@ -59,7 +65,13 @@ class SearchState(
     fun mapTypes(transform: (Type) -> Type): SearchState =
         SearchState(
             names = names,
-            types = types.mutate { builder -> builder.replaceAll(transform) },
+            types =
+                types.mutate { builder ->
+                    builder.forEachIndexed { index, value ->
+                        val newValue = transform(value)
+                        if (newValue != value) builder[index] = newValue
+                    }
+                },
             rounds = rounds,
             labelArities = labelArities
         )
@@ -70,12 +82,25 @@ class SearchState(
             types =
                 types.mutate { builder ->
                     builder.forEachIndexed { index, value ->
-                        builder[index] = transform(index, value)
+                        val newValue = transform(index, value)
+                        if (newValue != value) builder[index] = newValue
                     }
                 },
             rounds = rounds,
             labelArities = labelArities
         )
+
+    fun updateTypeAt(index: Int, newType: Type): SearchState =
+        if (types[index] == newType) {
+            this
+        } else {
+            SearchState(
+                names = names,
+                types = types.mutate { builder -> builder[index] = newType },
+                rounds = rounds,
+                labelArities = labelArities
+            )
+        }
 }
 
 sealed interface Type {
