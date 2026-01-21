@@ -185,10 +185,7 @@ private class Parser(private val tokens: List<Token>, private val context: Parse
             parts.size == 1 -> parts[0]
             parts[0] is Variable -> {
                 val head = parts[0] as Variable
-                val labelName = requireNotNull(context.variableNames[head.v]) {
-                    "Missing variable ${head.v}"
-                }
-                NamedLabel(variableApplicationLabelId(labelName), parts.drop(1))
+                NamedLabel(variableApplicationLabelId(head), parts.drop(1))
             }
             parts[0] is NamedLabel -> {
                 val head = parts[0] as NamedLabel
@@ -210,11 +207,13 @@ private class Parser(private val tokens: List<Token>, private val context: Parse
         id
     }
 
-    private fun variableApplicationLabelId(name: String): Int = context.variableLabelIds.getOrPut(name) {
-        val id = context.nextVariableLabelId++
-        context.labelNames[id] = name
-        context.labelIds[name] = id
-        id
+    private fun variableApplicationLabelId(variable: Variable): Int {
+        val name = requireNotNull(context.variableNames[variable.v]) { "Missing variable ${variable.v}" }
+        return context.variableLabelIds.getOrPut(name) {
+            val id = context.nextVariableLabelId++
+            context.labelNames[id] = name
+            id
+        }
     }
 
     private inline fun <reified T : Token> expect(message: String): T {
