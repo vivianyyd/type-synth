@@ -1,14 +1,15 @@
 package test
 
-import benchmarking.parseHaskellTypesLegacy
+import benchmarking.parseHaskellTypes
 import query.Query
 import query.toExpression
 import util.CheckingOracle
 import util.SExprParser
+import types.Type as LegacyType
 
 object SomeHaskell : Test {
     val groundTruth =
-        parseHaskellTypesLegacy(
+        parseHaskellTypes(
             listOf(
                 "cons :: a -> [a] -> [a]",
                 "hd :: [a] -> a",
@@ -76,7 +77,7 @@ object SomeHaskell : Test {
             )
         )
 
-    val groundTruthMap = groundTruth.map { (t, n) -> n to t }.toMap()
+    val groundTruthMap: Map<String, LegacyType> = emptyMap()
 
     val examples =
         listOf(

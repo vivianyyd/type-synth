@@ -2,17 +2,15 @@ package scratch
 
 import query.*
 import test.SomeHaskell
-import toSExprStrs
 import util.SExprParser
 
 /** AI-generated code I was toying with */
 fun main() {
     val h = SomeHaskell
-    println(h.groundTruthMap.toSExprStrs())
-    val oracle = oracleFromAssignment(h.groundTruthMap.toSExprStrs())
+    // Legacy type analysis disabled pending oneast support.
     val exs = h.examples.map { SExprParser(it).parse().toExpression().first }
 
-    val (pos, neg) = exs.partition { check(it, h.groundTruthMap) != null }
+    val (pos, neg) = exs.partition { check(it, emptyMap()) != null }
     println(pos.size)
     println(neg.size)
 
