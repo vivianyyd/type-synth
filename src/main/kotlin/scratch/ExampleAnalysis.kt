@@ -1,18 +1,18 @@
 package scratch
 
 import query.*
-import test.examples
-import test.groundTruthMap
+import test.SomeHaskell
 import toSExprStrs
 import util.SExprParser
 
 /** AI-generated code I was toying with */
 fun main() {
-    println(groundTruthMap.toSExprStrs())
-    val oracle = oracleFromAssignment(groundTruthMap.toSExprStrs())
-    val exs = examples.map { SExprParser(it).parse().toExpression().first }
+    val h = SomeHaskell
+    println(h.groundTruthMap.toSExprStrs())
+    val oracle = oracleFromAssignment(h.groundTruthMap.toSExprStrs())
+    val exs = h.posexs.map { SExprParser(it).parse().toExpression().first }
 
-    val (pos, neg) = exs.partition { check(it, groundTruthMap) != null }
+    val (pos, neg) = exs.partition { check(it, h.groundTruthMap) != null }
     println(pos.size)
     println(neg.size)
 

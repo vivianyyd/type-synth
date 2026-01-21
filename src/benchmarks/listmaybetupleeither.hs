@@ -9,7 +9,6 @@ _ = (++) (repeat False) (singleton False)
 _ = all even ((:) 0 ((:) 0 []))
 _ = null []
 _ = iterate id 0
-_ = null []
 _ = and ((:) True ((:) False []))
 _ = any not ((:) False ((:) (not False) []))
 _ = catMaybes ((:) (Just 0) (repeat (listToMaybe ((:) (Just 0) []))))
@@ -44,12 +43,12 @@ _ = inc (head (filter even ((:) 0 ((:) 0 []))))
 _ = inc (length ((:) False ((:) True [])))
 _ = and ((:) True [])
 _ = isJust Nothing
--- _ = isNothing ((!?) (replicate 0 0) 0)
+_ = isNothing ((!?) (replicate 0 0) 0)
 _ = length []
 _ = iterate inc 0
 _ = inc 0
 _ = isJust (Just True)
--- _ = isNothing ((!?) (repeat True) True)
+_ = isNothing ((!?) (repeat True) True)
 _ = iterate id True
 -- _ = mapMaybe ((!?) ((:) 0 [])) (repeat 0)
 _ = take 0 ((++) (reverse ((:) True [])) (repeat True))
@@ -140,3 +139,8 @@ _ = take 0 (repeat False)
 _ = takeWhile isJust (repeat (Just 0))
 _ = tail (repeat False)
 _ = uncons (singleton False)
+
+
+
+-- wrongfully failed
+_ = catMaybes ((:) (Just 0) ((:) Nothing []))
