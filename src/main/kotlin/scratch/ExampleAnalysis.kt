@@ -10,7 +10,7 @@ fun main() {
     // Legacy type analysis disabled pending oneast support.
     val exs = h.examples.map { SExprParser(it).parse().toExpression().first }
 
-    // TODO: Replace with oneast-aware typing once available.
+    // TODO: Replace with oneast-aware typing once available (currently all negative).
     val (pos, neg) = exs.partition { false }
     println(pos.size)
     println(neg.size)

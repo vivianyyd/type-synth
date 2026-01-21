@@ -228,8 +228,10 @@ object SomeHaskell : Test {
     override val query = Query(unsignedExamples)
     override val oracle =
         object : Oracle {
+            // TODO: Replace with oneast-aware oracle logic.
             override fun equal(a: Example, b: Example): Boolean = false
 
+            // TODO: Replace with oneast-aware dummy computation.
             override fun dummy(e: Example): Int = 0
         }
 }
