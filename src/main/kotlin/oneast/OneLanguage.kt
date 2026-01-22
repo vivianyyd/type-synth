@@ -107,6 +107,8 @@ data class Variable(val v: Int) : Type {
     override fun variables() = setOf(this.v)
 
     override fun replace(hole: THole, replacement: Type) = this
+
+    override fun toString() = "V$v"
 }
 
 data class Arrow(val l: Type, val r: Type) : BranchType(listOf(l, r)) {
@@ -118,6 +120,8 @@ data class Arrow(val l: Type, val r: Type) : BranchType(listOf(l, r)) {
 
     override fun replace(hole: THole, replacement: Type) =
         Arrow(l.replace(hole, replacement), r.replace(hole, replacement))
+
+    override fun toString() = "${if (l is Arrow) "($l)" else "$l"} -> $r"
 }
 
 /** Could also be called DefinedLabel? */
@@ -130,6 +134,8 @@ data class NamedLabel(val label: Int, override val params: List<Type>) : BranchT
 
     override fun replace(hole: THole, replacement: Type) =
         copy(params = params.map { it.replace(hole, replacement) })
+
+    override fun toString() = "L$label[${params.joinToString(", ")}]"
 }
 
 sealed class THole : Type {
