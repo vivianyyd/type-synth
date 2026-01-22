@@ -36,7 +36,7 @@ class OneUnification(private val candidate: SearchState, private val exs: List<E
         return !error
     }
 
-    private fun type(ex: Example): ConstraintTy? =
+    fun type(ex: Example): ConstraintTy? =
         when (ex) {
             // instantiate immediately. later, consider doing this lazily if it's slow
             is Name -> candidate.typeOf(ex.name).instantiate(insts.get())
