@@ -1,38 +1,26 @@
 import benchmarking.parseHaskellTypes
-// import query.ExampleGenerator
-// import query.Query
-// import query.oracleFromAssignment
-// import query.sexpsFromExamples
-// import test.SomeHaskell
-// import types.Assignment
-// import types.Type
-// import types.toSExpr
-// import types.toType
-// import util.SExpr
-// import util.SExprParser
-// import util.writeExamples
+import query.ExampleGenerator
+import query.Query
+import query.sexpsFromExamples
+import test.SomeHaskell
+import types.Assignment
+import types.Type
+import types.toSExpr
+import types.toType
+import util.SExpr
+import util.SExprParser
+import util.writeExamples
 
-/*
 fun Assignment.toSExprStrs() =
     this.entries.joinToString(separator = "\t") {
         "${SExpr.Lst(listOf(SExpr.Atm(it.key), it.value.toSExpr()))}"
     }
 
 fun main() {
-    //    println((haskellList + haskellEither + haskellMaybe).joinToString(separator = "\n") { (ty,
-    // name) -> "$name :: $ty" })
     val h = SomeHaskell
-    val oracle = oracleFromAssignment(h.groundTruthMap.toSExprStrs())
-    //    val exs =
-    //        examples.map { SExprParser(it).parse().toExpression().first }.filter { it.names.all {
-    // it in groundTruth } }
-
-    //    val (pos, neg) = exs.partition { query.check(it, groundTruthMap) != null }
-
-    //    println(groundTruth.size)
 
     val test = h.groundTruth
-    val (query, context) = generate(test)
+    val (query, context) = generate(TODO("pass test here"))
     val generatedExs =
         (sexpsFromExamples(query.posWithSubexprs, true) + sexpsFromExamples(query.neg, false))
             .joinToString(separator = "\n")
@@ -48,7 +36,6 @@ fun generate(types: List<Pair<Type, String?>>): Pair<Query, Assignment> {
 
 fun generateFromSExpr(types: List<Pair<String, String?>>): Pair<Query, Assignment> =
     generate(types.map { SExprParser(it.first).parse().toType() to it.second })
-*/
 
 val toy =
     parseHaskellTypes(

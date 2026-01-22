@@ -22,18 +22,13 @@ fun parseTypeSignature(signature: String, context: ParseContext): Pair<Type, Str
     return parser.parseType() to signature.substringBefore("::").trim()
 }
 
-const val VARIABLE_LABEL_ID_OFFSET = 1_000_000
-
 /** Tracks label/variable IDs while parsing multiple signatures in the same context. */
-data class ParseContext(
+class ParseContext(
     val labelIds: MutableMap<String, Int> = mutableMapOf(),
-    val labelNames: MutableMap<Int, String> = mutableMapOf(),
     val variableIds: MutableMap<String, Int> = mutableMapOf(),
     val variableNames: MutableMap<Int, String> = mutableMapOf(),
     val variableLabelIds: MutableMap<String, Int> = mutableMapOf(),
-    var nextLabelId: Int = 0,
-    var nextVariableId: Int = 0,
-    var nextVariableLabelId: Int = VARIABLE_LABEL_ID_OFFSET,
+    var nextId: Int = 0
 )
 
 sealed class Token {
@@ -172,23 +167,24 @@ private class Parser(private val tokens: List<Token>, private val context: Parse
         }
     }
 
-    private fun variableId(name: String): Int = context.variableIds.getOrPut(name) {
-        val id = context.nextVariableId++
-        context.variableNames[id] = name
-        id
-    }
+    private fun variableId(name: String): Int =
+        context.variableIds.getOrPut(name) {
+            val id = context.nextId++
+            context.variableNames[id] = name
+            id
+        }
 
-    private fun labelId(name: String): Int = context.labelIds.getOrPut(name) {
-        val id = context.nextLabelId++
-        context.labelNames[id] = name
-        id
-    }
+    private fun labelId(name: String): Int =
+        context.labelIds.getOrPut(name) {
+            val id = context.nextId++
+            id
+        }
 
     private fun variableApplicationLabelId(variable: Variable): Int {
-        val name = requireNotNull(context.variableNames[variable.v]) { "Missing variable ${variable.v}" }
+        val name =
+            requireNotNull(context.variableNames[variable.v]) { "Missing variable ${variable.v}" }
         return context.variableLabelIds.getOrPut(name) {
-            val id = context.nextVariableLabelId++
-            context.labelNames[id] = name
+            val id = context.nextId++
             id
         }
     }
