@@ -1,5 +1,7 @@
 package util
 
+import oneast.OneUnification
+import oneast.SearchState
 import query.*
 import types.Type
 import types.checkApplication
@@ -49,6 +51,30 @@ class CheckingOracle(private val secret: Map<String, Type>) : Oracle {
     override fun dummy(e: Example): Int = checkApplication(e.flatten(), secret).hashCode()
 
     fun printSecret() = println(secret.entries.joinToString(separator = "\n"))
+}
+
+/** Computes types of applications based on types of named values, given as [secret] */
+class NewCheckingOracle(secret: Map<String, oneast.Type>) : Oracle {
+    private val names = secret.keys.toList()
+    private val nameMap = names.withIndex().associate { (i, name) -> name to i }
+    private val secret = SearchState(
+        names = nameMap,
+        types = names.map { name -> secret[name]!! },
+        // The remaining fields don't matter in an oracle
+        rounds = listOf(),
+        labelArities = mapOf()
+    )
+
+    override fun equal(a: Example, b: Example): Boolean {
+        val u = OneUnification(secret, listOf(a, b))
+        val ta = u.type(a)
+        val tb = u.type(b)
+        return ta != null && tb != null && ta == tb
+    }
+
+    override fun flatEqual(a: FlatApp, b: FlatApp) = equal(a.unflatten(), b.unflatten())
+
+    override fun dummy(e: Example): Int = TODO("Why am I calling this right now")
 }
 
 /**
