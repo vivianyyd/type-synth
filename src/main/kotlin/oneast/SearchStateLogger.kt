@@ -74,7 +74,7 @@ class SearchStateLogger(
     fun uniqueCount(): Int = seenKeys.size
 
     fun flushUniqueCount(level: Int = 0) {
-        if (level > verbosity) return
+        if (mode == SearchStateLogMode.OFF || level > verbosity) return
         logger.info("$uniqueCountName=${seenKeys.size}")
     }
 
@@ -82,6 +82,6 @@ class SearchStateLogger(
         if (mode == SearchStateLogMode.OFF || level > verbosity) return
         val sw = StringWriter()
         throwable.printStackTrace(PrintWriter(sw))
-        logger.error("$message\n$sw")
+        logger.error("$message\n${sw.toString()}")
     }
 }
