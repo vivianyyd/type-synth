@@ -20,10 +20,14 @@ class SearchStateLogger(
     loggerName: String = "SearchStateLogger"
 ) {
     private val logger: Logger by lazy { LoggerFactory.getLogger(loggerName) }
-    private val seenKeys = ConcurrentHashMap<Any, Boolean>()
+    private val seenKeys = ConcurrentHashMap.newKeySet<Any>()
     private val nullKey = Any()
     private val uniqueCountName = "$loggerName.uniqueCount"
     private val defaultFormatter: (Any?) -> String = { it?.toString() ?: "null" }
+
+    private fun trackUnique(key: Any?) {
+        seenKeys.add(key ?: nullKey)
+    }
 
     fun log(
         state: SearchState,
@@ -42,7 +46,7 @@ class SearchStateLogger(
                 if (condition?.invoke(state) == true) {
                     logger.info(formatted)
                 }
-            SearchStateLogMode.COUNT_UNIQUE -> seenKeys[key] = true
+            SearchStateLogMode.COUNT_UNIQUE -> trackUnique(key)
         }
     }
 
@@ -55,7 +59,7 @@ class SearchStateLogger(
     ) {
         if (level > verbosity) return
         val formatted = formatter?.invoke(value) ?: defaultFormatter(value)
-        val key = keySelector?.invoke(value) ?: (value ?: nullKey)
+        val key = keySelector?.invoke(value) ?: value
         when (mode) {
             SearchStateLogMode.OFF -> Unit
             SearchStateLogMode.LOG -> logger.info(formatted)
@@ -63,7 +67,7 @@ class SearchStateLogger(
                 if (condition?.invoke(value) == true) {
                     logger.info(formatted)
                 }
-            SearchStateLogMode.COUNT_UNIQUE -> seenKeys[key] = true
+            SearchStateLogMode.COUNT_UNIQUE -> trackUnique(key)
         }
     }
 
@@ -74,8 +78,8 @@ class SearchStateLogger(
         logger.info("$uniqueCountName=${seenKeys.size}")
     }
 
-    fun logException(message: String, throwable: Throwable) {
-        if (mode == SearchStateLogMode.OFF) return
+    fun logException(message: String, throwable: Throwable, level: Int = 0) {
+        if (mode == SearchStateLogMode.OFF || level > verbosity) return
         val sw = StringWriter()
         throwable.printStackTrace(PrintWriter(sw))
         logger.error("$message\n$sw")
