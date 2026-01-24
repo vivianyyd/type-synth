@@ -52,3 +52,10 @@ tasks.register<JavaExec>("runGeneratePrompt") {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("GeneratePromptKt")
 }
+
+sourceSets {
+    val testFixturesDir = "src/test/kotlin/test"
+    main {
+        kotlin.srcDir(testFixturesDir)
+    }
+}
