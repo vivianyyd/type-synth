@@ -56,7 +56,7 @@ class SearchStateLogger(
     private val jsonAdapters = ConcurrentHashMap<Class<*>, com.squareup.moshi.JsonAdapter<Any>>()
 
     private fun adapterFor(value: Any): com.squareup.moshi.JsonAdapter<Any> =
-        jsonAdapters.computeIfAbsent(value.javaClass) {
+        jsonAdapters.computeIfAbsent(value::class.java) {
             @Suppress("UNCHECKED_CAST")
             moshi.adapter(it) as com.squareup.moshi.JsonAdapter<Any>
         }
@@ -64,7 +64,14 @@ class SearchStateLogger(
     private fun toJson(value: Any?): String =
         when (value) {
             null -> "null"
-            else -> runCatching { adapterFor(value).toJson(value) }.getOrDefault(value.toString())
+            else ->
+                runCatching { adapterFor(value).toJson(value) }
+                    .onFailure { err ->
+                        if (logger.isDebugEnabled) {
+                            logger.debug("Failed to serialize ${value::class.java.name}", err)
+                        }
+                    }
+                    .getOrDefault(value.toString())
         }
 
     private fun <T> logValue(
