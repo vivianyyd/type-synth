@@ -54,8 +54,7 @@ tasks.register<JavaExec>("runGeneratePrompt") {
 }
 
 sourceSets {
-    val testFixturesDir = "src/test/kotlin/test"
-    main {
-        kotlin.srcDir(testFixturesDir)
-    }
+    val testFixturesDir = "src/testFixtures/kotlin"
+    main { kotlin.srcDir(testFixturesDir) }
+    test { kotlin.srcDir(testFixturesDir) }
 }
