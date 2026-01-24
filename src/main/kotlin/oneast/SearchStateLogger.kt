@@ -53,20 +53,26 @@ class SearchStateLogger(
         }
     }
 
+    private val jsonAdapters = ConcurrentHashMap<Class<*>, com.squareup.moshi.JsonAdapter<Any>>()
+
+    private fun adapterFor(value: Any): com.squareup.moshi.JsonAdapter<Any> =
+        jsonAdapters.computeIfAbsent(value.javaClass) {
+            @Suppress("UNCHECKED_CAST")
+            moshi.adapter(it) as com.squareup.moshi.JsonAdapter<Any>
+        }
+
     private fun toJson(value: Any?): String =
         when (value) {
             null -> "null"
-            else -> runCatching { moshi.adapter(value.javaClass).toJson(value) }.getOrDefault(
-                value.toString()
-            )
+            else -> runCatching { adapterFor(value).toJson(value) }.getOrDefault(value.toString())
         }
 
-    private fun logValue(
-        value: Any?,
+    private fun <T> logValue(
+        value: T,
         level: Int,
-        condition: ((Any?) -> Boolean)?,
-        formatter: ((Any?) -> String)?,
-        keySelector: ((Any?) -> Any)?
+        condition: ((T) -> Boolean)?,
+        formatter: ((T) -> String)?,
+        keySelector: ((T) -> Any)?
     ) {
         when (mode) {
             SearchStateLogMode.OFF -> Unit
@@ -90,14 +96,7 @@ class SearchStateLogger(
         condition: ((SearchState) -> Boolean)? = null,
         formatter: ((SearchState) -> String)? = null,
         keySelector: ((SearchState) -> Any)? = null
-    ) =
-        logValue(
-            state,
-            level,
-            condition?.let { predicate -> { value -> predicate(value as SearchState) } },
-            formatter?.let { format -> { value -> format(value as SearchState) } },
-            keySelector?.let { selector -> { value -> selector(value as SearchState) } }
-        )
+    ) = logValue(state, level, condition, formatter, keySelector)
 
     fun logAny(
         value: Any?,
@@ -125,12 +124,10 @@ class SearchStateLogger(
         fields: Map<String, Any?>,
         level: Int = 0,
         condition: ((Map<String, Any?>) -> Boolean)? = null
-    ) = logAny(
-        fields,
-        level,
-        condition = { condition?.invoke(fields) ?: true },
-        formatter = { toJson(it) }
-    )
+    ) {
+        if (condition?.invoke(fields) == false) return
+        logAny(fields, level, formatter = { toJson(it) })
+    }
 
     fun uniqueCount(): Int = seenKeys.size
 
