@@ -27,10 +27,11 @@ let hole_equals t hole =
   else Hashtbl.find t.hole_constraints hole |> Option.value ~default:[]
 
 let hole_equals_constructors t hole =
-  hole_equals t hole |> List.filter_map ~f:(function
-      | CArrow (l, r) -> Some (CArrow (l, r))
-      | CLabel (lbl, ps) -> Some (CLabel (lbl, ps))
-      | _ -> None)
+  hole_equals t hole
+  |> List.filter_map ~f:(function
+       | CArrow (l, r) -> Some (CArrow (l, r))
+       | CLabel (lbl, ps) -> Some (CLabel (lbl, ps))
+       | _ -> None)
 
 let rec apply_binding ty v sub =
   match ty with
@@ -38,16 +39,21 @@ let rec apply_binding ty v sub =
   | CVar (v2, _) when Int.equal v2 v -> sub
   | CVar _ -> ty
   | CArrow (l, r) -> CArrow (apply_binding l v sub, apply_binding r v sub)
-  | CLabel (lbl, ps) -> CLabel (lbl, List.map ps ~f:(fun p -> apply_binding p v sub))
+  | CLabel (lbl, ps) ->
+      CLabel (lbl, List.map ps ~f:(fun p -> apply_binding p v sub))
   | Instantiation _ -> ty
 
-let apply_bindings ty binds = List.fold binds ~init:ty ~f:(fun acc (v, sub) -> apply_binding acc v sub)
+let apply_bindings ty binds =
+  List.fold binds ~init:ty ~f:(fun acc (v, sub) -> apply_binding acc v sub)
 
 let rec unify param arg =
   match param with
   | Bottom -> Some []
   | CVar (v, _) ->
-      if List.exists (constraint_variables arg) ~f:(fun (v2, _) -> Int.equal v v2) then None else Some [ (v, arg) ]
+      if
+        List.exists (constraint_variables arg) ~f:(fun (v2, _) -> Int.equal v v2)
+      then None
+      else Some [ (v, arg) ]
   | CArrow (lp, rp) -> (
       match arg with
       | Bottom -> Some []
@@ -62,7 +68,8 @@ let rec unify param arg =
       | CLabel _ -> None)
   | CLabel (lbl, ps) -> (
       match arg with
-      | CLabel (lbl2, qs) when Int.equal lbl lbl2 && List.length ps = List.length qs ->
+      | CLabel (lbl2, qs)
+        when Int.equal lbl lbl2 && List.length ps = List.length qs ->
           let rec loop acc ps qs =
             match (ps, qs) with
             | [], [] -> Some acc
@@ -77,23 +84,21 @@ let rec unify param arg =
       | _ -> None)
   | Instantiation _ -> None
 
-let hole_constraint t inst ty =
+let hole_constraint inst ty =
   let key =
     match inst with
     | Instantiation (h, _) -> h
     | _ -> assert false
   in
-  Hashtbl.add_multi t.hole_constraints ~key ~data:ty
+  key, ty
 
-let rec apply fn arg =
+let rec apply_fn fn arg =
   match fn with
   | CArrow (l, r) -> (
       match unify l arg with
       | None -> None
       | Some bindings -> Some (apply_bindings r bindings))
-  | Instantiation _ as i ->
-      hole_constraint i arg;
-      Some Bottom
+  | Instantiation _ as i -> Some (hole_constraint i arg |> snd)
   | _ -> None
 
 let rec type_of t ex =
@@ -108,7 +113,7 @@ let rec type_of t ex =
       | Some fn -> (
           match type_of t a with
           | None -> None
-          | Some arg -> apply fn arg))
+          | Some arg -> apply_fn fn arg))
 
 let ok t =
   if not t.evaluated then (

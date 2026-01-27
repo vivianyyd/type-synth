@@ -1,7 +1,6 @@
 open Base
 open Types
 
-(* Placeholder: real solver not implemented; we model by echoing existing arities *)
-
-let solve_label_arities (_state : SearchState.t) (_deps : unit) =
-  Some _state.SearchState.label_arities
+let label_arities (s : SearchState.t) : (int, int, Int.comparator_witness) Map.t option =
+  (* Placeholder: assume existing arities are final *)
+  Some s.label_arities
