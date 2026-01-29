@@ -22,7 +22,7 @@ fun main() {
 
     val configuration =
         Configuration(
-            test = IdTest,
+            test = ConsTest,
             runCVC = true,
             enumeratorTag = EnumeratorTag.DFSPriority,
             unificationTag = UnificationTag.Eager,
@@ -97,7 +97,7 @@ fun run(configuration: Configuration, logger: Logger) {
             )
         }
 
-    println("Elab sols:\n${elabSols.withIndex().joinToString(separator = "\n")}")
+    println("Elab sols:\n${elabSols.joinToString(separator = "\n")}")
 
     Hole.resetIds() // quality of life
 

@@ -149,6 +149,9 @@ fun compileElabToInfo(
     if (seed.types.any {
             val params = seed.params(it)
             val lastParam = params.last()
+            TODO(
+                "Is this even right? About to prune $it but output can actually be a fresh var since we only have things of the shape L?<?> -> a right now"
+            )
             lastParam is ElabV && lastParam.v !in params.dropLast(1).flatMap { it.variableNames() }
         })
         return null

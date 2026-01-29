@@ -3,10 +3,7 @@ package oneast
 import dependencyanalysis.ParameterwiseDependencyAnalysis
 import query.Name
 import query.Query
-import util.Counter
-import util.IntUnionFind
-import util.Logger
-import util.Oracle
+import util.*
 
 /** Fills one hole at a time, shallowest first, in DFS style. */
 class EnumerateOneAST(
@@ -45,14 +42,18 @@ class EnumerateOneAST(
         if (sizeBound == 0) return listOfNotNull(fastForward(c)).asSequence()
 
         val (iToFill, holeWithDepth) =
-            c.types.mapNotNull { it.shallowestFillableHole() }.withIndex().minBy { it.value.second }
-        val (hole, depth) = holeWithDepth
-
+            c.types
+                .withIndex()
+                .map { it.index to it.value.shallowestFillableHole() }
+                .filter { it.second != null }
+                .minBy { it.second!!.second }
+        val (hole, depth) = holeWithDepth!!
         return hole
             .expansions(
                 unification = unification,
                 labelArities = c.labelArities,
                 vars = c.types[iToFill].variables().size,
+                topLevel = depth == 0,
                 introduceBlanks = introduceBlanks,
                 mustBeLeaf = sizeBound <= 1 || depth > hardDepthBound
             )

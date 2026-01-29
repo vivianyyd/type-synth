@@ -29,7 +29,7 @@ class SearchState(
 
     val id = nextId++
 
-    fun fnArities(): Map<String, Int> = TODO()
+    fun fnArities(): Map<String, Int> = names.mapValues { (_, i) -> types[i].fnArity() }
 
     fun noFillableHoles() = types.all { it.shallowestFillableHole() == null }
 
@@ -65,6 +65,8 @@ class SearchState(
             rounds = rounds,
             labelArities = labelArities
         )
+
+    override fun toString() = asMap.toString()
 }
 
 sealed interface Type {
@@ -81,9 +83,16 @@ sealed interface Type {
     fun variables(): Set<Int>
 
     fun replace(hole: THole, replacement: Type): Type
+
+    /** The number of parameters this type has. */
+    fun fnArity(): Int =
+        when (this) {
+            is Arrow -> 1 + r.fnArity()
+            else -> 1
+        }
 }
 
-sealed class BranchType(open val params: List<Type>) : Type {
+sealed class Constructor(open val params: List<Type>) : Type {
     override fun allHoles() = params.flatMap { it.allHoles() }
 
     override fun shallowestFillableHole() =
@@ -111,7 +120,7 @@ data class Variable(val v: Int) : Type {
     override fun toString() = "V$v"
 }
 
-data class Arrow(val l: Type, val r: Type) : BranchType(listOf(l, r)) {
+data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
     override fun maxParamHeight(countArrow: Boolean) =
         (if (countArrow) 1 else 0) + max(l.maxParamHeight(true), r.maxParamHeight(countArrow))
 
@@ -125,7 +134,7 @@ data class Arrow(val l: Type, val r: Type) : BranchType(listOf(l, r)) {
 }
 
 /** Could also be called DefinedLabel? */
-data class NamedLabel(val label: Int, override val params: List<Type>) : BranchType(params) {
+data class NamedLabel(val label: Int, override val params: List<Type>) : Constructor(params) {
     override fun maxParamHeight(countArrow: Boolean) =
         1 + (params.maxOfOrNull { it.maxParamHeight(countArrow) } ?: 0)
 
@@ -164,6 +173,7 @@ sealed class THole : Type {
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
+        topLevel: Boolean,
         introduceBlanks: Boolean,
         mustBeLeaf: Boolean
     ): List<Type>
@@ -185,7 +195,7 @@ sealed class THole : Type {
         if (exprs.any { it is ConstraintVariable }) return defaultVariable
 
         val insts = exprs.filterIsInstance<InstantiationTy>()
-        val constructors = exprs.filterIsInstance<TypeConstructor>()
+        val constructors = exprs.filterIsInstance<ConstraintTypeConstructor>()
 
         if (constructors.isEmpty() ||
             constructors.any { a -> constructors.any { b -> !a.match(b) } }
@@ -234,14 +244,16 @@ sealed class THole : Type {
                     // Ignore the other insts if unconstrained, if it can be a variable, or
                     // constructors mismatch
                     if (instEqs.any { it is ConstraintVariable }) null
-                    else takeFirstIfMatch(instEqs.filterIsInstance<TypeConstructor>())
+                    else takeFirstIfMatch(instEqs.filterIsInstance<ConstraintTypeConstructor>())
                 }
             takeFirstIfMatch(listOf(auConstrs) + instsPointTo)
         } else null
     }
 
     /** Returns the first node if top-level constructors all match; null if mismatch or empty. */
-    private fun takeFirstIfMatch(constrs: List<TypeConstructor>): TypeConstructor? {
+    private fun takeFirstIfMatch(
+        constrs: List<ConstraintTypeConstructor>
+    ): ConstraintTypeConstructor? {
         return if (constrs.isEmpty()) null
         else if (constrs.all { a -> constrs.all { b -> a.match(b) } }) {
             // we only care about the top-level constructor, so it suffices to return an arbitrary
@@ -267,11 +279,12 @@ class TypeHole : THole() {
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
+        topLevel: Boolean,
         introduceBlanks: Boolean,
         mustBeLeaf: Boolean
     ): List<Type> =
         if (mustBeLeaf)
-            expansionsNoBound(unification, labelArities, vars, introduceBlanks).filter {
+            expansionsNoBound(unification, labelArities, vars, topLevel, introduceBlanks).filter {
                 when (it) {
                     is Variable -> true
                     is NamedLabel -> it.params.isEmpty()
@@ -280,22 +293,23 @@ class TypeHole : THole() {
                     is TypeHole -> throw Exception("Expansions cannot include type holes")
                 }
             }
-        else expansionsNoBound(unification, labelArities, vars, introduceBlanks)
+        else expansionsNoBound(unification, labelArities, vars, topLevel, introduceBlanks)
 
     private fun expansionsNoBound(
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
+        topLevel: Boolean,
         introduceBlanks: Boolean
     ): List<Type> {
-        val variableExps = (0 until vars + 1).map { Variable(it) }
+        val variableExps = if (topLevel) listOf() else (0 until vars + 1).map { Variable(it) }
         val fnExpansion = Arrow(TypeHole(), TypeHole())
         val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
         // If there are no existing labels, we need to learn them.
         // For now, instead we will explicitly introduce only blanks for expansions
         // An alternate implementation might introduce a blank if [labelExpansions] is empty
 
-        val instances = unification.holeEqualsConstructors(this)
+        val instances = unification.holeEquals(this).filterIsInstance<ConstraintTypeConstructor>()
         val constructorTypes = // this would be cleaner if implemented as a filter
             if (instances.isNotEmpty()) {
                 val i = instances.first()
@@ -305,11 +319,16 @@ class TypeHole : THole() {
                         is ConstraintArrow -> listOf(fnExpansion)
                         is ConstraintLabel -> labelExpansions.filter { it.label == i.label }
                     }
-            } else labelExpansions + fnExpansion
+            } else
+                labelExpansions +
+                        // only expand to an arrow if this hole is ever used as one
+                        (if (instances.any { it is ConstraintArrow }) listOf(fnExpansion) else listOf())
         return constructorTypes +
                 variableExps +
                 listOfNotNull(Blank(labelOnly = true).takeIf { introduceBlanks })
     }
+
+    override fun toString() = "_"
 }
 
 /**
@@ -323,9 +342,12 @@ class Blank(val labelOnly: Boolean) : THole() {
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
+        topLevel: Boolean,
         introduceBlanks: Boolean,
         mustBeLeaf: Boolean
     ) = listOf(this)
+
+    override fun toString() = if (labelOnly) ".L" else "."
 }
 
 sealed interface ConstraintTy {
@@ -349,11 +371,11 @@ data class ConstraintVariable(val v: Int, val instId: Int) : ConstraintTy {
     override fun variables() = variables
 }
 
-sealed class TypeConstructor(open val params: List<ConstraintTy>) : ConstraintTy {
+sealed class ConstraintTypeConstructor(open val params: List<ConstraintTy>) : ConstraintTy {
     /** Whether this node shallow matches with [other]. */
-    abstract fun match(other: TypeConstructor): Boolean
+    abstract fun match(other: ConstraintTypeConstructor): Boolean
 
-    open fun split(other: TypeConstructor) {
+    open fun split(other: ConstraintTypeConstructor) {
         if (match(other)) params.zip(other.params).map { (a, b) -> TODO() } else null
     }
 
@@ -362,21 +384,22 @@ sealed class TypeConstructor(open val params: List<ConstraintTy>) : ConstraintTy
     override fun variables() = variables
 }
 
-data class ConstraintArrow(override val params: List<ConstraintTy>) : TypeConstructor(params) {
+data class ConstraintArrow(override val params: List<ConstraintTy>) :
+    ConstraintTypeConstructor(params) {
     init {
         require(params.size == 2)
     }
 
     val l = params[0]
-    val r = params[2]
+    val r = params[1]
 
     constructor(l: ConstraintTy, r: ConstraintTy) : this(listOf(l, r))
 
-    override fun match(other: TypeConstructor) = other is ConstraintArrow
+    override fun match(other: ConstraintTypeConstructor) = other is ConstraintArrow
 }
 
 data class ConstraintLabel(val label: Int, override val params: List<ConstraintTy>) :
-    TypeConstructor(params) {
-    override fun match(other: TypeConstructor) =
+    ConstraintTypeConstructor(params) {
+    override fun match(other: ConstraintTypeConstructor) =
         other is ConstraintLabel && label == other.label && params.size == other.params.size
 }
