@@ -2,16 +2,15 @@ package oneast
 
 import query.Example
 import query.Query
-import util.Oracle
 import kotlin.math.min
 
-sealed class Step {
-    data class QueryReady(val query: Query) : Step()
+typealias EnumeratorProvider = (Query, SearchState) -> EnumerateOneAST
 
-    data class StateReady(val state: SearchState) : Step()
-}
-
-class Scheduler(val query: Query, oracle: Oracle, namesPerRound: Int) {
+class Engine(
+    val query: Query,
+    private val enumeratorProvider: EnumeratorProvider,
+    private val namesPerRound: Int
+) {
     // ceiling division
     val numRounds = (query.names.size + namesPerRound - 1) / namesPerRound
     val scheduled = mutableListOf<Set<String>>()
@@ -32,10 +31,11 @@ class Scheduler(val query: Query, oracle: Oracle, namesPerRound: Int) {
         }
     }
 
-    private fun buildNextQuery(
-        scheduledRound: Set<String>,
-        state: SearchState
-    ): Pair<Query, SearchState> {
+    /** Returns the next synthesis problem, or null if we are done. */
+    private fun buildNextQuery(state: SearchState): Pair<Query, SearchState>? {
+        if (query.names.size == state.names.size) return null
+
+        val scheduledRound: Set<String> = scheduled[state.names.size / namesPerRound]
         // TODO I think enumeration doesn't actually need the subexprs, so we should make a separate
         //   query type which contains only maximal examples so we don't waste so much space
         val oldSize = state.names.size
@@ -55,23 +55,26 @@ class Scheduler(val query: Query, oracle: Oracle, namesPerRound: Int) {
         return nextQuery to nextState
     }
 
-    private var used = false
+    private fun solveQuery(query: Query, state: SearchState): Sequence<SearchState> {
+        val solver = enumeratorProvider(query, state)
+        return solver.solutions()
+    }
 
-    fun queries(solver: (Query, SearchState) -> SearchState): Sequence<Step> {
-        check(!used) { "Scheduled query sequence already created" }
-        used = true
+    private fun searchRec(state: SearchState): Sequence<SearchState> = sequence {
+        val nextQueryAndSeed = buildNextQuery(state)
 
-        return sequence {
-            var state = SearchState.emptyState
+        if (nextQueryAndSeed == null) {
+            yield(state)
+            return@sequence
+        }
 
-            for (schedule in scheduled) {
-                val (nextQuery, seed) = buildNextQuery(schedule, state)
-                yield(Step.QueryReady(nextQuery))
-                state = solver(nextQuery, seed)
-                yield(Step.StateReady(state))
-            }
+        for (solution in solveQuery(nextQueryAndSeed.first, nextQueryAndSeed.second)) {
+            logger.log("got solution $solution")
+            yieldAll(searchRec(solution))
         }
     }
+
+    fun search(): Sequence<SearchState> = searchRec(SearchState.emptyState)
 }
 
 /*

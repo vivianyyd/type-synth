@@ -18,57 +18,15 @@ fun main() {
 
     val start = System.currentTimeMillis()
 
-    val scheduler = Scheduler(h.query, h.oracle, namesPerRound = configuration.namesPerRound)
+    val engine =
+        Engine(
+            h.query,
+            { q, s -> EnumerateOneAST(s, q, h.oracle, configuration, logger) },
+            namesPerRound = configuration.namesPerRound
+        )
+    // TODO oracle should be in query, numsols in config
 
-    scheduler
-        .queries { nextQuery, nextSeed ->
-            EnumerateOneAST(
-                seed = nextSeed,
-                query = nextQuery,
-                oracle = h.oracle,
-                hardSizeBound = 20,
-                hardDepthBound = 4,
-                logger = logger,
-            )
-                .enumerate(callSolver = true, numSols = Solutions.ONE_SOLUTION)
-                .first()
-            //            val sols = mutableListOf<SearchState>()
-            //            for (depth in 2..configuration.depthBound) {
-            //                logger.start("Depth $depth")
-            //                for (size in 1..configuration.sizeBound) {
-            //                    logger.start("Size $size")
-            //
-            //                    val currSols =
-            //                        listOf(
-            //                            EnumerateOneAST(
-            //                                seed = nextSeed,
-            //                                query = nextQuery,
-            //                                oracle = h.oracle,
-            //                                hardSizeBound = 20,
-            //                                hardDepthBound = 4,
-            //                                logger = logger,
-            //                            )
-            //                                .enumerate(callSolver = true, numSols =
-            // Solutions.ONE_SOLUTION)
-            //                                .first()
-            //                        )
-            //
-            //                    logger.stop("Size $size")
-            //                    if (currSols.isNotEmpty()) {
-            //                        sols.addAll(currSols)
-            //                        logger.log("STOPPED AT SIZE $size")
-            //                        break
-            //                    }
-            //                }
-            //                logger.stop("Depth $depth")
-            //                if (sols.isNotEmpty()) {
-            //                    logger.log("STOPPED AT DEPTH $depth")
-            //                    break
-            //                }
-            //            }
-            //            sols.first()
-        }
-        .forEach { if (it is Step.StateReady) println(it.state.asMap()) }
+    engine.search().take(1).forEach { println(it.asMap()) }
     println("${System.currentTimeMillis() - start} ms")
     TODO(
         "We can't just take the first result, need to do all of them. Large search tree wraps small search tree" +
