@@ -10,8 +10,7 @@ class EnumerateOneAST(
     val seed: SearchState,
     val query: Query,
     val oracle: Oracle,
-    private val hardSizeBound: Int,
-    private val hardDepthBound: Int,
+    val config: Configuration,
     private val logger: Logger,
 ) {
     private fun posUnification(s: SearchState) = OneUnification(s, query.posNoSubexprs)
@@ -25,6 +24,7 @@ class EnumerateOneAST(
         introduceBlanks: Boolean,
         fastForwardBlanks: Boolean,
         sizeBound: Int,
+        depthBound: Int,
         loggingSeed: SearchState,
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
@@ -34,17 +34,23 @@ class EnumerateOneAST(
         //   on the other hand, in the future iterations, we may as well fast forward outside
         //   this function. And in that case, we can combine this line with the c.noHoles()
         //   check.
-        if (c.noFillableHoles()) {
-            return if (fastForwardBlanks) listOfNotNull(fastForward(c)).asSequence()
-            else sequenceOf(c)
+
+        fun fastForward(): Sequence<SearchState> {
+            val ff = fastForward(c)
+            logger.log("Fast forwarding from $c to $ff")
+            return listOfNotNull(ff).asSequence()
         }
 
-        if (sizeBound == 0) return listOfNotNull(fastForward(c)).asSequence()
+        if (c.noFillableHoles()) {
+            return if (fastForwardBlanks) fastForward() else sequenceOf(c)
+        }
+
+        if (sizeBound == 0) return fastForward()
 
         val (iToFill, holeWithDepth) =
             c.types
                 .withIndex()
-                .map { it.index to it.value.shallowestFillableHole() }
+                .map { it.index to it.value.shallowestFillableHole(topLevel = true) }
                 .filter { it.second != null }
                 .minBy { it.second!!.second }
         val (hole, depth) = holeWithDepth!!
@@ -53,28 +59,32 @@ class EnumerateOneAST(
                 unification = unification,
                 labelArities = c.labelArities,
                 vars = c.types[iToFill].variables().size,
-                topLevel = depth == 0,
+                topLevel = hole == c.types[iToFill],
                 introduceBlanks = introduceBlanks,
-                mustBeLeaf = sizeBound <= 1 || depth > hardDepthBound
+                mustBeLeaf = sizeBound <= 1 || depth >= depthBound
             )
             .asSequence()
-            .map { c.mapTypesIndexed { i, p -> if (iToFill == i) p.replace(hole, it) else p } }
-            .flatMap { newCandidate ->
+            .map {
+                it to c.mapTypesIndexed { i, p -> if (iToFill == i) p.replace(hole, it) else p }
+            }
+            .flatMap { (replacement, newCandidate) ->
                 logger.count("Total candidates for $loggingSeed")
-                // todo the below check is commented out bc the mustBeLeaf flag includes depth now,
-                //  check if that works
-                // if (newCand.maxParamHeight() > hardDepthBound) emptySequence()
                 val u = posUnification(newCandidate)
-                if (u.ok())
+                if (u.ok()) {
+                    // Committing a blank at the top-level is free
+                    val cost =
+                        if (replacement is Blank && newCandidate.types.any { it == replacement }) 0
+                        else 1
                     commit(
                         newCandidate,
                         u,
                         introduceBlanks,
                         fastForwardBlanks,
-                        sizeBound - 1,
+                        sizeBound - cost,
+                        depthBound,
                         loggingSeed
                     )
-                else emptySequence()
+                } else emptySequence()
             }
     }
 
@@ -122,23 +132,35 @@ class EnumerateOneAST(
         return s.mapTypesAndSetLabelArities(mapOf()) { assignLabels(it) }
     }
 
-    fun enumerate(callSolver: Boolean, numSols: Solutions): List<SearchState> {
-        fun check(c: SearchState) =
-            posUnification(c).ok() && query.neg.all { !OneUnification(c, listOf(it)).ok() }
-
+    private fun initialOutlines(callSolver: Boolean): List<SearchState> {
+        logger.start("Initial search without labels or nullaries")
         val firstRound =
             commit(
                 seed,
                 posUnification(seed),
                 introduceBlanks = true,
                 fastForwardBlanks = false,
-                hardSizeBound,
+                sizeBound = Int.MAX_VALUE,
+                depthBound = Int.MAX_VALUE,
                 loggingSeed = seed
             )
                 .toList()
+        logger.stop("Initial search without labels or nullaries")
 
         val withLabelClasses = firstRound.mapNotNull { assignLabelClasses(it) }
 
+        logger.log(
+            listOf(
+                "=================",
+                "Config:",
+                "seed: $seed",
+                "INITIAL SEED SOLUTIONS: ${withLabelClasses.size}"
+            )
+                .lines()
+        )
+        logger.log(withLabelClasses.lines())
+
+        logger.start("Dependency analysis and solving for label arities")
         val dependencyAnalyses = mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
         val resolvedLabelArities =
             withLabelClasses.mapNotNull { s ->
@@ -152,17 +174,31 @@ class EnumerateOneAST(
                     s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) }
                 }
             }
+        logger.stop("Dependency analysis and solving for label arities")
+        logger.log("SEEDS AFTER RESOLVING LABEL ARITIES:\n${resolvedLabelArities.lines()}")
+        return resolvedLabelArities
+    }
+
+    private fun enumerate(
+        seedOutlines: List<SearchState>,
+        currentSizeBound: Int,
+        currentDepthBound: Int,
+        numSols: Solutions
+    ): Sequence<SearchState> {
+        fun check(c: SearchState) =
+            posUnification(c).ok() && query.neg.all { !OneUnification(c, listOf(it)).ok() }
 
         // Things blow up here, so sequencing
         val secondRounds =
-            resolvedLabelArities.asSequence().flatMap {
+            seedOutlines.asSequence().flatMap {
                 commit(
                     it,
                     posUnification(it),
                     introduceBlanks = false,
                     fastForwardBlanks = true,
-                    hardSizeBound,
-                    it
+                    sizeBound = currentSizeBound,
+                    depthBound = currentDepthBound,
+                    loggingSeed = it
                 )
             }
 
@@ -170,36 +206,43 @@ class EnumerateOneAST(
         // normal holes and enumerate for them
         val finalResults =
             secondRounds.flatMap {
-                val blanksReplacedWithHoles =
-                    it.mapTypes { t ->
-                        t.allHoles().fold(t) { acc: Type, h: THole ->
-                            if (h is Blank) acc.replace(h, TypeHole()) else acc
+                if (it.blanks().isEmpty()) sequenceOf(it)
+                else {
+                    val blanksReplacedWithHoles =
+                        it.mapTypes { t ->
+                            t.blanks().fold(t) { acc: Type, h: THole ->
+                                if (h is Blank) acc.replace(h, TypeHole()) else acc
+                            }
                         }
-                    }
-                commit(
-                    blanksReplacedWithHoles,
-                    posUnification(blanksReplacedWithHoles),
-                    introduceBlanks = false,
-                    fastForwardBlanks = true,
-                    hardSizeBound,
-                    blanksReplacedWithHoles
-                )
+                    commit(
+                        blanksReplacedWithHoles,
+                        posUnification(blanksReplacedWithHoles),
+                        introduceBlanks = false,
+                        fastForwardBlanks = true,
+                        sizeBound = currentSizeBound,
+                        depthBound = currentDepthBound,
+                        loggingSeed = blanksReplacedWithHoles
+                    )
+                }
             }
 
         return when (numSols) {
-            Solutions.ALL_SOLUTIONS -> finalResults.filter { c -> check(c) }.toList()
-            Solutions.ONE_SOLUTION -> listOf(finalResults.first { c -> check(c) })
+            Solutions.ALL_SOLUTIONS -> finalResults.filter { c -> check(c) }
+            Solutions.ONE_SOLUTION -> sequenceOf(finalResults.first { c -> check(c) })
         }
     }
 
-    fun fastForward(candidate: SearchState): SearchState? {
+    private fun fastForward(candidate: SearchState): SearchState? {
         var curr = candidate
         do {
             var changed = false
             val u = posUnification(curr)
             curr =
                 curr.mapTypes { t ->
-                    val changes = t.allHoles().map { it to it.fastForward(u) }
+                    val changes =
+                        t.allHolesWithDepth(topLevel = true).map { (hole, depth) ->
+                            hole to hole.fastForward(u, topLevel = depth == 0)
+                        }
                     if (changes.isNotEmpty() && changes.any { it.second != null }) changed = true
                     changes.fold(t) { acc: Type, (hole, ty): Pair<THole, Type?> ->
                         if (ty == null) acc else acc.replace(hole, ty)
@@ -207,6 +250,40 @@ class EnumerateOneAST(
                 }
         } while (changed)
         return if (curr.noHoles()) curr else null
+    }
+
+    fun solutions(): Sequence<SearchState> = sequence {
+        val seedOutlines = initialOutlines(callSolver = true)
+
+        var solved = false
+        for (depth in 1..config.depthBound) {
+            logger.start("Depth $depth for ${query.names}")
+            for (size in 1..config.sizeBound) {
+                logger.start("Size $size for ${query.names}")
+                val sols =
+                    enumerate(
+                        seedOutlines,
+                        currentSizeBound = size,
+                        currentDepthBound = depth,
+                        numSols = Solutions.ALL_SOLUTIONS
+                        // get all solutions to subproblems in case one partial solution is
+                        // unrealizable
+                    )
+                        .iterator()
+                if (sols.hasNext()) solved = true
+                yieldAll(sols)
+                logger.stop("Size $size for ${query.names}")
+                if (solved) {
+                    logger.log("STOPPED AT SIZE $size")
+                    break
+                }
+            }
+            logger.stop("Depth $depth for ${query.names}")
+            if (solved) {
+                logger.log("STOPPED AT DEPTH $depth")
+                break
+            }
+        }
     }
 }
 

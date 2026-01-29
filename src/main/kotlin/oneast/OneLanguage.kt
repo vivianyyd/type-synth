@@ -31,9 +31,9 @@ class SearchState(
 
     fun fnArities(): Map<String, Int> = names.mapValues { (_, i) -> types[i].fnArity() }
 
-    fun noFillableHoles() = types.all { it.shallowestFillableHole() == null }
+    fun noFillableHoles() = types.all { it.shallowestFillableHole(topLevel = true) == null }
 
-    fun blanks() = types.flatMap { it.allHoles() }.filterIsInstance<Blank>()
+    fun blanks() = types.flatMap { it.blanks() }
 
     fun noHoles() = types.all { it.noHoles() }
 
@@ -78,7 +78,11 @@ sealed interface Type {
 
     fun allHoles(): List<THole>
 
-    fun shallowestFillableHole(): Pair<THole, Int>?
+    fun blanks() = allHoles().filterIsInstance<Blank>()
+
+    fun allHolesWithDepth(topLevel: Boolean): List<Pair<THole, Int>>
+
+    fun shallowestFillableHole(topLevel: Boolean): Pair<THole, Int>?
 
     fun variables(): Set<Int>
 
@@ -95,12 +99,6 @@ sealed interface Type {
 sealed class Constructor(open val params: List<Type>) : Type {
     override fun allHoles() = params.flatMap { it.allHoles() }
 
-    override fun shallowestFillableHole() =
-        params
-            .mapNotNull { it.shallowestFillableHole() }
-            .minByOrNull { it.second }
-            ?.let { it.first to it.second + 1 }
-
     override fun variables() = params.flatMap { it.variables() }.toSet()
 }
 
@@ -109,9 +107,11 @@ data class Variable(val v: Int) : Type {
 
     override fun allHoles() = emptyList<THole>()
 
+    override fun allHolesWithDepth(topLevel: Boolean) = emptyList<Pair<THole, Int>>()
+
     override fun instantiate(instId: Int): ConstraintTy = ConstraintVariable(v, instId)
 
-    override fun shallowestFillableHole() = null
+    override fun shallowestFillableHole(topLevel: Boolean) = null
 
     override fun variables() = setOf(this.v)
 
@@ -121,6 +121,17 @@ data class Variable(val v: Int) : Type {
 }
 
 data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
+    override fun allHolesWithDepth(topLevel: Boolean) =
+        (l.allHolesWithDepth(topLevel = false) + r.allHolesWithDepth(topLevel = topLevel)).map {
+            it.first to it.second + (if (topLevel) 0 else 1)
+        }
+
+    override fun shallowestFillableHole(topLevel: Boolean) =
+        params
+            .mapIndexedNotNull { i, p -> p.shallowestFillableHole(topLevel = if (i == 0) false else topLevel) }
+            .minByOrNull { it.second }
+            ?.let { it.first to it.second + (if (topLevel) 0 else 1) }
+
     override fun maxParamHeight(countArrow: Boolean) =
         (if (countArrow) 1 else 0) + max(l.maxParamHeight(true), r.maxParamHeight(countArrow))
 
@@ -135,6 +146,15 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
 
 /** Could also be called DefinedLabel? */
 data class NamedLabel(val label: Int, override val params: List<Type>) : Constructor(params) {
+    override fun allHolesWithDepth(topLevel: Boolean) =
+        params.flatMap { it.allHolesWithDepth(topLevel).map { it.first to it.second + 1 } }
+
+    override fun shallowestFillableHole(topLevel: Boolean) =
+        params
+            .mapNotNull { it.shallowestFillableHole(topLevel) }
+            .minByOrNull { it.second }
+            ?.let { it.first to it.second + 1 }
+
     override fun maxParamHeight(countArrow: Boolean) =
         1 + (params.maxOfOrNull { it.maxParamHeight(countArrow) } ?: 0)
 
@@ -163,6 +183,8 @@ sealed class THole : Type {
 
     override fun allHoles() = listOf(this)
 
+    override fun allHolesWithDepth(topLevel: Boolean) = listOf(this to 0)
+
     override fun instantiate(instId: Int): ConstraintTy = InstantiationTy(this, instId)
 
     override fun variables() = emptySet<Int>()
@@ -178,9 +200,10 @@ sealed class THole : Type {
         mustBeLeaf: Boolean
     ): List<Type>
 
-    fun fastForward(unification: OneUnification): Type? {
+    fun fastForward(unification: OneUnification, topLevel: Boolean): Type? {
         val defaultVariable =
-            ConstraintVariable(0, instId = 0) // instId shouldn't matter, dummy here
+            if (topLevel) null
+            else ConstraintVariable(0, instId = 0) // instId shouldn't matter, dummy here
 
         val antiunifies = unification.holeEquals(this)
         return antiunify(antiunifies, unification, defaultVariable)?.toNode()
@@ -273,7 +296,7 @@ sealed class THole : Type {
 }
 
 class TypeHole : THole() {
-    override fun shallowestFillableHole() = this to 0
+    override fun shallowestFillableHole(topLevel: Boolean) = this to 0
 
     override fun expansions(
         unification: OneUnification,
@@ -336,7 +359,7 @@ class TypeHole : THole() {
  * optimization; it is equivalent to fast forward to all types, but that will produce duplicates.
  */
 class Blank(val labelOnly: Boolean) : THole() {
-    override fun shallowestFillableHole() = null
+    override fun shallowestFillableHole(topLevel: Boolean) = null
 
     override fun expansions(
         unification: OneUnification,
