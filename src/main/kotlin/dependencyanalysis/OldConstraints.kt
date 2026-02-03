@@ -1,7 +1,7 @@
 package dependencyanalysis
 
-import stc.Projection
-import stc.Var
+import products.stc.Projection
+import products.stc.Var
 import util.equivalenceClasses
 
 sealed interface DependencyConstraint

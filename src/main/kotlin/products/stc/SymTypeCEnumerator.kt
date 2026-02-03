@@ -1,11 +1,11 @@
-package stc
+package products.stc
 
+import products.sta.Function
+import products.sta.State
 import query.App
 import query.Example
 import query.Name
 import query.Query
-import sta.Function
-import sta.State
 import util.OldUnionFind
 import util.Oracle
 import util.lazyCartesianProduct
@@ -76,15 +76,15 @@ class SymTypeCEnumerator(
     }
 
     private fun enumerate(
-        t: sta.SymTypeA,
+        t: products.sta.SymTypeA,
         vars: Int,
         pickedLabel: Boolean,
         name: String,
         canBeFresh: Boolean
     ): List<Triple<SymTypeC, Int, Boolean>> =
         when (t) {
-            is sta.Hole ->
-                listOf(sta.Variable(), sta.Label()).flatMap {
+            is products.sta.Hole ->
+                listOf(products.sta.Variable(), products.sta.Label()).flatMap {
                     enumerate(it, vars, pickedLabel, name, canBeFresh)
                 }
             is Function -> {
@@ -98,8 +98,8 @@ class SymTypeCEnumerator(
                     rites.map { (rite, rvs, lab) -> Triple(F(left, rite), rvs, lab) }
                 }
             }
-            is sta.Label -> listOf(Triple(L(freshLabel++), vars, true))
-            is sta.Variable -> {
+            is products.sta.Label -> listOf(Triple(L(freshLabel++), vars, true))
+            is products.sta.Variable -> {
                 val variables: MutableList<Triple<SymTypeC, Int, Boolean>> =
                     (0 until vars)
                         .map { Triple(VR(it, tId(name)), vars, pickedLabel) }

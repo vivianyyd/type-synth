@@ -1,11 +1,11 @@
-package stbsketchout
+package products.stbsketchout
 
+import products.sta.Function
+import products.sta.State
 import query.App
 import query.Example
 import query.Name
 import query.Query
-import sta.Function
-import sta.State
 import util.Oracle
 import kotlin.math.roundToInt
 
@@ -48,12 +48,12 @@ class OldSymTypeBSketcherUsingFixes(
             if (rounds != null) rounds
             else {
                 fun <T> List<T>.mapSum(f: (T) -> Int) = this.map(f).fold(0) { a, b -> a + b }
-                fun bound(t: sta.SymTypeA): Int =
+                fun bound(t: products.sta.SymTypeA): Int =
                     when (t) {
                         is Function -> t.left.mapSum(::bound) * t.rite.mapSum(::bound)
-                        is sta.Label -> 1
-                        is sta.Variable -> 3
-                        is sta.Hole -> 4
+                        is products.sta.Label -> 1
+                        is products.sta.Variable -> 3
+                        is products.sta.Hole -> 4
                     }
                 query.names.map { state.read()[it]!!.mapSum(::bound) }.fold(1) { a, b -> a * b }
             }
@@ -72,7 +72,7 @@ class OldSymTypeBSketcherUsingFixes(
 
         private fun nullary(name: String): Boolean {
             val options = state.read()[name]!!
-            return options.size == 1 && options[0] is sta.Label
+            return options.size == 1 && options[0] is products.sta.Label
         }
 
         private fun header() {
@@ -121,7 +121,7 @@ class OldSymTypeBSketcherUsingFixes(
          */
         private fun chooseFromOptions(
             portSketchName: String,
-            options: List<sta.SymTypeA>,
+            options: List<products.sta.SymTypeA>,
             typeId: Int
         ) {
             val flag = "flag_$portSketchName"
@@ -140,20 +140,24 @@ class OldSymTypeBSketcherUsingFixes(
             }
         }
 
-        private fun pickOption(portSketchName: String, t: sta.SymTypeA, typeId: Int): Unit =
+        private fun pickOption(
+            portSketchName: String,
+            t: products.sta.SymTypeA,
+            typeId: Int
+        ): Unit =
             when (t) {
-                is sta.Hole -> {
+                is products.sta.Hole -> {
                     val hole = "${portSketchName}_hole"
                     w.line("Type $hole")
                     w.line("bit ${hole}_flag = ??")
-                    w.block("if (${hole}_flag)") { pickOption(hole, sta.Label(), typeId) }
-                    w.block("else") { pickOption(hole, sta.Variable(), typeId) }
+                    w.block("if (${hole}_flag)") { pickOption(hole, products.sta.Label(), typeId) }
+                    w.block("else") { pickOption(hole, products.sta.Variable(), typeId) }
                     w.line("$portSketchName = $hole")
                     // TODO test me!
                 }
-                is sta.Label ->
+                is products.sta.Label ->
                     w.lines(listOf("$portSketchName = new Label()", "canBeBoundInLabel = true"))
-                is sta.Variable -> {
+                is products.sta.Variable -> {
                     val vFlag = "v_$portSketchName"
                     w.lines(
                         listOf(

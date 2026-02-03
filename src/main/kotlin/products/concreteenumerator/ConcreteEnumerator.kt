@@ -1,10 +1,10 @@
-package concreteenumerator
+package products.concreteenumerator
 
 import dependencyanalysis.*
+import products.stc.Projection
+import products.std.SymTypeDFlat
+import products.std.flatten
 import query.*
-import stc.Projection
-import std.SymTypeDFlat
-import std.flatten
 import util.*
 import kotlin.math.min
 
@@ -56,7 +56,7 @@ class ConcreteEnumerator(
     val query: Query,
     val contextOutline: Projection,
     /** Map from label ids to number of parameters */
-    inLabels: Map<stc.L, Int>,
+    inLabels: Map<products.stc.L, Int>,
     private val dependencies: ArrowDependencyAnalysis,
     private val oracle: Oracle,
     private val logger: Logger
@@ -84,15 +84,15 @@ class ConcreteEnumerator(
             val oldVarsToNewIds = mutableMapOf<Pair<Int, Int>, Int>()
             fun SymTypeDFlat.toNode(constraint: DependencyConstraint?): Node =
                 when (this) {
-                    is std.F ->
+                    is products.std.F ->
                         F(
                             (this.args + this.rite).map { mutableListOf(it.toNode(constraint)) },
                             nextId++,
                             constraint
                         )
-                    is std.L -> L(this.label, labels[this.label]!!, nextId++, constraint)
+                    is products.std.L -> L(this.label, labels[this.label]!!, nextId++, constraint)
 
-                    is std.Var ->
+                    is products.std.Var ->
                         Var(
                             oldVarsToNewIds.getOrPut(this.vId to this.tId) { nextVariable++ },
                             nextId++
@@ -102,7 +102,7 @@ class ConcreteEnumerator(
             val outline = ty.flatten()
             state[name] =
                 when (outline) {
-                    is std.F ->
+                    is products.std.F ->
                         F(
                             (outline.args + outline.rite).mapIndexed { i, a ->
                                 mutableListOf(a.toNode(constrs[i]))
@@ -110,8 +110,8 @@ class ConcreteEnumerator(
                             nextId++,
                             null
                         )
-                    is std.L,
-                    is std.Var -> outline.toNode(constrs[0])
+                    is products.std.L,
+                    is products.std.Var -> outline.toNode(constrs[0])
                 }
             variablesInScope[name]!!.addAll(oldVarsToNewIds.values)
             oldVarsToNewVars[name] = oldVarsToNewIds

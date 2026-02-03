@@ -1,3 +1,5 @@
+import products.ConfigForOld
+import products.run
 import query.parseTest
 import test.*
 import util.Logger

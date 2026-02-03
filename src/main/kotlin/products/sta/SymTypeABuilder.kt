@@ -1,4 +1,4 @@
-package sta
+package products.sta
 
 import query.*
 import util.*

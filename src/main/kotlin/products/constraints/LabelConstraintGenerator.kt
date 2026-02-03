@@ -1,12 +1,12 @@
-package constraints
+package products.constraints
 
 import dependencyanalysis.ArrowDependencyAnalysis
 import dependencyanalysis.DependencyEdge
 import dependencyanalysis.ParameterNode
 import dependencyanalysis.SelfLoop
-import stc.L
-import stc.Projection
-import stc.Var
+import products.stc.L
+import products.stc.Projection
+import products.stc.Var
 import util.PyWriter
 
 class LabelConstraintGenerator(
@@ -109,7 +109,7 @@ class LabelConstraintGenerator(
 
     fun pySizeToL(s: String) = L.toL(s.removePrefix("size"))
 
-    fun pyVarToIds(s: String) = std.Var.toIds(s.removePrefix("v"))
+    fun pyVarToIds(s: String) = products.std.Var.toIds(s.removePrefix("v"))
 
     fun py(node: ParameterNode) = "p${pyName[node.f]!!}_${node.i}"
 
