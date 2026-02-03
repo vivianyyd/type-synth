@@ -1,13 +1,15 @@
 package oneast
 
+import query.App
 import query.Example
+import query.Name
 import query.Query
 import kotlin.math.min
 
 typealias EnumeratorProvider = (Query, SearchState) -> EnumerateOneAST
 
 class Engine(
-    val query: Query,
+    private val query: Query,
     private val enumeratorProvider: EnumeratorProvider,
     private val namesPerRound: Int
 ) {
@@ -35,7 +37,7 @@ class Engine(
     private fun buildNextQuery(state: SearchState): Pair<Query, SearchState>? {
         if (query.names.size == state.names.size) return null
 
-        val scheduledRound: Set<String> = scheduled[state.names.size / namesPerRound]
+        val scheduledRound = scheduled[state.names.size / namesPerRound].toList()
         // TODO I think enumeration doesn't actually need the subexprs, so we should make a separate
         //   query type which contains only maximal examples so we don't waste so much space
         val oldSize = state.names.size
@@ -43,14 +45,26 @@ class Engine(
         val newNames = state.names + (scheduledRound.zip(oldSize until newSize))
 
         fun takeExs(exs: Collection<Example>) = exs.filter { newNames.keys.containsAll(it.names) }
+        val nextQuery = Query(takeExs(query.posNoSubexprs), takeExs(query.neg))
+
+        fun nameIsApplied(name: String) =
+            nextQuery.posWithSubexprs.any { ex -> ex is App && ex.fn is Name && ex.fn.name == name }
+
         val nextState =
             SearchState(
                 names = newNames,
-                types = List(newSize) { if (it < oldSize) state.types[it] else TypeHole() },
+                types =
+                List(newSize) { i ->
+                    if (i < oldSize) state.types[i]
+                    // Importantly, we force names that are applied to be Arrows
+                    // and names that are not to be labels.
+                    else if (nameIsApplied(scheduledRound[i - oldSize]))
+                        Arrow(TypeHole(), TypeHole())
+                    else Blank(labelOnly = true)
+                },
                 rounds = state.rounds + oldSize,
                 labelArities = state.labelArities
             )
-        val nextQuery = Query(takeExs(query.posNoSubexprs), takeExs(query.neg))
 
         return nextQuery to nextState
     }
