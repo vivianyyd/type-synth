@@ -10,10 +10,7 @@ import query.App
 import query.Name
 import query.parseTest
 import test.*
-import util.Configuration
-import util.Logger
-import util.clearCVC
-import util.lazyCartesianProduct
+import util.*
 
 fun main() {
     val tests =
@@ -22,7 +19,7 @@ fun main() {
 
     val configuration =
         Configuration(
-            test = DictTest,
+            test = testFromFile,
             runCVC = true,
             enumeratorTag = EnumeratorTag.DFSPriority,
             unificationTag = UnificationTag.Eager,
@@ -53,13 +50,6 @@ fun run(configuration: Configuration, logger: Logger) {
             logger
         )
 
-    fun <T> time(name: String, block: () -> T): T {
-        logger.start(name)
-        val result = block()
-        logger.stop(name)
-        return result
-    }
-
     val initSeed =
         Candidate(
             query.names,
@@ -69,7 +59,7 @@ fun run(configuration: Configuration, logger: Logger) {
                 else InitL
             })
     val initSols =
-        time("Init search") {
+        logger.time("Init search") {
             solutions(
                 listOf(makeEnumerator(initSeed, false)),
                 false,
@@ -81,11 +71,9 @@ fun run(configuration: Configuration, logger: Logger) {
             )
         }
 
-    println("Init sols:\n${initSols.joinToString(separator = "\n")}")
-
-    val elabSeeds = time("Compile Init to Elab") { initSols.map { compileInit(it) } }
+    val elabSeeds = logger.time("Compile Init to Elab") { initSols.map { compileInit(it) } }
     val elabSols =
-        time("Elab search") {
+        logger.time("Elab search") {
             solutions(
                 elabSeeds.map { makeEnumerator(it, false) },
                 false,
@@ -97,12 +85,10 @@ fun run(configuration: Configuration, logger: Logger) {
             )
         }
 
-    println("Elab sols:\n${elabSols.joinToString(separator = "\n")}")
-
     Hole.resetIds() // quality of life
 
     val concSeeds =
-        time("Compile Elab to Concrete") {
+        logger.time("Compile Elab to Concrete") {
             elabSols
                 .mapNotNull {
                     compileElabToInfo(
@@ -120,10 +106,10 @@ fun run(configuration: Configuration, logger: Logger) {
                 } // TODO reorder these simplest to most complex
                 .map { compileToConcrete(it, emitBlanks = false) }
         }
-    println("Concrete seeds:\n${concSeeds.joinToString(separator = "\n")}")
+    logger.log("Concrete seeds: ${concSeeds.size}\n${concSeeds.joinToString(separator = "\n")}")
 
     val concSols =
-        time("Concrete search") {
+        logger.time("Concrete search") {
             solutions(
                 concSeeds.map { makeEnumerator(it, true) },
                 configuration.finalRoundSketches,
@@ -135,8 +121,8 @@ fun run(configuration: Configuration, logger: Logger) {
             )
         }
 
-    println("FINAL SOLUTIONS:")
-    println(concSols.joinToString(separator = "\n"))
+    logger.log("FINAL SOLUTIONS:")
+    logger.log(concSols.joinToString(separator = "\n"))
 
     logger.finish()
 }

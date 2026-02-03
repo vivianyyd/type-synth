@@ -75,3 +75,10 @@ class Logger(
         error(message)
     }
 }
+
+fun <T> Logger.time(name: String, block: () -> T): T {
+    start(name)
+    val result = block()
+    stop(name)
+    return result
+}

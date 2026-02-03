@@ -83,7 +83,6 @@ class Engine(
         }
 
         for (solution in solveQuery(nextQueryAndSeed.first, nextQueryAndSeed.second)) {
-            logger.log("got solution $solution")
             yieldAll(searchRec(solution))
         }
     }

@@ -37,7 +37,6 @@ class EnumerateOneAST(
 
         fun fastForward(): Sequence<SearchState> {
             val ff = fastForward(c)
-            logger.log("Fast forwarding from $c to $ff")
             return listOfNotNull(ff).asSequence()
         }
 
@@ -68,7 +67,7 @@ class EnumerateOneAST(
                 it to c.mapTypesIndexed { i, p -> if (iToFill == i) p.replace(hole, it) else p }
             }
             .flatMap { (replacement, newCandidate) ->
-                logger.count("Total candidates for $loggingSeed")
+                logger.count("Total candidates")
                 val u = posUnification(newCandidate)
                 if (u.ok()) {
                     // Committing a blank at the top-level is free
@@ -133,49 +132,48 @@ class EnumerateOneAST(
     }
 
     private fun initialOutlines(callSolver: Boolean): List<SearchState> {
-        logger.start("Initial search without labels or nullaries")
         val firstRound =
-            commit(
-                seed,
-                posUnification(seed),
-                introduceBlanks = true,
-                fastForwardBlanks = false,
-                sizeBound = Int.MAX_VALUE,
-                depthBound = Int.MAX_VALUE,
-                loggingSeed = seed
-            )
-                .toList()
-        logger.stop("Initial search without labels or nullaries")
+            logger.time("Initial search without labels or nullaries") {
+                commit(
+                    seed,
+                    posUnification(seed),
+                    introduceBlanks = true,
+                    fastForwardBlanks = false,
+                    sizeBound = Int.MAX_VALUE,
+                    depthBound = Int.MAX_VALUE,
+                    loggingSeed = seed
+                )
+                    .toList()
+            }
 
         val withLabelClasses = firstRound.mapNotNull { assignLabelClasses(it) }
 
         logger.log(
-            listOf(
-                "=================",
-                "Config:",
-                "seed: $seed",
-                "INITIAL SEED SOLUTIONS: ${withLabelClasses.size}"
-            )
-                .lines()
+            "Seeds before label arities: ${withLabelClasses.size}\n${withLabelClasses.lines()}"
         )
-        logger.log(withLabelClasses.lines())
 
-        logger.start("Dependency analysis and solving for label arities")
-        val dependencyAnalyses = mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
         val resolvedLabelArities =
-            withLabelClasses.mapNotNull { s ->
-                val arities = s.fnArities()
-                val dep =
-                    dependencyAnalyses.getOrPut(arities) {
-                        ParameterwiseDependencyAnalysis(query, arities, oracle)
-                    }
+            logger.time("Dependency analysis and solving for label arities") {
+                val dependencyAnalyses =
+                    mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
 
-                labelArities(s, dep, callSolver)?.let { la ->
-                    s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) }
+                withLabelClasses.flatMap { s ->
+                    val arities = s.fnArities()
+                    val dep =
+                        dependencyAnalyses.getOrPut(arities) {
+                            ParameterwiseDependencyAnalysis(query, arities, oracle)
+                        }
+
+                    val la = labelArities(s, dep, callSolver)
+                    if (la == null) listOf()
+                    else {
+                        lazyCartesianProduct(la.values.map { (0..it).toList() })
+                            .map { la.keys.zip(it).toMap() }
+                            .map { s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) } }
+                            .toList()
+                    }
                 }
             }
-        logger.stop("Dependency analysis and solving for label arities")
-        logger.log("SEEDS AFTER RESOLVING LABEL ARITIES:\n${resolvedLabelArities.lines()}")
         return resolvedLabelArities
     }
 
@@ -254,6 +252,7 @@ class EnumerateOneAST(
 
     fun solutions(): Sequence<SearchState> = sequence {
         val seedOutlines = initialOutlines(callSolver = true)
+        logger.log("Concrete seeds: ${seedOutlines.size}\n${seedOutlines.lines()}")
 
         var solved = false
         for (depth in 1..config.depthBound) {

@@ -101,8 +101,6 @@ class LabelConstraints(
             p.substringAfterLast('_').toInt()
         )
 
-    fun pyVarToIds(s: String) = std.Var.toIds(s.removePrefix("v"))
-
     fun py(node: ParameterNode) = "p${pyName[node.f]!!}_${node.i}"
 
     private fun py(v: Variable) = "$v"
