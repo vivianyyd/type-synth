@@ -44,8 +44,8 @@ fun unify(param: Type, arg: Type): List<Binding>? =
             when (arg) {
                 is Error,
                 is TypeHole -> throw Error("Illegal")
-                is Function,
-                is Variable -> null
+                is Function -> null
+                is Variable -> listOf(Binding(arg.id, param))
                 is LabelNode ->
                     if (param.label == arg.label)
                         param.params.zip(arg.params).fold(listOf()) { acc: List<Binding>?, (p, a) ->
