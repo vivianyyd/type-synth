@@ -128,7 +128,9 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
 
     override fun shallowestFillableHole(topLevel: Boolean) =
         params
-            .mapIndexedNotNull { i, p -> p.shallowestFillableHole(topLevel = if (i == 0) false else topLevel) }
+            .mapIndexedNotNull { i, p ->
+                p.shallowestFillableHole(topLevel = if (i == 0) false else topLevel)
+            }
             .minByOrNull { it.second }
             ?.let { it.first to it.second + (if (topLevel) 0 else 1) }
 
@@ -344,8 +346,11 @@ class TypeHole : THole() {
                     }
             } else
                 labelExpansions +
-                        // only expand to an arrow if this hole is ever used as one
-                        (if (instances.any { it is ConstraintArrow }) listOf(fnExpansion) else listOf())
+                        listOf(
+                            TODO(
+                                "It's only fast if I make the else branch return no constructors instead of any label. Why was Concrete version so much faster even when adding all label expansions"
+                            )
+                        )
         return constructorTypes +
                 variableExps +
                 listOfNotNull(Blank(labelOnly = true).takeIf { introduceBlanks })
