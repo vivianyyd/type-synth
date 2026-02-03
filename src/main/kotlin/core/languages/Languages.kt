@@ -129,7 +129,10 @@ fun topLevelVariablesConsistent(seed: Candidate<Elab>, query: Query, oracle: Ora
     }
 
     TODO(
-        "We can prune a candidate if two parameters are the same variable, but their witnesses are not observationally equivalent"
+        "We can prune a candidate if two parameters are the same variable, but their witnesses are not " +
+                "observationally equivalent." +
+                "Before, we pruned Elab candidates if they had a fresh variable on the RHS, but actually L -> V" +
+                "Is a valid candidate since the variable may be bound in the label!"
     )
 }
 
@@ -145,17 +148,6 @@ fun compileElabToInfo(
     unification: UnificationForCandidate<Elaborated>,
     callSolver: Boolean
 ): ElaboratedInfo? {
-    // begin by pruning candidates with a fresh variable as output type
-    if (seed.types.any {
-            val params = seed.params(it)
-            val lastParam = params.last()
-            TODO(
-                "Is this even right? About to prune $it but output can actually be a fresh var since we only have things of the shape L?<?> -> a right now"
-            )
-            lastParam is ElabV && lastParam.v !in params.dropLast(1).flatMap { it.variableNames() }
-        })
-        return null
-
     if (!topLevelVariablesConsistent(seed, query, oracle)) return null
 
     val deps =
