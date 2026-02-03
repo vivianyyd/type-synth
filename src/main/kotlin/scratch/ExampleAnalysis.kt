@@ -1,17 +1,16 @@
 package scratch
 
-import query.*
+import query.App
+import query.Query
+import query.vizUndir
 import test.SomeHaskell
-import util.SExprParser
 
 /** AI-generated code I was toying with */
 fun main() {
     val h = SomeHaskell
-    // Legacy type analysis disabled pending oneast support.
-    val exs = h.examples.map { SExprParser(it).parse().toExpression().first }
 
-    // TODO: Replace with oneast-aware typing once available (currently all negative).
-    val (pos, neg) = exs.partition { false }
+    val pos = h.posExamples
+    val neg = h.negExamples
     println(pos.size)
     println(neg.size)
 
