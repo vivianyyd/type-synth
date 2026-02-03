@@ -20,7 +20,8 @@ fun main() {
     val h = SomeHaskell
 
     val test = h.groundTruth
-    val (query, context) = generate(TODO("pass test here"))
+    val (query, context) =
+        generate(TODO("Example generation is currently implemented only for old types"))
     val generatedExs =
         (sexpsFromExamples(query.posWithSubexprs, true) + sexpsFromExamples(query.neg, false))
             .joinToString(separator = "\n")

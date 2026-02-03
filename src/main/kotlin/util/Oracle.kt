@@ -57,13 +57,14 @@ class CheckingOracle(private val secret: Map<String, Type>) : Oracle {
 class NewCheckingOracle(secret: Map<String, oneast.Type>) : Oracle {
     private val names = secret.keys.toList()
     private val nameMap = names.withIndex().associate { (i, name) -> name to i }
-    private val secret = SearchState(
-        names = nameMap,
-        types = names.map { name -> secret[name]!! },
-        // The remaining fields don't matter in an oracle
-        rounds = listOf(),
-        labelArities = mapOf()
-    )
+    private val secret =
+        SearchState(
+            names = nameMap,
+            types = names.map { name -> secret[name]!! },
+            // The remaining fields don't matter in an oracle
+            rounds = listOf(),
+            labelArities = mapOf()
+        )
 
     override fun equal(a: Example, b: Example): Boolean {
         val u = OneUnification(secret, listOf(a, b))
@@ -74,7 +75,7 @@ class NewCheckingOracle(secret: Map<String, oneast.Type>) : Oracle {
 
     override fun flatEqual(a: FlatApp, b: FlatApp) = equal(a.unflatten(), b.unflatten())
 
-    override fun dummy(e: Example): Int = TODO("Why am I calling this right now")
+    override fun dummy(e: Example): Int = OneUnification(secret, listOf(e)).type(e).hashCode()
 }
 
 /**
