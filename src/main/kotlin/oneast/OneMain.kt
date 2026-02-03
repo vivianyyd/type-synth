@@ -1,20 +1,20 @@
 package oneast
 
-import test.ConsTest
+import test.DictTest
 import test.Test
 import util.Config
 import util.Logger
 
 val configuration =
     Configuration(
-        test = ConsTest, runCVC = true, sizeBound = 20, depthBound = 4, namesPerRound = 10
+        test = DictTest, runCVC = true, sizeBound = 20, depthBound = 4, namesPerRound = 10
     )
 
 val logger =
     Logger(configuration = configuration, logFilename = "tmp.log", logToFile = true, verbosity = 5)
 
 fun main() {
-    val h = ConsTest // SomeHaskell
+    val h = DictTest // SomeHaskell
 
     val start = System.currentTimeMillis()
 

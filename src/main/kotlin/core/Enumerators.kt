@@ -22,7 +22,7 @@ fun main() {
 
     val configuration =
         Configuration(
-            test = ConsTest,
+            test = DictTest,
             runCVC = true,
             enumeratorTag = EnumeratorTag.DFSPriority,
             unificationTag = UnificationTag.Eager,
