@@ -1,6 +1,6 @@
-package std
+package products.std
 
-import stc.SymTypeC
+import products.stc.SymTypeC
 
 /** Symbolic types with annotations on variables and labels: F/L with label/Var */
 sealed interface SymTypeDFlat
@@ -9,17 +9,17 @@ sealed interface NotF : SymTypeDFlat
 
 fun SymTypeC.flatten(): SymTypeDFlat =
     when (this) {
-        is stc.F -> {
+        is products.stc.F -> {
             var curr = this
             val args = mutableListOf<SymTypeC>()
-            while (curr is stc.F) {
+            while (curr is products.stc.F) {
                 args.add(curr.left)
                 curr = curr.rite
             }
             F(args.map { it.flatten() }, curr.flatten() as NotF)
         }
-        is stc.L -> L(this.label)
-        is stc.Var -> Var(this.vId, this.tId)
+        is products.stc.L -> L(this.label)
+        is products.stc.Var -> Var(this.vId, this.tId)
     }
 
 data class F(val args: List<SymTypeDFlat>, val rite: NotF) : SymTypeDFlat {

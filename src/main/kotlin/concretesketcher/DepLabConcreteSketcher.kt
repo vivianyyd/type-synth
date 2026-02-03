@@ -1,11 +1,11 @@
 package concretesketcher
 
 import dependencyanalysis.*
+import products.stc.*
 import query.App
 import query.Example
 import query.Name
 import query.Query
-import stc.*
 import util.Oracle
 import util.SketchWriter
 import java.lang.Integer.max

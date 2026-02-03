@@ -1,11 +1,11 @@
-package stbsketchout
+package products.stbsketchout
 
+import products.sta.Function
+import products.sta.State
 import query.App
 import query.Example
 import query.Name
 import query.Query
-import sta.Function
-import sta.State
 import util.Oracle
 import util.SketchWriter
 import kotlin.math.roundToInt
@@ -67,7 +67,7 @@ class OldSymTypeBSketcher(val query: Query, private val state: State, private va
 
         private fun nullary(name: String): Boolean {
             val options = state.read()[name]!!
-            return options.size == 1 && options[0] is sta.Label
+            return options.size == 1 && options[0] is products.sta.Label
         }
 
         private fun gen(name: String) = "${sk(name)}_gen"
@@ -91,7 +91,7 @@ class OldSymTypeBSketcher(val query: Query, private val state: State, private va
          */
         private fun chooseFromOptions(
             portSketchName: String,
-            options: List<sta.SymTypeA>,
+            options: List<products.sta.SymTypeA>,
             typeId: Int
         ) {
             val flag = "flag_$portSketchName"
@@ -99,7 +99,7 @@ class OldSymTypeBSketcher(val query: Query, private val state: State, private va
             // function so anything but arrow is ok
             // TODO at the very least this should happen in a pass at the end of Tree building, not
             // here
-            val opts = options.ifEmpty { listOf(sta.Variable(), sta.Label()) }
+            val opts = options.ifEmpty { listOf(products.sta.Variable(), products.sta.Label()) }
             if (opts.size == 1) {
                 pickOption(portSketchName, opts[0], typeId) // Makes code shorter
                 return
@@ -115,20 +115,24 @@ class OldSymTypeBSketcher(val query: Query, private val state: State, private va
             }
         }
 
-        private fun pickOption(portSketchName: String, t: sta.SymTypeA, typeId: Int): Unit =
+        private fun pickOption(
+            portSketchName: String,
+            t: products.sta.SymTypeA,
+            typeId: Int
+        ): Unit =
             when (t) {
-                is sta.Hole -> {
+                is products.sta.Hole -> {
                     val hole = "${portSketchName}_hole"
                     w.line("Type $hole")
                     w.line("bit ${hole}_flag = ??")
-                    w.block("if (${hole}_flag)") { pickOption(hole, sta.Label(), typeId) }
-                    w.block("else") { pickOption(hole, sta.Variable(), typeId) }
+                    w.block("if (${hole}_flag)") { pickOption(hole, products.sta.Label(), typeId) }
+                    w.block("else") { pickOption(hole, products.sta.Variable(), typeId) }
                     w.line("$portSketchName = $hole")
                     // TODO test me!
                 }
-                is sta.Label ->
+                is products.sta.Label ->
                     w.lines(listOf("$portSketchName = new Label()", "canBeBoundInLabel = true"))
-                is sta.Variable -> {
+                is products.sta.Variable -> {
                     val vFlag = "v_$portSketchName"
                     w.lines(
                         listOf(

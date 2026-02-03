@@ -122,7 +122,7 @@ class LabelArityConstraints(
 
     fun pySizeToL(s: String) = ElaboratedL.fromString(s.removePrefix("size"))
 
-    fun pyVarToIds(s: String) = std.Var.toIds(s.removePrefix("v"))
+    fun pyVarToIds(s: String) = products.std.Var.toIds(s.removePrefix("v"))
 
     fun py(node: ParameterNode) = "p${pyName[node.f]!!}_${node.i}"
 

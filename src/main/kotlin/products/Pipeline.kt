@@ -1,10 +1,12 @@
-import concreteenumerator.ConcreteEnumerator
-import concreteenumerator.ConcreteNode
-import constraints.LabelConstraintGenerator
+package products
+
 import dependencyanalysis.*
+import products.concreteenumerator.ConcreteEnumerator
+import products.concreteenumerator.ConcreteNode
+import products.constraints.LabelConstraintGenerator
+import products.sta.SymTypeABuilder
+import products.stc.*
 import query.Query
-import sta.SymTypeABuilder
-import stc.*
 import test.Test
 import util.*
 

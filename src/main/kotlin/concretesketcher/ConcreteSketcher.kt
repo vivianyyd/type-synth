@@ -1,10 +1,10 @@
 package concretesketcher
 
+import products.stbsketchout.*
 import query.App
 import query.Example
 import query.Name
 import query.Query
-import stbsketchout.*
 import util.Oracle
 import util.SketchWriter
 import java.lang.Integer.max

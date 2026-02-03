@@ -1,4 +1,4 @@
-package stc
+package products.stc
 
 import dependencyanalysis.ParameterNode
 

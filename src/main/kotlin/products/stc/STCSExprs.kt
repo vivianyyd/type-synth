@@ -1,4 +1,4 @@
-package stc
+package products.stc
 
 import util.SExpr
 import util.SExprParser
