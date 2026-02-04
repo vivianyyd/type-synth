@@ -2,6 +2,7 @@ package oneast
 
 import fixtures.OcamlTypeParser
 import fixtures.loadQuery
+import oneast.searchstrategies.DFSEnumerator
 import util.Logger
 import util.NewCheckingOracle
 import util.io.parseTest
@@ -14,9 +15,7 @@ class OCamlStdlibTest {
     fun `can build query from input file`() {
         val dir = join("src", "test", "input", "ocaml-stdlib")
         val query = loadQuery(File(dir))
-        val oracleTypes =
-            OcamlTypeParser()
-                .parseSignatures(File(join(dir, "all.types")).readText())
+        val oracleTypes = OcamlTypeParser().parseSignatures(File(join(dir, "all.types")).readText())
         val oracle = NewCheckingOracle(oracleTypes)
 
         val configuration =
@@ -41,7 +40,7 @@ class OCamlStdlibTest {
                 query,
                 { q, s ->
                     println(s)
-                    EnumerateOneAST(s, q, oracle, configuration, logger)
+                    Search(s, q, oracle, configuration, ::DFSEnumerator, logger)
                 },
                 namesPerRound = configuration.namesPerRound
             )

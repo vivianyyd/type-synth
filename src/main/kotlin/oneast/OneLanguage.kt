@@ -31,6 +31,12 @@ class SearchState(
 
     fun fnArities(): Map<String, Int> = names.mapValues { (_, i) -> types[i].fnArity() }
 
+    fun shallowestFillableHole(): Pair<Int, Pair<THole, Int>>? =
+        types
+            .withIndex()
+            .mapNotNull { ti -> ti.value.shallowestFillableHole(topLevel = true)?.let { ti.index to it } }
+            .minByOrNull { it.second.second }
+
     fun noFillableHoles() = types.all { it.shallowestFillableHole(topLevel = true) == null }
 
     fun blanks() = types.flatMap { it.blanks() }
@@ -58,10 +64,10 @@ class SearchState(
             labelArities = labelArities
         )
 
-    fun mapTypesIndexed(transform: (Int, Type) -> Type): SearchState =
+    fun mapTypeAtIndex(i: Int, transform: (Type) -> Type): SearchState =
         SearchState(
             names = names,
-            types = types.mapIndexed(transform),
+            types = types.mapIndexed { j, t -> if (i == j) transform(t) else t },
             rounds = rounds,
             labelArities = labelArities
         )
