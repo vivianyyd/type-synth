@@ -1,13 +1,13 @@
 package products.stc
 
-import util.SExpr
-import util.SExprParser
+import util.io.SExpr
+import util.io.parseSExpr
 
 fun Map<String, SymTypeC>.toSExpr() =
     SExpr.Lst(this.entries.map { SExpr.Lst(listOf(SExpr.Atm(it.key), it.value.toSExpr())) })
 
 fun outline(context: String): Projection {
-    val s = SExprParser(context).parse()
+    val s = parseSExpr(context)
     assert(s is SExpr.Lst)
     return Projection(
         (s as SExpr.Lst).elements.associate {
@@ -41,7 +41,7 @@ fun SExpr.toSTC(): SymTypeC =
         }
     }
 
-fun parseSymTypeC(s: String) = SExprParser(s).parse().toSTC()
+fun parseSymTypeC(s: String) = parseSExpr(s).toSTC()
 
 fun SymTypeC.toSExpr(): SExpr =
     when (this) {

@@ -2,10 +2,10 @@ package oneast
 
 import dependencyanalysis.ParameterNode
 import dependencyanalysis.ParameterwiseDependencyAnalysis
-import util.CVCParser
 import util.PyWriter
-import util.callCVC
-import util.readCVC
+import util.io.cvc.CVCParser
+import util.io.cvc.callCVC
+import util.io.cvc.readCVC
 
 class LabelConstraints(
     private val s: SearchState,

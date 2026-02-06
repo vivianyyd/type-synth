@@ -7,7 +7,14 @@ import products.constraints.LabelConstraintGenerator
 import products.sta.SymTypeABuilder
 import products.stc.*
 import query.Query
-import util.*
+import util.Config
+import util.Logger
+import util.Oracle
+import util.QuerySpec
+import util.io.cvc.*
+import util.io.intermediateoutlines.clearOutlines
+import util.io.intermediateoutlines.readIntermediateOutlines
+import util.io.intermediateoutlines.writeIntermediateOutline
 
 /** Infrastructure for the old implementation. */
 data class ConfigForOld(

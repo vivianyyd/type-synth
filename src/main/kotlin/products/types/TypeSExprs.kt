@@ -1,7 +1,7 @@
 package products.types
 
-import util.SExpr
-import util.SExprParser
+import util.io.SExpr
+import util.io.parseSExpr
 
 fun SExpr.toType(): Type =
     when (this) {
@@ -22,7 +22,7 @@ fun SExpr.toType(): Type =
         }
     }
 
-fun parseType(s: String) = SExprParser(s).parse().toType()
+fun parseType(s: String) = parseSExpr(s).toType()
 
 fun Type.toSExpr(): SExpr =
     when (this) {

@@ -1,4 +1,4 @@
-package util
+package util.io.cvc
 
 class CVCParser(input: String) {
     private val paramSets: Map<String, Set<Int>>

@@ -3,7 +3,7 @@ package products
 import products.types.*
 import products.types.Function
 import query.*
-import util.SExprParser
+import util.io.parseSExpr
 import util.reflexiveNaryProduct
 import java.util.*
 
@@ -40,7 +40,7 @@ class ExampleGenerator(
         }
 
     fun examples(): Pair<Query, Assignment> {
-        if (types.isEmpty()) return Pair(Query(), mapOf())
+        if (types.isEmpty()) return Pair(Query(listOf(), listOf()), mapOf())
 
         // Explode parameterized labelled types into concrete types and give them dummies, skip
         // functions for now
@@ -97,8 +97,7 @@ class ExampleGenerator(
         dummies.forEach { (n, t) -> addPos(t, Name(n)) }
         //        dummies.filter { it.value is LabelNode }.forEach { (n, t) -> addPos(t, Name(n) as
         // Example) }
-        val negExamples =
-            EnumMap(ErrorCategory.values().associateWith { mutableSetOf<Example>() })
+        val negExamples = EnumMap(ErrorCategory.values().associateWith { mutableSetOf<Example>() })
 
         fun addNeg(err: ErrorCategory, ex: Example) {
             if (err in negExamples) {
@@ -194,8 +193,7 @@ fun main() {
         )
 
     val (query, context) =
-        ExampleGenerator(2, 2, 200, groundTruth.map { SExprParser(it).parse().toType() to null })
-            .examples()
+        ExampleGenerator(2, 2, 200, groundTruth.map { parseSExpr(it).toType() to null }).examples()
     println(context.toList().joinToString(separator = "\n"))
     println("Positive examples:")
     println(query.posWithSubexprs.size)

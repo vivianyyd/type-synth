@@ -1,11 +1,10 @@
-package query
+package util.io
 
 import products.types.toType
+import query.*
 import util.CheckingOracle
 import util.QuerySpec
-import util.SExpr
-import util.SExprParser
-import util.readExamples
+import util.io.generatedexamples.readExamples
 
 fun sexpsFromExamples(exs: Collection<Example>, pos: Boolean): Collection<SExpr> =
     exs.map { SExpr.Lst(listOf(SExpr.Atm(if (pos) "+" else "-"), it.flatten().toSExpr())) }
@@ -15,7 +14,7 @@ private fun FlatApp.toSExpr(): SExpr =
     else SExpr.Lst(listOf(SExpr.Atm(name)) + args.map { it.toSExpr() })
 
 fun parseExamples(sexps: Collection<String>): Query =
-    examplesFromSexps(sexps.map { SExprParser(it).parse() })
+    examplesFromSexps(sexps.map { parseSExpr(it) })
 
 fun parseTest(name: String): QuerySpec {
     val exs = readExamples(name)
@@ -27,7 +26,7 @@ fun oracleFromAssignment(context: String) = CheckingOracle(assignment(context))
 
 private fun assignment(context: String) =
     context.split('\t').associate {
-        val assign = SExprParser(it).parse()
+        val assign = parseSExpr(it)
         require(assign is SExpr.Lst && assign.elements.size == 2 && assign.elements[0] is SExpr.Atm)
         (assign.elements[0] as SExpr.Atm).value to assign.elements[1].toType()
     }
@@ -77,12 +76,26 @@ fun SExpr.toExpression(): Pair<Example, Set<String>> =
         }
     }
 
-fun parseExample(s: String) = SExprParser(s).parse().toExpression().first
+fun SExpr.toExample(): Example =
+    when (this) {
+        is SExpr.Atm -> Name(this.value)
+        is SExpr.Lst -> {
+            require(this.elements.isNotEmpty())
+            val apps = this.elements.map { it.toExample() }
+            fun leftAssocApp(apps: List<Example>): Example =
+                if (apps.size == 1) apps[0] else App(leftAssocApp(apps.dropLast(1)), apps.last())
+            leftAssocApp(apps)
+        }
+    }
 
-fun parseApp(s: String) = SExprParser(s).parse().toSignedExample().second
+fun String.toExample() = parseSExpr(this).toExample()
+
+fun parseExample(s: String) = parseSExpr(s).toExpression().first
+
+fun parseApp(s: String) = parseSExpr(s).toSignedExample().second
 
 fun parseFlatExamples(sexps: Collection<String>): FlatQuery =
-    flatExamplesFromSexps(sexps.map { SExprParser(it).parse() })
+    flatExamplesFromSexps(sexps.map { parseSExpr(it) })
 
 private fun flatExamplesFromSexps(sexps: Collection<SExpr>): FlatQuery {
     val exsWithNames = sexps.map { it.toFlatExample() }
@@ -137,4 +150,4 @@ private fun SExpr.toFlatApplication(): Pair<FlatApp, Set<String>> =
         }
     }
 
-fun parseFlatApp(s: String) = SExprParser(s).parse().toFlatApplication().first
+fun parseFlatApp(s: String) = parseSExpr(s).toFlatApplication().first

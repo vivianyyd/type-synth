@@ -1,4 +1,6 @@
-package util
+package util.io
+
+fun parseSExpr(s: String) = SExprParser(s).parse()
 
 sealed class SExpr {
     data class Atm(val value: String) : SExpr() {
@@ -10,7 +12,7 @@ sealed class SExpr {
     }
 }
 
-class SExprParser(private val input: String) {
+private class SExprParser(private val input: String) {
     private var position = 0
 
     fun parse(): SExpr {
