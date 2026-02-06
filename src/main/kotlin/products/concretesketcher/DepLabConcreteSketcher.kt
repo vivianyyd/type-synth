@@ -1,6 +1,7 @@
-package concretesketcher
+package products.concretesketcher
 
-import products.stbsketchout.*
+import dependencyanalysis.*
+import products.stc.*
 import query.App
 import query.Example
 import query.Name
@@ -9,13 +10,10 @@ import util.Oracle
 import util.SketchWriter
 import java.lang.Integer.max
 
-typealias ContextOutline = Map<String, OldSymTypeB>
-
-const val TYPE_DEPTH_BOUND = 3
-
-class ConcreteSketcher(
+class DepLabConcreteSketcher(
     val query: Query,
-    private val contextOutline: ContextOutline,
+    private val contextOutline: Projection,
+    private val dependencies: ArrowDependencyAnalysis,
     private val varTypeIds: Map<String, Int>,
     private val oracle: Oracle
 ) {
@@ -43,64 +41,89 @@ class ConcreteSketcher(
             return w.s()
         }
 
-        private fun nullary(name: String) = contextOutline[name]!! is L
+        private fun nullary(name: String): Boolean = TODO() // contextOutline[name]!! is CL
 
         private fun header() {
-            w.include("/home/vivianyyd/type-synth/src/main/sketch/concretize/concretetypes.sk")
+            w.include(
+                "/home/vivianyyd/type-synth/src/main/sketch/concretize/concretetypesgivenlabels_bindingslist.sk"
+            )
             w.comment(
                 listOf(
-                    contextOutline.entries.joinToString(separator = "\n", postfix = "\n"),
+                    contextOutline.outline.entries.joinToString(separator = "\n", postfix = "\n"),
                     "NAME\t\tSKETCHNAME\t\tDUMMY"
-                ) +
-                        sketchNames.map { (k, v) ->
-                            "$k\t\t\t$v\t\t\t${
-                                if (nullary(k)) oracle.dummy(Name(k)) else ""
-                            }"
-                        })
+                )
+                //                    + sketchNames.map { (k, v) ->
+                //                "$k\t\t\t$v\t\t\t${
+                //                    if (nullary(k)) oracle.dummy(Name(k)) else ""
+                //                }"
+                //            }
+            )
         }
 
-        private fun codeFor(t: OldSymTypeB, tid: Int, groundVars: Int, destination: String): Unit =
+        private fun codeFor(
+            t: SymTypeC,
+            tid: Int,
+            groundVars: Int,
+            destination: String,
+            constraints: Map<Int, DependencyConstraint>,
+            paramIndex: Int
+        ): Unit {
+            val c = constraints[paramIndex]
+            val constraint =
+                when (c) {
+                    null -> "null"
+                    is ContainsNoVariables -> "new NoVars()"
+                    is ContainsOnly -> "new OnlyVariable(tid=${c.tId}, vid=${c.vId})"
+                    is MustContainVariables -> TODO()
+                }
+            val vars =
+                when (c) {
+                    is ContainsOnly -> "$groundVars"
+                    is ContainsNoVariables -> "0"
+                    else -> "$groundVars + labelVars"
+                }
+            // TODO make different generators for each constraint, sketch never sees
+            //   the constraints? for containsonly then fns have to define their own generators
             when (t) {
-                is CL ->
+                //                is CL -> w.line("$destination = clabel(register, numLKs, $tid,
+                // $constraint, $TYPE_DEPTH_BOUND)")
+                is L ->
                     w.line(
-                        "$destination = clabel(register, numLKs, $tid, $groundVars, labelVars, $TYPE_DEPTH_BOUND)"
-                    )
-                L ->
-                    w.line(
-                        "$destination = label(register, numLKs, $tid, $groundVars, labelVars, $TYPE_DEPTH_BOUND)"
+                        "$destination = label(register, numLKs, $tid, $vars, $constraint, $TYPE_DEPTH_BOUND)"
                     )
                 is F -> {
                     val (left, rite) = "${destination}l" to "${destination}r"
                     w.line("Type $left; Type $rite")
-                    codeFor(t.left, tid, groundVars, left)
-                    codeFor(t.rite, tid, groundVars, rite)
+                    codeFor(t.left, tid, groundVars, left, constraints, paramIndex)
+                    codeFor(t.rite, tid, groundVars, rite, constraints, paramIndex + 1)
                     w.line("$destination = new Function(left=$left, rite=$rite)")
                 }
-                is VB -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
-                is VR -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
-                is VL -> w.line("$destination = variableInLabel(${tid}, $groundVars, labelVars)")
-                is N -> throw Exception("rly should fix this") // TODO
+                is Var -> w.line("$destination = new Variable(tid=${t.tId}, vid=${t.vId})")
+                //                is N -> throw Exception("rly should fix this")  // TODO
             }
+        }
 
         private fun generator(name: String) {
             val tid = tId(name)
             val outline = outline(name)
-            fun lastVar(t: OldSymTypeB): Int =
+            fun lastVar(t: SymTypeC): Int =
                 when (t) {
                     is F -> max(lastVar(t.left), lastVar(t.rite))
-                    is CL,
-                    L,
+                    is L,
                     is VL -> -1
                     is VB -> t.vId
                     is VR -> t.vId
-                    is N -> throw Exception("rly should fix this") // TODO
+                    //                is N -> throw Exception("rly should fix this")  // TODO
                 }
 
             val groundVars = lastVar(outline) + 1
-            w.block("Type ${sk(name)}(List<LabelKind> register, int numLKs)") {
+            w.block("Type ${sk(name)}(LabelKind[8] register, int numLKs)") {
                 w.line("Type root")
-                w.line("int labelVars = makeLabelVars()")
-                codeFor(outline, tid, groundVars, "root")
+                // TODO If all our params have constraints, we don't need to call this
+                /*if (!nullary(name)) */ w.line("int labelVars = makeLabelVars()")
+                TODO("Changed constraints() fn, update this line later")
+                //                codeFor(outline, tid, groundVars, "root", constraints(name,
+                // contextOutline, dependencies), 0)
                 w.line("return root")
             }
         }
@@ -128,8 +151,13 @@ class ConcreteSketcher(
         private fun makeAndTest() =
             w.block("harness void main()") {
                 w.lines(
-                    listOf("int numLKs", "List@list<LabelKind> register = makeLabelKinds(numLKs)") +
-                            query.names.map { "Type ${sk(it)} = ${sk(it)}(register, numLKs)" })
+                    listOf(
+                        "int numLKs = 3",
+                        "LabelKind[8] register",
+                        "register[0] = new LabelKind(l=0, numParams=0)",
+                        "register[1] = new LabelKind(l=1, numParams=0)",
+                        "register[2] = new LabelKind(l=2, numParams=1)",
+                    ) + query.names.map { "Type ${sk(it)} = ${sk(it)}(register, numLKs)" })
                 w.lines(
                     LinkedHashSet(
                         query.posWithSubexprs.filterIsInstance<App>().flatMap { posExample(it) })
@@ -261,7 +289,7 @@ class ConcreteSketcher(
     /** Use me wisely */
     private fun sk(name: String) = sketchNames[name]!!
 
-    private fun outline(name: String) = contextOutline[name]!!
+    private fun outline(name: String) = contextOutline.outline[name]!!
 
     private fun tId(name: String) = varTypeIds[name]!!
 }
