@@ -1,5 +1,6 @@
 package oneast
 
+import fixtures.OcamlTypeParser
 import fixtures.loadQuery
 import util.Logger
 import util.NewCheckingOracle

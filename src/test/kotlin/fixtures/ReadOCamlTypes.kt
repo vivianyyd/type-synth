@@ -14,7 +14,8 @@ fun parseTypeExpression(source: String): Type =
  */
 fun parseTypeExpressions(source: String): List<Type> {
     val session = TypeParsingSession()
-    return source.lineSequence()
+    return source
+        .lineSequence()
         .map(::normalizeTypeLine)
         .filter { it.isNotEmpty() }
         .map { session.parse(it) }
@@ -42,8 +43,7 @@ private fun normalizeTypeLine(raw: String): String {
 private class TypeParsingSession {
     private val constructorLabels = linkedMapOf<String, Int>()
 
-    fun parse(source: String): Type =
-        TypeExpressionParser(source, constructorLabels).parse()
+    fun parse(source: String): Type = TypeExpressionParser(source, constructorLabels).parse()
 }
 
 private class TypeExpressionParser(
@@ -193,4 +193,127 @@ private sealed interface Token {
     data class Identifier(val value: String) : Token
 
     data class TypeVariable(val name: String) : Token
+}
+
+/**
+ * Parses OCaml-style value signatures (e.g. `val foo : 'a list -> int`) into the repository's
+ * [Type] AST. Type variables are assigned stable numeric IDs within each signature, while
+ * constructors share IDs across all parsed signatures so that every constructor name maps to a
+ * unique [NamedLabel] label.
+ */
+class OcamlTypeParser {
+    private val constructorIds = mutableMapOf<String, Int>()
+    private var nextConstructorId = 0
+
+    /**
+     * Parses one or more signatures (separated by newlines) into a map from value names to [Type]s.
+     */
+    fun parseSignatures(block: String): Map<String, Type> {
+        val result = LinkedHashMap<String, Type>()
+        block
+            .lineSequence()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .forEach { line ->
+                val (name, type) = parseSignatureLine(line)
+                result[name] = type
+            }
+        return result
+    }
+
+    /** Convenience wrapper when only a single signature string is provided. */
+    fun parseSignature(signature: String): Map<String, Type> = parseSignatures(signature)
+
+    private fun parseSignatureLine(line: String): Pair<String, Type> {
+        val normalized = normalizeLine(line)
+        val colonIndex = normalized.indexOf(':')
+        require(colonIndex >= 0) { "Signature must contain ':' : $line" }
+        val name = normalized.substring(0, colonIndex).trim()
+        val typePart = normalized.substring(colonIndex + 1).trim()
+
+        val tokens = tokenize(typePart)
+        val variableContext = VariableContext()
+        val (type, remaining) = parseArrow(tokens, variableContext)
+        require(remaining.isEmpty()) { "Unparsed tokens: $remaining" }
+        return name to type
+    }
+
+    private fun normalizeLine(line: String): String {
+        var trimmed = line.trim()
+        while (trimmed.endsWith(";")) {
+            trimmed = trimmed.dropLast(1).trimEnd()
+        }
+        if (trimmed.startsWith("val ")) {
+            trimmed = trimmed.removePrefix("val ").trimStart()
+        }
+        return trimmed
+    }
+
+    private fun parseArrow(tokens: List<String>, ctx: VariableContext): Pair<Type, List<String>> {
+        var (lhs, rest) = parseApplication(tokens, ctx)
+        while (rest.firstOrNull() == "->") {
+            val (rhs, next) = parseArrow(rest.drop(1), ctx)
+            lhs = Arrow(lhs, rhs)
+            rest = next
+        }
+        return lhs to rest
+    }
+
+    private fun parseApplication(
+        tokens: List<String>,
+        ctx: VariableContext
+    ): Pair<Type, List<String>> {
+        var (base, rest) = parseAtom(tokens, ctx)
+        val args = mutableListOf<Type>()
+        while (rest.isNotEmpty() && isAtomStart(rest[0])) {
+            val (arg, next) = parseAtom(rest, ctx)
+            args.add(arg)
+            rest = next
+        }
+        if (args.isNotEmpty()) {
+            val head =
+                base as? NamedLabel ?: error("Cannot apply arguments to non-constructor $base")
+            base = head.copy(params = head.params + args)
+        }
+        return base to rest
+    }
+
+    private fun parseAtom(tokens: List<String>, ctx: VariableContext): Pair<Type, List<String>> {
+        require(tokens.isNotEmpty()) { "Unexpected end of input" }
+        val head = tokens.first()
+        return when {
+            head.startsWith("'") -> {
+                Variable(ctx.variableId(head)) to tokens.drop(1)
+            }
+            head == "(" -> {
+                val (inner, rest) = parseArrow(tokens.drop(1), ctx)
+                require(rest.firstOrNull() == ")") { "Expected closing parenthesis" }
+                inner to rest.drop(1)
+            }
+            else -> {
+                NamedLabel(constructorId(head), emptyList()) to tokens.drop(1)
+            }
+        }
+    }
+
+    private fun constructorId(name: String): Int =
+        constructorIds.getOrPut(name) { nextConstructorId++ }
+
+    private fun tokenize(expr: String): List<String> =
+        expr
+            .replace("(", " ( ")
+            .replace(")", " ) ")
+            .replace("->", " -> ")
+            .split(Regex("\\s+"))
+            .filter { it.isNotEmpty() }
+
+    private fun isAtomStart(token: String): Boolean =
+        token.startsWith("'") || token == "(" || token.firstOrNull()?.isLetter() == true
+
+    private data class VariableContext(
+        val ids: MutableMap<String, Int> = mutableMapOf(),
+        var nextId: Int = 0
+    ) {
+        fun variableId(name: String): Int = ids.getOrPut(name) { nextId++ }
+    }
 }
