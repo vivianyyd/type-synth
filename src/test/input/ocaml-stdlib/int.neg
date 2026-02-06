@@ -1,0 +1,56 @@
+((~-) true)
+((~-) "a")
+
+((~+) true)
+((~+) "a")
+
+((+) 0 "a")
+((+) true 1)
+
+((-) 0 "a")
+((-) true 1)
+
+((*) 0 "a")
+((*) true 1)
+
+((/) 0 "a")
+((/) true 1)
+
+((mod) 0 "a")
+((mod) true 1)
+
+(abs true)
+(abs "a")
+
+(succ true)
+(succ "a")
+
+(pred true)
+(pred "a")
+
+(max_int 0)
+((+) max_int "a")
+
+(min_int 0)
+((-) min_int "a")
+
+((land) true 0)
+((land) 0 "a")
+
+((lor) true 0)
+((lor) 0 "a")
+
+((lxor) true 0)
+((lxor) 0 "a")
+
+((lsl) true 0)
+((lsl) 0 "a")
+
+((lsr) true 0)
+((lsr) 0 "a")
+
+((asr) true 0)
+((asr) 0 "a")
+
+(lnot true)
+(lnot "a")
