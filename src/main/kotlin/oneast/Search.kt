@@ -39,7 +39,6 @@ abstract class SearchStrategy(private val query: Query) {
     }
 }
 
-/** Fills one hole at a time, shallowest first, in DFS style. */
 class Search(
     val seed: SearchState,
     val query: Query,

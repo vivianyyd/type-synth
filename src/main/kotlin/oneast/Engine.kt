@@ -6,11 +6,11 @@ import query.Name
 import query.Query
 import kotlin.math.min
 
-typealias EnumeratorProvider = (Query, SearchState) -> Search
+typealias SearchProvider = (Query, SearchState) -> Search
 
 class Engine(
     private val query: Query,
-    private val enumeratorProvider: EnumeratorProvider,
+    private val searchProvider: SearchProvider,
     private val namesPerRound: Int
 ) {
     // ceiling division
@@ -70,7 +70,7 @@ class Engine(
     }
 
     private fun solveQuery(query: Query, state: SearchState): Sequence<SearchState> {
-        val solver = enumeratorProvider(query, state)
+        val solver = searchProvider(query, state)
         return solver.solutions()
     }
 
@@ -100,7 +100,7 @@ Can use universe of examples to guide in finding initial set of names with enoug
 self contained examples.
 If we start with 100 examples, want a subset of names for which i can find 20 examples.
  */
-class Selector {
+private class Selector {
     /** Requires: [candidates] and [base] are disjoint. */
     private fun greedy(
         base: Set<String>, // already chosen elements
@@ -151,7 +151,7 @@ class Selector {
  * Uses the invariant that [marginalGain] is only called on names that have not yet been added to
  * the set, so counting coverage of each example suffices to compute gain.
  */
-class Scorer(private val examples: List<Example>) {
+private class Scorer(private val examples: List<Example>) {
     private val m = examples.size
 
     // For each example, number of elements already chosen

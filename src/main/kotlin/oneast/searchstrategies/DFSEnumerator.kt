@@ -3,6 +3,7 @@ package oneast.searchstrategies
 import oneast.*
 import query.Query
 
+/** Fills one hole at a time, shallowest first, in DFS style. */
 class DFSEnumerator(query: Query) : SearchStrategy(query) {
     // TODO can also implement a stateful version where we mutate the tree by picking a hole which
     //   has a parent pointer, for each of the expansions, modify the parent and recurse. when done,
