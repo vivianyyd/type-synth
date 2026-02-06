@@ -1,0 +1,39 @@
+val "a" : string
+val "b" : string
+val * : int -> int -> int
+val + : int -> int -> int
+val - : int -> int -> int
+val -1 : int
+val / : int -> int -> int
+val 0 : int
+val 1 : int
+val 2 : int
+val < : 'a -> 'a -> bool
+val <= : 'a -> 'a -> bool
+val <> : 'a -> 'a -> bool
+val = : 'a -> 'a -> bool
+val > : 'a -> 'a -> bool
+val >= : 'a -> 'a -> bool
+val [0;1] : int list
+val [0] : int list
+val [1] : int list
+val abs : int -> int
+val asr : int -> int -> int
+val compare : 'a -> 'a -> int
+val false : bool
+val land : int -> int -> int
+val lnot : int -> int
+val lor : int -> int -> int
+val lsl : int -> int -> int
+val lsr : int -> int -> int
+val lxor : int -> int -> int
+val max : 'a -> 'a -> 'a
+val max_int : int
+val min : 'a -> 'a -> 'a
+val min_int : int
+val mod : int -> int -> int
+val pred : int -> int
+val succ : int -> int
+val true : bool
+val ~+ : int -> int
+val ~- : int -> int
