@@ -2,7 +2,7 @@ package util
 
 class Counter(private var ctr: Int = 0) {
     fun ensureGt(min: Int) {
-        ctr = min + 1
+        if (ctr <= min) ctr = min + 1
     }
 
     fun get() = ctr++
