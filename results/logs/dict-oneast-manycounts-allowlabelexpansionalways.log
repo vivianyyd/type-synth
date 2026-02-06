@@ -1,0 +1,55 @@
+Dict
+Running CVC: true
+Size bound: 20
+Depth bound: 4
+Names per round: 10
+=====
+
+[15:44:26.570198]	BEG Initial search without labels or nullaries
+[15:44:26.657808]	END Initial search without labels or nullaries : 123 ms
+[15:44:26.658597]	Counts:
+Total candidates=101
+[15:44:26.658892]	Elapsed time: 223 ms
+[15:44:26.700404]	BEG Dependency analysis and solving for label arities
+[15:44:35.960454]	END Dependency analysis and solving for label arities : 9260 ms
+[15:44:35.960556]	Counts:
+Total candidates=101
+[15:44:35.960602]	Elapsed time: 9525 ms
+[15:44:35.960908]	Concrete seeds: 22
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V0 -> V0 -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V0 -> V0 -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V0 -> V0 -> L0[], tr=L0[]}
+{0=L0[.], 1=L0[.], Ebi=L0[.], Eib=L0[.], Eii=L0[.], put=V0 -> V0 -> L0[_] -> V0, tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L0[.], Eib=L0[.], Eii=L0[.], put=V0 -> V0 -> L0[_] -> V1, tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L0[.], Eib=L0[.], Eii=L0[.], put=V0 -> V0 -> L0[_] -> L0[_], tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L0[.], Eib=L0[.], Eii=L0[.], put=V0 -> L0[_] -> V0 -> V0, tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L0[.], Eib=L0[.], Eii=L0[.], put=V0 -> L0[_] -> V0 -> V1, tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L0[.], Eib=L0[.], Eii=L0[.], put=V0 -> L0[_] -> V0 -> L0[_], tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> L0[_] -> L0[_] -> V0, tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> L0[_] -> L0[_] -> V1, tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> L0[_] -> L0[_] -> L4[], tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L0[.], Eib=L0[.], Eii=L0[.], put=L0[_] -> V0 -> V0 -> V0, tr=L0[.]}
+{0=L0[], 1=L0[], Ebi=L1[.], Eib=L1[.], Eii=L1[.], put=L1[_] -> V0 -> V0 -> L1[_], tr=L0[]}
+{0=L0[., .], 1=L0[., .], Ebi=L0[., .], Eib=L0[., .], Eii=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0, tr=L0[., .]}
+{0=L0[., .], 1=L0[., .], Ebi=L0[., .], Eib=L0[., .], Eii=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1, tr=L0[., .]}
+{0=L0[], 1=L0[], Ebi=L1[., .], Eib=L1[., .], Eii=L1[., .], put=L1[_, _] -> V0 -> V1 -> L1[_, _], tr=L2[]}
+{0=L0[.], 1=L0[.], Ebi=L0[.], Eib=L0[.], Eii=L0[.], put=L0[_] -> V0 -> L0[_] -> V0, tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L1[.], Eib=L1[.], Eii=L1[.], put=L1[_] -> V0 -> L0[_] -> L1[_], tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L0[.], Eib=L0[.], Eii=L0[.], put=L0[_] -> L0[_] -> V0 -> V0, tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L1[.], Eib=L1[.], Eii=L1[.], put=L1[_] -> L0[_] -> V0 -> L1[_], tr=L0[.]}
+{0=L0[.], 1=L0[.], Ebi=L1[.], Eib=L1[.], Eii=L1[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_], tr=L0[.]}
+[15:44:35.960980]	BEG Depth 1 for [0, 1, Ebi, Eib, Eii, put, tr]
+[15:44:35.961023]	BEG Size 1 for [0, 1, Ebi, Eib, Eii, put, tr]
+[15:44:36.043594]	END Size 1 for [0, 1, Ebi, Eib, Eii, put, tr] : 82 ms
+[15:44:36.043743]	Counts:
+Total candidates=157
+[15:44:36.043811]	Elapsed time: 9608 ms
+[15:44:36.043878]	BEG Size 2 for [0, 1, Ebi, Eib, Eii, put, tr]
+[15:44:36.247064]	END Size 2 for [0, 1, Ebi, Eib, Eii, put, tr] : 204 ms
+[15:44:36.247233]	Counts:
+Total candidates=401
+[15:44:36.247285]	Elapsed time: 9812 ms
+[15:44:36.247372]	BEG Size 3 for [0, 1, Ebi, Eib, Eii, put, tr]
+[15:44:36.384515]	got solution {0=L0[], 1=L0[], Ebi=L1[L0[], L2[]], Eib=L1[L2[], L0[]], Eii=L1[L0[], L0[]], put=L1[V1, V0] -> V0 -> V1 -> L1[V1, V0], tr=L2[]}
+[15:44:36.384706]	FIRST SOLUTION: {0=L0[], 1=L0[], Ebi=L1[L0[], L2[]], Eib=L1[L2[], L0[]], Eii=L1[L0[], L0[]], put=L1[V1, V0] -> V0 -> V1 -> L1[V1, V0], tr=L2[]}
+[15:44:36.384760]	9933 ms

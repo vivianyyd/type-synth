@@ -1,0 +1,70 @@
+Dict
+Running CVC: true
+DFSPriority
+Eager
+Size bound: 20
+Depth bound: 4
+=====
+
+[16:31:32.552835]	BEG Init search
+[16:31:32.587915]	END Init search : 60 ms
+[16:31:32.588041]	Counts:
+
+[16:31:32.588094]	Elapsed time: 69 ms
+[16:31:32.588407]	BEG Compile Init to Elab
+[16:31:32.589750]	END Compile Init to Elab : 1 ms
+[16:31:32.589835]	Counts:
+
+[16:31:32.589879]	Elapsed time: 70 ms
+[16:31:32.590135]	BEG Elab search
+[16:31:32.617920]	END Elab search : 27 ms
+[16:31:32.618057]	Counts:
+
+[16:31:32.618139]	Elapsed time: 99 ms
+[16:31:32.618605]	BEG Compile Elab to Concrete
+[16:31:34.913487]	END Compile Elab to Concrete : 2295 ms
+[16:31:34.913579]	Counts:
+
+[16:31:34.913620]	Elapsed time: 2394 ms
+[16:31:34.914014]	BEG Concrete search
+[16:31:34.914138]	BEG Depth 2
+[16:31:34.914186]	BEG Size 1
+[16:31:34.951982]	END Size 1 : 37 ms
+[16:31:34.952093]	Counts:
+
+[16:31:34.952156]	Elapsed time: 2433 ms
+[16:31:34.952216]	BEG Size 2
+[16:31:35.039355]	END Size 2 : 87 ms
+[16:31:35.039555]	Counts:
+Total candidates for 0: L0[], 1: L0[], Ebi: L2[_5_, _6_], Eib: L2[_7_, _8_], Eii: L2[_9_, _10_], put: L2[_11_, _12_] -> V0 -> V1 -> L2[_13_, _14_], tr: L7[]=167
+[16:31:35.039634]	Elapsed time: 2520 ms
+[16:31:35.039705]	STOPPED AT SIZE 2
+[16:31:35.039768]	END Depth 2 : 125 ms
+[16:31:35.039835]	Counts:
+Total candidates for 0: L0[], 1: L0[], Ebi: L2[_5_, _6_], Eib: L2[_7_, _8_], Eii: L2[_9_, _10_], put: L2[_11_, _12_] -> V0 -> V1 -> L2[_13_, _14_], tr: L7[]=167
+[16:31:35.039894]	Elapsed time: 2520 ms
+[16:31:35.039956]	STOPPED AT DEPTH 2
+[16:31:35.040032]	END Concrete search : 126 ms
+[16:31:35.040107]	Counts:
+Total candidates for 0: L0[], 1: L0[], Ebi: L2[_5_, _6_], Eib: L2[_7_, _8_], Eii: L2[_9_, _10_], put: L2[_11_, _12_] -> V0 -> V1 -> L2[_13_, _14_], tr: L7[]=167
+[16:31:35.040203]	Elapsed time: 2521 ms
+[16:31:35.040494]	Counts:
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: _1_ -> _2_, tr: L=48
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_7_ -> V_8_ -> V_9_ -> V_10_, tr: L=23
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_11_ -> V_12_ -> V_13_ -> L, tr: L=8
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_14_ -> V_15_ -> L -> V_16_, tr: L=8
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_17_ -> V_18_ -> L -> L, tr: L=3
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_19_ -> L -> V_20_ -> V_21_, tr: L=8
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_22_ -> L -> V_23_ -> L, tr: L=3
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_24_ -> L -> L -> V_25_, tr: L=3
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: V_26_ -> L -> L -> L, tr: L=1
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> V_27_ -> V_28_ -> V_29_, tr: L=8
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> V_30_ -> V_31_ -> L, tr: L=3
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> V_32_ -> L -> V_33_, tr: L=3
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> V_34_ -> L -> L, tr: L=1
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> L -> V_35_ -> V_36_, tr: L=3
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> L -> V_37_ -> L, tr: L=1
+Total candidates for 0: L, 1: L, Ebi: L, Eib: L, Eii: L, put: L -> L -> L -> V_38_, tr: L=1
+Total candidates for 0: L0[], 1: L0[], Ebi: L2[_0_], Eib: L2[_1_], Eii: L2[_2_], put: L2[_3_] -> V0 -> V1 -> L2[_4_], tr: L7[]=42
+Total candidates for 0: L0[], 1: L0[], Ebi: L2[_5_, _6_], Eib: L2[_7_, _8_], Eii: L2[_9_, _10_], put: L2[_11_, _12_] -> V0 -> V1 -> L2[_13_, _14_], tr: L7[]=167
+[16:31:35.040874]	Total time: 2521 ms

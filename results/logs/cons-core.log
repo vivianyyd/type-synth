@@ -1,0 +1,70 @@
+Cons
+Running CVC: true
+DFSPriority
+Eager
+Size bound: 20
+Depth bound: 4
+=====
+
+[16:10:51.755686]	BEG Init search
+[16:10:51.809559]	END Init search : 95 ms
+[16:10:51.809853]	Counts:
+
+[16:10:51.810050]	Elapsed time: 107 ms
+[16:10:51.810907]	BEG Compile Init to Elab
+[16:10:51.813866]	END Compile Init to Elab : 3 ms
+[16:10:51.814071]	Counts:
+
+[16:10:51.814177]	Elapsed time: 111 ms
+[16:10:51.815007]	BEG Elab search
+[16:10:51.830520]	END Elab search : 16 ms
+[16:10:51.830654]	Counts:
+
+[16:10:51.830723]	Elapsed time: 127 ms
+[16:10:51.831328]	BEG Compile Elab to Concrete
+[16:10:54.577448]	END Compile Elab to Concrete : 2746 ms
+[16:10:54.577644]	Counts:
+
+[16:10:54.577785]	Elapsed time: 2874 ms
+[16:10:54.578517]	Concrete seeds: 19
+0: L0[], LLi: L0[], Li: L0[], []b: L3[], cons: V0 -> V0 -> V0, tr: L3[]
+0: L0[], LLi: L0[], Li: L0[], []b: L3[], cons: V0 -> V0 -> V1, tr: L3[]
+0: L0[], LLi: L0[], Li: L0[], []b: L0[], cons: V0 -> V0 -> L0[], tr: L0[]
+0: L0[], LLi: L0[], Li: L0[], []b: L0[], cons: V0 -> L0[] -> V0, tr: L0[]
+0: L0[_0_], LLi: L0[_1_], Li: L0[_2_], []b: L0[_3_], cons: V0 -> L0[_4_] -> V0, tr: L0[_5_]
+0: L0[], LLi: L1[], Li: L1[], []b: L1[], cons: V0 -> L1[] -> V1, tr: L5[]
+0: L0[], LLi: L1[_6_], Li: L1[_7_], []b: L1[_8_], cons: V0 -> L1[_9_] -> V1, tr: L5[]
+0: L0[], LLi: L1[], Li: L1[], []b: L1[], cons: V0 -> L1[] -> L1[], tr: L6[]
+0: L0[], LLi: L1[_10_], Li: L1[_11_], []b: L1[_12_], cons: V0 -> L1[_13_] -> L1[_14_], tr: L6[]
+0: L0[], LLi: L0[], Li: L0[], []b: L0[], cons: L0[] -> V0 -> V0, tr: L0[]
+0: L0[_15_], LLi: L0[_16_], Li: L0[_17_], []b: L0[_18_], cons: L0[_19_] -> V0 -> V0, tr: L0[_20_]
+0: L0[], LLi: L0[], Li: L0[], []b: L0[], cons: L0[] -> V0 -> V1, tr: L0[]
+0: L0[_21_], LLi: L0[_22_], Li: L0[_23_], []b: L0[_24_], cons: L0[_25_] -> V0 -> V1, tr: L0[_26_]
+0: L0[], LLi: L0[], Li: L0[], []b: L0[], cons: L0[] -> V0 -> L0[], tr: L0[]
+0: L0[_27_], LLi: L0[_28_], Li: L0[_29_], []b: L0[_30_], cons: L0[_31_] -> V0 -> L0[_32_], tr: L0[_33_]
+0: L0[], LLi: L0[], Li: L0[], []b: L0[], cons: L0[] -> L0[] -> V0, tr: L0[]
+0: L0[_34_], LLi: L0[_35_], Li: L0[_36_], []b: L0[_37_], cons: L0[_38_] -> L0[_39_] -> V0, tr: L0[_40_]
+0: L0[], LLi: L0[], Li: L0[], []b: L0[], cons: L0[] -> L0[] -> L0[], tr: L0[]
+0: L0[_41_], LLi: L0[_42_], Li: L0[_43_], []b: L0[_44_], cons: L0[_45_] -> L0[_46_] -> L0[_47_], tr: L0[_48_]
+[16:10:54.579464]	BEG Concrete search
+[16:10:54.580195]	BEG Depth 2
+[16:10:54.580365]	BEG Size 1
+[16:10:54.608186]	END Size 1 : 28 ms
+[16:10:54.608419]	Counts:
+Total candidates=58
+[16:10:54.608561]	Elapsed time: 2905 ms
+[16:10:54.608711]	STOPPED AT SIZE 1
+[16:10:54.608825]	END Depth 2 : 28 ms
+[16:10:54.608960]	Counts:
+Total candidates=58
+[16:10:54.609062]	Elapsed time: 2906 ms
+[16:10:54.609163]	STOPPED AT DEPTH 2
+[16:10:54.609271]	END Concrete search : 30 ms
+[16:10:54.609398]	Counts:
+Total candidates=58
+[16:10:54.609532]	Elapsed time: 2906 ms
+[16:10:54.609647]	FINAL SOLUTIONS:
+[16:10:54.609841]	0: L0[], LLi: L1[L1[V0]], Li: L1[L0[]], []b: L1[L6[]], cons: V0 -> L1[V0] -> L1[V0], tr: L6[]
+[16:10:54.609986]	Counts:
+Total candidates=58
+[16:10:54.610111]	Total time: 2907 ms

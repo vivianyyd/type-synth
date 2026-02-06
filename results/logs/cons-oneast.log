@@ -1,0 +1,48 @@
+Cons
+Running CVC: true
+Size bound: 20
+Depth bound: 4
+Names per round: 10
+=====
+
+[16:09:48.950820]	BEG Initial search without labels or nullaries
+[16:09:49.005451]	END Initial search without labels or nullaries : 87 ms
+[16:09:49.005929]	Counts:
+
+[16:09:49.006183]	Elapsed time: 143 ms
+[16:09:49.020081]	Seeds before label arities: 11
+{0=L0[], LLi=L0[], Li=L0[], []b=L1[], cons=V0 -> V0 -> V0, tr=L1[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=V0 -> V0 -> L0[], tr=L0[]}
+{0=L0[], LLi=L1[], Li=L2[], []b=L3[], cons=V0 -> V1 -> V0, tr=L4[]}
+{0=L0[], LLi=L1[], Li=L2[], []b=L3[], cons=V0 -> V1 -> V1, tr=L4[]}
+{0=L0[], LLi=L1[], Li=L2[], []b=L3[], cons=V0 -> V1 -> V2, tr=L4[]}
+{0=L0[], LLi=L1[], Li=L2[], []b=L3[], cons=V0 -> V1 -> L4[], tr=L5[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=V0 -> L0[] -> V0, tr=L0[]}
+{0=L0[], LLi=L1[], Li=L1[], []b=L1[], cons=V0 -> L1[] -> L1[], tr=L2[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=L0[] -> V0 -> V0, tr=L0[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=L0[] -> V0 -> L0[], tr=L0[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=L0[] -> L0[] -> L0[], tr=L0[]}
+[16:09:49.021061]	BEG Dependency analysis and solving for label arities
+[16:09:51.053486]	END Dependency analysis and solving for label arities : 2032 ms
+[16:09:51.053591]	Counts:
+
+[16:09:51.053658]	Elapsed time: 2190 ms
+[16:09:51.054012]	Concrete seeds: 12
+{0=L0[], LLi=L0[], Li=L0[], []b=L1[], cons=V0 -> V0 -> V0, tr=L1[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=V0 -> V0 -> L0[], tr=L0[]}
+{0=L0[.], LLi=L0[.], Li=L0[.], []b=L0[.], cons=V0 -> L0[_] -> V0, tr=L0[.]}
+{0=L0[.], LLi=L0[.], Li=L0[.], []b=L0[.], cons=V0 -> L0[_] -> V0, tr=L0[.]}
+{0=L0[], LLi=L1[.], Li=L1[.], []b=L1[.], cons=V0 -> L1[_] -> L1[_], tr=L2[]}
+{0=L0[], LLi=L1[.], Li=L1[.], []b=L1[.], cons=V0 -> L1[_] -> L1[_], tr=L2[]}
+{0=L0[.], LLi=L0[.], Li=L0[.], []b=L0[.], cons=L0[_] -> V0 -> V0, tr=L0[.]}
+{0=L0[.], LLi=L0[.], Li=L0[.], []b=L0[.], cons=L0[_] -> V0 -> V0, tr=L0[.]}
+{0=L0[.], LLi=L0[.], Li=L0[.], []b=L0[.], cons=L0[_] -> V0 -> L0[_], tr=L0[.]}
+{0=L0[.], LLi=L0[.], Li=L0[.], []b=L0[.], cons=L0[_] -> V0 -> L0[_], tr=L0[.]}
+{0=L0[.], LLi=L0[.], Li=L0[.], []b=L0[.], cons=L0[_] -> L0[_] -> L0[_], tr=L0[.]}
+{0=L0[.], LLi=L0[.], Li=L0[.], []b=L0[.], cons=L0[_] -> L0[_] -> L0[_], tr=L0[.]}
+[16:09:51.054139]	BEG Depth 1 for [0, LLi, Li, []b, cons, tr]
+[16:09:51.054215]	BEG Size 1 for [0, LLi, Li, []b, cons, tr]
+[16:09:51.062881]	FIRST SOLUTION: {0=L0[], LLi=L1[L1[V0]], Li=L1[L0[]], []b=L1[L2[]], cons=V0 -> L1[V0] -> L1[V0], tr=L2[]}
+[16:09:51.063019]	Counts:
+Total candidates=36
+[16:09:51.063077]	Total time: 2200 ms
