@@ -195,29 +195,3 @@ private class Parser(private val tokens: List<Token>, private val context: Parse
         return token
     }
 }
-
-fun main() {
-    //    val inputs = listOf(
-    //        "either :: (a -> c) -> (b -> c) -> Either a b -> c",
-    //        "f :: a -> b -> c",
-    //        "g :: Maybe (a -> b) -> c",
-    //        "f :: [a] -> b",
-    //        "f :: (a, b) -> c"
-    //    )
-    val inputs =
-        listOf(
-            "either :: (a -> c) -> (b -> c) -> Either a b -> c",
-            "lefts :: [Either a b] -> [a]",
-            "rights :: [Either a b] -> [b]",
-            "isLeft :: Either a b -> Bool",
-            "isRight :: Either a b -> Bool",
-            "fromLeft :: a -> Either a b -> a",
-            "fromRight :: b -> Either a b -> b",
-            "partitionEithers :: [Either a b] -> ([a], [b])"
-        )
-
-    for (input in inputs) {
-        val parsed = parseTypeSignature(input)
-        println(parsed)
-    }
-}

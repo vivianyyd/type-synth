@@ -1,8 +1,7 @@
-package util
-
+import util.toQuery
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import java.io.File
 
 class QueryTemplateTest {
     @Test

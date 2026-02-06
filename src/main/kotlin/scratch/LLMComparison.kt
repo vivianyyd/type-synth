@@ -84,8 +84,7 @@ fun main() {
         )
 
     val jsonAdapter = moshi.adapter(Map::class.java)
-    val body =
-        jsonAdapter.toJson(requestBodyJson).toRequestBody("application/json".toMediaType())
+    val body = jsonAdapter.toJson(requestBodyJson).toRequestBody("application/json".toMediaType())
 
     val request =
         Request.Builder()
@@ -117,71 +116,3 @@ fun main() {
                 }
             })
 }
-
-/*
-Synchronous blocking version
-
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
-import com.squareup.moshi.*
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import java.io.IOException
-
-// Data classes for parsing the response
-data class ChatCompletionResponse(
-    val choices: List<Choice>
-) {
-    data class Choice(val message: Message)
-    data class Message(val role: String, val content: String)
-}
-
-fun main() {
-    val apiKey = System.getenv("OPENAI_API_KEY") ?: error("Please set OPENAI_API_KEY environment variable")
-
-    val client = OkHttpClient()
-
-    val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-
-    val requestBodyJson = mapOf(
-        "model" to "gpt-4o-mini",
-        "messages" to listOf(
-            mapOf("role" to "system", "content" to "You are a helpful assistant."),
-            mapOf("role" to "user", "content" to "Write a short haiku about Kotlin.")
-        )
-    )
-
-    val jsonAdapter = moshi.adapter(Map::class.java)
-    val json = jsonAdapter.toJson(requestBodyJson)
-
-    val mediaType = "application/json".toMediaType()
-    val body = json.toRequestBody(mediaType)
-
-    val request = Request.Builder()
-        .url("https://api.openai.com/v1/chat/completions")
-        .addHeader("Authorization", "Bearer $apiKey")
-        .post(body)
-        .build()
-
-    try {
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                println("Request failed: ${response.code} ${response.message}")
-                return
-            }
-
-            val responseBody = response.body?.string() ?: ""
-            val adapter = moshi.adapter(ChatCompletionResponse::class.java)
-            val parsed = adapter.fromJson(responseBody)
-
-            val reply = parsed?.choices?.firstOrNull()?.message?.content ?: "(No content)"
-            println("GPT response:\n$reply")
-        }
-    } catch (e: IOException) {
-        e.printStackTrace()
-    }
-}
-
- */

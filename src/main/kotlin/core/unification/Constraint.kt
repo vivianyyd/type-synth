@@ -1,6 +1,9 @@
 package core.unification
 
-import core.languages.*
+import core.languages.Candidate
+import core.languages.Hole
+import core.languages.Language
+import core.languages.SearchNode
 import query.Example
 import util.Counter
 
@@ -120,5 +123,3 @@ interface Unification<L : Language> {
     /** Use me sparingly */
     fun constraints(): List<Constraint<L>>?
 }
-
-fun main() {}
