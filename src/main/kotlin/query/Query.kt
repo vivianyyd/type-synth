@@ -51,7 +51,7 @@ data class App(val fn: Example, val arg: Example) : Example {
  * This is more general than the previous query because we can apply the result of applications
  * without them being explicitly assigned to a name [posWithSubexprs] contains all subexpressions!
  */
-class Query(pos: Collection<Example> = listOf(), val neg: Collection<Example> = listOf()) {
+class Query(pos: Collection<Example>, val neg: Collection<Example>) {
     val posNoSubexprs: List<Example>
 
     init {
