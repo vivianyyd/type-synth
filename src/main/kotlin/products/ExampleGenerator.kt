@@ -1,7 +1,8 @@
-package query
+package products
 
-import types.*
-import types.Function
+import products.types.*
+import products.types.Function
+import query.*
 import util.SExprParser
 import util.reflexiveNaryProduct
 import java.util.*
@@ -96,7 +97,8 @@ class ExampleGenerator(
         dummies.forEach { (n, t) -> addPos(t, Name(n)) }
         //        dummies.filter { it.value is LabelNode }.forEach { (n, t) -> addPos(t, Name(n) as
         // Example) }
-        val negExamples = EnumMap(ErrorCategory.values().associateWith { mutableSetOf<Example>() })
+        val negExamples =
+            EnumMap(ErrorCategory.values().associateWith { mutableSetOf<Example>() })
 
         fun addNeg(err: ErrorCategory, ex: Example) {
             if (err in negExamples) {

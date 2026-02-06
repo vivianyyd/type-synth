@@ -1,8 +1,8 @@
 package query
 
+import products.types.toType
 import test.Test
 import test.TestPair
-import types.toType
 import util.CheckingOracle
 import util.SExpr
 import util.SExprParser

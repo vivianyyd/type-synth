@@ -1,4 +1,4 @@
-package types
+package products.types
 
 /**
  * Returns the output type of [fn] on input [arg] with no free variables, or null if [arg] is

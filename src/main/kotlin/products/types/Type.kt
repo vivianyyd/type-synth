@@ -1,4 +1,4 @@
-package types
+package products.types
 
 typealias Assignment = Map<String, Type>
 

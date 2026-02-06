@@ -1,12 +1,12 @@
 import benchmarking.parseHaskellTypes
-import query.ExampleGenerator
+import products.ExampleGenerator
+import products.types.Assignment
+import products.types.Type
+import products.types.toSExpr
+import products.types.toType
 import query.Query
 import query.sexpsFromExamples
 import test.SomeHaskell
-import types.Assignment
-import types.Type
-import types.toSExpr
-import types.toType
 import util.SExpr
 import util.SExprParser
 import util.writeExamples

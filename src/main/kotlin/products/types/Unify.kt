@@ -1,4 +1,4 @@
-package types
+package products.types
 
 typealias Binding = Pair<String, Type>
 

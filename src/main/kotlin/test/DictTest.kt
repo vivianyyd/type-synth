@@ -1,8 +1,8 @@
 package test
 
+import products.types.parseType
 import query.Query
 import query.parseExamples
-import types.parseType
 import util.CheckingOracle
 
 object DictTest : Test {

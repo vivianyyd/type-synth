@@ -2,9 +2,9 @@ package util
 
 import oneast.OneUnification
 import oneast.SearchState
+import products.types.Type
+import products.types.checkApplication
 import query.*
-import types.Type
-import types.checkApplication
 
 interface Oracle {
     fun equal(a: Example, b: Example): Boolean
@@ -37,8 +37,8 @@ interface EqualityOracle {
 class CheckingOracle(private val secret: Map<String, Type>) : Oracle {
     // flatEqual(a.flatten(), b.flatten()) works too. Idk why I did this
     override fun equal(a: Example, b: Example): Boolean {
-        val ta = check(a, secret)
-        val tb = check(b, secret)
+        val ta = products.check(a, secret)
+        val tb = products.check(b, secret)
         return ta != null && tb != null && ta == tb
     }
 

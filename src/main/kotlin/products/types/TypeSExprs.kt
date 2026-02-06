@@ -1,4 +1,4 @@
-package types
+package products.types
 
 import util.SExpr
 import util.SExprParser
