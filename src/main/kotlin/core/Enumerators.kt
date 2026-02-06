@@ -9,12 +9,9 @@ import core.unification.unification
 import query.App
 import query.Name
 import query.parseTest
-import test.*
 import util.*
 
 fun main() {
-    val tests =
-        listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest, PolymorphicNil, PolymorphicDict)
     val testFromFile = parseTest("dictchain")
 
     val configuration =

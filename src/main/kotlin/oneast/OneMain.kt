@@ -1,24 +1,24 @@
 package oneast
 
 import query.parseTest
-import test.*
+import test.Test
 import util.Config
 import util.Logger
 
 val configuration =
     Configuration(
-        test = ConsTest, runCVC = true, sizeBound = 20, depthBound = 4, namesPerRound = 10
+        test = parseTest("dictchain"),
+        runCVC = true,
+        sizeBound = 20,
+        depthBound = 4,
+        namesPerRound = 10
     )
 
 val logger =
     Logger(configuration = configuration, logFilename = "tmp.log", logToFile = true, verbosity = 5)
 
 fun main() {
-    val tests =
-        listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest, PolymorphicNil, PolymorphicDict)
-    val testFromFile = parseTest("dictchain")
-
-    val h = testFromFile // SomeHaskell
+    val h = configuration.test
 
     val engine =
         Engine(

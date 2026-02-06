@@ -2,7 +2,7 @@ package core.unification
 
 import core.languages.*
 import query.Example
-import test.ConsTest
+import query.parseTest
 import util.Counter
 
 /** ConstraintTypes are mutable */
@@ -123,7 +123,7 @@ interface Unification<L : Language> {
 }
 
 fun main() {
-    val t = ConsTest
+    val t = parseTest("dictchain")
     println(t.query.names)
     val ty =
         Candidate(

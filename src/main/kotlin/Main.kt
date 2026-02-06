@@ -1,13 +1,11 @@
 import products.ConfigForOld
 import products.run
 import query.parseTest
-import test.*
+import test.Test
 import util.Logger
 
 fun main() {
-    val smallTests = listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest)
-    val smallTest = DictTest
-    val testFromFile = parseTest("dictchain")
+    val testFromFile: Test = parseTest("dictchain")
 
     val config = ConfigForOld(test = testFromFile, runCVC = true, maxDepth = 4)
 

@@ -2,19 +2,19 @@ package scratch
 
 import query.App
 import query.Query
+import query.parseTest
 import query.vizUndir
-import test.SomeHaskell
 
 /** AI-generated code I was toying with */
 fun main() {
-    val h = SomeHaskell
+    val h = parseTest("haskell-list")
+    val query = h.query
 
-    val pos = h.posExamples
-    val neg = h.negExamples
+    val pos = query.posWithSubexprs
+    val neg = query.neg
     println(pos.size)
     println(neg.size)
 
-    val query = Query(pos, neg)
     vizUndir(query)
 
     // Example: 12 nodes (0..11)

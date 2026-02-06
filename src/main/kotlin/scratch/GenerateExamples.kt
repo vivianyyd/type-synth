@@ -2,7 +2,6 @@ import benchmarking.parseHaskellTypes
 import query.ExampleGenerator
 import query.Query
 import query.sexpsFromExamples
-import test.SomeHaskell
 import types.Assignment
 import types.Type
 import types.toSExpr
@@ -17,9 +16,6 @@ fun Assignment.toSExprStrs() =
     }
 
 fun main() {
-    val h = SomeHaskell
-
-    val test = h.groundTruth
     val (query, context) =
         generate(TODO("Example generation is currently implemented only for old types"))
     val generatedExs =
