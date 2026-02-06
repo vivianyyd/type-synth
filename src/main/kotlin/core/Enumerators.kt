@@ -9,17 +9,14 @@ import core.unification.unification
 import query.App
 import query.Name
 import query.parseTest
-import test.*
 import util.*
 
 fun main() {
-    val tests =
-        listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest, PolymorphicNil, PolymorphicDict)
     val testFromFile = parseTest("dictchain")
 
     val configuration =
         Configuration(
-            test = testFromFile,
+            querySpec = testFromFile,
             runCVC = true,
             enumeratorTag = EnumeratorTag.DFSPriority,
             unificationTag = UnificationTag.Eager,
@@ -38,7 +35,7 @@ fun main() {
 
 fun run(configuration: Configuration, logger: Logger) {
     if (configuration.runCVC) clearCVC()
-    val (query, oracle) = configuration.test.pair()
+    val (query, oracle) = configuration.querySpec.pair()
 
     fun <L : Language> makeEnumerator(seed: Candidate<L>, mustPassNegatives: Boolean) =
         enumerator(

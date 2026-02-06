@@ -1,4 +1,4 @@
-package test
+package fixtures
 
 import query.Query
 import util.Oracle

@@ -257,31 +257,3 @@ class SymTypeABuilder(val query: Query) {
         expandedApps.sortedBy { it.size() }.forEach { readPosApp(it) }
     }
 }
-
-fun main() {
-    val consExamples =
-        mapOf(
-            "(+ 0)" to "int",
-            "(+ tr)" to "bool",
-            "(+ []i)" to "lint",
-            "(+ []b)" to "lbool",
-            "(+ [[]]i)" to "llint",
-            "(+ (cons 0 []i))" to "lint",
-            "(+ (cons 0 (cons 0 []i)))" to "lint",
-            "(+ (cons tr []b))" to "lbool",
-            "(+ (cons tr (cons tr []b)))" to "lbool",
-            "(+ (cons []i [[]]i))" to "llint",
-            "(+ (cons []i (cons []i [[]]i)))" to "llint",
-            "(- (cons tr []i))" to null,
-            "(- (cons []i 0))" to null,
-            "(- (cons 0 []b))" to null,
-            "(- (cons 0 [[]]i))" to null,
-            "(- (cons tr [[]]i))" to null,
-            "(- (cons tr (cons 0 []i)))" to null,
-        )
-
-    val query = parseExamples(consExamples.keys)
-
-    println(SymTypeABuilder(query).make.printState())
-}
-/* {cons=[[V, L] -> [V, [V, L] -> []]], 0=[L], []i=[L]} */

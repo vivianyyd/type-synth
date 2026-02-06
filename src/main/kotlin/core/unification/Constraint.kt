@@ -1,8 +1,10 @@
 package core.unification
 
-import core.languages.*
+import core.languages.Candidate
+import core.languages.Hole
+import core.languages.Language
+import core.languages.SearchNode
 import query.Example
-import test.ConsTest
 import util.Counter
 
 /** ConstraintTypes are mutable */
@@ -120,31 +122,4 @@ interface Unification<L : Language> {
 
     /** Use me sparingly */
     fun constraints(): List<Constraint<L>>?
-}
-
-fun main() {
-    val t = ConsTest
-    println(t.query.names)
-    val ty =
-        Candidate(
-            t.query.names,
-            listOf(
-                ConcreteL(0, listOf()),
-                ConcreteL(1, listOf(ConcreteL(1, listOf(ConcreteL(0, listOf()))))),
-                ConcreteL(1, listOf(ConcreteL(0, listOf()))),
-                ConcreteL(1, listOf(ConcreteL(2, listOf()))),
-                NArrow(
-                    ConcreteV(0),
-                    NArrow(
-                        ConcreteL(1, listOf(ConcreteV(0))),
-                        ConcreteL(
-                            1, listOf(ConcreteHole(false, mapOf(0 to 0, 1 to 1, 2 to 0), false))
-                        ),
-                        false
-                    ),
-                    false
-                ),
-                ConcreteL(2, listOf())
-            )
-        )
 }

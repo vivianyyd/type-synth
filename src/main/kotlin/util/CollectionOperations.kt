@@ -56,28 +56,6 @@ fun <T> partitions(list: List<T>): Sequence<List<List<T>>> {
     }
 }
 
-fun main() {
-    //    val s = listOf(0, 1, 2, 3)
-    //    val repetitions = 3
-    //    val seq = reflexiveNaryProduct(s, repetitions)
-    //    println("Total: ${seq.toList().size}")
-    //    println("Total: ${seq.toSet().size}")
-    //    val slowGroundTruth = naryCartesianProduct((1..repetitions).map { s }).toSet()
-    //    assert(seq.toSet() == slowGroundTruth)
-    //    println(seq.toSet().size)
-    //    println(seq.toList().map { it.reversed() })
-
-    /*
-    [1, 3, 5]
-    [1, 4, 5]
-    [2, 3, 5]
-    [2, 4, 5]
-     */
-    val sets = listOf(sequenceOf(1, 2), sequenceOf(3, 4), sequenceOf(5, 6, 7))
-
-    lazySeqCartesianProduct(sets).forEach { println(it) }
-}
-
 fun <T> reflexiveNaryProduct(elems: List<T>, n: Int): Sequence<List<T>> = sequence {
     val indices = Array(n) { 0 }
     val set = elems.toSet().toList()

@@ -5,28 +5,13 @@ import products.types.Type
 import products.types.toSExpr
 import products.types.toType
 import query.Query
-import query.sexpsFromExamples
-import test.SomeHaskell
 import util.SExpr
 import util.SExprParser
-import util.writeExamples
 
 fun Assignment.toSExprStrs() =
     this.entries.joinToString(separator = "\t") {
         "${SExpr.Lst(listOf(SExpr.Atm(it.key), it.value.toSExpr()))}"
     }
-
-fun main() {
-    val h = SomeHaskell
-
-    val test = h.groundTruth
-    val (query, context) =
-        generate(TODO("Example generation is currently implemented only for old types"))
-    val generatedExs =
-        (sexpsFromExamples(query.posWithSubexprs, true) + sexpsFromExamples(query.neg, false))
-            .joinToString(separator = "\n")
-    writeExamples("${context.toSExprStrs()}\n$generatedExs", "prelude-random-subset")
-}
 
 fun generate(types: List<Pair<Type, String?>>): Pair<Query, Assignment> {
     val (query, context) = ExampleGenerator(1, 2, 500, types).examples()

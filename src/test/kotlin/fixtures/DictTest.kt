@@ -1,4 +1,4 @@
-package test
+package fixtures
 
 import products.types.parseType
 import query.Query

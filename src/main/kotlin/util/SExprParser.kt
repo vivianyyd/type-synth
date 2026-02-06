@@ -67,10 +67,3 @@ class SExprParser(private val input: String) {
         position++
     }
 }
-
-fun main() {
-    val input = "(def (square x) (* x x))"
-    val parser = SExprParser(input)
-    val result = parser.parse()
-    println(result)
-}
