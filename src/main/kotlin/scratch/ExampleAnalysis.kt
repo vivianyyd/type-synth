@@ -2,19 +2,13 @@ package scratch
 
 import query.App
 import query.Query
+import query.parseTest
 import query.vizUndir
-import test.SomeHaskell
 
 /** AI-generated code I was toying with */
 fun main() {
-    val h = SomeHaskell
-
-    val pos = h.posExamples
-    val neg = h.negExamples
-    println(pos.size)
-    println(neg.size)
-
-    val query = Query(pos, neg)
+    val querySpec = parseTest("dictchain")
+    val query = querySpec.query
     vizUndir(query)
 
     // Example: 12 nodes (0..11)

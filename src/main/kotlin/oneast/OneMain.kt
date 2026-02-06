@@ -1,21 +1,23 @@
 package oneast
 
 import query.parseTest
-import test.*
 import util.Config
 import util.Logger
+import util.QuerySpec
 
 val configuration =
     Configuration(
-        test = ConsTest, runCVC = true, sizeBound = 20, depthBound = 4, namesPerRound = 10
+        querySpec = parseTest("dictchain"),
+        runCVC = true,
+        sizeBound = 20,
+        depthBound = 4,
+        namesPerRound = 10
     )
 
 val logger =
     Logger(configuration = configuration, logFilename = "tmp.log", logToFile = true, verbosity = 5)
 
 fun main() {
-    val tests =
-        listOf(IdTest, ConsTest, HOFTest, DictTest, WeirdTest, PolymorphicNil, PolymorphicDict)
     val testFromFile = parseTest("dictchain")
 
     val h = testFromFile // SomeHaskell
@@ -39,7 +41,7 @@ fun main() {
 // TODO this is kind of a dummy config, only gets used for logging
 
 data class Configuration(
-    val test: Test,
+    val querySpec: QuerySpec,
     val runCVC: Boolean,
     val sizeBound: Int,
     val depthBound: Int,
@@ -47,7 +49,7 @@ data class Configuration(
 ) : Config {
     override fun toString(): String =
         listOf(
-            test.name,
+            querySpec.name,
             "Running CVC: $runCVC",
             "Size bound: $sizeBound",
             "Depth bound: $depthBound",

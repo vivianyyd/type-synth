@@ -1,9 +1,8 @@
 package query
 
 import products.types.toType
-import test.Test
-import test.TestPair
 import util.CheckingOracle
+import util.QuerySpec
 import util.SExpr
 import util.SExprParser
 import util.readExamples
@@ -18,11 +17,10 @@ private fun FlatApp.toSExpr(): SExpr =
 fun parseExamples(sexps: Collection<String>): Query =
     examplesFromSexps(sexps.map { SExprParser(it).parse() })
 
-fun parseTest(name: String): Test {
+fun parseTest(name: String): QuerySpec {
     val exs = readExamples(name)
-    return TestPair(
-        name, parseExamples(exs.second.filter { it.isNotBlank() }), oracleFromAssignment(exs.first)
-    )
+    return QuerySpec(
+        name, parseExamples(exs.second.filter { it.isNotBlank() }), oracleFromAssignment(exs.first))
 }
 
 fun oracleFromAssignment(context: String) = CheckingOracle(assignment(context))

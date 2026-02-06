@@ -7,23 +7,22 @@ import products.constraints.LabelConstraintGenerator
 import products.sta.SymTypeABuilder
 import products.stc.*
 import query.Query
-import test.Test
 import util.*
 
 /** Infrastructure for the old implementation. */
 data class ConfigForOld(
-    val test: Test,
+    val querySpec: QuerySpec,
     val runCVC: Boolean,
     val maxDepth: Int,
     val writeIR: Boolean = true
 ) : Config {
     override fun toString(): String =
-        listOf(test.name, "Running CVC: $runCVC", "Max depth: $maxDepth")
+        listOf(querySpec.name, "Running CVC: $runCVC", "Max depth: $maxDepth")
             .joinToString(separator = "\n", postfix = "\n=====\n")
 }
 
 fun run(config: ConfigForOld, logger: Logger) {
-    val (query, oracle) = config.test.pair()
+    val (query, oracle) = config.querySpec.pair()
     if (config.writeIR) clearOutlines()
     if (config.runCVC) clearCVC()
 
