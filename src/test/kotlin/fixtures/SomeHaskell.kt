@@ -1,4 +1,4 @@
-package test
+package fixtures
 
 import benchmarking.parseHaskellTypes
 import query.Query
