@@ -187,3 +187,5 @@ inline fun <T, V> zip(vararg lists: List<T>, transform: (List<T>) -> V): List<V>
 
     return list
 }
+
+fun <T> Collection<T>.lines() = this.joinToString(separator = "\n")

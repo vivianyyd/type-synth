@@ -3,16 +3,16 @@ package test
 import benchmarking.parseHaskellTypes
 import query.Query
 import query.toExpression
-import util.CheckingOracle
+import util.NewCheckingOracle
 import util.SExprParser
 
 object SomeHaskell : Test {
     val groundTruth =
         parseHaskellTypes(
             listOf(
-                "cons :: c -> [c] -> [c]",
-                "head :: [a] -> a",
-                "tail :: [a] -> [a]",
+                "cons :: a -> [a] -> [a]",
+                "hd :: [a] -> a",
+                "tl :: [a] -> [a]",
                 "singleton :: a -> [a]",
                 "0 :: Int",
                 "null :: [a] -> Bool",
@@ -27,9 +27,10 @@ object SomeHaskell : Test {
                 "++ :: [a] -> [a] -> [a]",
                 "filter :: (a -> Bool) -> [a] -> [a]",
                 "uncons :: [a] -> Maybe (a, [a])",
-                "!? :: [a] -> Int -> Maybe a",
-                // TODO these paren get erased by sexpr parser when we make the examples, so i just
-                // omit parens here too
+                "unsnoc :: [a] -> Maybe ([a], a)",
+                "!? :: [a] -> Int -> Maybe a", // TODO these paren get erased by sexpr parser when
+                // we
+                // make the examples, so i just omit parens here too
                 "iterate :: (a -> a) -> a -> [a]",
                 "repeat :: a -> [a]",
                 "replicate :: Int -> a -> [a]",
@@ -225,5 +226,5 @@ object SomeHaskell : Test {
     override val name: String = "Some Haskell Examples"
 
     override val query = Query(posExamples)
-    override val oracle = CheckingOracle(groundTruthMap)
+    override val oracle = NewCheckingOracle(groundTruthMap)
 }

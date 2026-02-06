@@ -1,13 +1,4 @@
-package scratch /*
-                From the following Haskell type signatures, give me some examples of expressions that I might see in a reasonable program such that *all* functions and values I list are used somewhere in some example.
-                No, you're not allowed to use anything that isn't in the list I gave. For example, you created the list [6,7], but that's not allowed. If you want a list of ints, you can construct one from 0, IL, and/or some other functions like (++) and (:). Write everything in prefix notation
-
-
-                No, you're not allowed to use lambdas either. You can only do function applications using the literals I've given
-
-
-
-                 */
+package scratch
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory

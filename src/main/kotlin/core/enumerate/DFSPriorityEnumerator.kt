@@ -66,7 +66,7 @@ class DFSPriorityEnumerator<L : Language>(
         }
 
         return fill(c, unification, sizeBound <= 1).flatMap { (newCand, cost) ->
-            logger.count("Total candidates for $seedCandidate")
+            logger.count("Total candidates")
             if (newCand.depth() > hardDepthBound) emptySequence()
             else {
                 //                logger.count("Calls to check for $seedCandidate")

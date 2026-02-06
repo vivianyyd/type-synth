@@ -182,5 +182,3 @@ private fun printSearchSeed(labelSizes: Map<L, Int>, outline: Projection) {
             "$component: ${type.toStringWithSizes()}"
         })
 }
-
-fun <T> Iterable<T>.pr() = this.joinToString(separator = "\n")

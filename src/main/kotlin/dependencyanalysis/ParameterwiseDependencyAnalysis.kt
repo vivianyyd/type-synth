@@ -36,6 +36,7 @@ class ParameterwiseDependencyAnalysis(
             negExs.forEach { neg ->
                 // requires: negative examples only fail on the LAST argument
                 if (neg.args.size > 1 &&
+                    arities[neg.name]!! > neg.args.size &&
                     !currConstrained[neg.args.size - 1] &&
                     prefixChecker.lookup(FlatApp(neg.name, neg.args.dropLast(1)))
                 ) {

@@ -31,13 +31,12 @@ private fun assignment(context: String) =
     context.split('\t').associate {
         val assign = SExprParser(it).parse()
         require(assign is SExpr.Lst && assign.elements.size == 2 && assign.elements[0] is SExpr.Atm)
-        ((assign as SExpr.Lst).elements[0] as SExpr.Atm).value to assign.elements[1].toType()
+        (assign.elements[0] as SExpr.Atm).value to assign.elements[1].toType()
     }
 
 private fun examplesFromSexps(sexps: Collection<SExpr>): Query {
     val exsWithNames = sexps.map { it.toSignedExample() }
     val exs = exsWithNames.map { Pair(it.second, it.first) }
-    val names = exsWithNames.map { it.third }.fold(setOf<String>()) { a, b -> a.union(b) }
     val (pos, neg) = splitExamples(exs)
     return Query(pos, neg)
 }
