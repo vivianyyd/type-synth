@@ -1,5 +1,6 @@
 package oneast
 
+import oneast.searchstrategies.DFSEnumerator
 import util.Config
 import util.Logger
 import util.QuerySpec
@@ -25,7 +26,7 @@ fun main() {
     val engine =
         Engine(
             h.query,
-            { q, s -> EnumerateOneAST(s, q, h.oracle, configuration, logger) },
+            { q, s -> Search(s, q, h.oracle, configuration, ::DFSEnumerator, logger) },
             namesPerRound = configuration.namesPerRound
         )
     // TODO oracle should be in query, numsols in config

@@ -6,7 +6,7 @@ import query.Name
 import query.Query
 import kotlin.math.min
 
-typealias EnumeratorProvider = (Query, SearchState) -> EnumerateOneAST
+typealias EnumeratorProvider = (Query, SearchState) -> Search
 
 class Engine(
     private val query: Query,
