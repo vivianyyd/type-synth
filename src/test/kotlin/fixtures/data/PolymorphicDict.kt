@@ -1,9 +1,10 @@
-package fixtures
+package fixtures.data
 
+import fixtures.Test
 import products.types.parseType
 import query.Query
-import query.parseExamples
 import util.CheckingOracle
+import util.io.parseExamples
 
 object PolymorphicDict : Test {
     override val name = "Dict"

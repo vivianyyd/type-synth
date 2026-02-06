@@ -1,9 +1,10 @@
-package fixtures
+package fixtures.data
 
+import fixtures.Test
 import query.Query
-import query.parseApp
-import query.parseExamples
 import util.ScrappyNewOracle
+import util.io.parseApp
+import util.io.parseExamples
 
 object WeirdTest : Test {
     override val name = "Weird"

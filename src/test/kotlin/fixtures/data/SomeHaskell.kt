@@ -1,10 +1,11 @@
-package fixtures
+package fixtures.data
 
-import benchmarking.parseHaskellTypes
+import fixtures.Test
+import fixtures.haskell.parseHaskellTypes
 import query.Query
-import query.toExpression
 import util.NewCheckingOracle
-import util.SExprParser
+import util.io.parseSExpr
+import util.io.toExpression
 
 object SomeHaskell : Test {
     val groundTruth =
@@ -219,12 +220,12 @@ object SomeHaskell : Test {
             "or (repeat (Just True))",
         )
 
-    val posexsNames = posexs.map { SExprParser(it).parse().toExpression() }.unzip()
+    val posexsNames = posexs.map { parseSExpr(it).toExpression() }.unzip()
     val posExamples = posexsNames.first
-    val negExamples = negexs.map { SExprParser(it).parse().toExpression().first }
+    val negExamples = negexs.map { parseSExpr(it).toExpression().first }
     val names = posexsNames.second.fold(setOf<String>()) { a, s -> a.union(s) }
     override val name: String = "Some Haskell Examples"
 
-    override val query = Query(posExamples)
+    override val query = Query(posExamples, negExamples)
     override val oracle = NewCheckingOracle(groundTruthMap)
 }
