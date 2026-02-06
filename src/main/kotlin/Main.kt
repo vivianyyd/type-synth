@@ -1,7 +1,7 @@
 import products.ConfigForOld
 import products.run
-import query.parseTest
 import util.Logger
+import util.io.parseTest
 
 fun main() {
     val testFromFile = parseTest("dictchain")

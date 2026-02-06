@@ -8,8 +8,12 @@ import core.unification.UnificationTag
 import core.unification.unification
 import query.App
 import query.Name
-import query.parseTest
-import util.*
+import util.Configuration
+import util.Logger
+import util.io.cvc.clearCVC
+import util.io.parseTest
+import util.lazyCartesianProduct
+import util.time
 
 fun main() {
     val testFromFile = parseTest("dictchain")

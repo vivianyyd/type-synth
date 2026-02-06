@@ -1,9 +1,9 @@
 package oneast
 
-import query.parseTest
 import util.Config
 import util.Logger
 import util.QuerySpec
+import util.io.parseTest
 
 val configuration =
     Configuration(

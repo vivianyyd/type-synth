@@ -6,7 +6,13 @@ import dependencyanalysis.ParameterNode
 import dependencyanalysis.ParameterwiseDependencyAnalysis
 import query.Name
 import query.Query
-import util.*
+import util.Counter
+import util.IntUnionFind
+import util.Oracle
+import util.eqClasses
+import util.io.cvc.CVCParser
+import util.io.cvc.callCVC
+import util.io.cvc.readCVC
 
 sealed interface Language
 
