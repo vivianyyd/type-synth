@@ -4,8 +4,8 @@ import core.NewLabelArityConstraints
 import core.unification.*
 import dependencyanalysis.ParameterNode
 import dependencyanalysis.ParameterwiseDependencyAnalysis
+import query.Examples
 import query.Name
-import query.Query
 import util.Counter
 import util.IntUnionFind
 import util.Oracle
@@ -114,7 +114,11 @@ fun typeOfParam(candidate: Candidate<Elab>, param: ParameterNode): SearchNode<El
  * A candidate is *inconsistent* if two parameters are the same variable, but their witnesses are
  * not observationally equivalent
  */
-fun topLevelVariablesConsistent(seed: Candidate<Elab>, query: Query, oracle: Oracle): Boolean {
+fun topLevelVariablesConsistent(
+    seed: Candidate<Elab>,
+    examples: Examples,
+    oracle: Oracle
+): Boolean {
     return true
     seed.names.zip(seed.types).forEach { (name, ty) ->
         val groupedVariableParams =
@@ -125,7 +129,7 @@ fun topLevelVariablesConsistent(seed: Candidate<Elab>, query: Query, oracle: Ora
                 .eqClasses { (_, p1), (_, p2) -> (p1 as ElabV).v == (p2 as ElabV).v }
                 .map { it.map { it.index } }
 
-        val posExs = query.flatPosNoSubexprs(name)
+        val posExs = examples.flatPosNoSubexprs(name)
         posExs.forEach {
             TODO(
                 "query can memoize witnesses for each parameter under arity assumption?" +
@@ -149,18 +153,18 @@ fun topLevelVariablesConsistent(seed: Candidate<Elab>, query: Query, oracle: Ora
  */
 fun compileElabToInfo(
     seed: Candidate<Elab>,
-    query: Query,
+    examples: Examples,
     oracle: Oracle,
     unification: UnificationForCandidate<Elaborated>,
     callSolver: Boolean
 ): ElaboratedInfo? {
-    if (!topLevelVariablesConsistent(seed, query, oracle)) return null
+    if (!topLevelVariablesConsistent(seed, examples, oracle)) return null
 
     val deps =
         Elaborated.aritiesToDeps.getOrPut(seed.arities()) {
             val tmp =
                 ParameterwiseDependencyAnalysis(
-                    query, seed.names.zip(seed.arities()).toMap(), oracle
+                    examples, seed.names.zip(seed.arities()).toMap(), oracle
                 )
             println(
                 "Constrained: ${tmp.constrained.mapValues { it.value.joinToString(prefix = "[", postfix = "]") }}"
@@ -185,8 +189,9 @@ fun compileElabToInfo(
 
     val elaborated = compileElabIntermediate(seed)
     val uf = IntUnionFind()
-    (unification(elaborated, query.posNoSubexprs).constraints()?.filterIsInstance<LabelConstraint>()
-        ?: throw Exception("Invariant broken"))
+    (unification(elaborated, examples.posNoSubexprs)
+        .constraints()
+        ?.filterIsInstance<LabelConstraint>() ?: throw Exception("Invariant broken"))
         .forEach { uf.union(it.a, it.b) }
 
     // TODO this is very hacky. Need it to collect little ones like 0 = 1

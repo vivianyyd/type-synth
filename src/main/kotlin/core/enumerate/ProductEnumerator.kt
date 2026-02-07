@@ -3,12 +3,12 @@ package core.enumerate
 import core.languages.Candidate
 import core.languages.Language
 import core.languages.SearchNode
-import query.Query
+import query.Examples
 
 data class PortNode<L : Language>(val options: List<MutableList<PortNode<L>>>)
 
 class ProductEnumerator<L : Language>(
-    val query: Query,
+    val examples: Examples,
     override val seedCandidate: Candidate<L>,
     private val mustPassNegatives: Boolean,
     val depth: (Candidate<L>) -> Int,

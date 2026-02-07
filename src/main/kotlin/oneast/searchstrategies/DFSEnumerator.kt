@@ -1,10 +1,14 @@
 package oneast.searchstrategies
 
-import oneast.*
-import query.Query
+import oneast.Blank
+import oneast.OneUnification
+import oneast.SearchState
+import oneast.SearchStrategy
+import query.Examples
+import util.Logger
 
 /** Fills one hole at a time, shallowest first, in DFS style. */
-class DFSEnumerator(query: Query) : SearchStrategy(query) {
+class DFSEnumerator(examples: Examples) : SearchStrategy(examples) {
     // TODO can also implement a stateful version where we mutate the tree by picking a hole which
     //   has a parent pointer, for each of the expansions, modify the parent and recurse. when done,
     //   restore tree to original state
@@ -16,6 +20,7 @@ class DFSEnumerator(query: Query) : SearchStrategy(query) {
         sizeBound: Int,
         depthBound: Int,
         loggingSeed: SearchState,
+        logger: Logger
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
         // TODO consider if I want to fast forward here, or do it later outside this fn
@@ -64,7 +69,8 @@ class DFSEnumerator(query: Query) : SearchStrategy(query) {
                         fastForwardBlanks,
                         sizeBound - cost,
                         depthBound,
-                        loggingSeed
+                        loggingSeed,
+                        logger
                     )
                 } else emptySequence()
             }

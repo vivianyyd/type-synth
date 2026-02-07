@@ -3,7 +3,7 @@ package core.enumerate
 import core.languages.*
 import core.unification.Unification
 import core.unification.UnificationForCandidate
-import query.Query
+import query.Examples
 import util.Logger
 import util.partitions
 
@@ -12,7 +12,7 @@ import util.partitions
  * committing.
  */
 class PartitionEnumerator<L : Language>(
-    val query: Query,
+    val examples: Examples,
     override val seedCandidate: Candidate<L>,
     private val unification: UnificationForCandidate<L>,
     private val mustPassNegatives: Boolean,
@@ -68,7 +68,8 @@ class PartitionEnumerator<L : Language>(
         if (c.full()) return sequenceOf(c)
 
         if (sizeBound == 0) {
-            val ff = c.fastForward { unification(it, query.posNoSubexprs) } ?: return sequenceOf()
+            val ff =
+                c.fastForward { unification(it, examples.posNoSubexprs) } ?: return sequenceOf()
             return if (ff.full()) {
                 sequenceOf(ff)
             } else sequenceOf()
@@ -85,7 +86,7 @@ class PartitionEnumerator<L : Language>(
                 // TODO spawnAndRefine is slow for eager unification since we make a duplicate
                 // candidate.
                 //      but making a new unification is slow for other unifs.
-                val u = unification(newCand, query.posNoSubexprs)
+                val u = unification(newCand, examples.posNoSubexprs)
                 if (u.ok()) {
                     if (newCand.satisfiesDependencies()) { // TODO ablate this
                         commitPriority(newCand, u, sizeBound - cost, hardDepthBound)
@@ -101,8 +102,8 @@ class PartitionEnumerator<L : Language>(
         hardDepthBound: Int
     ): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
-            unification(c, query.posNoSubexprs).ok() &&
-                    (if (mustPassNegatives) query.neg.all { !unification(c, listOf(it)).ok() }
+            unification(c, examples.posNoSubexprs).ok() &&
+                    (if (mustPassNegatives) examples.neg.all { !unification(c, listOf(it)).ok() }
                     else true)
 
         val seed =
@@ -129,7 +130,7 @@ class PartitionEnumerator<L : Language>(
                 // the default variable
             } else seedCandidate
         return commitPriority(
-            seed, unification(seedCandidate, query.posNoSubexprs), sizeBound, hardDepthBound
+            seed, unification(seedCandidate, examples.posNoSubexprs), sizeBound, hardDepthBound
         )
             .filter { c -> check(c) }
             .toList()

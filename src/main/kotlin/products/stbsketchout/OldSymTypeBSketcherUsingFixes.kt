@@ -1,17 +1,17 @@
 package products.stbsketchout
 
+import kotlin.math.roundToInt
 import products.sta.Function
 import products.sta.State
 import query.App
 import query.Example
+import query.Examples
 import query.Name
-import query.Query
 import util.Oracle
-import kotlin.math.roundToInt
 
 // TODO style: can inline tests into the harness that wraps all the tests
 class OldSymTypeBSketcherUsingFixes(
-    val query: Query,
+    val examples: Examples,
     private val state: State,
     private val oracle: Oracle,
     private val rounds: Int? = null
@@ -28,7 +28,7 @@ class OldSymTypeBSketcherUsingFixes(
     private var fresh = 0
 
     init {
-        query.names.forEach { n ->
+        examples.names.forEach { n ->
             val name = "_${n.filter { it.isLetterOrDigit() }}"
             if (name !in sketchNames.values) sketchNames[n] = name
             else sketchNames[n] = name + "_${fresh++}"
@@ -55,7 +55,7 @@ class OldSymTypeBSketcherUsingFixes(
                         is products.sta.Variable -> 3
                         is products.sta.Hole -> 4
                     }
-                query.names.map { state.read()[it]!!.mapSum(::bound) }.fold(1) { a, b -> a * b }
+                examples.names.map { state.read()[it]!!.mapSum(::bound) }.fold(1) { a, b -> a * b }
             }
         }
 
@@ -63,8 +63,8 @@ class OldSymTypeBSketcherUsingFixes(
             println("$rounds ROUNDS")
 
             header()
-            query.names.forEach { generator(it) }
-            query.posWithSubexprs.filterIsInstance<App>().forEach { posExampleAssertions(it) }
+            examples.names.forEach { generator(it) }
+            examples.posWithSubexprs.filterIsInstance<App>().forEach { posExampleAssertions(it) }
             flags()
             harnesses()
             w.s()
@@ -230,12 +230,12 @@ class OldSymTypeBSketcherUsingFixes(
 
         private fun harnesses() {
             repeat(rounds) { r ->
-                query.posWithSubexprs.forEach { posExample(it, r) }
+                examples.posWithSubexprs.forEach { posExample(it, r) }
                 w.block("harness void EXAMPLE_WRAPPER_$r()") {
                     w.block("if (${flag(r)})") {
                         w.lines((0 until r).map { "assert (${flag(it)})" })
                         w.lines(
-                            query.posWithSubexprs.flatMap { ex ->
+                            examples.posWithSubexprs.flatMap { ex ->
                                 if (ex is Name && !nullary(ex.name)) {
                                     (0 until r).map {
                                         "assert (!eq(${exWithRound(ex, r)}(), ${exWithRound(ex, it)}()))"

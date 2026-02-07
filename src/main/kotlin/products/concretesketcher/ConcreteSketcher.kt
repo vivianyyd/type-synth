@@ -1,20 +1,20 @@
 package products.concretesketcher
 
+import java.lang.Integer.max
 import products.stbsketchout.*
 import query.App
 import query.Example
+import query.Examples
 import query.Name
-import query.Query
 import util.Oracle
 import util.SketchWriter
-import java.lang.Integer.max
 
 typealias ContextOutline = Map<String, OldSymTypeB>
 
 const val TYPE_DEPTH_BOUND = 3
 
 class ConcreteSketcher(
-    val query: Query,
+    val examples: Examples,
     private val contextOutline: ContextOutline,
     private val varTypeIds: Map<String, Int>,
     private val oracle: Oracle
@@ -24,7 +24,7 @@ class ConcreteSketcher(
 
     init {
         var fresh = 0
-        query.names.forEach { n ->
+        examples.names.forEach { n ->
             val name = "_${n.filter { it.isLetterOrDigit() }}"
             if (name !in sketchNames.values) sketchNames[n] = name
             else sketchNames[n] = name + "_${fresh++}"
@@ -38,7 +38,7 @@ class ConcreteSketcher(
 
         fun make(): String {
             header()
-            query.names.forEach { generator(it) }
+            examples.names.forEach { generator(it) }
             makeAndTest()
             return w.s()
         }
@@ -106,8 +106,8 @@ class ConcreteSketcher(
         }
 
         private fun obeysOracle() {
-            query.posWithSubexprs.forEachIndexed { i, a ->
-                query.posWithSubexprs.forEachIndexed { j, b ->
+            examples.posWithSubexprs.forEachIndexed { i, a ->
+                examples.posWithSubexprs.forEachIndexed { j, b ->
                     if (i < j) {
                         if (oracle.equal(a, b)) {
                             w.line("assert(${sk(a)} == ${sk(b)})")
@@ -129,12 +129,14 @@ class ConcreteSketcher(
             w.block("harness void main()") {
                 w.lines(
                     listOf("int numLKs", "List@list<LabelKind> register = makeLabelKinds(numLKs)") +
-                            query.names.map { "Type ${sk(it)} = ${sk(it)}(register, numLKs)" })
+                            examples.names.map { "Type ${sk(it)} = ${sk(it)}(register, numLKs)" })
                 w.lines(
                     LinkedHashSet(
-                        query.posWithSubexprs.filterIsInstance<App>().flatMap { posExample(it) })
+                        examples.posWithSubexprs.filterIsInstance<App>().flatMap {
+                            posExample(it)
+                        })
                 )
-                query.neg.filterIsInstance<App>().forEach { negExample(it) }
+                examples.neg.filterIsInstance<App>().forEach { negExample(it) }
                 obeysOracle()
             }
 

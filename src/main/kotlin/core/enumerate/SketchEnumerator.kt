@@ -3,11 +3,11 @@ package core.enumerate
 import core.languages.Candidate
 import core.languages.Language
 import core.unification.UnificationForCandidate
-import query.Query
+import query.Examples
 import util.Logger
 
 class SketchEnumerator<L : Language>(
-    val query: Query,
+    val examples: Examples,
     override val seedCandidate: Candidate<L>,
     private val unification: UnificationForCandidate<L>,
     private val mustPassNegatives: Boolean,
@@ -65,8 +65,8 @@ class SketchEnumerator<L : Language>(
         hardDepthBound: Int
     ): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
-            unification(c, query.posNoSubexprs).ok() &&
-                    (if (mustPassNegatives) query.neg.all { !unification(c, listOf(it)).ok() }
+            unification(c, examples.posNoSubexprs).ok() &&
+                    (if (mustPassNegatives) examples.neg.all { !unification(c, listOf(it)).ok() }
                     else true)
 
         return TODO()

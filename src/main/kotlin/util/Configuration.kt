@@ -2,11 +2,12 @@ package util
 
 import core.enumerate.EnumeratorTag
 import core.unification.UnificationTag
+import query.AbstractQuery
 
 interface Config
 
 data class Configuration(
-    val querySpec: QuerySpec,
+    val query: AbstractQuery,
     val runCVC: Boolean,
     val enumeratorTag: EnumeratorTag,
     val unificationTag: UnificationTag,
@@ -16,7 +17,7 @@ data class Configuration(
 ) : Config {
     override fun toString(): String =
         listOf(
-            querySpec.name,
+            query.name,
             "Running CVC: $runCVC",
             enumeratorTag,
             unificationTag,

@@ -3,12 +3,12 @@ package core.enumerate
 import core.languages.*
 import core.unification.Unification
 import core.unification.UnificationForCandidate
-import query.Query
+import query.Examples
 import util.Logger
 
 /** Fills one hole at a time, in DFS priority order. */
 class DFSPriorityEnumerator<L : Language>(
-    val query: Query,
+    val examples: Examples,
     override val seedCandidate: Candidate<L>,
     private val unification: UnificationForCandidate<L>,
     private val mustPassNegatives: Boolean,
@@ -52,7 +52,8 @@ class DFSPriorityEnumerator<L : Language>(
         if (sizeBound == 0) {
             //            logger.log("Trying ff on $c")
             //            logger.count("Trying ff for $seedCandidate")
-            val ff = c.fastForward { unification(it, query.posNoSubexprs) } ?: return sequenceOf()
+            val ff =
+                c.fastForward { unification(it, examples.posNoSubexprs) } ?: return sequenceOf()
             //            logger.log("Got $ff")
             return if (ff.full()) {
                 //                logger.log("Ff to $ff")
@@ -73,7 +74,7 @@ class DFSPriorityEnumerator<L : Language>(
                 // TODO spawnAndRefine is slow for eager unification since we make a duplicate
                 // candidate.
                 //      but making a new unification is slow for other unifs.
-                val u = unification(newCand, query.posNoSubexprs)
+                val u = unification(newCand, examples.posNoSubexprs)
                 if (u.ok()) {
                     //                    if (newCand.satisfiesDependencies()) { // TODO ablate this
                     commitPriority(newCand, u, sizeBound - cost, hardDepthBound)
@@ -89,8 +90,8 @@ class DFSPriorityEnumerator<L : Language>(
         hardDepthBound: Int
     ): List<Candidate<L>> {
         fun check(c: Candidate<L>) =
-            unification(c, query.posNoSubexprs).ok() &&
-                    (if (mustPassNegatives) query.neg.all { !unification(c, listOf(it)).ok() }
+            unification(c, examples.posNoSubexprs).ok() &&
+                    (if (mustPassNegatives) examples.neg.all { !unification(c, listOf(it)).ok() }
                     else true)
 
         val seed =
@@ -113,7 +114,7 @@ class DFSPriorityEnumerator<L : Language>(
         // variables to a nullary
         //      value. fix this later, solution is in notes
         return commitPriority(
-            seed, unification(seedCandidate, query.posNoSubexprs), sizeBound, hardDepthBound
+            seed, unification(seedCandidate, examples.posNoSubexprs), sizeBound, hardDepthBound
         )
             .filter { c -> check(c) }
             .toList()

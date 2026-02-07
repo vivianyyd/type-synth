@@ -1,12 +1,12 @@
 package fixtures.data
 
-import fixtures.Test
-import query.Query
+import query.AbstractQuery
+import query.Examples
 import util.ScrappyNewOracle
 import util.io.parseApp
 import util.io.parseExamples
 
-object ConsTest : Test {
+object ConsTest : AbstractQuery() {
     override val name = "Cons"
 
     private val intExamples =
@@ -45,8 +45,8 @@ object ConsTest : Test {
             "(- (cons tr (cons 0 Li)))" to null,
             "(+ (cons []b))" to "llbool to llbool"
         )
-    val examples = intExamples + boolExamples
+    private val exs = intExamples + boolExamples
 
-    override val query: Query = parseExamples(examples.keys)
-    override val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
+    override val examples: Examples = parseExamples(exs.keys)
+    override val oracle = ScrappyNewOracle(exs.mapKeys { parseApp(it.key) })
 }

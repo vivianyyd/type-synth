@@ -5,7 +5,6 @@ import fixtures.loadQuery
 import oneast.searchstrategies.DFSEnumerator
 import util.Logger
 import util.NewCheckingOracle
-import util.io.parseTest
 import util.join
 import java.io.File
 import kotlin.test.Test
@@ -20,11 +19,12 @@ class OCamlStdlibTest {
 
         val configuration =
             Configuration(
-                querySpec = parseTest("dictchain"),
+                name = "OCaml Stdlib",
                 runCVC = true,
                 sizeBound = 20,
                 depthBound = 4,
-                namesPerRound = 5
+                namesPerRound = 5,
+                numSols = Solutions.NumSolutions(1)
             )
 
         val logger =
@@ -40,7 +40,7 @@ class OCamlStdlibTest {
                 query,
                 { q, s ->
                     println(s)
-                    Search(s, q, oracle, configuration, ::DFSEnumerator, logger)
+                    Search(q, s, oracle, configuration, ::DFSEnumerator, logger)
                 },
                 namesPerRound = configuration.namesPerRound
             )

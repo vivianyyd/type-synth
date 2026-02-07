@@ -1,13 +1,13 @@
-import util.toQuery
+import util.io.parseExamples
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-class QueryTemplateTest {
+class ExamplesTemplateTest {
     @Test
     fun `can build query from input file`() {
         val inputLines = File("src/test/input/sample.sexp").readLines()
-        val query = toQuery(inputLines)
+        val query = parseExamples(inputLines.filter { it.isNotBlank() })
         assertTrue(true)
     }
 }

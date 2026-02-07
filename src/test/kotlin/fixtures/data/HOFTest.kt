@@ -1,12 +1,12 @@
 package fixtures.data
 
-import fixtures.Test
-import query.Query
+import query.AbstractQuery
+import query.Examples
 import util.ScrappyNewOracle
 import util.io.parseApp
 import util.io.parseExamples
 
-object HOFTest : Test {
+object HOFTest : AbstractQuery() {
     override val name = "HOFs"
 
     /*
@@ -14,7 +14,7 @@ object HOFTest : Test {
     g: (a -> b) -> c
     h: ((a -> b) -> c) -> d
     */
-    val examples =
+    private val exs =
         mapOf(
             "(+ f)" to "a to b",
             "(+ g)" to "(a -> b) -> c",
@@ -27,6 +27,6 @@ object HOFTest : Test {
             "(- (g a))" to null,
         )
 
-    override val query: Query = parseExamples(examples.keys)
-    override val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
+    override val examples: Examples = parseExamples(exs.keys)
+    override val oracle = ScrappyNewOracle(exs.mapKeys { parseApp(it.key) })
 }

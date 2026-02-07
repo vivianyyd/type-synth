@@ -13,7 +13,7 @@ class CoreTest {
     fun `run completes with simple configuration`() {
         val configuration =
             Configuration(
-                querySpec = ConsTest.toQuerySpec(),
+                query = ConsTest,
                 runCVC = true,
                 enumeratorTag = EnumeratorTag.DFSPriority,
                 unificationTag = UnificationTag.Eager,

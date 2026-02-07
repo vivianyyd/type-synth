@@ -1,12 +1,12 @@
 package fixtures.data
 
-import fixtures.Test
-import query.Query
+import query.AbstractQuery
+import query.Examples
 import util.ScrappyNewOracle
 import util.io.parseApp
 import util.io.parseExamples
 
-object PolymorphicNil : Test {
+object PolymorphicNil : AbstractQuery() {
     override val name = "PolymorphicNil"
 
     private val intExamples =
@@ -38,8 +38,8 @@ object PolymorphicNil : Test {
             "(- (cons 0 (cons tr nil)))" to null,
             "(- (cons tr (cons 0 nil)))" to null,
         )
-    val examples = intExamples + boolExamples
+    private val exs = intExamples + boolExamples
 
-    override val query: Query = parseExamples(examples.keys)
-    override val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
+    override val examples: Examples = parseExamples(exs.keys)
+    override val oracle = ScrappyNewOracle(exs.mapKeys { parseApp(it.key) })
 }

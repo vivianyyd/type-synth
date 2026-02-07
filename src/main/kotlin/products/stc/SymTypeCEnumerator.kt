@@ -4,14 +4,14 @@ import products.sta.Function
 import products.sta.State
 import query.App
 import query.Example
+import query.Examples
 import query.Name
-import query.Query
 import util.OldUnionFind
 import util.Oracle
 import util.lazyCartesianProduct
 
 class SymTypeCEnumerator(
-    val query: Query,
+    val examples: Examples,
     state: State,
     private val oracle: Oracle,
 ) {
@@ -19,7 +19,7 @@ class SymTypeCEnumerator(
 
     var freshLabel = 0
 
-    val varTypeIds = query.names.withIndex().associate { (i, n) -> n to i }
+    val varTypeIds = examples.names.withIndex().associate { (i, n) -> n to i }
 
     private fun tId(name: String) = varTypeIds[name]!!
 
@@ -58,7 +58,7 @@ class SymTypeCEnumerator(
                 }
             }
 
-        val pass = query.posWithSubexprs.all { check(it) != null }
+        val pass = examples.posWithSubexprs.all { check(it) != null }
         val canonicalized = mutableMapOf<Int, Int>()
         var freshLabel = 0
         fun updateLs(t: SymTypeC): SymTypeC =

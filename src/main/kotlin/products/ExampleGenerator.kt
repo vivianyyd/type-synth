@@ -39,8 +39,8 @@ class ExampleGenerator(
             }
         }
 
-    fun examples(): Pair<Query, Assignment> {
-        if (types.isEmpty()) return Pair(Query(listOf(), listOf()), mapOf())
+    fun examples(): Pair<Examples, Assignment> {
+        if (types.isEmpty()) return Pair(Examples(listOf(), listOf()), mapOf())
 
         // Explode parameterized labelled types into concrete types and give them dummies, skip
         // functions for now
@@ -172,7 +172,7 @@ class ExampleGenerator(
 
         println(negExamples.entries.map { "${it.key}\t${it.value.size}" })
 
-        return Pair(Query(posExamples.values.flatten(), negExamples.values.flatten()), dummies)
+        return Pair(Examples(posExamples.values.flatten(), negExamples.values.flatten()), dummies)
         // TODO Want minimal negexs. Also, instead of keeping all, we could discard if we have >5
         // for that error type for that fn name already! actually we want >5 of them for that
         // parameter of that fn. if fn has 5 params we want few examples of each being wrong

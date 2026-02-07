@@ -1,14 +1,14 @@
 package dependencyanalysis
 
+import query.Examples
 import query.FlatApp
-import query.Query
 import util.Oracle
 import util.PrefixBruteForce
 import util.PrefixContainment
 import util.eqClasses
 
 class ParameterwiseDependencyAnalysis(
-    private val query: Query,
+    private val examples: Examples,
     private val arities: Map<String, Int>,
     private val oracle: Oracle
 ) {
@@ -17,15 +17,15 @@ class ParameterwiseDependencyAnalysis(
 
     fun nodes(name: String) = nodes.filter { it.f == name }
 
-    val fixed = query.names.associateWith { Array(arities[it]!!) { false } }
-    val constrained = query.names.associateWith { Array(arities[it]!!) { false } }
+    val fixed = examples.names.associateWith { Array(arities[it]!!) { false } }
+    val constrained = examples.names.associateWith { Array(arities[it]!!) { false } }
 
     init {
-        query.names.forEach { name ->
+        examples.names.forEach { name ->
             val arity = arities[name]!!
 
-            val posExs = query.flatPosNoSubexprs(name)
-            val negExs = query.flatNeg(name)
+            val posExs = examples.flatPosNoSubexprs(name)
+            val negExs = examples.flatNeg(name)
 
             val prefixChecker: PrefixContainment = PrefixBruteForce(oracle)
             prefixChecker.addAll(posExs)

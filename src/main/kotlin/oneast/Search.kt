@@ -1,11 +1,11 @@
 package oneast
 
 import dependencyanalysis.ParameterwiseDependencyAnalysis
+import query.Examples
 import query.Name
-import query.Query
 import util.*
 
-abstract class SearchStrategy(private val query: Query) {
+abstract class SearchStrategy(private val examples: Examples) {
     abstract fun candidates(
         c: SearchState,
         unification: OneUnification,
@@ -14,9 +14,10 @@ abstract class SearchStrategy(private val query: Query) {
         sizeBound: Int,
         depthBound: Int,
         loggingSeed: SearchState,
+        logger: Logger
     ): Sequence<SearchState>
 
-    protected fun posUnification(s: SearchState) = OneUnification(s, query.posNoSubexprs)
+    protected fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
     protected fun fastForward(candidate: SearchState): SearchState? {
         var curr = candidate
@@ -39,12 +40,13 @@ abstract class SearchStrategy(private val query: Query) {
     }
 }
 
+/** Lazily produces ALL solutions for [examples] from this [seed]. */
 class Search(
-    val seed: SearchState,
-    val query: Query,
-    val oracle: Oracle,
-    val config: Configuration,
-    val searchStrategy: (Query) -> SearchStrategy,
+    private val seed: SearchState,
+    private val examples: Examples,
+    private val oracle: Oracle,
+    private val config: Configuration,
+    private val searchStrategy: (Examples) -> SearchStrategy,
     private val logger: Logger,
 ) {
     private fun commit(
@@ -56,7 +58,7 @@ class Search(
         depthBound: Int,
         loggingSeed: SearchState,
     ): Sequence<SearchState> =
-        searchStrategy(query)
+        searchStrategy(examples)
             .candidates(
                 c,
                 unification,
@@ -64,10 +66,11 @@ class Search(
                 fastForwardBlanks,
                 sizeBound,
                 depthBound,
-                loggingSeed
+                loggingSeed,
+                logger
             )
 
-    private fun posUnification(s: SearchState) = OneUnification(s, query.posNoSubexprs)
+    private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
     /** Find all blanks, which must only be equal to other blanks, and assign them label classes. */
     private fun assignLabelClasses(s: SearchState): SearchState? {
@@ -143,7 +146,7 @@ class Search(
                     val arities = s.fnArities()
                     val dep =
                         dependencyAnalyses.getOrPut(arities) {
-                            ParameterwiseDependencyAnalysis(query, arities, oracle)
+                            ParameterwiseDependencyAnalysis(examples, arities, oracle)
                         }
 
                     val la = labelArities(s, dep, callSolver)
@@ -163,10 +166,9 @@ class Search(
         seedOutlines: List<SearchState>,
         currentSizeBound: Int,
         currentDepthBound: Int,
-        numSols: Solutions
     ): Sequence<SearchState> {
         fun check(c: SearchState) =
-            posUnification(c).ok() && query.neg.all { !OneUnification(c, listOf(it)).ok() }
+            posUnification(c).ok() && examples.neg.all { !OneUnification(c, listOf(it)).ok() }
 
         // Things blow up here, so sequencing
         val secondRounds =
@@ -206,10 +208,7 @@ class Search(
                 }
             }
 
-        return when (numSols) {
-            Solutions.ALL_SOLUTIONS -> finalResults.filter { c -> check(c) }
-            Solutions.ONE_SOLUTION -> sequenceOf(finalResults.first { c -> check(c) })
-        }
+        return finalResults.filter { c -> check(c) }
     }
 
     fun solutions(): Sequence<SearchState> = sequence {
@@ -218,28 +217,27 @@ class Search(
 
         var solved = false
         for (depth in 1..config.depthBound) {
-            logger.start("Depth $depth for ${query.names}")
+            logger.start("Depth $depth for ${examples.names}")
             for (size in 1..config.sizeBound) {
-                logger.start("Size $size for ${query.names}")
+                logger.start("Size $size for ${examples.names}")
                 val sols =
                     enumerate(
                         seedOutlines,
                         currentSizeBound = size,
                         currentDepthBound = depth,
-                        numSols = Solutions.ALL_SOLUTIONS
                         // get all solutions to subproblems in case one partial solution is
                         // unrealizable
                     )
                         .iterator()
                 if (sols.hasNext()) solved = true
                 yieldAll(sols)
-                logger.stop("Size $size for ${query.names}")
+                logger.stop("Size $size for ${examples.names}")
                 if (solved) {
                     logger.log("STOPPED AT SIZE $size")
                     break
                 }
             }
-            logger.stop("Depth $depth for ${query.names}")
+            logger.stop("Depth $depth for ${examples.names}")
             if (solved) {
                 logger.log("STOPPED AT DEPTH $depth")
                 break
@@ -270,8 +268,3 @@ fun Type.addParamHoles(labelArities: Map<Int, Int>, underArrow: Boolean = false)
         is THole,
         is Variable -> this
     }
-
-enum class Solutions {
-    ALL_SOLUTIONS,
-    ONE_SOLUTION
-}

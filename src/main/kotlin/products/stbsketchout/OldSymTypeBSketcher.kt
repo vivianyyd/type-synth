@@ -1,16 +1,20 @@
 package products.stbsketchout
 
+import kotlin.math.roundToInt
 import products.sta.Function
 import products.sta.State
 import query.App
 import query.Example
+import query.Examples
 import query.Name
-import query.Query
 import util.Oracle
 import util.SketchWriter
-import kotlin.math.roundToInt
 
-class OldSymTypeBSketcher(val query: Query, private val state: State, private val oracle: Oracle) {
+class OldSymTypeBSketcher(
+    val examples: Examples,
+    private val state: State,
+    private val oracle: Oracle
+) {
     private val sw = SymbolicSketchWriter()
 
     fun nextQuery(sketch: String, round: Int) =
@@ -35,7 +39,7 @@ class OldSymTypeBSketcher(val query: Query, private val state: State, private va
 
     init {
         var fresh = 0
-        query.names.forEach { n ->
+        examples.names.forEach { n ->
             val name = "_${n.filter { it.isLetterOrDigit() }}"
             if (name !in sketchNames.values) sketchNames[n] = name
             else sketchNames[n] = name + "_${fresh++}"
@@ -47,8 +51,8 @@ class OldSymTypeBSketcher(val query: Query, private val state: State, private va
 
         fun make(): String {
             header()
-            query.names.forEach { generator(it) }
-            query.posWithSubexprs.forEach { posExample(it) }
+            examples.names.forEach { generator(it) }
+            examples.posWithSubexprs.forEach { posExample(it) }
             return w.s()
         }
 
@@ -226,7 +230,7 @@ class OldSymTypeBSketcher(val query: Query, private val state: State, private va
 
     private inner class SymbolicSketchParser(private val sketch: String) {
         val parseAll by lazy {
-            query.names.associateWith { typeAfterSubs(parseToAssignments(sk(it))) } to
+            examples.names.associateWith { typeAfterSubs(parseToAssignments(sk(it))) } to
                     (lines.first { "Total time = " in it }.substringAfter("Total time = ").toInt() /
                             1000.0)
                         .roundToInt()

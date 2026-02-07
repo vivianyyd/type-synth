@@ -6,11 +6,11 @@ import products.concreteenumerator.ConcreteNode
 import products.constraints.LabelConstraintGenerator
 import products.sta.SymTypeABuilder
 import products.stc.*
-import query.Query
+import query.AbstractQuery
+import query.Examples
 import util.Config
 import util.Logger
 import util.Oracle
-import util.QuerySpec
 import util.io.cvc.*
 import util.io.intermediateoutlines.clearOutlines
 import util.io.intermediateoutlines.readIntermediateOutlines
@@ -18,7 +18,7 @@ import util.io.intermediateoutlines.writeIntermediateOutline
 
 /** Infrastructure for the old implementation. */
 data class ConfigForOld(
-    val querySpec: QuerySpec,
+    val querySpec: AbstractQuery,
     val runCVC: Boolean,
     val maxDepth: Int,
     val writeIR: Boolean = true
@@ -108,11 +108,14 @@ fun run(config: ConfigForOld, logger: Logger) {
 // No need for dep analysis for every candidate, just every arrow skeleton (unique mappings of name
 // to arity)
 private fun aritiesToDeps(
-    query: Query,
+    examples: Examples,
     oracle: Oracle,
     outlines: List<Projection>
 ): Map<Map<String, Int>, ArrowDependencyAnalysis> =
-    outlines.map { it.arities }.toSet().associateWith { ArrowDependencyAnalysis(query, it, oracle) }
+    outlines
+        .map { it.arities }
+        .toSet()
+        .associateWith { ArrowDependencyAnalysis(examples, it, oracle) }
 
 private fun vizDeps(
     components: List<String>,

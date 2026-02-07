@@ -1,14 +1,14 @@
 package dependencyanalysis
 
 import query.Example
+import query.Examples
 import query.FlatApp
-import query.Query
 import util.Oracle
 import util.equivalenceClasses
 import java.lang.Integer.max
 
 class ArrowDependencyAnalysis(
-    private val query: Query,
+    private val examples: Examples,
     arities: Map<String, Int>,
     private val oracle: Oracle
 ) {
@@ -18,7 +18,7 @@ class ArrowDependencyAnalysis(
     fun nodes(name: String) = nodes.filter { it.f == name }
 
     val graphs: Map<String, ArrowDependencyGraph> by lazy {
-        query.names.associateWith { name ->
+        examples.names.associateWith { name ->
             val (deps, loops) = findEdges(name)
             ArrowDependencyGraph(name, nodes(name).toSet(), deps, loops)
         }
@@ -28,7 +28,7 @@ class ArrowDependencyAnalysis(
         equivalenceClasses(exs.map { it.flatten() }) { e1, e2 -> e1.name == e2.name }
             .associateBy { it.first().name }[name] ?: setOf()
 
-    val all by lazy { query.names.associateWith { findEdges(it) } }
+    val all by lazy { examples.names.associateWith { findEdges(it) } }
 
     fun mayHaveFresh(name: String, param: Int) = mayHaveFresh(ParameterNode(name, param))
 
@@ -46,8 +46,8 @@ class ArrowDependencyAnalysis(
         val mayHaveFresh = mutableSetOf<ParameterNode>()
 
         // TODO I think we don't actually need all subexprs in posexs here
-        val posExs = flatExs(name, query.posWithSubexprs)
-        val negExs = flatExs(name, query.neg)
+        val posExs = flatExs(name, examples.posWithSubexprs)
+        val negExs = flatExs(name, examples.neg)
         val parameters = nodes.filter { it.f == name }
 
         for (pi in parameters) {

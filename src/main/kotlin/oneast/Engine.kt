@@ -2,20 +2,20 @@ package oneast
 
 import query.App
 import query.Example
+import query.Examples
 import query.Name
-import query.Query
 import kotlin.math.min
 
-typealias SearchProvider = (Query, SearchState) -> Search
+typealias SearchProvider = (SearchState, Examples) -> Search
 
 class Engine(
-    private val query: Query,
+    private val examples: Examples,
     private val searchProvider: SearchProvider,
     private val namesPerRound: Int
 ) {
     // ceiling division
-    val numRounds = (query.names.size + namesPerRound - 1) / namesPerRound
-    val scheduled = mutableListOf<Set<String>>()
+    private val numRounds = (examples.names.size + namesPerRound - 1) / namesPerRound
+    private val scheduled = mutableListOf<Set<String>>()
 
     init {
         while (scheduled.size < numRounds) {
@@ -24,8 +24,8 @@ class Engine(
                     .select(
                         // whether a name occurs in subexprs is good signal for its
                         // importance.
-                        query.posWithSubexprs,
-                        query.names.toList(),
+                        examples.posWithSubexprs,
+                        examples.names.toList(),
                         buildSet { scheduled.forEach { addAll(it) } },
                         namesPerRound
                     )
@@ -34,8 +34,8 @@ class Engine(
     }
 
     /** Returns the next synthesis problem, or null if we are done. */
-    private fun buildNextQuery(state: SearchState): Pair<Query, SearchState>? {
-        if (query.names.size == state.names.size) return null
+    private fun buildNextQuery(state: SearchState): Pair<Examples, SearchState>? {
+        if (examples.names.size == state.names.size) return null
 
         val scheduledRound = scheduled[state.names.size / namesPerRound].toList()
         // TODO I think enumeration doesn't actually need the subexprs, so we should make a separate
@@ -45,10 +45,12 @@ class Engine(
         val newNames = state.names + (scheduledRound.zip(oldSize until newSize))
 
         fun takeExs(exs: Collection<Example>) = exs.filter { newNames.keys.containsAll(it.names) }
-        val nextQuery = Query(takeExs(query.posNoSubexprs), takeExs(query.neg))
+        val nextExamples = Examples(takeExs(examples.posNoSubexprs), takeExs(examples.neg))
 
         fun nameIsApplied(name: String) =
-            nextQuery.posWithSubexprs.any { ex -> ex is App && ex.fn is Name && ex.fn.name == name }
+            nextExamples.posWithSubexprs.any { ex ->
+                ex is App && ex.fn is Name && ex.fn.name == name
+            }
 
         val nextState =
             SearchState(
@@ -66,11 +68,11 @@ class Engine(
                 labelArities = state.labelArities
             )
 
-        return nextQuery to nextState
+        return nextExamples to nextState
     }
 
-    private fun solveQuery(query: Query, state: SearchState): Sequence<SearchState> {
-        val solver = searchProvider(query, state)
+    private fun solveQuery(examples: Examples, state: SearchState): Sequence<SearchState> {
+        val solver = searchProvider(state, examples)
         return solver.solutions()
     }
 

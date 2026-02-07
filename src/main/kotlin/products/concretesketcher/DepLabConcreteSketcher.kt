@@ -1,17 +1,17 @@
 package products.concretesketcher
 
 import dependencyanalysis.*
+import java.lang.Integer.max
 import products.stc.*
 import query.App
 import query.Example
+import query.Examples
 import query.Name
-import query.Query
 import util.Oracle
 import util.SketchWriter
-import java.lang.Integer.max
 
 class DepLabConcreteSketcher(
-    val query: Query,
+    val examples: Examples,
     private val contextOutline: Projection,
     private val dependencies: ArrowDependencyAnalysis,
     private val varTypeIds: Map<String, Int>,
@@ -22,7 +22,7 @@ class DepLabConcreteSketcher(
 
     init {
         var fresh = 0
-        query.names.forEach { n ->
+        examples.names.forEach { n ->
             val name = "_${n.filter { it.isLetterOrDigit() }}"
             if (name !in sketchNames.values) sketchNames[n] = name
             else sketchNames[n] = name + "_${fresh++}"
@@ -36,7 +36,7 @@ class DepLabConcreteSketcher(
 
         fun make(): String {
             header()
-            query.names.forEach { generator(it) }
+            examples.names.forEach { generator(it) }
             makeAndTest()
             return w.s()
         }
@@ -129,8 +129,8 @@ class DepLabConcreteSketcher(
         }
 
         private fun obeysOracle() {
-            query.posWithSubexprs.forEachIndexed { i, a ->
-                query.posWithSubexprs.forEachIndexed { j, b ->
+            examples.posWithSubexprs.forEachIndexed { i, a ->
+                examples.posWithSubexprs.forEachIndexed { j, b ->
                     if (i < j) {
                         if (oracle.equal(a, b)) {
                             w.line("assert(${sk(a)} == ${sk(b)})")
@@ -157,12 +157,14 @@ class DepLabConcreteSketcher(
                         "register[0] = new LabelKind(l=0, numParams=0)",
                         "register[1] = new LabelKind(l=1, numParams=0)",
                         "register[2] = new LabelKind(l=2, numParams=1)",
-                    ) + query.names.map { "Type ${sk(it)} = ${sk(it)}(register, numLKs)" })
+                    ) + examples.names.map { "Type ${sk(it)} = ${sk(it)}(register, numLKs)" })
                 w.lines(
                     LinkedHashSet(
-                        query.posWithSubexprs.filterIsInstance<App>().flatMap { posExample(it) })
+                        examples.posWithSubexprs.filterIsInstance<App>().flatMap {
+                            posExample(it)
+                        })
                 )
-                query.neg.filterIsInstance<App>().forEach { negExample(it) }
+                examples.neg.filterIsInstance<App>().forEach { negExample(it) }
                 obeysOracle()
             }
 

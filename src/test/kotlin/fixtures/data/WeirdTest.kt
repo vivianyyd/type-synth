@@ -1,16 +1,16 @@
 package fixtures.data
 
-import fixtures.Test
-import query.Query
+import query.AbstractQuery
+import query.Examples
 import util.ScrappyNewOracle
 import util.io.parseApp
 import util.io.parseExamples
 
-object WeirdTest : Test {
+object WeirdTest : AbstractQuery() {
     override val name = "Weird"
 
     // f:. f id 0 is valid, but f_swap 0 id is not.
-    val examples =
+    private val exs =
         mapOf(
             "(+ f)" to "(a -> a) -> a -> a",
             // TODO none of these examples show applying f to a *function* with wrong type
@@ -32,6 +32,6 @@ object WeirdTest : Test {
             "(+ (inc (id n)))" to "int",
         )
 
-    override val query: Query = parseExamples(examples.keys)
-    override val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
+    override val examples: Examples = parseExamples(exs.keys)
+    override val oracle = ScrappyNewOracle(exs.mapKeys { parseApp(it.key) })
 }

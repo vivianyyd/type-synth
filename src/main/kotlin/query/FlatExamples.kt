@@ -5,7 +5,9 @@ data class FlatApp(val name: String, val args: List<FlatApp> = listOf()) {
 
     fun unflatten(): Example {
         if (this.args.isEmpty()) return Name(this.name)
-        return App(FlatApp(this.name, this.args.dropLast(1)).unflatten(), this.args.last().unflatten())
+        return App(
+            FlatApp(this.name, this.args.dropLast(1)).unflatten(), this.args.last().unflatten()
+        )
     }
 
     override fun toString(): String {
@@ -16,8 +18,7 @@ data class FlatApp(val name: String, val args: List<FlatApp> = listOf()) {
 fun Iterable<FlatApp>.print(positive: Boolean): String =
     this.joinToString("\n") { "(${if (positive) "+" else "-"} $it)" }
 
-/** TODO deprecated, convert all usages of Query/Application to NewQuery/Example */
-class FlatQuery(
+class FlatExamples(
     posExamples: Collection<FlatApp> = listOf(),
     val negExamples: Collection<FlatApp> = listOf(),
     names: List<String> = listOf()

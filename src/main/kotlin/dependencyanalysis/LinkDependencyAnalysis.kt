@@ -1,7 +1,7 @@
 package dependencyanalysis
 
+import query.Examples
 import query.FlatApp
-import query.Query
 import util.Oracle
 
 data class LinkEquivalenceClass(val representative: FlatApp, val representativeID: Int) {
@@ -15,7 +15,7 @@ data class LinkEquivalenceClass(val representative: FlatApp, val representativeI
 }
 
 class LinkDependencyAnalysis(
-    private val query: Query,
+    private val examples: Examples,
     private val arities: Map<String, Int>,
     private val oracle: Oracle
 ) {
@@ -24,15 +24,15 @@ class LinkDependencyAnalysis(
 
     fun nodes(name: String) = nodes.filter { it.f == name }
 
-    val links: Map<String, List<Link>> by lazy { query.names.associateWith { findEdges(it) } }
+    val links: Map<String, List<Link>> by lazy { examples.names.associateWith { findEdges(it) } }
 
     fun mayHaveFresh(parameterNode: ParameterNode): Boolean = true // TODO TODO TODO TODO()
 
     private fun findEdges(name: String): List<Link> {
         val arity = arities[name]!!
         val nullary = arity != 0
-        val posExs = query.flatPosNoSubexprs(name)
-        val negExs = query.flatNeg(name)
+        val posExs = examples.flatPosNoSubexprs(name)
+        val negExs = examples.flatNeg(name)
 
         // [argument index] to [[eqClasses of arg values] to [indices of corresponding positive
         // examples]]

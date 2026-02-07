@@ -1,11 +1,11 @@
 package fixtures
 
 import query.Example
-import query.Query
+import query.Examples
 import util.io.toExample
 import java.io.File
 
-fun loadQuery(dir: File): Query {
+fun loadQuery(dir: File): Examples {
     val pos = mutableListOf<Example>()
     val neg = mutableListOf<Example>()
 
@@ -25,5 +25,5 @@ fun loadQuery(dir: File): Query {
         }
     }
 
-    return Query(pos, neg)
+    return Examples(pos, neg)
 }

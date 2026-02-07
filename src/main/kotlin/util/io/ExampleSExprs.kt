@@ -3,7 +3,6 @@ package util.io
 import products.types.toType
 import query.*
 import util.CheckingOracle
-import util.QuerySpec
 import util.io.generatedexamples.readExamples
 
 fun sexpsFromExamples(exs: Collection<Example>, pos: Boolean): Collection<SExpr> =
@@ -13,13 +12,14 @@ private fun FlatApp.toSExpr(): SExpr =
     if (this.args.isEmpty()) SExpr.Atm(name)
     else SExpr.Lst(listOf(SExpr.Atm(name)) + args.map { it.toSExpr() })
 
-fun parseExamples(sexps: Collection<String>): Query =
+fun parseExamples(sexps: Collection<String>): Examples =
     examplesFromSexps(sexps.map { parseSExpr(it) })
 
-fun parseTest(name: String): QuerySpec {
+fun parseTest(name: String): AbstractQuery {
     val exs = readExamples(name)
-    return QuerySpec(
-        name, parseExamples(exs.second.filter { it.isNotBlank() }), oracleFromAssignment(exs.first))
+    return Query(
+        name, parseExamples(exs.second.filter { it.isNotBlank() }), oracleFromAssignment(exs.first)
+    )
 }
 
 fun oracleFromAssignment(context: String) = CheckingOracle(assignment(context))
@@ -31,11 +31,11 @@ private fun assignment(context: String) =
         (assign.elements[0] as SExpr.Atm).value to assign.elements[1].toType()
     }
 
-private fun examplesFromSexps(sexps: Collection<SExpr>): Query {
+private fun examplesFromSexps(sexps: Collection<SExpr>): Examples {
     val exsWithNames = sexps.map { it.toSignedExample() }
     val exs = exsWithNames.map { Pair(it.second, it.first) }
     val (pos, neg) = splitExamples(exs)
-    return Query(pos, neg)
+    return Examples(pos, neg)
 }
 
 /** Posex, negex, names mentioned */
@@ -94,15 +94,15 @@ fun parseExample(s: String) = parseSExpr(s).toExpression().first
 
 fun parseApp(s: String) = parseSExpr(s).toSignedExample().second
 
-fun parseFlatExamples(sexps: Collection<String>): FlatQuery =
+fun parseFlatExamples(sexps: Collection<String>): FlatExamples =
     flatExamplesFromSexps(sexps.map { parseSExpr(it) })
 
-private fun flatExamplesFromSexps(sexps: Collection<SExpr>): FlatQuery {
+private fun flatExamplesFromSexps(sexps: Collection<SExpr>): FlatExamples {
     val exsWithNames = sexps.map { it.toFlatExample() }
     val exs = exsWithNames.map { Pair(it.second, it.first) }
     val names = exsWithNames.map { it.third }.fold(setOf<String>()) { a, b -> a.union(b) }
     val (pos, neg) = splitFlatExamples(exs)
-    return FlatQuery(pos, neg, names.toList())
+    return FlatExamples(pos, neg, names.toList())
 }
 
 /** Posex, negex, names mentioned */

@@ -1,13 +1,13 @@
 package fixtures.data
 
-import fixtures.Test
 import fixtures.haskell.parseHaskellTypes
-import query.Query
+import query.AbstractQuery
+import query.Examples
 import util.NewCheckingOracle
 import util.io.parseSExpr
 import util.io.toExpression
 
-object SomeHaskell : Test {
+object SomeHaskell : AbstractQuery() {
     val groundTruth =
         parseHaskellTypes(
             listOf(
@@ -226,6 +226,6 @@ object SomeHaskell : Test {
     val names = posexsNames.second.fold(setOf<String>()) { a, s -> a.union(s) }
     override val name: String = "Some Haskell Examples"
 
-    override val query = Query(posExamples, negExamples)
+    override val examples = Examples(posExamples, negExamples)
     override val oracle = NewCheckingOracle(groundTruthMap)
 }

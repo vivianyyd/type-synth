@@ -10,9 +10,9 @@ data class Port(val f: Function, val side: Int) : Choice
 
 data class Root(val name: String) : Choice
 
-class State(query: Query) {
+class State(examples: Examples) {
     private val state: Map<String, MutableList<SymTypeA>> =
-        query.names.associateWith { mutableListOf() }
+        examples.names.associateWith { mutableListOf() }
 
     /**
      * Replace the entire subtree rooted at [name]. Use with caution.
@@ -102,8 +102,8 @@ class State(query: Query) {
     fun read(): Map<String, List<SymTypeA>> = state
 }
 
-class SymTypeABuilder(val query: Query) {
-    private val s = State(query)
+class SymTypeABuilder(val examples: Examples) {
+    private val s = State(examples)
 
     val make: State by lazy {
         readAllExamples()
@@ -157,7 +157,7 @@ class SymTypeABuilder(val query: Query) {
             if (param in paramToArgs) paramToArgs[param]!!.add(arg)
             else paramToArgs[param] = mutableSetOf(arg)
         }
-        query.posWithSubexprs.filterIsInstance<App>().forEach { (fn, arg) ->
+        examples.posWithSubexprs.filterIsInstance<App>().forEach { (fn, arg) ->
             val f = s.exprToChoice(fn)
             val a = s.exprToChoice(arg)
             if (f != null && a != null) {
@@ -180,7 +180,7 @@ class SymTypeABuilder(val query: Query) {
         // the choice for param MUST permit AT LEAST ONE of the subtrees for arg (if hole, expand to
         // permit all)
 
-        query.neg.forEach {
+        examples.neg.forEach {
             // the choice for param CAN'T permit at least one of the subtrees for arg
             //               ^ that's too strong, we don't have to deal with negexs if we don't want
             // to
@@ -202,7 +202,7 @@ class SymTypeABuilder(val query: Query) {
                 is Hole -> return
             }
         }
-        query.names.forEach { n ->
+        examples.names.forEach { n ->
             val options = s.read()[n]!!
             if (options.isEmpty()) s.plant(n, listOf(Hole()))
             options.forEach { patch(it, true) }
@@ -246,9 +246,9 @@ class SymTypeABuilder(val query: Query) {
     }
 
     private fun readAllExamples() {
-        val expandedApps = query.posWithSubexprs.filterIsInstance<App>()
+        val expandedApps = examples.posWithSubexprs.filterIsInstance<App>()
         // TODO check if the nullary pass is good, refactor to make it nicer
-        query.names
+        examples.names
             .filter { expandedApps.none { app -> app.fn is Name && app.fn.name == it } }
             .forEach { s.plant(it, listOf(Label())) }
 

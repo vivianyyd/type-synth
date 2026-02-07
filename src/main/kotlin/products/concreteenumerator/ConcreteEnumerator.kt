@@ -53,7 +53,7 @@ data class Var(val varId: Int, override val id: Int) : Node {
 }
 
 class ConcreteEnumerator(
-    val query: Query,
+    val examples: Examples,
     val contextOutline: Projection,
     /** Map from label ids to number of parameters */
     inLabels: Map<products.stc.L, Int>,
@@ -63,7 +63,7 @@ class ConcreteEnumerator(
 ) {
     private val state: MutableMap<String, Node> = mutableMapOf()
     private val variablesInScope: Map<String, MutableList<Int>> =
-        query.names.associateWith { mutableListOf() }
+        examples.names.associateWith { mutableListOf() }
     private val labels = inLabels.mapKeys { (l, _) -> l.label }
 
     private var nextVariable = 0
@@ -118,12 +118,12 @@ class ConcreteEnumerator(
         }
 
         fun firstN(l: List<Example>) =
-            l.subList(0, min(10 + query.names.size, l.size)).toMutableList()
+            l.subList(0, min(10 + examples.names.size, l.size)).toMutableList()
 
         fun random(l: Collection<Example>) = firstN(l.shuffled())
         fun smallest(l: Collection<Example>) = firstN(l.sortedBy { it.size() })
-        pos = smallest(query.posWithSubexprs)
-        neg = smallest(query.neg)
+        pos = smallest(examples.posWithSubexprs)
+        neg = smallest(examples.neg)
     }
 
     /**
@@ -153,7 +153,7 @@ class ConcreteEnumerator(
 
     // TODO How to pick number of examples. 1/5? 20?
     private fun firstN(l: List<Example>) =
-        l.subList(0, min(10 + query.names.size, l.size)).toMutableList()
+        l.subList(0, min(10 + examples.names.size, l.size)).toMutableList()
 
     private fun random(l: Collection<Example>) = firstN(l.shuffled())
 
@@ -434,9 +434,9 @@ class ConcreteEnumerator(
         }
 
     private fun checkAll(context: Map<String, ConcreteNode>): Pair<Example, Boolean>? {
-        val ctrPosEx = query.posWithSubexprs.firstOrNull { type(context, it) == null }
+        val ctrPosEx = examples.posWithSubexprs.firstOrNull { type(context, it) == null }
         if (ctrPosEx != null) return ctrPosEx to true
-        val ctrNegEx = query.neg.firstOrNull { type(context, it) != null }
+        val ctrNegEx = examples.neg.firstOrNull { type(context, it) != null }
         if (ctrNegEx != null) return ctrNegEx to false
         return null
     }
@@ -448,8 +448,8 @@ class ConcreteEnumerator(
     ): Boolean = pos.all { type(context, it) != null } && neg.all { type(context, it) == null }
 
     fun check(context: Map<String, ConcreteNode> /*, conflicts: MutableList<List<Int>>*/): Boolean {
-        return query.posWithSubexprs.all { type(context, it) != null } &&
-                query.neg.all { type(context, it) == null }
+        return examples.posWithSubexprs.all { type(context, it) != null } &&
+                examples.neg.all { type(context, it) == null }
     }
 }
 

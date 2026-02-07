@@ -20,7 +20,7 @@ fun main() {
 
     val configuration =
         Configuration(
-            querySpec = testFromFile,
+            query = testFromFile,
             runCVC = true,
             enumeratorTag = EnumeratorTag.DFSPriority,
             unificationTag = UnificationTag.Eager,
@@ -39,7 +39,7 @@ fun main() {
 
 fun run(configuration: Configuration, logger: Logger) {
     if (configuration.runCVC) clearCVC()
-    val (query, oracle) = configuration.querySpec.pair()
+    val (query, oracle) = configuration.query.pair()
 
     fun <L : Language> makeEnumerator(seed: Candidate<L>, mustPassNegatives: Boolean) =
         enumerator(

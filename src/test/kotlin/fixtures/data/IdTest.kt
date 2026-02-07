@@ -1,12 +1,12 @@
 package fixtures.data
 
-import fixtures.Test
-import query.Query
+import query.AbstractQuery
+import query.Examples
 import util.ScrappyNewOracle
 import util.io.parseApp
 import util.io.parseExamples
 
-object IdTest : Test {
+object IdTest : AbstractQuery() {
     override val name = "Id&inc"
 
     /*
@@ -14,7 +14,7 @@ object IdTest : Test {
     n: int
     id: a -> a
     */
-    val examples =
+    val exs =
         mapOf(
             "(+ inc)" to "int -> int",
             "(+ id)" to "a -> a",
@@ -54,6 +54,6 @@ object IdTest : Test {
             "(+ (inc (id n)))" to "int",
         )
 
-    override val query: Query = parseExamples(examples.keys)
-    override val oracle = ScrappyNewOracle(examples.mapKeys { parseApp(it.key) })
+    override val examples: Examples = parseExamples(exs.keys)
+    override val oracle = ScrappyNewOracle(exs.mapKeys { parseApp(it.key) })
 }

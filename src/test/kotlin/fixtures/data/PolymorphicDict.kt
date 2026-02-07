@@ -1,12 +1,12 @@
 package fixtures.data
 
-import fixtures.Test
 import products.types.parseType
-import query.Query
+import query.AbstractQuery
+import query.Examples
 import util.CheckingOracle
 import util.io.parseExamples
 
-object PolymorphicDict : Test {
+object PolymorphicDict : AbstractQuery() {
     override val name = "Dict"
     private val basics =
         listOf(
@@ -79,9 +79,9 @@ object PolymorphicDict : Test {
 
     // TODO next: chain operator takes dicts ab, bc and produces ac
 
-    val examples = basics + put
+    private val exs = basics + put
 
-    override val query: Query = parseExamples(examples)
+    override val examples: Examples = parseExamples(exs)
     override val oracle =
         CheckingOracle(
             mapOf(

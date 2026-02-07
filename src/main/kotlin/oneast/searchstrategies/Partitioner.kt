@@ -1,7 +1,8 @@
 package oneast.searchstrategies
 
 import oneast.*
-import query.Query
+import query.Examples
+import util.Logger
 
 fun main() {
     val elems = listOf("a", "b", "c")
@@ -12,7 +13,7 @@ fun main() {
     seq.take(100).forEach { println(it) }
 }
 
-class Partitioner(query: Query) : SearchStrategy(query) {
+class Partitioner(examples: Examples) : SearchStrategy(examples) {
     override fun candidates(
         c: SearchState,
         unification: OneUnification,
@@ -21,6 +22,7 @@ class Partitioner(query: Query) : SearchStrategy(query) {
         sizeBound: Int,
         depthBound: Int,
         loggingSeed: SearchState,
+        logger: Logger
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
 
@@ -63,7 +65,8 @@ class Partitioner(query: Query) : SearchStrategy(query) {
                         fastForwardBlanks,
                         sizeBound - cost,
                         depthBound,
-                        loggingSeed
+                        loggingSeed,
+                        logger
                     )
                 } else emptySequence()
             }

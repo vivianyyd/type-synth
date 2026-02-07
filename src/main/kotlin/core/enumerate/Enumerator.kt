@@ -4,7 +4,7 @@ import core.enumerate.EnumeratorTag.*
 import core.languages.Candidate
 import core.languages.Language
 import core.unification.UnificationForCandidate
-import query.Query
+import query.Examples
 import util.Logger
 
 sealed interface Enumerator<L : Language> {
@@ -22,7 +22,7 @@ enum class EnumeratorTag {
 
 fun <L : Language> enumerator(
     tag: EnumeratorTag,
-    query: Query,
+    examples: Examples,
     seedCandidate: Candidate<L>,
     unification: UnificationForCandidate<L>,
     mustPassNegatives: Boolean,
@@ -30,9 +30,10 @@ fun <L : Language> enumerator(
 ) =
     when (tag) {
         BFS -> error("BFS not supported yet")
-        DFSLeft -> DFSLeftEnumerator(query, seedCandidate, unification, mustPassNegatives, logger)
+        DFSLeft ->
+            DFSLeftEnumerator(examples, seedCandidate, unification, mustPassNegatives, logger)
         DFSPriority ->
-            DFSPriorityEnumerator(query, seedCandidate, unification, mustPassNegatives, logger)
+            DFSPriorityEnumerator(examples, seedCandidate, unification, mustPassNegatives, logger)
         Product -> error("Product enumeration not supported yet")
     }
 
