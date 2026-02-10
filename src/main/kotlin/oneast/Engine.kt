@@ -9,12 +9,17 @@ import kotlin.math.min
 typealias SearchProvider = (SearchState, Examples) -> Search
 
 class Engine(
-    private val examples: Examples,
+    startingExamples: Examples,
     private val searchProvider: SearchProvider,
+    private val languageGroundTruth: (Example) -> Boolean,
     private val namesPerRound: Int
 ) {
+    private val names = startingExamples.names
+    private val posExamples = startingExamples.posNoSubexprs.toMutableList()
+    private val negExamples = startingExamples.neg.toMutableList()
+
     // ceiling division
-    private val numRounds = (examples.names.size + namesPerRound - 1) / namesPerRound
+    private val numRounds = (names.size + namesPerRound - 1) / namesPerRound
     private val scheduled = mutableListOf<Set<String>>()
 
     init {
@@ -24,8 +29,8 @@ class Engine(
                     .select(
                         // whether a name occurs in subexprs is good signal for its
                         // importance.
-                        examples.posWithSubexprs,
-                        examples.names.toList(),
+                        startingExamples.posWithSubexprs,
+                        names,
                         buildSet { scheduled.forEach { addAll(it) } },
                         namesPerRound
                     )
@@ -35,7 +40,7 @@ class Engine(
 
     /** Returns the next synthesis problem, or null if we are done. */
     private fun buildNextQuery(state: SearchState): Pair<Examples, SearchState>? {
-        if (examples.names.size == state.names.size) return null
+        if (names.size == state.names.size) return null
 
         val scheduledRound = scheduled[state.names.size / namesPerRound].toList()
         // TODO I think enumeration doesn't actually need the subexprs, so we should make a separate
@@ -45,7 +50,7 @@ class Engine(
         val newNames = state.names + (scheduledRound.zip(oldSize until newSize))
 
         fun takeExs(exs: Collection<Example>) = exs.filter { newNames.keys.containsAll(it.names) }
-        val nextExamples = Examples(takeExs(examples.posNoSubexprs), takeExs(examples.neg))
+        val nextExamples = Examples(takeExs(posExamples), takeExs(negExamples))
 
         fun nameIsApplied(name: String) =
             nextExamples.posWithSubexprs.any { ex ->
@@ -85,7 +90,14 @@ class Engine(
         }
 
         for (solution in solveQuery(nextQueryAndSeed.first, nextQueryAndSeed.second)) {
-            yieldAll(searchRec(solution))
+            val ctrex =
+                CEGISCheck(nextQueryAndSeed.first, nextQueryAndSeed.second, languageGroundTruth) { s, e ->
+                    OneUnification(s, listOf(e)).ok()
+                }.counterexample()
+            if (ctrex == null) yieldAll(searchRec(solution))
+            else {
+                if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
+            }
         }
     }
 

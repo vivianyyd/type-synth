@@ -2,6 +2,7 @@ package oneast
 
 import oneast.searchstrategies.DFSEnumerator
 import query.AbstractQuery
+import query.Example
 import util.Config
 import util.Logger
 import util.io.parseTest
@@ -10,6 +11,7 @@ import util.lines
 fun main() {
     val testName = "dictchain"
     val query = parseTest(testName)
+    val languageGroundTruth = TODO("Query should probably include this")
 
     val configuration =
         Configuration(
@@ -26,18 +28,24 @@ fun main() {
             configuration = configuration, logFilename = "tmp.log", logToFile = true, verbosity = 5
         )
 
-    run(query, configuration, logger)
+    run(query, languageGroundTruth, configuration, logger)
     TODO(
         "We can't just take the first result, need to do all of them. Large search tree wraps small search tree" +
                 "Also we should use conservative fast forward every once in a while or every time idk"
     )
 }
 
-fun run(query: AbstractQuery, configuration: Configuration, logger: Logger) {
+fun run(
+    query: AbstractQuery,
+    languageGroundTruth: (Example) -> Boolean,
+    configuration: Configuration,
+    logger: Logger
+) {
     val engine =
         Engine(
             query.examples,
             { e, s -> Search(e, s, query.oracle, configuration, ::DFSEnumerator, logger) },
+            languageGroundTruth,
             configuration.namesPerRound
         )
 
