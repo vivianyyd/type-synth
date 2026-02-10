@@ -1,8 +1,8 @@
 (library
  (name oneast_ocaml)
- (public_name oneast-ocaml)
- (libraries base stdio))
+ (modules :standard \ main))
 
 (executables
  (names main)
- (libraries oneast_ocaml stdio base))
+ (modules main)
+ (libraries oneast_ocaml))

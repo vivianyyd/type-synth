@@ -1,4 +1,4 @@
-open Base
+open Stdlib
 
 module Counter = struct
   type t = { mutable n : int }
@@ -13,48 +13,62 @@ module Counter = struct
 end
 
 module IntUnionFind = struct
-  type t = { parent : (int, int) Hashtbl.t; size : (int, int) Hashtbl.t }
+  module H = Hashtbl.Make (struct
+    type t = int
 
-  let create () = { parent = Hashtbl.create (module Int); size = Hashtbl.create (module Int) }
+    let equal = ( = )
+    let hash = Hashtbl.hash
+  end)
+
+  type t = { parent : int H.t; size : int H.t }
+
+  let create () = { parent = H.create 16; size = H.create 16 }
 
   let rec find t x =
-    match Hashtbl.find t.parent x with
+    match H.find_opt t.parent x with
     | None ->
-        Hashtbl.set t.parent ~key:x ~data:x;
-        Hashtbl.set t.size ~key:x ~data:1;
+        H.replace t.parent x x;
+        H.replace t.size x 1;
         x
     | Some p ->
-        if Int.equal p x then x
+        if p = x then x
         else
           let r = find t p in
-          Hashtbl.set t.parent ~key:x ~data:r;
+          H.replace t.parent x r;
           r
 
   let union t a b =
     let ra = find t a and rb = find t b in
-    if Int.equal ra rb then ()
+    if ra = rb then ()
     else
-      let sa = Hashtbl.find_exn t.size ra and sb = Hashtbl.find_exn t.size rb in
+      let sa = H.find_opt t.size ra |> Option.value ~default:1
+      and sb = H.find_opt t.size rb |> Option.value ~default:1 in
       if sa < sb then (
-        Hashtbl.set t.parent ~key:ra ~data:rb;
-        Hashtbl.set t.size ~key:rb ~data:(sa + sb))
+        H.replace t.parent ra rb;
+        H.replace t.size rb (sa + sb))
       else (
-        Hashtbl.set t.parent ~key:rb ~data:ra;
-        Hashtbl.set t.size ~key:ra ~data:(sa + sb))
+        H.replace t.parent rb ra;
+        H.replace t.size ra (sa + sb))
 end
 
 module Logger = struct
-  type t = { counts : (string, int) Hashtbl.t }
+  module H = Hashtbl.Make (struct
+    type t = string
 
-  let create () = { counts = Hashtbl.create (module String) }
+    let equal = String.equal
+    let hash = Hashtbl.hash
+  end)
+
+  type t = { counts : int H.t }
+
+  let create () = { counts = H.create 16 }
 
   let count t msg =
-    let v = Option.value (Hashtbl.find t.counts msg) ~default:0 in
-    Hashtbl.set t.counts ~key:msg ~data:(v + 1)
+    let v = Option.value ~default:0 (H.find_opt t.counts msg) in
+    H.replace t.counts msg (v + 1)
 
   let dump t =
-    Hashtbl.iteri t.counts ~f:(fun ~key ~data ->
-        Stdio.printf "[log] %s -> %d\n%!" key data)
+    H.iter (fun k v -> Printf.printf "[log] %s -> %d\n%!" k v) t.counts
 end
 
 module Oracle = struct

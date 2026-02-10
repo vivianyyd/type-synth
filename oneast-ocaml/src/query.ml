@@ -1,5 +1,3 @@
-open Base
-
 type name = string
 
 type t = {

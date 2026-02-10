@@ -1,4 +1,1 @@
-open Base
-open Stdio
-
-let () = printf "OneAST OCaml port placeholder\n"
+let () = Printf.printf "OneAST OCaml port placeholder\n"
