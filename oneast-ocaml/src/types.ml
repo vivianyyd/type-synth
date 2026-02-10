@@ -55,9 +55,9 @@ let make_hole ?(label_only = false) (kind : new_hole_kind) =
 let rec max_param_height ?(count_arrow = true) = function
   | Variable _ -> 1
   | Arrow (l, r) ->
-      (if count_arrow then 1 else 0)
-      + max (max_param_height ~count_arrow:true l)
-          (max_param_height ~count_arrow r)
+      let left = max_param_height ~count_arrow:true l in
+      let right = max_param_height ~count_arrow r in
+      (if count_arrow then 1 else 0) + max left right
   | NamedLabel (_, ps) ->
       1
       + (match ps with
@@ -173,6 +173,7 @@ module SearchState = struct
     { t with types = List.map f t.types; label_arities = arities }
 
   let type_of t name =
+    (* [names] indexes are assumed consistent with [types] *)
     let idx = StringMap.find name t.names in
     List.nth t.types idx
 
