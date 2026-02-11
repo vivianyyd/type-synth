@@ -1,4 +1,4 @@
-package fixtures
+package testutil
 
 import query.Example
 import query.Examples

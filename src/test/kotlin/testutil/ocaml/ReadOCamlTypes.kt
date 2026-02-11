@@ -1,4 +1,4 @@
-package fixtures
+package testutil.ocaml
 
 import oneast.Arrow
 import oneast.NamedLabel

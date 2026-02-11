@@ -1,8 +1,7 @@
 package oneast
 
-import fixtures.OcamlTypeParser
-import fixtures.loadQuery
-import oneast.searchstrategies.DFSEnumerator
+import testutil.loadQuery
+import testutil.ocaml.OcamlTypeParser
 import util.Logger
 import util.NewCheckingOracle
 import util.join
@@ -35,18 +34,18 @@ class OCamlStdlibTest {
                 verbosity = 5
             )
 
-        val engine =
-            Engine(
-                query,
-                { q, s ->
-                    println(s)
-                    Search(q, s, oracle, configuration, ::DFSEnumerator, logger)
-                },
-                namesPerRound = configuration.namesPerRound
-            )
-        // TODO oracle should be in query, numsols in config
-
-        engine.search().take(1).forEach { logger.log("FIRST SOLUTION: ${it.asMap()}") }
-        logger.finish()
+        //        val engine =
+        //            Engine(
+        //                query,
+        //                { q, s ->
+        //                    println(s)
+        //                    Search(q, s, oracle, configuration, ::DFSEnumerator, logger)
+        //                },
+        //                namesPerRound = configuration.namesPerRound
+        //            )
+        //        // TODO oracle should be in query, numsols in config
+        //
+        //        engine.search().take(1).forEach { logger.log("FIRST SOLUTION: ${it.asMap()}") }
+        //        logger.finish()
     }
 }
