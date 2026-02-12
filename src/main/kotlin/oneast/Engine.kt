@@ -4,6 +4,7 @@ import query.App
 import query.Example
 import query.Examples
 import query.Name
+import util.Logger
 import kotlin.math.min
 
 typealias SearchProvider = (SearchState, Examples) -> Search
@@ -12,6 +13,7 @@ class Engine(
     startingExamples: Examples,
     private val searchProvider: SearchProvider,
     private val languageGroundTruth: (Example) -> Boolean,
+    private val logger: Logger,
     private val namesPerRound: Int
 ) {
     private val names = startingExamples.names
@@ -90,12 +92,20 @@ class Engine(
         }
 
         for (solution in solveQuery(nextQueryAndSeed.first, nextQueryAndSeed.second)) {
+            logger.log("Potential solution: $solution")
+            logger.log("Looking for counterexamples")
             val ctrex =
-                CEGISCheck(nextQueryAndSeed.first, nextQueryAndSeed.second, languageGroundTruth) { s, e ->
+                CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth) { s,
+                                                                                    e ->
                     OneUnification(s, listOf(e)).ok()
-                }.counterexample()
-            if (ctrex == null) yieldAll(searchRec(solution))
-            else {
+                }
+                    .counterexample()
+            if (ctrex == null) {
+                logger.log("Found no counterexamples")
+                yieldAll(searchRec(solution))
+            } else {
+                logger.log("Adding counterexample ${ctrex.first}\tPosex: ${ctrex.second}")
+                logger.log("Sanity check OK: ${ctrex.second == OneUnification(solution, listOf(ctrex.first)).ok()}")
                 if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
             }
         }

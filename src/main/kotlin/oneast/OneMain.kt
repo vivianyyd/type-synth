@@ -46,6 +46,7 @@ fun run(
             query.examples,
             { e, s -> Search(e, s, query.oracle, configuration, ::DFSEnumerator, logger) },
             languageGroundTruth,
+            logger,
             configuration.namesPerRound
         )
 
