@@ -3,6 +3,7 @@ package oneast
 import query.Example
 import query.Examples
 import util.BloomFilter
+import util.RandomExampleGenerator
 
 class CEGISCheck(
     initExamples: Examples,

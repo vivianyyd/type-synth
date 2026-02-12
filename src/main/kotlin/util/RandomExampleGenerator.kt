@@ -1,4 +1,4 @@
-package oneast
+package util
 
 import query.App
 import query.Example
