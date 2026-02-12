@@ -397,12 +397,16 @@ object Bottom : ConstraintTy {
 //   instantiated types can differ, they always have the same root. Does it matter?
 data class InstantiationTy(val hole: THole, val instId: Int) : ConstraintTy {
     override fun variables() = emptyList<ConstraintVariable>()
+
+    override fun toString(): String = "_${hole.id}-$instId"
 }
 
 data class ConstraintVariable(val v: Int, val instId: Int) : ConstraintTy {
     private val variables by lazy { listOf(this) }
 
     override fun variables() = variables
+
+    override fun toString(): String = "V$v-$instId"
 }
 
 sealed class ConstraintTypeConstructor(open val params: List<ConstraintTy>) : ConstraintTy {
@@ -430,10 +434,14 @@ data class ConstraintArrow(override val params: List<ConstraintTy>) :
     constructor(l: ConstraintTy, r: ConstraintTy) : this(listOf(l, r))
 
     override fun match(other: ConstraintTypeConstructor) = other is ConstraintArrow
+
+    override fun toString(): String = "($l) -> ($r)"
 }
 
 data class ConstraintLabel(val label: Int, override val params: List<ConstraintTy>) :
     ConstraintTypeConstructor(params) {
     override fun match(other: ConstraintTypeConstructor) =
         other is ConstraintLabel && label == other.label && params.size == other.params.size
+
+    override fun toString(): String = "L$params"
 }
