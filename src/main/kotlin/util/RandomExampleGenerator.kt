@@ -9,7 +9,8 @@ class RandomExampleGenerator(private val names: List<String>) {
     val random = Random.Default
 
     private fun randExample(bound: Int): Example =
-        if (bound < 2 || random.nextBoolean()) randName() else randApp(bound - 1)
+        if (bound < 1 || (random.nextBoolean() && random.nextBoolean())) randName()
+        else randApp(bound - 1)
 
     private fun randName(): Name = Name(names.random())
 
