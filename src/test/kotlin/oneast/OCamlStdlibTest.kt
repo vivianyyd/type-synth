@@ -1,6 +1,8 @@
 package oneast
 
+import oneast.searchstrategies.DFSEnumerator
 import testutil.loadQuery
+import testutil.ocaml.OCamlChecker
 import testutil.ocaml.OcamlTypeParser
 import util.Logger
 import util.NewCheckingOracle
@@ -10,7 +12,7 @@ import kotlin.test.Test
 
 class OCamlStdlibTest {
     @Test
-    fun `can build query from input file`() {
+    fun `can reconstruct stdlib`() {
         val dir = join("src", "test", "input", "ocaml-stdlib")
         val query = loadQuery(File(dir))
         val oracleTypes = OcamlTypeParser().parseSignatures(File(join(dir, "all.types")).readText())
@@ -34,18 +36,20 @@ class OCamlStdlibTest {
                 verbosity = 5
             )
 
-        //        val engine =
-        //            Engine(
-        //                query,
-        //                { q, s ->
-        //                    println(s)
-        //                    Search(q, s, oracle, configuration, ::DFSEnumerator, logger)
-        //                },
-        //                namesPerRound = configuration.namesPerRound
-        //            )
-        //        // TODO oracle should be in query, numsols in config
-        //
-        //        engine.search().take(1).forEach { logger.log("FIRST SOLUTION: ${it.asMap()}") }
-        //        logger.finish()
+        val engine =
+            Engine(
+                query,
+                { s, q ->
+                    logger.log("Searching $s")
+                    Search(s, q, oracle, configuration, ::DFSEnumerator, logger)
+                },
+                { e -> OCamlChecker().isValid(e.toString()).isValid },
+                logger,
+                namesPerRound = configuration.namesPerRound
+            )
+        // TODO oracle should be in query, numsols in config
+
+        engine.search().take(1).forEach { logger.log("FIRST SOLUTION: ${it.asMap()}") }
+        logger.finish()
     }
 }
