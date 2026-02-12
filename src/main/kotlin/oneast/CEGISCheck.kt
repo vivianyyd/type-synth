@@ -22,13 +22,15 @@ class CEGISCheck(
     fun counterexample(): Pair<Example, Boolean>? {
         while (posCtr < 100) {
             val next = generator.get(exampleDepthBound)
-            val truthValue = valid(next)
-            if (check(candidate, next) != truthValue) {
-                return next to truthValue
-            }
-            if (truthValue) {
-                posCtr++
-                bf.add(next)
+            if (!bf.mightContain(next)) {
+                val truthValue = valid(next)
+                if (check(candidate, next) != truthValue) {
+                    return next to truthValue
+                }
+                if (truthValue) {
+                    posCtr++
+                    bf.add(next)
+                }
             }
         }
         return null
