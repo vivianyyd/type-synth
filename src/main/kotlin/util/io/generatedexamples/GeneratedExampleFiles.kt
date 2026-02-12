@@ -4,7 +4,7 @@ import util.join
 import util.write
 import java.io.File
 
-private fun generatedTestPath(name: String) = join("src", "test", "generated", "$name.sexp")
+private fun generatedTestPath(name: String) = join("src", "test", "input", "sexp", "$name.sexp")
 
 fun writeExamples(contents: String, name: String) = write(generatedTestPath(name), contents)
 
