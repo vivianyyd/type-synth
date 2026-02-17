@@ -215,7 +215,8 @@ class UnificationTest {
 
     /**
      * Negative test case: Arity mismatch in type constructor parameters.
-     * A list of Int vs a list of (Int, Bool) should not unify.
+     * A function expecting List<Int> (1-param List) vs passing List<Int, Bool> (2-param List) should not unify.
+     * The arity mismatch should cause unification to fail.
      */
     @Test
     fun `fail to unify type constructors with different parameter counts`() {
@@ -230,11 +231,11 @@ class UnificationTest {
                     NamedLabel(2, listOf(NamedLabel(0, listOf()))), // List<Int>
                     NamedLabel(0, listOf()) // Int
                 ),
-                // x: List<Int, Bool> (label 2 is List with 2 params)
+                // x: List<Int, Bool> (label 2 is List being used with 2 params - arity mismatch!)
                 NamedLabel(2, listOf(NamedLabel(0, listOf()), NamedLabel(1, listOf())))
             ),
             listOf(2), // rounds
-            mapOf(0 to 0, 1 to 0, 2 to 1) // labels 0 (Int) and 1 (Bool) have arity 0, label 2 (List) has arity 1
+            mapOf(0 to 0, 1 to 0, 2 to 1) // label 2 (List) is declared with arity 1, but x uses it with 2 params
         )
         
         // Example: f(x)
