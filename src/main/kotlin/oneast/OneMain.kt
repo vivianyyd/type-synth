@@ -11,7 +11,7 @@ import util.lines
 fun main() {
     val testName = "dictchain"
     val query = parseTest(testName)
-    val languageGroundTruth = TODO("Query should probably include this")
+    val languageGroundTruth: (Example) -> Boolean = { e -> TODO() }
 
     val configuration =
         Configuration(
@@ -25,7 +25,10 @@ fun main() {
 
     val logger =
         Logger(
-            configuration = configuration, logFilename = "tmp.log", logToFile = true, verbosity = 5
+            configuration = configuration,
+            logFilename = "tmp.log",
+            logToFile = true,
+            verbosity = 5
         )
 
     run(query, languageGroundTruth, configuration, logger)
@@ -53,7 +56,7 @@ fun run(
     when (configuration.numSols) {
         Solutions.AllSolutions -> engine.search()
         is Solutions.NumSolutions -> engine.search().take(configuration.numSols.value)
-    }.forEach { logger.log("FIRST SOLUTION: ${it.asMap()}") }
+    }.forEach { logger.log("SOLUTION: ${it.asMap()}") }
     logger.finish()
 }
 
