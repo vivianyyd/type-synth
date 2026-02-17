@@ -83,6 +83,7 @@ class UnificationTest {
                     NamedLabel(0, listOf())
                 ),
                 // g: 'b -> 'b -> Int
+                // (conceptually 'b, but uses Variable(0) which gets fresh instance during instantiation)
                 Arrow(Variable(0), Arrow(Variable(0), NamedLabel(0, listOf())))
             ),
             listOf(2),
@@ -377,7 +378,7 @@ class UnificationTest {
             mapOf("f" to 0, "x" to 1),
             listOf(
                 // f: ('a -> 'b) -> Int
-                Arrow(Arrow(Variable(0), Variable(1)), NamedLabel(0, listOf())),
+                Arrow(Arrow(Variable(0), Variable(0)), NamedLabel(0, listOf())),
                 // x: Int
                 NamedLabel(0, listOf())
             ),
@@ -414,10 +415,9 @@ class UnificationTest {
             mapOf(0 to 0, 1 to 0, 2 to 0)
         )
         
-        // Try h(compose(f,g)) where compose would give Bool -> Int
-        // But h expects 'a -> 'a
-        val compose = App(Name("f"), Name("g"))
-        val example = App(Name("h"), compose)
+        // Try h with f(g) where f: Bool -> 'a, g: 'a -> Int
+        // f(g) would need 'a to be unified in conflicting ways
+        val example = App(Name("h"), App(Name("f"), Name("g")))
         val unify = OneUnification(context, listOf(example))
         // Expected: should fail - Bool != Int
         assertFalse(unify.ok(), "Should fail - input and output types don't match")
