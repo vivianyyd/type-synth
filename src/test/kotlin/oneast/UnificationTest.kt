@@ -63,7 +63,8 @@ class UnificationTest {
                     NamedLabel(0, listOf()) // Int
                 ),
                 // g: 'b -> 'b -> 'b  
-                // Variable(0) represents 'b, which will be instantiated with a fresh variable during unification
+                // Also uses Variable(0), but represents a different type variable 'b
+                // These will be distinguished during instantiation with fresh variable IDs
                 Arrow(Variable(0), Arrow(Variable(0), Variable(0)))
             ),
             listOf(2), // rounds
