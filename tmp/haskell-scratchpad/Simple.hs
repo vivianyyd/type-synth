@@ -2,6 +2,10 @@
 {-# LANGUAGE KindSignatures #-}
 module Simple where
 
+z :: a -> a -> a 
+z = \x y -> x
+x = z z  
+
 a = do x <- [3..4]
        [1..2]
        return (x, 42)
