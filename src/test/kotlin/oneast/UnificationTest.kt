@@ -134,7 +134,7 @@ class UnificationTest {
                 NamedLabel(0, listOf())
             ),
             listOf(2), // rounds
-            mapOf(0 to 0, 1 to 1) // label arities
+            mapOf(0 to 0) // label 0 (Int) has arity 0
         )
         
         // Example: f(x) - trying to apply f to an Int value
@@ -202,7 +202,7 @@ class UnificationTest {
                 NamedLabel(1, listOf())
             ),
             listOf(2), // rounds
-            mapOf()
+            mapOf(0 to 0, 1 to 0) // label 0 (Int) and label 1 (Bool) have arity 0
         )
         
         // Example: f(x) - trying to apply f to a Bool value
@@ -234,7 +234,7 @@ class UnificationTest {
                 NamedLabel(2, listOf(NamedLabel(0, listOf()), NamedLabel(1, listOf())))
             ),
             listOf(2), // rounds
-            mapOf()
+            mapOf(0 to 0, 1 to 0, 2 to 1) // labels 0 (Int) and 1 (Bool) have arity 0, label 2 (List) has arity 1
         )
         
         // Example: f(x)
