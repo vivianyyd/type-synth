@@ -74,18 +74,14 @@ class UnificationTest {
      */
     @Test
     fun `both param and arg specialize - concrete in parameter`() {
-        val context =
-            SearchState(
-                mapOf("f" to 0, "g" to 1),
-                listOf(
-                    // f: ('a -> 'a -> Int) -> Int
-                    Arrow(Arrow(a, Arrow(a, I)), I),
-                    // g: 'b -> 'b -> 'b
-                    Arrow(a, Arrow(a, a))
-                ),
-                listOf(2),
-                mapOf(0 to 0)
+        val context = makeContext(
+            listOf(
+                // f: ('a -> 'a -> Int) -> Int
+                "f" to Arrow(Arrow(a, Arrow(a, I)), I),
+                // g: 'b -> 'b -> 'b
+                "g" to Arrow(a, Arrow(a, a))
             )
+        )
 
         val example = App(Name("f"), Name("g"))
         val unify = OneUnification(context, listOf(example))
@@ -100,20 +96,16 @@ class UnificationTest {
      */
     @Test
     fun `both param and arg specialize - concrete in argument`() {
-        val context =
-            SearchState(
-                mapOf("f" to 0, "g" to 1),
-                listOf(
-                    // f: ('a -> 'a -> 'a) -> Int
-                    Arrow(Arrow(a, Arrow(a, a)), I),
-                    // g: 'b -> 'b -> Int
-                    // (conceptually 'b, but uses a which gets fresh instance during
-                    // instantiation)
-                    Arrow(a, Arrow(a, I))
-                ),
-                listOf(2),
-                mapOf(0 to 0)
+        val context = makeContext(
+            listOf(
+                // f: ('a -> 'a -> 'a) -> Int
+                "f" to Arrow(Arrow(a, Arrow(a, a)), I),
+                // g: 'b -> 'b -> Int
+                // (conceptually 'b, but uses a which gets fresh instance during
+                // instantiation)
+                "g" to Arrow(a, Arrow(a, I))
             )
+        )
 
         val example = App(Name("f"), Name("g"))
         val unify = OneUnification(context, listOf(example))
@@ -129,18 +121,14 @@ class UnificationTest {
      */
     @Test
     fun `parameter specializes to match argument`() {
-        val context =
-            SearchState(
-                mapOf("f" to 0, "x" to 1),
-                listOf(
-                    // f: 'a -> Int
-                    Arrow(a, I),
-                    // x: Bool -> Int (label 1 is Bool)
-                    Arrow(NamedLabel(1, listOf()), I)
-                ),
-                listOf(2),
-                mapOf(0 to 0, 1 to 0)
+        val context = makeContext(
+            listOf(
+                // f: 'a -> Int
+                "f" to Arrow(a, I),
+                // x: Bool -> Int (label 1 is Bool)
+                "x" to Arrow(NamedLabel(1, listOf()), I)
             )
+        )
 
         val example = App(Name("f"), Name("x"))
         val unify = OneUnification(context, listOf(example))
@@ -154,18 +142,14 @@ class UnificationTest {
      */
     @Test
     fun `argument specializes to match parameter`() {
-        val context =
-            SearchState(
-                mapOf("f" to 0, "g" to 1),
-                listOf(
-                    // f: (Bool -> Int) -> Int
-                    Arrow(Arrow(NamedLabel(1, listOf()), I), I),
-                    // g: 'a -> Int
-                    Arrow(a, I)
-                ),
-                listOf(2),
-                mapOf(0 to 0, 1 to 0)
+        val context = makeContext(
+            listOf(
+                // f: (Bool -> Int) -> Int
+                "f" to Arrow(Arrow(NamedLabel(1, listOf()), I), I),
+                // g: 'a -> Int
+                "g" to Arrow(a, I)
             )
+        )
 
         val example = App(Name("f"), Name("g"))
         val unify = OneUnification(context, listOf(example))
@@ -179,18 +163,14 @@ class UnificationTest {
      */
     @Test
     fun `both types specialize to each other's concrete parts`() {
-        val context =
-            SearchState(
-                mapOf("f" to 0, "g" to 1),
-                listOf(
-                    // f: 'a -> Int
-                    Arrow(a, I),
-                    // g: Bool -> 'b
-                    Arrow(NamedLabel(1, listOf()), a)
-                ),
-                listOf(2),
-                mapOf(0 to 0, 1 to 0)
+        val context = makeContext(
+            listOf(
+                // f: 'a -> Int
+                "f" to Arrow(a, I),
+                // g: Bool -> 'b
+                "g" to Arrow(NamedLabel(1, listOf()), a)
             )
+        )
 
         val example = App(Name("f"), Name("g"))
         val unify = OneUnification(context, listOf(example))
@@ -207,21 +187,17 @@ class UnificationTest {
         // Define a function 'f' that takes a function: f: ('a -> 'b) -> Int
         // And a value 'x' of type Int
 
-        val context =
-            SearchState(
-                mapOf("f" to 0, "x" to 1),
-                listOf(
-                    // f: ('a -> 'b) -> Int
-                    Arrow(
-                        Arrow(a, b), // 'a -> 'b
-                        I // Int
-                    ),
-                    // x: Int
-                    I
+        val context = makeContext(
+            listOf(
+                // f: ('a -> 'b) -> Int
+                "f" to Arrow(
+                    Arrow(a, b), // 'a -> 'b
+                    I // Int
                 ),
-                listOf(2), // rounds
-                mapOf(0 to 0) // label 0 (Int) has arity 0
+                // x: Int
+                "x" to I
             )
+        )
 
         // Example: f(x) - trying to apply f to an Int value
         val example = App(Name("f"), Name("x"))
@@ -250,18 +226,14 @@ class UnificationTest {
         // f: 'a -> Int
         // g: ('a -> 'b) -> Int
 
-        val context =
-            SearchState(
-                mapOf("f" to 0, "g" to 1),
-                listOf(
-                    // f: 'a -> Int
-                    Arrow(a, I),
-                    // g: ('a -> 'b) -> Int
-                    Arrow(Arrow(a, b), I)
-                ),
-                listOf(2), // rounds
-                mapOf(0 to 0) // label 0 has arity 0
+        val context = makeContext(
+            listOf(
+                // f: 'a -> Int
+                "f" to Arrow(a, I),
+                // g: ('a -> 'b) -> Int
+                "g" to Arrow(Arrow(a, b), I)
             )
+        )
 
         val example = App(Name("g"), Name("f"))
         val unify = OneUnification(context, listOf(example))
@@ -278,18 +250,14 @@ class UnificationTest {
         // Define a function 'f' that expects Int: f: Int -> Int
         // And a value 'x' of type Bool
 
-        val context =
-            SearchState(
-                mapOf("f" to 0, "x" to 1),
-                listOf(
-                    // f: Int -> Int (label 0 is Int)
-                    Arrow(I, I),
-                    // x: Bool (label 1 is Bool)
-                    NamedLabel(1, listOf())
-                ),
-                listOf(2), // rounds
-                mapOf(0 to 0, 1 to 0) // label 0 (Int) and label 1 (Bool) have arity 0
+        val context = makeContext(
+            listOf(
+                // f: Int -> Int (label 0 is Int)
+                "f" to Arrow(I, I),
+                // x: Bool (label 1 is Bool)
+                "x" to NamedLabel(1, listOf())
             )
+        )
 
         // Example: f(x) - trying to apply f to a Bool value
         val example = App(Name("f"), Name("x"))
@@ -315,21 +283,17 @@ class UnificationTest {
         // Define a function 'f' that expects List<Int>: f: List<Int> -> Int
         // And a value 'x' that incorrectly uses List with 2 parameters
 
-        val context =
-            SearchState(
-                mapOf("f" to 0, "x" to 1),
-                listOf(
-                    // f: List<Int> -> Int (List correctly used with 1 param)
-                    Arrow(
-                        NamedLabel(2, listOf(I)), // List<Int>
-                        I // Int
-                    ),
-                    // x: List<Int, Bool> (List incorrectly used with 2 params)
-                    NamedLabel(2, listOf(I, NamedLabel(1, listOf())))
+        val context = makeContext(
+            listOf(
+                // f: List<Int> -> Int (List correctly used with 1 param)
+                "f" to Arrow(
+                    NamedLabel(2, listOf(I)), // List<Int>
+                    I // Int
                 ),
-                listOf(2), // rounds
-                mapOf(0 to 0, 1 to 0, 2 to 1) // label 2 (List) is declared with arity 1
+                // x: List<Int, Bool> (List incorrectly used with 2 params)
+                "x" to NamedLabel(2, listOf(I, NamedLabel(1, listOf())))
             )
+        )
 
         // Example: f(x)
         // When trying to unify, the parameter count mismatch (1 vs 2) should cause failure
@@ -349,18 +313,14 @@ class UnificationTest {
      */
     @Test
     fun `unify identity function with Int value`() {
-        val context =
-            SearchState(
-                mapOf("id" to 0, "x" to 1),
-                listOf(
-                    // id: 'a -> 'a
-                    Arrow(a, a),
-                    // x: Int
-                    I
-                ),
-                listOf(2), // rounds
-                mapOf(0 to 0)
+        val context = makeContext(
+            listOf(
+                // id: 'a -> 'a
+                "id" to Arrow(a, a),
+                // x: Int
+                "x" to I
             )
+        )
 
         // Example: id(x)
         val example = App(Name("id"), Name("x"))
@@ -382,18 +342,14 @@ class UnificationTest {
      */
     @Test
     fun `specialization fails - incompatible concrete types`() {
-        val context =
-            SearchState(
-                mapOf("f" to 0, "g" to 1),
-                listOf(
-                    // f: Int -> Int
-                    Arrow(I, I),
-                    // g: Bool -> Bool
-                    Arrow(NamedLabel(1, listOf()), NamedLabel(1, listOf()))
-                ),
-                listOf(2),
-                mapOf(0 to 0, 1 to 0)
+        val context = makeContext(
+            listOf(
+                // f: Int -> Int
+                "f" to Arrow(I, I),
+                // g: Bool -> Bool
+                "g" to Arrow(NamedLabel(1, listOf()), NamedLabel(1, listOf()))
             )
+        )
 
         val example = App(Name("f"), Name("g"))
         val unify = OneUnification(context, listOf(example))
@@ -407,18 +363,14 @@ class UnificationTest {
      */
     @Test
     fun `specialization fails - structure mismatch`() {
-        val context =
-            SearchState(
-                mapOf("f" to 0, "x" to 1),
-                listOf(
-                    // f: ('a -> 'b) -> Int
-                    Arrow(Arrow(a, a), I),
-                    // x: Int
-                    I
-                ),
-                listOf(2),
-                mapOf(0 to 0)
+        val context = makeContext(
+            listOf(
+                // f: ('a -> 'b) -> Int
+                "f" to Arrow(Arrow(a, a), I),
+                // x: Int
+                "x" to I
             )
+        )
 
         val example = App(Name("f"), Name("x"))
         val unify = OneUnification(context, listOf(example))
@@ -433,20 +385,16 @@ class UnificationTest {
      */
     @Test
     fun `specialization fails - variables constrained to incompatible types`() {
-        val context =
-            SearchState(
-                mapOf("f" to 0, "g" to 1, "h" to 2),
-                listOf(
-                    // f: Bool -> 'a
-                    Arrow(NamedLabel(1, listOf()), a),
-                    // g: 'a -> Int
-                    Arrow(a, I),
-                    // h: ('a -> 'a) -> Int (expects matching input/output)
-                    Arrow(Arrow(a, a), I)
-                ),
-                listOf(3),
-                mapOf(0 to 0, 1 to 0)
+        val context = makeContext(
+            listOf(
+                // f: Bool -> 'a
+                "f" to Arrow(NamedLabel(1, listOf()), a),
+                // g: 'a -> Int
+                "g" to Arrow(a, I),
+                // h: ('a -> 'a) -> Int (expects matching input/output)
+                "h" to Arrow(Arrow(a, a), I)
             )
+        )
 
         // Try h with f(g) where f: Bool -> 'a, g: 'a -> Int
         // f(g) would need 'a to be unified in conflicting ways
@@ -477,18 +425,14 @@ class UnificationTest {
         //
         // The best we can do is demonstrate that the occurs check EXISTS and WORKS:
 
-        val context =
-            SearchState(
-                mapOf("f" to 0),
-                listOf(
-                    // This is a bit artificial, but: imagine a function that takes itself
-                    // If we could construct: f: f -> Int
-                    // But we can't represent this directly, so this test documents the limitation
-                    Arrow(a, a)
-                ),
-                listOf(1),
-                mapOf(0 to 0)
+        val context = makeContext(
+            listOf(
+                // This is a bit artificial, but: imagine a function that takes itself
+                // If we could construct: f: f -> Int
+                // But we can't represent this directly, so this test documents the limitation
+                "f" to Arrow(a, a)
             )
+        )
 
         // The occurs check in unify() at line 80 prevents V0 = (V0 -> V0)
         // But with fresh instantiation, we get V0-0 = (V0-1 -> V0-1), which is fine
@@ -519,7 +463,7 @@ class UnificationTest {
         // This test documents that the occurs check exists but is hard to trigger
         // in the current architecture due to fresh instantiation.
 
-        val context = SearchState(mapOf("id" to 0), listOf(Arrow(a, a)), listOf(1), mapOf())
+        val context = makeContext(listOf("id" to Arrow(a, a)))
 
         val example = App(Name("id"), Name("id"))
         val unify = OneUnification(context, listOf(example))
