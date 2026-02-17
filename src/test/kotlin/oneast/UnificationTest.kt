@@ -63,7 +63,7 @@ class UnificationTest {
                     NamedLabel(0, listOf()) // Int
                 ),
                 // g: 'b -> 'b -> 'b  
-                // Variable(0) is 'b (they can use the same variable index as they are different types)
+                // Variable(0) represents 'b, which will be instantiated with a fresh variable during unification
                 Arrow(Variable(0), Arrow(Variable(0), Variable(0)))
             ),
             listOf(2), // rounds
@@ -214,35 +214,40 @@ class UnificationTest {
     }
 
     /**
-     * Negative test case: Arity mismatch in type constructor parameters.
-     * A function expecting List<Int> (1-param List) vs passing List<Int, Bool> (2-param List) should not unify.
-     * The arity mismatch should cause unification to fail.
+     * Negative test case: Type constructor parameter count mismatch.
+     * This test verifies that OneUnification properly rejects types where a type constructor
+     * is used with the wrong number of parameters relative to its declared arity.
+     * 
+     * In this case, List is declared with arity 1, but 'x' attempts to use it with 2 parameters.
+     * When trying to unify f's parameter (List with 1 param) with x (List with 2 params),
+     * the arity mismatch should cause unification to fail.
      */
     @Test
     fun `fail to unify type constructors with different parameter counts`() {
         // Define a function 'f' that expects List<Int>: f: List<Int> -> Int
-        // And a value 'x' of type List<Int, Bool> (hypothetically, a 2-param list)
+        // And a value 'x' that incorrectly uses List with 2 parameters
         
         val context = SearchState(
             mapOf("f" to 0, "x" to 1),
             listOf(
-                // f: List<Int> -> Int (label 2 is List with 1 param)
+                // f: List<Int> -> Int (List correctly used with 1 param)
                 Arrow(
                     NamedLabel(2, listOf(NamedLabel(0, listOf()))), // List<Int>
                     NamedLabel(0, listOf()) // Int
                 ),
-                // x: List<Int, Bool> (label 2 is List being used with 2 params - arity mismatch!)
+                // x: List<Int, Bool> (List incorrectly used with 2 params)
                 NamedLabel(2, listOf(NamedLabel(0, listOf()), NamedLabel(1, listOf())))
             ),
             listOf(2), // rounds
-            mapOf(0 to 0, 1 to 0, 2 to 1) // label 2 (List) is declared with arity 1, but x uses it with 2 params
+            mapOf(0 to 0, 1 to 0, 2 to 1) // label 2 (List) is declared with arity 1
         )
         
         // Example: f(x)
+        // When trying to unify, the parameter count mismatch (1 vs 2) should cause failure
         val example = App(Name("f"), Name("x"))
         val unify = OneUnification(context, listOf(example))
         
-        // This should fail to type check due to arity mismatch
+        // This should fail to type check due to parameter count mismatch
         assertFalse(unify.ok(), "Expected unification to fail due to different parameter counts in type constructor")
     }
 
