@@ -48,7 +48,7 @@ class UnificationTest {
      * the unification process. This is similar to the existing 'unification' test above.
      */
     @Test
-    fun `unify function with type b to b to b with a to a to Int -- known limitation`() {
+    fun `unify function with type 'b to 'b to 'b with 'a to 'a to Int -- known limitation`() {
         // Define a function 'f' that takes a function of type 'a -> 'a -> Int
         // So f has type: ('a -> 'a -> Int) -> Int (for simplicity)
         // And a function 'g' with type 'b -> 'b -> 'b
@@ -87,7 +87,7 @@ class UnificationTest {
      * This should succeed in standard HM but fails due to OneUnification's strict occurs check.
      */
     @Test
-    fun `unify function with type a to a to a with a to a to Int -- known limitation`() {
+    fun `unify function with type 'a to 'a to 'a with 'a to 'a to Int -- known limitation`() {
         // Define a function 'f' that takes a function of type 'a -> 'a -> Int
         // And a function 'g' with type 'a -> 'a -> 'a
         
