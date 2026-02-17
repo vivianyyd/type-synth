@@ -133,8 +133,8 @@ class UnificationTest {
                 // x: Int
                 NamedLabel(0, listOf())
             ),
-            listOf(2), // unused holes
-            mapOf(0 to 0, 1 to 1) // variable mappings
+            listOf(2), // rounds
+            mapOf(0 to 0, 1 to 1) // label arities
         )
         
         // Example: f(x) - trying to apply f to an Int value
@@ -201,7 +201,7 @@ class UnificationTest {
                 // x: Bool (label 1 is Bool)
                 NamedLabel(1, listOf())
             ),
-            listOf(2), // unused holes
+            listOf(2), // rounds
             mapOf()
         )
         
@@ -233,7 +233,7 @@ class UnificationTest {
                 // x: List<Int, Bool> (label 2 is List with 2 params)
                 NamedLabel(2, listOf(NamedLabel(0, listOf()), NamedLabel(1, listOf())))
             ),
-            listOf(2), // unused holes
+            listOf(2), // rounds
             mapOf()
         )
         
@@ -259,7 +259,7 @@ class UnificationTest {
                 // x: Int
                 NamedLabel(0, listOf())
             ),
-            listOf(2), // unused holes
+            listOf(2), // rounds
             mapOf(0 to 0)
         )
         
