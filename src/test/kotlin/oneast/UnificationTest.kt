@@ -41,7 +41,7 @@ class UnificationTest {
         assertFalse(ok(context, program))
 
     @Test
-    fun `OCaml fns - compare and max`() {
+    fun `OCaml compare and max`() {
         /*
         compare: a -> a -> int
         max: a -> a -> a
@@ -66,21 +66,22 @@ class UnificationTest {
         //   IT, WE LATER FAIL THE OCCURS CHECK
 
         assertEquals( // (V0 -> V0 -> V0) -> L0[]
-            unify.type(App(compare, max))!!.toNode(), Arrow(Arrow(a, Arrow(a, a)), I)
+            Arrow(Arrow(a, Arrow(a, a)), I),
+            unify.type(App(compare, max))!!.toNode()
         )
         assertEquals( // (V0 -> V0 -> L0[]) -> (V0 -> V0 -> L0[])
-            unify.type(App(max, compare))!!.toNode(),
             Arrow(
                 Arrow(a, Arrow(a, I)),
                 Arrow(a, Arrow(a, I)),
-            )
+            ),
+            unify.type(App(max, compare))!!.toNode()
         )
 
         assertTrue(unify.ok())
     }
 
     @Test
-    fun `both param and arg specialize - concrete in parameter`() {
+    fun `param and arg specialize - concrete in parameter`() {
         val context =
             makeContext(
                 // f: ('a -> 'a -> Int) -> Int
@@ -94,7 +95,7 @@ class UnificationTest {
     }
 
     @Test
-    fun `both param and arg specialize - concrete in argument`() {
+    fun `param and arg specialize - concrete in argument`() {
         val context =
             makeContext(
                 // f: ('a -> 'a -> 'a) -> Int
@@ -106,6 +107,36 @@ class UnificationTest {
             )
 
         val example = App(f, g)
+        assertOk(context, example)
+    }
+
+    @Test
+    fun `big but valid dictchain candidate`() {
+        /*
+        (chain dib) (chain dbi dii) with
+            put=L0[L0[V0, V0], V0] -> V0 -> V1 -> V0
+            dbb=L0[L0[V0, V0], V0]
+            dbi=L0[L0[V0, V0], V0]
+            dib=L0[L0[V0, V0], V0]
+            dii=L0[L0[V0, V0], V0]
+            chain=V0 -> V0 -> L0[V0, V0]
+            i=L0[V0, V0]
+            b=L0[V0, V0]
+         */
+        val laa = NamedLabel(3, listOf(a, a))
+        val llaaa = NamedLabel(3, listOf(laa, a))
+        val context =
+            makeContext(
+                "dbi" to llaaa,
+                "dib" to llaaa,
+                "dii" to llaaa,
+                "put" to Arrow(llaaa, Arrow(a, Arrow(b, a))),
+                "chain" to Arrow(a, Arrow(a, laa))
+            )
+        val chain = Name("chain")
+        val cDib = App(chain, Name("dib"))
+        val cDbiDii = App(App(chain, Name("dbi")), Name("dii"))
+        val example = App(cDib, cDbiDii)
         assertOk(context, example)
     }
 
@@ -153,13 +184,18 @@ class UnificationTest {
     fun `bind output`() {
         val aba = Arrow(a, Arrow(b, a))
         val aai = Arrow(a, Arrow(a, I))
+        /*
+        f: (a -> b -> a) -> a -> b -> a
+        g: a -> a -> int
+        After applying f g, both a and b should be bound to int
+         */
         val context =
             makeContext("f" to Arrow(aba, Arrow(a, Arrow(b, a))), "g" to aai, "0" to I, "true" to B)
         val example = App(f, g)
 
         assertOk(context, example)
         val u = OneUnification(context, listOf(example))
-        assertEquals(u.type(example)!!.toNode(), Arrow(I, Arrow(I, I)))
+        assertEquals(Arrow(I, Arrow(I, I)), u.type(example)!!.toNode())
 
         assertOk(context, App(App(example, Name("0")), Name("0")))
         assertFail(context, App(example, Name("true")))
