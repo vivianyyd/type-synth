@@ -10,8 +10,6 @@ class SearchState(
      * enumerated in round j > i.
      */
     val types: List<Type>,
-    /** maps round # (index) to the first index of types enumerated in that round. */
-    val rounds: List<Int>,
     val labelArities: Map<Int, Int>
     //    val names: List<String>,
     //    val types: List<Type>
@@ -24,7 +22,7 @@ class SearchState(
             nextId = 0
         }
 
-        val emptyState = SearchState(mapOf(), listOf(), listOf(), mapOf())
+        val emptyState = SearchState(mapOf(), listOf(), mapOf())
     }
 
     val id = nextId++
@@ -34,7 +32,9 @@ class SearchState(
     fun shallowestFillableHole(): Pair<Int, Pair<THole, Int>>? =
         types
             .withIndex()
-            .mapNotNull { ti -> ti.value.shallowestFillableHole(topLevel = true)?.let { ti.index to it } }
+            .mapNotNull { ti ->
+                ti.value.shallowestFillableHole(topLevel = true)?.let { ti.index to it }
+            }
             .minByOrNull { it.second.second }
 
     fun noFillableHoles() = types.all { it.shallowestFillableHole(topLevel = true) == null }
@@ -52,23 +52,15 @@ class SearchState(
     fun asMap() = asMap
 
     fun mapTypesAndSetLabelArities(newArities: Map<Int, Int>, transform: (Type) -> Type) =
-        SearchState(
-            names = names, types = types.map(transform), rounds = rounds, labelArities = newArities
-        )
+        SearchState(names = names, types = types.map(transform), labelArities = newArities)
 
     fun mapTypes(transform: (Type) -> Type): SearchState =
-        SearchState(
-            names = names,
-            types = types.map(transform),
-            rounds = rounds,
-            labelArities = labelArities
-        )
+        SearchState(names = names, types = types.map(transform), labelArities = labelArities)
 
     fun mapTypeAtIndex(i: Int, transform: (Type) -> Type): SearchState =
         SearchState(
             names = names,
             types = types.mapIndexed { j, t -> if (i == j) transform(t) else t },
-            rounds = rounds,
             labelArities = labelArities
         )
 

@@ -59,11 +59,7 @@ class NewCheckingOracle(secret: Map<String, oneast.Type>) : Oracle {
     private val nameMap = names.withIndex().associate { (i, name) -> name to i }
     private val secret =
         SearchState(
-            names = nameMap,
-            types = names.map { name -> secret[name]!! },
-            // The remaining fields don't matter in an oracle
-            rounds = listOf(),
-            labelArities = mapOf()
+            names = nameMap, types = names.map { name -> secret[name]!! }, labelArities = mapOf()
         )
 
     override fun equal(a: Example, b: Example): Boolean {

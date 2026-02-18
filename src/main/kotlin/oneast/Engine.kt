@@ -71,7 +71,6 @@ class Engine(
                         Arrow(TypeHole(), TypeHole())
                     else Blank(labelOnly = true)
                 },
-                rounds = state.rounds + oldSize,
                 labelArities = state.labelArities
             )
 
@@ -95,8 +94,7 @@ class Engine(
             logger.log("Potential solution: $solution")
             logger.log("Looking for counterexamples")
             val ctrex =
-                CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth) { s,
-                                                                                    e ->
+                CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth) { s, e ->
                     OneUnification(s, listOf(e)).ok()
                 }
                     .counterexample()
@@ -105,7 +103,9 @@ class Engine(
                 yieldAll(searchRec(solution))
             } else {
                 logger.log("Adding counterexample ${ctrex.first}\tPosex: ${ctrex.second}")
-                logger.log("Sanity check OK: ${ctrex.second == OneUnification(solution, listOf(ctrex.first)).ok()}")
+                logger.log(
+                    "Sanity check OK: ${ctrex.second == OneUnification(solution, listOf(ctrex.first)).ok()}"
+                )
                 if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
             }
         }

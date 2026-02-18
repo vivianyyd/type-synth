@@ -17,14 +17,12 @@ class UnificationTest {
     private val f = Name("f")
     private val g = Name("g")
     private val labelArities = mapOf(0 to 0, 1 to 0, 2 to 1, 3 to 2)
-    private val rounds = emptyList<Int>()
 
     private fun makeContext(context: List<Pair<String, Type>>): SearchState {
         val (names, types) = context.unzip()
         return SearchState(
             names = names.withIndex().associate { it.value to it.index },
             types = types,
-            rounds,
             labelArities
         )
     }
