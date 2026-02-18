@@ -1,9 +1,9 @@
 package oneast
 
-import kotlin.test.Test
 import oneast.searchstrategies.DFSEnumerator
 import util.Logger
 import util.io.parseTest
+import kotlin.test.Test
 
 class DictChainTest {
     @Test

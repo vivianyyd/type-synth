@@ -413,10 +413,6 @@ sealed class ConstraintTypeConstructor(open val params: List<ConstraintTy>) : Co
     /** Whether this node shallow matches with [other]. */
     abstract fun match(other: ConstraintTypeConstructor): Boolean
 
-    open fun split(other: ConstraintTypeConstructor) {
-        if (match(other)) params.zip(other.params).map { (a, b) -> TODO() } else null
-    }
-
     private val variables by lazy { params.flatMap { it.variables() } }
 
     override fun variables() = variables
@@ -443,5 +439,5 @@ data class ConstraintLabel(val label: Int, override val params: List<ConstraintT
     override fun match(other: ConstraintTypeConstructor) =
         other is ConstraintLabel && label == other.label && params.size == other.params.size
 
-    override fun toString(): String = "L$params"
+    override fun toString(): String = "L$label$params"
 }

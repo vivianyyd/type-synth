@@ -36,13 +36,14 @@ sealed interface Example {
 }
 
 data class Name(val name: String) : Example {
-    override fun toString() = name
+    override fun toString() = if (name == "*") " * " else name
 
     override val names by lazy { setOf(name) }
 }
 
 data class App(val fn: Example, val arg: Example) : Example {
-    override fun toString(): String = "$fn ${if (arg is App) "($arg)" else "$arg"}"
+    override fun toString(): String =
+        "${if (fn is Name && fn.name.any { !it.isLetter() }) "($fn)" else "$fn"} ${if (arg is App) "($arg)" else "$arg"}"
 
     override val names by lazy { fn.names + arg.names }
 }
