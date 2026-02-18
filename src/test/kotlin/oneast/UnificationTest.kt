@@ -1,27 +1,21 @@
 package oneast
 
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import query.App
+import query.Example
 import query.Name
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class UnificationTest {
-    //    2881 [23:13:47.716]  Potential solution: {0=L0[], 1=L0[], compare=V0 -> V0 -> L0[], max=V0
-    // -> V0 -> V0, min=V0 -> V0 -> V0}
-    //   2882 [23:13:47.716]  Looking for counterexamples
-    //   2883 [23:13:47.948]  Adding counterexample ((compare) (max)) (compare)       Posex: true
-    /*
-    Turns out, ((compare) (max)) (compare) compiles but not ((compare) (max)) because of weak variables
-    whatever whatever in ocaml. Basically, you can't generalize the variables in HM. But you can if you
-    see the last element, which ocaml cleverly uses. Basically, OCaml's type checker is a little more
-    clever and accepts things that are not HM, which we'll never be able to do, so we fail with no soln.
-     */
+
     private val a = Variable(0)
     private val b = Variable(1)
     private val I = NamedLabel(0, listOf())
+    private val B = NamedLabel(1, listOf())
+    private val f = Name("f")
+    private val g = Name("g")
     private val labelArities = mapOf(0 to 0, 1 to 0, 2 to 1)
     private val rounds = emptyList<Int>()
 
@@ -35,14 +29,32 @@ class UnificationTest {
         )
     }
 
+    private fun makeContext(vararg context: Pair<String, Type>): SearchState =
+        makeContext(context.toList())
+
+    private fun ok(context: SearchState, program: Example) =
+        OneUnification(context, listOf(program)).ok()
+
+    private fun assertOk(context: SearchState, program: Example) = assertTrue(ok(context, program))
+
+    private fun assertFail(context: SearchState, program: Example) =
+        assertFalse(ok(context, program))
+
     @Test
     fun `OCaml fns - compare and max`() {
         /*
         compare: a -> a -> int
         max: a -> a -> a
+
+        We do find
+        {0=L0[], 1=L0[], compare=V0 -> V0 -> L0[], max=V0-> V0 -> V0, min=V0 -> V0 -> V0}
+        but we add the counterexample ((compare) (max)) (compare)       Posex: true
+
+        As an aside, ((compare) (max)) (compare) compiles but not ((compare) (max)) because of weak variables
+        whatever whatever in ocaml. This breaks our assumption that all subexpressions of posexs are posexs.
          */
         val context =
-            makeContext(listOf("compare" to Arrow(a, Arrow(a, I)), "max" to Arrow(a, Arrow(a, a))))
+            makeContext("compare" to Arrow(a, Arrow(a, I)), "max" to Arrow(a, Arrow(a, a)))
         val compare = Name("compare")
         val max = Name("max")
         val example = App(App(compare, max), compare)
@@ -67,37 +79,24 @@ class UnificationTest {
         assertTrue(unify.ok())
     }
 
-    /**
-     * Test case: Both parameter and argument specialize - concrete type in parameter. f: ('a -> 'a
-     * -> Int) -> Int g: 'b -> 'b -> 'b Expected: Should succeed in HM. 'b unifies with 'a, then 'b
-     * unifies with Int.
-     */
     @Test
     fun `both param and arg specialize - concrete in parameter`() {
-        val context = makeContext(
-            listOf(
+        val context =
+            makeContext(
                 // f: ('a -> 'a -> Int) -> Int
                 "f" to Arrow(Arrow(a, Arrow(a, I)), I),
                 // g: 'b -> 'b -> 'b
                 "g" to Arrow(a, Arrow(a, a))
             )
-        )
 
-        val example = App(Name("f"), Name("g"))
-        val unify = OneUnification(context, listOf(example))
-        // Expected HM behavior: should succeed
-        assertTrue(unify.ok(), "In HM, this should unify 'b with Int")
+        val example = App(f, g)
+        assertOk(context, example)
     }
 
-    /**
-     * Test case: Both parameter and argument specialize - concrete type in argument. f: ('a -> 'a
-     * -> 'a) -> Int g: 'b -> 'b -> Int Expected: Should succeed in HM. 'a unifies with 'b, then 'a
-     * unifies with Int.
-     */
     @Test
     fun `both param and arg specialize - concrete in argument`() {
-        val context = makeContext(
-            listOf(
+        val context =
+            makeContext(
                 // f: ('a -> 'a -> 'a) -> Int
                 "f" to Arrow(Arrow(a, Arrow(a, a)), I),
                 // g: 'b -> 'b -> Int
@@ -105,168 +104,101 @@ class UnificationTest {
                 // instantiation)
                 "g" to Arrow(a, Arrow(a, I))
             )
-        )
 
-        val example = App(Name("f"), Name("g"))
-        val unify = OneUnification(context, listOf(example))
-        // Expected HM behavior: should succeed
-        assertTrue(unify.ok(), "In HM, this should unify 'a with Int")
+        val example = App(f, g)
+        assertOk(context, example)
     }
 
-    /**
-     * Test case: Parameter specializes to match concrete argument.
-     * f: 'a -> Int
-     * g: Bool -> Int
-     * Expected: Should succeed. 'a specializes to Bool.
-     */
+    @Test
+    fun `aba and int int int`() {
+        val aba = Arrow(a, Arrow(b, a))
+        val iii = Arrow(I, Arrow(I, I))
+        val context1 = makeContext("f" to Arrow(aba, I), "g" to iii)
+        assertOk(context1, App(f, g))
+
+        val context2 = makeContext("f" to Arrow(iii, I), "g" to aba)
+        assertOk(context2, App(f, g))
+    }
+
+    @Test
+    fun `aba and a a int`() {
+        val aba = Arrow(a, Arrow(b, a))
+        val aai = Arrow(a, Arrow(a, I))
+        val context1 = makeContext("f" to Arrow(aba, I), "g" to aai)
+        assertOk(context1, App(f, g))
+
+        val context2 = makeContext("f" to Arrow(aai, I), "g" to aba)
+        assertOk(context2, App(f, g))
+    }
+
+    @Test
+    fun `bind output`() {
+        val aba = Arrow(a, Arrow(b, a))
+        val aai = Arrow(a, Arrow(a, I))
+        val context =
+            makeContext("f" to Arrow(aba, Arrow(a, Arrow(b, a))), "g" to aai, "0" to I, "true" to B)
+        val example = App(f, g)
+
+        assertOk(context, example)
+        val u = OneUnification(context, listOf(example))
+        assertEquals(u.type(example)!!.toNode(), Arrow(I, Arrow(I, I)))
+
+        assertOk(context, App(App(example, Name("0")), Name("0")))
+        assertFail(context, App(example, Name("true")))
+        assertFail(context, App(App(example, Name("0")), Name("true")))
+    }
+
+    @Test
+    fun `aba and c int c`() {
+        val aba = Arrow(a, Arrow(b, a))
+        val bib = Arrow(b, Arrow(I, b))
+        val context1 = makeContext("f" to Arrow(aba, I), "g" to bib)
+        assertOk(context1, App(f, g))
+
+        val context2 = makeContext("f" to Arrow(bib, I), "g" to aba)
+        assertOk(context2, App(f, g))
+    }
+
     @Test
     fun `parameter specializes to match argument`() {
-        val context = makeContext(
-            listOf(
-                // f: 'a -> Int
-                "f" to Arrow(a, I),
-                // x: Bool -> Int (label 1 is Bool)
-                "x" to Arrow(NamedLabel(1, listOf()), I)
-            )
-        )
-
-        val example = App(Name("f"), Name("x"))
-        val unify = OneUnification(context, listOf(example))
-        // Expected HM behavior: should succeed, 'a becomes Bool -> Int
-        assertTrue(unify.ok(), "In HM, 'a should specialize to Bool -> Int")
+        val context = makeContext("f" to Arrow(a, I), "x" to Arrow(B, I))
+        val example = App(f, Name("x"))
+        assertOk(context, example)
     }
 
-    /**
-     * Test case: Argument specializes to match concrete parameter. f: (Bool -> Int) -> Int g: 'a ->
-     * Int Expected: Should succeed. 'a specializes to Bool.
-     */
     @Test
     fun `argument specializes to match parameter`() {
-        val context = makeContext(
-            listOf(
-                // f: (Bool -> Int) -> Int
-                "f" to Arrow(Arrow(NamedLabel(1, listOf()), I), I),
-                // g: 'a -> Int
-                "g" to Arrow(a, I)
-            )
-        )
-
-        val example = App(Name("f"), Name("g"))
-        val unify = OneUnification(context, listOf(example))
-        // Expected HM behavior: should succeed, 'a becomes Bool
-        assertTrue(unify.ok(), "In HM, 'a should specialize to Bool")
+        val context = makeContext("f" to Arrow(Arrow(B, I), I), "g" to Arrow(a, I))
+        val example = App(f, g)
+        assertOk(context, example)
     }
 
-    /**
-     * Test case: Both types have variables that specialize to concrete types. f: 'a -> Int g: Bool
-     * -> 'b Expected: Should succeed. 'a becomes Bool, 'b becomes Int.
-     */
     @Test
     fun `both types specialize to each other's concrete parts`() {
-        val context = makeContext(
-            listOf(
-                // f: 'a -> Int
-                "f" to Arrow(a, I),
-                // g: Bool -> 'b
-                "g" to Arrow(NamedLabel(1, listOf()), a)
-            )
-        )
-
-        val example = App(Name("f"), Name("g"))
-        val unify = OneUnification(context, listOf(example))
-        // Expected HM behavior: should succeed
-        assertTrue(unify.ok(), "In HM, 'a -> Bool and 'b -> Int")
+        val context = makeContext("f" to Arrow(a, I), "g" to Arrow(B, a))
+        val example = App(f, g)
+        assertOk(context, example)
     }
 
-    /**
-     * Negative test case: Passing an Int where a function is expected. This should NOT type check
-     * because Int cannot be unified with 'a -> 'b.
-     */
     @Test
     fun `fail to unify Int with function type`() {
-        // Define a function 'f' that takes a function: f: ('a -> 'b) -> Int
-        // And a value 'x' of type Int
-
-        val context = makeContext(
-            listOf(
-                // f: ('a -> 'b) -> Int
-                "f" to Arrow(
-                    Arrow(a, b), // 'a -> 'b
-                    I // Int
-                ),
-                // x: Int
-                "x" to I
-            )
-        )
-
-        // Example: f(x) - trying to apply f to an Int value
-        val example = App(Name("f"), Name("x"))
-        val unify = OneUnification(context, listOf(example))
-
-        // This should fail to type check
-        assertFalse(
-            unify.ok(),
-            "Expected unification to fail when passing Int to function expecting 'a -> 'b"
-        )
+        val context = makeContext("f" to Arrow(Arrow(a, b), I), "x" to I)
+        val example = App(f, Name("x"))
+        assertFail(context, example)
     }
 
-    /**
-     * Negative test case: Attempting to trigger an occurs check failure.
-     *
-     * NOTE: Due to the way OneUnification instantiates types with fresh variables, it's actually
-     * difficult to trigger an occurs check failure in practice. The occurs check is meant to
-     * prevent infinite types like 'a = 'a -> 'b, but with fresh instantiation, different variable
-     * instances don't create this problem.
-     *
-     * This test demonstrates that even seemingly recursive scenarios don't trigger the occurs check
-     * due to variable instantiation.
-     */
     @Test
-    fun `occurs check is hard to trigger with fresh instantiation`() {
-        // f: 'a -> Int
-        // g: ('a -> 'b) -> Int
-
-        val context = makeContext(
-            listOf(
-                // f: 'a -> Int
-                "f" to Arrow(a, I),
-                // g: ('a -> 'b) -> Int
-                "g" to Arrow(Arrow(a, b), I)
-            )
-        )
-
-        val example = App(Name("g"), Name("f"))
-        val unify = OneUnification(context, listOf(example))
-
-        assertTrue(unify.ok(), "Fresh instantiation prevents occurs check failure in this case")
+    fun `shared variable names don't clash due to unique instantiation ids`() {
+        val context = makeContext("f" to Arrow(a, I), "g" to Arrow(Arrow(a, b), I))
+        val example = App(g, f)
+        assertOk(context, example)
     }
 
-    /**
-     * Negative test case: Type constructor mismatch. Attempting to unify different labels (e.g.,
-     * Int vs Bool) should fail.
-     */
     @Test
     fun `fail to unify different type constructors`() {
-        // Define a function 'f' that expects Int: f: Int -> Int
-        // And a value 'x' of type Bool
-
-        val context = makeContext(
-            listOf(
-                // f: Int -> Int (label 0 is Int)
-                "f" to Arrow(I, I),
-                // x: Bool (label 1 is Bool)
-                "x" to NamedLabel(1, listOf())
-            )
-        )
-
-        // Example: f(x) - trying to apply f to a Bool value
-        val example = App(Name("f"), Name("x"))
-        val unify = OneUnification(context, listOf(example))
-
-        // This should fail to type check
-        assertFalse(
-            unify.ok(), "Expected unification to fail when passing Bool to function expecting Int"
-        )
+        val context = makeContext("f" to Arrow(I, I), "x" to B)
+        val example = App(f, Name("x"))
+        assertFail(context, example)
     }
 
     /**
@@ -280,197 +212,62 @@ class UnificationTest {
      */
     @Test
     fun `fail to unify type constructors with different parameter counts`() {
-        // Define a function 'f' that expects List<Int>: f: List<Int> -> Int
-        // And a value 'x' that incorrectly uses List with 2 parameters
-
-        val context = makeContext(
-            listOf(
+        val context =
+            makeContext(
                 // f: List<Int> -> Int (List correctly used with 1 param)
-                "f" to Arrow(
-                    NamedLabel(2, listOf(I)), // List<Int>
-                    I // Int
-                ),
+                "f" to
+                        Arrow(
+                            NamedLabel(2, listOf(I)), // List<Int>
+                            I // Int
+                        ),
                 // x: List<Int, Bool> (List incorrectly used with 2 params)
-                "x" to NamedLabel(2, listOf(I, NamedLabel(1, listOf())))
+                "x" to NamedLabel(2, listOf(I, B))
             )
-        )
 
-        // Example: f(x)
-        // When trying to unify, the parameter count mismatch (1 vs 2) should cause failure
-        val example = App(Name("f"), Name("x"))
-        val unify = OneUnification(context, listOf(example))
-
-        // This should fail to type check due to parameter count mismatch
-        assertFalse(
-            unify.ok(),
-            "Expected unification to fail due to different parameter counts in type constructor"
-        )
+        val example = App(f, Name("x"))
+        assertFail(context, example)
     }
 
-    /**
-     * Positive test case: Simple identity function application. Applying id: 'a -> 'a to a value of
-     * type Int should succeed.
-     */
     @Test
     fun `unify identity function with Int value`() {
-        val context = makeContext(
-            listOf(
-                // id: 'a -> 'a
-                "id" to Arrow(a, a),
-                // x: Int
-                "x" to I
-            )
-        )
-
-        // Example: id(x)
+        val context = makeContext("id" to Arrow(a, a), "x" to I)
         val example = App(Name("id"), Name("x"))
-        val unify = OneUnification(context, listOf(example))
-
-        // This should successfully type check
-        assertTrue(
-            unify.ok(), "Expected unification to succeed for identity function applied to Int"
-        )
-
-        // The result should be Int
-        val resultType = unify.type(example)
-        assertNotNull(resultType, "Expected non-null result type")
+        assertOk(context, example)
     }
 
-    /**
-     * Negative test: Specialization fails due to incompatible concrete types. f: Int -> Int g: Bool
-     * -> Bool Expected: Should fail. Cannot unify Int with Bool.
-     */
     @Test
     fun `specialization fails - incompatible concrete types`() {
-        val context = makeContext(
-            listOf(
+        val context =
+            makeContext(
                 // f: Int -> Int
                 "f" to Arrow(I, I),
                 // g: Bool -> Bool
-                "g" to Arrow(NamedLabel(1, listOf()), NamedLabel(1, listOf()))
+                "g" to Arrow(B, B)
             )
-        )
 
-        val example = App(Name("f"), Name("g"))
-        val unify = OneUnification(context, listOf(example))
-        // Expected: should fail
-        assertFalse(unify.ok(), "Should fail - cannot unify Int -> Int with Bool -> Bool")
+        val example = App(f, g)
+        assertFail(context, example)
     }
 
-    /**
-     * Negative test: Specialization fails due to incompatible structure. f: ('a -> 'b) -> Int g:
-     * Int Expected: Should fail. Cannot unify function type with Int.
-     */
     @Test
     fun `specialization fails - structure mismatch`() {
-        val context = makeContext(
-            listOf(
-                // f: ('a -> 'b) -> Int
-                "f" to Arrow(Arrow(a, a), I),
-                // x: Int
-                "x" to I
-            )
-        )
-
-        val example = App(Name("f"), Name("x"))
-        val unify = OneUnification(context, listOf(example))
-        // Expected: should fail
-        assertFalse(unify.ok(), "Should fail - cannot unify function type with Int")
+        val context = makeContext("f" to Arrow(Arrow(a, a), I), "x" to I)
+        val example = App(f, Name("x"))
+        assertFail(context, example)
     }
 
-    /**
-     * Negative test: Both variables, but constrained to incompatible concrete types. f: 'a -> Int
-     * (where 'a must be Bool from context) g: 'b -> String (where 'b must be Int from context) This
-     * creates: Bool -> Int vs Int -> String Expected: Should fail.
-     */
     @Test
     fun `specialization fails - variables constrained to incompatible types`() {
-        val context = makeContext(
-            listOf(
-                // f: Bool -> 'a
-                "f" to Arrow(NamedLabel(1, listOf()), a),
-                // g: 'a -> Int
-                "g" to Arrow(a, I),
-                // h: ('a -> 'a) -> Int (expects matching input/output)
-                "h" to Arrow(Arrow(a, a), I)
-            )
-        )
-
-        // Try h with f(g) where f: Bool -> 'a, g: 'a -> Int
-        // f(g) would need 'a to be unified in conflicting ways
-        val example = App(Name("h"), App(Name("f"), Name("g")))
-        val unify = OneUnification(context, listOf(example))
-        // Expected: should fail - Bool != Int
-        assertFalse(unify.ok(), "Should fail - input and output types don't match")
+        val context = makeContext("f" to Arrow(B, I), "h" to Arrow(Arrow(a, a), I))
+        val example = App(Name("h"), f)
+        assertFail(context, example)
     }
 
-    /**
-     * Test case demonstrating a legitimate occurs check rejection. This creates a scenario where we
-     * need infinite type. Consider a fix-point combinator scenario or self-application. f: 'a -> 'b
-     * x: 'a But if we try to apply x to itself: x(x) Then 'a must equal ('a -> something), which is
-     * infinite.
-     */
     @Test
-    fun `occurs check legitimately rejects infinite type`() {
-        // In practice, we need a scenario where within a SINGLE type instantiation,
-        // a variable must equal a type containing itself.
-        // This is hard with OneUnification's fresh instantiation approach.
-        //
-        // One way: Use a recursive let binding or Y-combinator style construction.
-        // But OneUnification doesn't support these directly in the test framework.
-        //
-        // Alternative: Create a type that self-references within its own definition.
-        // For example, if we had: type T = T -> Int
-        // But we can't create this directly in the test either.
-        //
-        // The best we can do is demonstrate that the occurs check EXISTS and WORKS:
-
-        val context = makeContext(
-            listOf(
-                // This is a bit artificial, but: imagine a function that takes itself
-                // If we could construct: f: f -> Int
-                // But we can't represent this directly, so this test documents the limitation
-                "f" to Arrow(a, a)
-            )
-        )
-
-        // The occurs check in unify() at line 80 prevents V0 = (V0 -> V0)
-        // But with fresh instantiation, we get V0-0 = (V0-1 -> V0-1), which is fine
-        val example = App(Name("f"), Name("f"))
-        val unify = OneUnification(context, listOf(example))
-
-        // This actually succeeds due to fresh instantiation
-        // The occurs check doesn't trigger because different instances
-        assertTrue(unify.ok(), "With fresh instantiation, f(f) works when f: 'a -> 'a")
-    }
-
-    /**
-     * More sophisticated occurs check test. Try to create a situation where the occurs check must
-     * fire. Consider: We want to unify 'a with ('a -> Int) This should fail with occurs check.
-     */
-    @Test
-    fun `occurs check rejects variable equal to type containing itself`() {
-        // The occurs check happens at Unification.kt:80
-        // It checks: if (param in arg.variables()) null
-        // This fires when trying to bind a variable to a type containing that variable
-        //
-        // However, due to instantiation, this is hard to trigger in normal usage.
-        // The check is a safety mechanism that prevents bugs in the unification algorithm.
-        //
-        // To truly test it, we'd need to call unify() directly with carefully crafted types
-        // that have the SAME variable instance in both param and arg.
-
-        // This test documents that the occurs check exists but is hard to trigger
-        // in the current architecture due to fresh instantiation.
-
-        val context = makeContext(listOf("id" to Arrow(a, a)))
-
-        val example = App(Name("id"), Name("id"))
-        val unify = OneUnification(context, listOf(example))
-
-        // id applied to id should work: ('a -> 'a) applied to ('b -> 'b)
-        // Results in: 'b -> 'b (since 'a gets bound to 'b -> 'b)
-        assertTrue(unify.ok(), "id(id) should work with fresh instantiation")
+    fun `instantiation prevents variable clashes`() {
+        val context = makeContext("f" to Arrow(a, a))
+        val example = App(f, f)
+        assertOk(context, example)
     }
 
     private fun ConstraintTy.toNode(): Type =
