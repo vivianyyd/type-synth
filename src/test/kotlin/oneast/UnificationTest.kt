@@ -16,7 +16,7 @@ class UnificationTest {
     private val B = NamedLabel(1, listOf())
     private val f = Name("f")
     private val g = Name("g")
-    private val labelArities = mapOf(0 to 0, 1 to 0, 2 to 1)
+    private val labelArities = mapOf(0 to 0, 1 to 0, 2 to 1, 3 to 2)
     private val rounds = emptyList<Int>()
 
     private fun makeContext(context: List<Pair<String, Type>>): SearchState {
@@ -107,6 +107,24 @@ class UnificationTest {
 
         val example = App(f, g)
         assertOk(context, example)
+    }
+
+    @Test
+    fun `bind variable to different things in different arguments`() {
+        val aaa = Arrow(a, Arrow(a, a))
+        val context = makeContext("f" to aaa, "x" to I, "y" to B)
+        assertOk(context, App(f, Name("x")))
+        assertFail(context, App(App(f, Name("x")), Name("y")))
+    }
+
+    @Test
+    fun `bind variable to different things within one argument`() {
+        val endodict = NamedLabel(3, params = listOf(a, a))
+        val iiDict = NamedLabel(3, params = listOf(I, I))
+        val ibDict = NamedLabel(3, params = listOf(I, B))
+        val context = makeContext("f" to Arrow(endodict, I), "x" to iiDict, "y" to ibDict)
+        assertOk(context, App(f, Name("x")))
+        assertFail(context, App(f, Name("y")))
     }
 
     @Test
