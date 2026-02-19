@@ -77,7 +77,11 @@ class OneUnification(private val candidate: SearchState, private val exs: List<E
         when (param) {
             Bottom -> emptyList()
             is ConstraintVariable ->
-                if (param in arg.variables()) null else listOf(Binding(param, arg))
+                when (param) {
+                    arg -> listOf()
+                    in arg.variables() -> null
+                    else -> listOf(Binding(param, arg))
+                }
             is ConstraintTypeConstructor ->
                 when (arg) {
                     Bottom -> emptyList()
@@ -97,10 +101,14 @@ class OneUnification(private val candidate: SearchState, private val exs: List<E
                     }
                     is ConstraintVariable ->
                         // e.g. a function expects param (int -> int) and we pass ('a -> 'a)
-                        if (arg in param.variables()) null else listOf(Binding(arg, param))
-                    is InstantiationTy -> holeConstraint(arg, param)
+                        when (arg) {
+                            param -> listOf()
+                            in param.variables() -> null
+                            else -> listOf(Binding(arg, param))
+                        }
+                    is InstantiationTy -> if (arg == param) listOf() else holeConstraint(arg, param)
                 }
-            is InstantiationTy -> holeConstraint(param, arg)
+            is InstantiationTy -> if (arg == param) listOf() else holeConstraint(param, arg)
         }
 
     fun applyBinding(t: ConstraintTy, v: ConstraintVariable, sub: ConstraintTy): ConstraintTy {

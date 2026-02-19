@@ -6,6 +6,7 @@ import query.App
 import query.Example
 import query.Name
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class UnificationTest {
@@ -109,7 +110,7 @@ class UnificationTest {
     }
 
     @Test
-    fun `big but valid dictchain candidate`() {
+    fun `big dictchain candidate`() {
         /*
         (chain dib) (chain dbi dii) with
             put=L0[L0[V0, V0], V0] -> V0 -> V1 -> V0
@@ -135,7 +136,29 @@ class UnificationTest {
         val cDib = App(chain, Name("dib"))
         val cDbiDii = App(App(chain, Name("dbi")), Name("dii"))
         val example = App(cDib, cDbiDii)
-        assertOk(context, example)
+
+        val u = OneUnification(context, listOf(example))
+        val cDibType = u.type(cDib)
+        assertNotNull(cDibType)
+        assertEquals(Arrow(llaaa, NamedLabel(3, listOf(llaaa, llaaa))), cDibType.toNode())
+
+        val cDbiDiiType = u.type(cDbiDii)
+        assertNotNull(cDbiDiiType)
+        assertEquals(NamedLabel(3, listOf(llaaa, llaaa)), cDbiDiiType.toNode())
+        // must unify:
+        // L0[L0[V0, V0], V0]
+        // L0[L0[L0[V0, V0], V0], L0[L0[V0, V0], V0]]
+
+        // must unify:
+        // L0[   V0,      V0],  V0
+        // L0[L0[V0, V0], V0],  L0[L0[V0, V0], V0]
+
+        // must unify:
+        //    V0,       V0],  V0
+        // L0[V0, V0],  V0],  L0[L0[V0, V0], V0]
+
+        // TODO this fails by going through the occurs check; would that also happen in HM?
+        assertFail(context, example)
     }
 
     @Test
