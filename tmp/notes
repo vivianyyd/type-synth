@@ -1,0 +1,218 @@
+Read me
+
+Producing wrong data without doing anything obviously wrong! https://dl.acm.org/doi/pdf/10.1145/1508244.1508275
+
+Why PBD systems fail: Lessons learned for usable AI https://ofb.net/~tlau/research/papers/pbd-fail.pdf
+
+file:///home/vivianyyd/checklist.pdf SIGPLAN Empirical Evaluation Checklist
+
+Local Type Inference - https://www.cis.upenn.edu/~bcpierce/papers/lti-toplas.pdf
+
+Caruca: Effective and Efficient Specification Mining for Opaque Software Components https://arxiv.org/pdf/2510.14279 
+
+DemoMatch: API discovery from demonstrations - Ivan - https://dl.acm.org/doi/pdf/10.1145/3062341.3062386
+
+Searching entangled program spaces Jimmy ECTAs https://dl.acm.org/doi/10.1145/3547622
+
+ProofWright: Towards Agentic Formal Verification of CUDA
+Drew Zagieboylo! https://arxiv.org/html/2511.12294v1#S1
+
+
+
+Checking ((chain) (dib)) (((chain) (dbi)) (dii)) with
+    put=L0[L0[V0, V0], V0] -> V0 -> V1 -> V0
+    chain=V0 -> V0 -> L0[V0, V0]
+    dbb=L0[L0[V0, V0], V0]
+    dbi=L0[L0[V0, V0], V0]
+    dib=L0[L0[V0, V0], V0]
+    dii=L0[L0[V0, V0], V0]
+    i=L0[V0, V0]
+    b=L0[V0, V0]
+
+chain dib
+    Applying (V0-22) -> ((V0-22) -> (L[V0-22, V0-22])) to L[L[V0-23, V0-23], V0-23]
+    Binding V0-22 to L[L[V0-23, V0-23], V0-23]
+        Produces (L[L[V0-23, V0-23], V0-23] -> (L[L[L[V0-23, V0-23], V0-23], L[L[V0-23, V0-23], V0-23]]))
+chain dbi
+    Applying (V0-24) -> ((V0-24) -> (L[V0-24, V0-24])) to L[L[V0-25, V0-25], V0-25]
+    Binding V0-24 to L[L[V0-25, V0-25], V0-25]
+        Produces (L[L[V0-25, V0-25], V0-25] -> (L[L[L[V0-25, V0-25], V0-25], L[L[V0-25, V0-25], V0-25]]))
+(chain dbi) dii
+    Applying (L[L[V0-25, V0-25], V0-25]) -> (L[L[L[V0-25, V0-25], V0-25], L[L[V0-25, V0-25], V0-25]]) to L[L[V0-26, V0-26], V0-26]
+    Binding V0-25 to V0-26
+    Binding V0-25 to V0-26
+    Binding V0-25 to V0-26
+        Produces L[L[L[V0-25, V0-25], V0-25], L[L[V0-25, V0-25], V0-25]]
+(chain dib) ((chain dbi) dii)
+    Applying (L[L[V0-23, V0-23], V0-23]) -> (L[L[L[V0-23, V0-23], V0-23], L[L[V0-23, V0-23], V0-23]]) to L[L[L[V0-26, V0-26], V0-26], L[L[V0-26, V0-26], V0-26]]
+    Binding V0-23 to L[V0-26, V0-26]
+    Binding V0-23 to V0-26
+    Binding V0-23 to L[L[V0-26, V0-26], V0-26]
+        Produces (L[L[L[L[L[V0-26, V0-26], V0-26], L[L[V0-26, V0-26], V0-26]], L[L[V0-26, V0-26], V0-26]], L[L[L[L[V0-26, V0-26], V0-26], L[L[V0-26, V0-26], V0-26]], L[L[V0-26, V0-26], V0-26]]])
+    This is actually ok, constraint types get really long but it's ok
+
+
+@undo :{ module Main where
+import Text.Pandoc
+import Data.Text (Text)
+import qualified Data.Text.IO as T
+mdToRST :: Text -> IO Text
+mdToRST txt = runIOorExplode $
+  readMarkdown def txt
+  >>= writeRST def{ writerReferenceLinks = True }
+main :: IO ()
+main = do
+  T.getContents >>= mdToRST >>= T.putStrLn
+:}
+
+desugar CALLING code: 
+ghc -fforce-recomp -ddump-ds -dsuppress-all -outputdir build Simple.hs
+ignore all type applications ([@ IDENTIFIER] in argument positions
+ignore all lookup table passing ([$IDENTIFIER])
+
+Do not treat data constructors as subtypes
+case just tells us that all the functions in the branches unify. Either have the same label constructor type or all fns etc.
+We treat data constructors as functions (OCaml does not do this)
+
+vivianyyd@bismuth:~/type-synth/src/main/haskell/app$ cabal install --lib pandoc pandoc
+Warning: The package list for 'hackage.haskell.org' is 23 days old.
+Run 'cabal update' to get the latest list of available packages.
+Warning: The package list for 'hackage.haskell.org' is 23 days old.
+Run 'cabal update' to get the latest list of available packages.
+Resolving dependencies...
+Warning: The libraries were installed by creating a global GHC environment
+file at:
+/home/vivianyyd/.ghc/x86_64-linux-9.6.7/environments/default
+The presence of such an environment file is likely to confuse or break other
+tools because it changes GHC's behaviour: it changes the default package set
+in ghc and ghci from its normal value (which is "all boot libraries"). GHC
+environment files are little-used and often not tested for.
+Furthermore, management of these environment files is still more difficult
+than it could be; see e.g. https://github.com/haskell/cabal/issues/6481 .
+Double-check that creating a global GHC environment file is really what you
+wanted! You can limit the effects of the environment file by creating it in a
+specific directory using the --package-env flag. For example, use:
+cabal install --lib <packages...> --package-env .
+to create the file in the current directory.
+
+vivianyyd@bismuth:~/type-synth$ cd src/main/haskell/app/
+vivianyyd@bismuth:~/type-synth/src/main/haskell/app$ ld
+Main.hs  Main.hs~  pandoc.hs  pandoc.hs~
+vivianyyd@bismuth:~/type-synth/src/main/haskell/app$ ghc -package pandoc -package text -fno-code pandoc.hs 
+
+What if instead of analyzing code that the interpreter is written in like K
+framework (requires restricting user) or only using examples, we are allowed to
+trace through the interpreter and we can see how slightly different inputs
+change output
+
+Semantics are captured by spec/implementation: interpreter, compiler, formal
+semantics, documentation Approximations of semantics: properties like in Spyro
+or PBT, examples Applications of semantics: Fuzzing? Rewrite rules/compiler
+optimizations, programmer tools (autocomplete, error detection, etc),
+verification, synthesizers, compilers
+
+You can just synthesize rewrite rules top down with an egraph on top of them -
+I think this is Anjali's research
+ - can you apply this to synthesizing semantics
+ - What if when you make a library, you pass in all these functions and stuff
+   as well as an implementation of compare/equals/other relations for whatever
+types/values you want. This is more general than the length thing. It’s
+basically feature extraction. You can also request diff types of properties,
+allowing you to express stuff like push(pop(l))=l. This is closer to how
+property language is specified in Spyro, and maybe also tight contracts paper.
+I’ll have to look into that, maybe it’s already done. From that, or in a
+egg-rewrite-rule-paper-like way, we make rewrite rules for synthesis. Requires
+non-negligible load on user
+
+Static analysis on the interpreter itself should sort-of reveal big-step
+semantics? Read about metatracing)? 
+
+The Enumerators file contains multiple enumeration algorithms for program
+synthesis, parameterized over a language L. A candidate is a collection of
+partial programs. A Unification object takes as input a candidate and relevant
+positive examples, and generates a set of products.constraints on the partial programs
+in the candidate. If calling get() on Unification is null, that collection of
+partial programs is not viable.
+
+The ConcreteEnumerator file contains an enumeration algorithm which first
+enumerates building blocks for programs, then produces a lazy sequence of
+programs by calling a cartesian product on the appropriate components. For each
+program, it checks whether it is valid on the examples.
+
+The problem is that ConcreteEnumerator works on only one specific language,
+which is described in the same file. Can you fill in ProductEnumerator in
+Enumerators.Kt to use the same algorithm as ConcreteEnumerator, but to work
+over a language L?
+
+Refactor depth logic so that NArrow stores whether it its depth should be
+counted as if it's curried or not.  Vars store products.constraints that mention them -
+trying to make propagating/substitution faster. To no avail        
+
+
+===============================================================================
+
+Here is my specification.
+I have a list of elements. Generate Kotlin code to do the following.
+
+Generate all partitions of these elements, from smallest partition (all elements in one set) to largest (all elements in separate sets). For example, say I have 3 elements called a, b, c; we should get:
+partition of size 1: abc
+partitions of size 2: ab c, a bc, ac b
+partitions of size 3: a b c
+It doesn't matter how we order within each partition size, but it matters that all partitions of size 2 come before all those of size 3.
+
+Each partition contains some blocks.
+For each partition, generate a subsequence of outputs; these will all be flatmapped into one big sequence.
+The subsequence is as follows.
+We have some partition containing m partitions. We also have some number n.
+We can eiher set aside one of the blocks as a "labelled" blocks, or not.
+For the remaining blocks (all of them if we chose not to have a labelled set), generate all possible ways of INJECTIVELY assigning SOME SUBSET of the numbers 0 to n to SOME SUBSET of them. That is, not all the blocks need be assigned to a number, and not all numbers up to n need to be assigned to a block.
+^ it's the same as picking some number k leq n, all ways of nPk then remaining sets are just given numbers over n
+All subsequences for one partition must be generated before any following partition is generated?
+Write a detailed plan for this before writing Kotlin code. There is some combinatorics stuff going on here, describe your reasoning and how you will do this efficiently, WITHOUT ENUMERATING DUPLICATES.
+
+This entire sequence should be lazy.
+
+Review the two responses for efficiency, correctness, and cleanliness of code.
+
+
+
+
+
+Write examples of OCaml expressions that might appear in a reasonable program such that ALL functions and values in the OCaml Stdlib (read it here: https://ocaml.org/manual/5.4/api/Stdlib.html) are used at least 5 times in some example.
+ALL programs must be in PREFIX notation. You may use let statements, match statements, and function definitions, but keep them simple and not too nested. The ideal is just top-level expressions with no bindings.
+You may use literals such as 0, true, and "hello world", but try to use as few of these as possible. That is, if you use 0 and 1, try to just reuse those in all examples rather than pulling out other arbitrary numbers such as 42.
+You may not use any functions that are *not* included in the Stdlib.
+EXCLUDE the Debugging and format strings sections of the Stdlib.
+You should also INCLUDE ONLY the following modules in the Stdlib: Bool, List, Int, Pair.
+As best you can, separate your responses by what they are mainly examples for. For insteance, you might have an example which contains function composition but mostly deals with I/O.
+
+
+(For each round the scheduler creates, we can make this query again for just that subset of names!)
+
+
+No, you're not allowed to use anything that isn't in the list I gave. For example, you created the list [6,7], but that's not allowed. If you want a list of ints, you can construct one from 0, IL, and/or some other functions like (++) and (:). Write everything in prefix notation
+
+No, you're not allowed to use lambdas either. You can only do function applications using the literals I've given
+
+
+
+
+
+
+
+
+
+
+If they are runtime-generated temporary executables, place them in a dedicated application-controlled directory, such as:
+
+A subdirectory under your project root (e.g., generated/ or runtime-tools/)
+
+The system temporary directory via Files.createTempDirectory()
+
+A configurable output directory defined in your application settings
+
+Do not write runtime-generated executables into src/, build/, or out/ unless they are part of the build process. The build directory may be cleaned automatically, and out is IDE-specific and not reliable for production workflows.
+
+For command-line programs meant to persist across runs, define an explicit output directory and manage it intentionally rather than relying on build tool directories.
+
+In kotlin projects, where should I place temporary files generated at runtime? They contain small scripts that I run as a subroutine. It should be idiomatic but as simple as possible. I want it to be localized to the project root directory, not lying around in my system folders where I have to leave the directory to manually delete it
