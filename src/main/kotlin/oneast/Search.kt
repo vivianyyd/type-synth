@@ -79,8 +79,10 @@ class Search(
 
         s.blanks().forEach { blank ->
             u.holeEquals(blank).forEach { other ->
-                if (other !is InstantiationTy || other.hole !is Blank) return null
-                uf.union(blank.id, other.hole.id)
+                if (other is InstantiationTy) {
+                    if (other.hole !is Blank) return null
+                    uf.union(blank.id, other.hole.id)
+                }
             }
         }
 
