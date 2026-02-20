@@ -25,17 +25,10 @@ fun main() {
 
     val logger =
         Logger(
-            configuration = configuration,
-            logFilename = "tmp.log",
-            logToFile = true,
-            verbosity = 5
+            configuration = configuration, logFilename = "tmp.log", logToFile = true, verbosity = 5
         )
 
     run(query, languageGroundTruth, configuration, logger)
-    TODO(
-        "We can't just take the first result, need to do all of them. Large search tree wraps small search tree" +
-                "Also we should use conservative fast forward every once in a while or every time idk"
-    )
 }
 
 fun run(
@@ -43,7 +36,7 @@ fun run(
     languageGroundTruth: (Example) -> Boolean,
     configuration: Configuration,
     logger: Logger
-) {
+): List<SearchState> {
     val engine =
         Engine(
             query.examples,
@@ -53,11 +46,17 @@ fun run(
             configuration.namesPerRound
         )
 
+    val solutions = mutableListOf<SearchState>()
+
     when (configuration.numSols) {
         Solutions.AllSolutions -> engine.search()
         is Solutions.NumSolutions -> engine.search().take(configuration.numSols.value)
-    }.forEach { logger.log("SOLUTION: ${it.asMap()}") }
+    }.forEach {
+        logger.log("SOLUTION: ${it.asMap()}")
+        solutions.add(it)
+    }
     logger.finish()
+    return solutions
 }
 
 data class Configuration(
