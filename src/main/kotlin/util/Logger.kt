@@ -45,12 +45,12 @@ class Logger(
         indent()
     }
 
-    fun stop(stage: String) {
+    fun stop(stage: String, printCounts: Boolean = true) {
         val (s, t) = stages.pop()
         if (s != stage) error("Stopped a stage that wasn't started: $stage")
         dedent()
         log("END $stage : ${System.currentTimeMillis() - t} ms")
-        log(
+        if (printCounts) log(
             counts.entries
                 .filter { it.value > 50 }
                 .joinToString(separator = "\n", prefix = "Counts:\n"))
@@ -66,6 +66,10 @@ class Logger(
     }
 
     fun finish() {
+        while (!stages.empty()) {
+            val (s, _) = stages.peek()
+            stop(s, printCounts = false)
+        }
         log(counts.entries.joinToString(separator = "\n", prefix = "Counts:\n"))
         log("Total time: ${System.currentTimeMillis() - startTime} ms")
     }
