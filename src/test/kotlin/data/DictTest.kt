@@ -78,9 +78,8 @@ object DictTest : AbstractQuery() {
             "(- (put Eib 0 0))",
             "(- (put Eib 0 1))",
             "(- (put Ebi tr tr))",
+            "(- (put Eii (put Eii 1 1)))"
         )
-
-    // TODO next: chain operator takes dicts ab, bc and produces ac
 
     private val exs = basics + put
 

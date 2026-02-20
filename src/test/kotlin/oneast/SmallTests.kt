@@ -1,5 +1,6 @@
 package oneast
 
+import fixtures.data.ConsTest
 import fixtures.data.DictTest
 import query.Example
 import util.Logger
@@ -38,6 +39,17 @@ class SmallTests {
         val languageGroundTruth: (Example) -> Boolean = { e -> TODO() }
 
         val configuration = defaultConfig("Dict Put")
+        val logger = defaultLogger(configuration)
+
+        assert(run(query, languageGroundTruth, configuration, logger).isNotEmpty())
+    }
+
+    @Test
+    fun `recovers cons types`() {
+        val query = ConsTest
+        val languageGroundTruth: (Example) -> Boolean = { e -> TODO() }
+
+        val configuration = defaultConfig("Cons")
         val logger = defaultLogger(configuration)
 
         assert(run(query, languageGroundTruth, configuration, logger).isNotEmpty())
