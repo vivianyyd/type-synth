@@ -29,6 +29,9 @@ class SearchState(
 
     fun fnArities(): Map<String, Int> = names.mapValues { (_, i) -> types[i].fnArity() }
 
+    /**
+     * @return (index of type containing shallowest fillable hole, (the hole, depth of the hole)).
+     */
     fun shallowestFillableHole(): Pair<Int, Pair<THole, Int>>? =
         types
             .withIndex()
@@ -45,7 +48,7 @@ class SearchState(
 
     fun typeOf(name: String) = types[names[name]!!]
 
-    fun maxParamHeight() = types.maxOf { it.maxParamHeight(countArrow = false) }
+    fun maxParamDepth() = types.maxOf { it.maxParamDepth(countArrow = false) }
 
     private val asMap by lazy { names.mapValues { (_, i) -> types[i] } }
 
@@ -61,14 +64,13 @@ class SearchState(
         SearchState(
             names = names,
             types = types.mapIndexed { j, t -> if (i == j) transform(t) else t },
-            labelArities = labelArities
-        )
+            labelArities = labelArities)
 
     override fun toString() = asMap.toString()
 }
 
 sealed interface Type {
-    fun maxParamHeight(countArrow: Boolean): Int
+    fun maxParamDepth(countArrow: Boolean): Int
 
     fun instantiate(instId: Int): ConstraintTy
 
@@ -101,7 +103,7 @@ sealed class Constructor(open val params: List<Type>) : Type {
 }
 
 data class Variable(val v: Int) : Type {
-    override fun maxParamHeight(countArrow: Boolean) = 1
+    override fun maxParamDepth(countArrow: Boolean) = 0
 
     override fun allHoles() = emptyList<THole>()
 
@@ -132,8 +134,8 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
             .minByOrNull { it.second }
             ?.let { it.first to it.second + (if (topLevel) 0 else 1) }
 
-    override fun maxParamHeight(countArrow: Boolean) =
-        (if (countArrow) 1 else 0) + max(l.maxParamHeight(true), r.maxParamHeight(countArrow))
+    override fun maxParamDepth(countArrow: Boolean) =
+        (if (countArrow) 1 else 0) + max(l.maxParamDepth(true), r.maxParamDepth(countArrow))
 
     override fun instantiate(instId: Int): ConstraintTy =
         ConstraintArrow(l.instantiate(instId), r.instantiate(instId))
@@ -155,8 +157,8 @@ data class NamedLabel(val label: Int, override val params: List<Type>) : Constru
             .minByOrNull { it.second }
             ?.let { it.first to it.second + 1 }
 
-    override fun maxParamHeight(countArrow: Boolean) =
-        1 + (params.maxOfOrNull { it.maxParamHeight(countArrow) } ?: 0)
+    override fun maxParamDepth(countArrow: Boolean) =
+        1 + (params.maxOfOrNull { it.maxParamDepth(countArrow) } ?: 0)
 
     override fun instantiate(instId: Int): ConstraintTy =
         ConstraintLabel(label, params.map { it.instantiate(instId) })
@@ -179,7 +181,7 @@ sealed class THole : Type {
 
     val id = nextId++
 
-    override fun maxParamHeight(countArrow: Boolean) = 1
+    override fun maxParamDepth(countArrow: Boolean) = 0
 
     override fun allHoles() = listOf(this)
 
@@ -221,8 +223,7 @@ sealed class THole : Type {
         val constructors = exprs.filterIsInstance<ConstraintTypeConstructor>()
 
         if (constructors.isEmpty() ||
-            constructors.any { a -> constructors.any { b -> !a.match(b) } }
-        )
+            constructors.any { a -> constructors.any { b -> !a.match(b) } })
             return defaultVariable
 
         // We know they match now
@@ -230,28 +231,25 @@ sealed class THole : Type {
             when (constructors.first()) {
                 is ConstraintArrow -> {
                     antiunify(
-                        constructors.map { (it as ConstraintArrow).l },
-                        unification,
-                        defaultVariable
-                    )
+                            constructors.map { (it as ConstraintArrow).l },
+                            unification,
+                            defaultVariable)
                         ?.let { l ->
                             antiunify(
-                                constructors.map { (it as ConstraintArrow).r },
-                                unification,
-                                defaultVariable
-                            )
+                                    constructors.map { (it as ConstraintArrow).r },
+                                    unification,
+                                    defaultVariable)
                                 ?.let { r -> ConstraintArrow(l, r) }
                         }
                 }
                 is ConstraintLabel -> {
                     val params =
                         List(constructors.first().params.size) { i ->
-                            antiunify(
-                                constructors.map { (it as ConstraintLabel).params[i] },
-                                unification,
-                                defaultVariable
-                            )
-                        }
+                                antiunify(
+                                    constructors.map { (it as ConstraintLabel).params[i] },
+                                    unification,
+                                    defaultVariable)
+                            }
                             .filterNotNull()
                     if (params.size != constructors.first().params.size) null
                     else ConstraintLabel((constructors.first() as ConstraintLabel).label, params)
@@ -342,16 +340,18 @@ class TypeHole : THole() {
                         is ConstraintArrow -> listOf(fnExpansion)
                         is ConstraintLabel -> labelExpansions.filter { it.label == i.label }
                     }
-            } else
-                labelExpansions +
-                        listOf(
-                            TODO(
-                                "It's only fast if I make the else branch return no constructors instead of any label. Why was Concrete version so much faster even when adding all label expansions"
-                            )
-                        )
+            } else listOf()
+        //                labelExpansions +
+        //                        listOf(
+        //                            TODO(
+        //                                "It's only fast if I make the else branch return no
+        // constructors instead of any label. Why was Concrete version so much faster even when
+        // adding all label expansions"
+        //                            )
+        //                        )
         return constructorTypes +
-                variableExps +
-                listOfNotNull(Blank(labelOnly = true).takeIf { introduceBlanks })
+            variableExps +
+            listOfNotNull(Blank(labelOnly = true).takeIf { introduceBlanks })
     }
 
     override fun toString() = "_"
