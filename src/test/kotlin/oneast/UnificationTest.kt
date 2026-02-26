@@ -40,6 +40,34 @@ class UnificationTest {
         assertFalse(ok(context, program))
 
     @Test
+    fun `functions with same variables`() {
+        val ab = Arrow(a, b)
+        val bai = Arrow(Arrow(b, a), Arrow(a, b))
+        val context = makeContext("f" to bai, "g" to ab)
+        assertOk(context, App(f, g))
+        assertEquals(
+            OneUnification(context, emptyList()).type(App(f, g))!!.toNode(), Arrow(b, a)
+        )
+    }
+
+    @Test
+    fun `int a int and a a int`() {
+        val iai = Arrow(I, Arrow(a, I))
+        val aai = Arrow(a, Arrow(a, I))
+        val context1 = makeContext("f" to Arrow(iai, iai), "g" to aai)
+        assertOk(context1, App(f, g))
+        assertEquals(
+            OneUnification(context1, emptyList()).type(App(f, g))!!.toNode(), Arrow(I, Arrow(I, I))
+        )
+
+        val context2 = makeContext("f" to Arrow(aai, aai), "g" to iai)
+        assertOk(context2, App(f, g))
+        assertEquals(
+            OneUnification(context2, emptyList()).type(App(f, g))!!.toNode(), Arrow(I, Arrow(I, I))
+        )
+    }
+
+    @Test
     fun `OCaml compare and max`() {
         /*
         compare: a -> a -> int
@@ -48,9 +76,6 @@ class UnificationTest {
         We do find
         {0=L0[], 1=L0[], compare=V0 -> V0 -> L0[], max=V0-> V0 -> V0, min=V0 -> V0 -> V0}
         but we add the counterexample ((compare) (max)) (compare)       Posex: true
-
-        As an aside, ((compare) (max)) (compare) compiles but not ((compare) (max)) because of weak variables
-        whatever whatever in ocaml. This breaks our assumption that all subexpressions of posexs are posexs.
          */
         val context =
             makeContext("compare" to Arrow(a, Arrow(a, I)), "max" to Arrow(a, Arrow(a, a)))
@@ -61,8 +86,6 @@ class UnificationTest {
 
         println(unify.type(App(compare, max)))
         println(unify.type(compare))
-        // TODO THE PROBLEM IS WHEN WE APPLYBINDINGS EAGERLY IN THE REST OF THE TYPE BEFORE CHECKING
-        //   IT, WE LATER FAIL THE OCCURS CHECK
 
         assertEquals( // (V0 -> V0 -> V0) -> L0[]
             Arrow(Arrow(a, Arrow(a, a)), I),
@@ -100,8 +123,6 @@ class UnificationTest {
                 // f: ('a -> 'a -> 'a) -> Int
                 "f" to Arrow(Arrow(a, Arrow(a, a)), I),
                 // g: 'b -> 'b -> Int
-                // (conceptually 'b, but uses a which gets fresh instance during
-                // instantiation)
                 "g" to Arrow(a, Arrow(a, I))
             )
 
