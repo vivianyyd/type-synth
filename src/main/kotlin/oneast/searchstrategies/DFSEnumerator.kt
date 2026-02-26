@@ -39,7 +39,7 @@ class DFSEnumerator(examples: Examples) : SearchStrategy(examples) {
             return if (fastForwardBlanks) fastForward() else sequenceOf(c)
         }
 
-        if (sizeBound == 0) return fastForward()
+        if (sizeBound == 0) return emptySequence()
 
         val (iToFill, holeWithDepth) = c.shallowestFillableHole() ?: error("Impossible")
         val (hole, depth) = holeWithDepth
