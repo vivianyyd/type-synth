@@ -11,16 +11,9 @@ class SearchState(
      */
     val types: List<Type>,
     val labelArities: Map<Int, Int>
-    //    val names: List<String>,
-    //    val types: List<Type>
 ) {
     companion object {
         var nextId = 0
-
-        /** So the numbers are smaller for readability. Only call me between phases */
-        fun resetIds() {
-            nextId = 0
-        }
 
         val emptyState = SearchState(mapOf(), listOf(), mapOf())
     }
