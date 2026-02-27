@@ -19,7 +19,7 @@ abstract class SearchStrategy(private val examples: Examples) {
 
     protected fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
-    protected fun fastForward(candidate: SearchState): SearchState? {
+    protected fun fastForward(candidate: SearchState): Sequence<SearchState> {
         var curr = candidate
         do {
             var changed = false
@@ -36,7 +36,7 @@ abstract class SearchStrategy(private val examples: Examples) {
                     }
                 }
         } while (changed)
-        return if (curr.noHoles()) curr else null
+        return if (curr.noHoles()) sequenceOf(curr) else emptySequence()
     }
 }
 

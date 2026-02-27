@@ -26,14 +26,7 @@ class DFSEnumerator(examples: Examples) : SearchStrategy(examples) {
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
 
-        fun fastForward(): Sequence<SearchState> {
-            val ff = fastForward(c)
-            return listOfNotNull(ff).asSequence()
-        }
-
-        if (c.noFillableHoles()) {
-            return if (fastForwardBlanks) fastForward() else sequenceOf(c)
-        }
+        if (c.noFillableHoles()) return if (fastForwardBlanks) fastForward(c) else sequenceOf(c)
 
         if (sizeBound == 0) return emptySequence()
 
