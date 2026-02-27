@@ -8,8 +8,13 @@ import util.io.parseTest
 import kotlin.test.Test
 
 class SmallTests {
-    private fun defaultLogger(config: Configuration) =
-        Logger(configuration = config, logFilename = "tmp.log", logToFile = true, verbosity = 5)
+    private fun defaultLogger(
+        config: Configuration,
+        logName: String = config.name.replace("[^A-Za-z0-9]".toRegex(), "-")
+    ) =
+        Logger(
+            configuration = config, logFilename = "$logName.log", logToFile = true, verbosity = 5
+        )
 
     private fun defaultConfig(name: String) =
         Configuration(
@@ -28,7 +33,7 @@ class SmallTests {
         val languageGroundTruth: (Example) -> Boolean = { e -> TODO() }
 
         val configuration = defaultConfig(testName)
-        val logger = defaultLogger(configuration)
+        val logger = defaultLogger(configuration, logName = "tmp")
 
         assert(run(query, languageGroundTruth, configuration, logger).isNotEmpty())
     }
