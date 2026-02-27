@@ -5,6 +5,7 @@ import query.AbstractQuery
 import query.Example
 import util.Config
 import util.Logger
+import util.io.cvc.clearCVC
 import util.io.parseTest
 import util.lines
 
@@ -37,6 +38,8 @@ fun run(
     configuration: Configuration,
     logger: Logger
 ): List<SearchState> {
+    clearCVC()
+
     val engine =
         Engine(
             query.examples,

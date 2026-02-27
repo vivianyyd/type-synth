@@ -6,6 +6,7 @@ import testutil.ocaml.OCamlChecker
 import testutil.ocaml.OcamlTypeParser
 import util.Logger
 import util.NewCheckingOracle
+import util.io.cvc.clearCVC
 import util.join
 import java.io.File
 import kotlin.test.Test
@@ -36,6 +37,7 @@ class OCamlStdlibTest {
                 verbosity = 5
             )
 
+        clearCVC() // TODO This should really be done by the engine or someone else
         val engine =
             Engine(
                 query,
