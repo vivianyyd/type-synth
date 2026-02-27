@@ -182,7 +182,8 @@ data class NamedLabel(val label: Int, override val params: List<Type>) : Constru
             ?.let { it.first to it.second + 1 }
 
     override fun maxParamDepth(countArrow: Boolean) =
-        1 + (params.maxOfOrNull { it.maxParamDepth(countArrow) } ?: 0)
+        // 1 plus the max depth of any child, or 0 if this node is a leaf
+        params.maxOfOrNull { it.maxParamDepth(countArrow) }?.let { it + 1 } ?: 0
 
     override fun instantiate(instId: Int): ConstraintTy =
         ConstraintLabel(label, params.map { it.instantiate(instId) })
