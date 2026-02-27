@@ -63,6 +63,37 @@ class SearchState(
 }
 
 sealed interface Type {
+    private fun lastParamVariables(): Set<Int> =
+        when (this) {
+            is Arrow -> r.lastParamVariables()
+            is NamedLabel,
+            is THole,
+            is Variable -> variables()
+        }
+
+    private fun variablesBeforeLastParam(rightPath: Boolean = true): Set<Int> =
+        when (this) {
+            is Arrow ->
+                if (rightPath)
+                    l.variablesBeforeLastParam(rightPath = false) /* == variables() */ +
+                            r.variablesBeforeLastParam(rightPath = true)
+                else variables()
+            is NamedLabel,
+            is THole,
+            is Variable -> if (rightPath) emptySet() else variables()
+        }
+
+    /** A valid type cannot be concrete and have a fresh variable in the output type. */
+    fun invalid() = noHoles() && freshVariableInOutput()
+
+    private fun freshVariableInOutput() =
+        when (this) {
+            is Arrow -> (lastParamVariables() - variablesBeforeLastParam()).isNotEmpty()
+            is NamedLabel,
+            is THole,
+            is Variable -> false
+        }
+
     fun maxParamDepth(countArrow: Boolean): Int
 
     fun instantiate(instId: Int): ConstraintTy

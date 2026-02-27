@@ -54,6 +54,7 @@ class DFSEnumerator(examples: Examples) : SearchStrategy(examples) {
             )
             .asSequence()
             .map { it to c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) } }
+            .filterNot { (_, newC) -> newC.types[iToFill].invalid() }
             .flatMap { (replacement, newCandidate) ->
                 logger.count("Total candidates")
                 val u = posUnification(newCandidate)

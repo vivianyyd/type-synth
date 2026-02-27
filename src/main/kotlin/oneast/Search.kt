@@ -100,6 +100,21 @@ class Search(
         val freshLabel = Counter()
         freshLabel.ensureGt(s.labelArities.keys.maxOrNull() ?: -1)
         val holeToLabel = mutableMapOf<Int, Int>()
+
+        // Populate with equivalences to existing labels
+        val holes = s.types.flatMap { it.allHoles() }.filterIsInstance<Blank>()
+        holes.forEach {
+            val constructors = u.holeEquals(it).filterIsInstance<ConstraintTypeConstructor>()
+            if (constructors.isNotEmpty()) {
+                if (constructors.any { !it.match(constructors.first()) || it is ConstraintArrow })
+                    return null
+                val label = (constructors.first() as ConstraintLabel).label
+                val canonical = uf.find(it.id) ?: it.id
+                if (canonical in holeToLabel && holeToLabel[canonical] != label) return null
+                else if (canonical !in holeToLabel) holeToLabel[canonical] = label
+            }
+        }
+
         fun getLabel(h: Blank) = holeToLabel.getOrPut(uf.find(h.id) ?: h.id) { freshLabel.get() }
 
         fun assignLabels(t: Type): Type =
@@ -161,7 +176,7 @@ class Search(
                     }
                 }
             }
-        return resolvedLabelArities
+        return resolvedLabelArities.filter { it.types.all { !it.invalid() } }
     }
 
     private fun enumerate(
