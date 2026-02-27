@@ -2,7 +2,6 @@ package oneast.searchstrategies
 
 import oneast.OneUnification
 import oneast.SearchState
-import oneast.SearchStrategy
 import query.Examples
 import util.Logger
 
@@ -14,19 +13,15 @@ class DFSEnumerator(examples: Examples) : SearchStrategy(examples) {
     override fun candidates(
         c: SearchState,
         unification: OneUnification,
-        // TODO There is an implicit invariant/bug where fastforward is never called on a blank at
-        // the top level when we are still making outlines, only later when we are looking for
-        // concrete types. That should be cleaned up and made apparent by the code
-        introduceBlanks: Boolean,
-        fastForwardBlanks: Boolean,
+        emitLabelBlanks: Boolean,
         sizeBound: Int,
         depthBound: Int,
-        loggingSeed: SearchState,
         logger: Logger
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
 
-        if (c.noFillableHoles()) return if (fastForwardBlanks) fastForward(c) else sequenceOf(c)
+        // We won't fast-forward label blanks that we ourselves emitted.
+        if (c.noFillableHoles()) return if (!emitLabelBlanks) fastForward(c) else sequenceOf(c)
 
         if (sizeBound == 0) return emptySequence()
 
@@ -38,7 +33,7 @@ class DFSEnumerator(examples: Examples) : SearchStrategy(examples) {
                 labelArities = c.labelArities,
                 vars = c.types[iToFill].variables().size,
                 topLevel = hole == c.types[iToFill],
-                introduceBlanks = introduceBlanks,
+                emitLabelBlanks = emitLabelBlanks,
                 mustBeLeaf = sizeBound <= 1 || depth >= depthBound
             )
             .asSequence()
@@ -53,15 +48,7 @@ class DFSEnumerator(examples: Examples) : SearchStrategy(examples) {
                 logger.count("Total candidates")
                 val u = posUnification(newCandidate)
                 if (u.ok()) {
-                    candidates(
-                        newCandidate,
-                        u,
-                        introduceBlanks,
-                        fastForwardBlanks,
-                        sizeBound - 1,
-                        depthBound,
-                        loggingSeed,
-                        logger)
+                    candidates(newCandidate, u, emitLabelBlanks, sizeBound - 1, depthBound, logger)
                 } else emptySequence()
             }
     }

@@ -17,7 +17,6 @@ fun main() {
     val configuration =
         Configuration(
             name = testName,
-            runCVC = true,
             sizeBound = 20,
             depthBound = 4,
             namesPerRound = 10,
@@ -64,7 +63,6 @@ fun run(
 
 data class Configuration(
     val name: String,
-    val runCVC: Boolean,
     val sizeBound: Int,
     val depthBound: Int,
     val namesPerRound: Int,
@@ -73,7 +71,6 @@ data class Configuration(
     override fun toString(): String =
         listOf(
             name,
-            "Running CVC: $runCVC",
             "Size bound: $sizeBound",
             "Depth bound: $depthBound",
             "Names per round: $namesPerRound",

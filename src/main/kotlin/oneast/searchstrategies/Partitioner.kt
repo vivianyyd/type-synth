@@ -17,25 +17,21 @@ class Partitioner(examples: Examples) : SearchStrategy(examples) {
     override fun candidates(
         c: SearchState,
         unification: OneUnification,
-        introduceBlanks: Boolean,
-        fastForwardBlanks: Boolean,
+        emitLabelBlanks: Boolean,
         sizeBound: Int,
         depthBound: Int,
-        loggingSeed: SearchState,
         logger: Logger
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
 
-        fun fastForward(): Sequence<SearchState> {
-            val ff = fastForward(c)
-            return listOfNotNull(ff).asSequence()
-        }
-
         if (c.noFillableHoles()) {
-            return if (fastForwardBlanks) fastForward() else sequenceOf(c)
+            return if (!emitLabelBlanks) fastForward(c) else sequenceOf(c)
         }
 
-        if (sizeBound == 0) return fastForward()
+        // TODO compare with DFS to see if there are any other changes to propagate here.. Yeah
+        // that's bad style...
+
+        if (sizeBound == 0) return emptySequence()
 
         val iToFill = c.shallowestFillableHole()?.first ?: error("Impossible")
         val ty = c.types[iToFill]
@@ -59,14 +55,7 @@ class Partitioner(examples: Examples) : SearchStrategy(examples) {
                                 "conservatively fast forward at each step. When is fastForwardBlanks passed as true/false?"
                     )
                     candidates(
-                        newCandidate,
-                        u,
-                        introduceBlanks,
-                        fastForwardBlanks,
-                        sizeBound - cost,
-                        depthBound,
-                        loggingSeed,
-                        logger
+                        newCandidate, u, emitLabelBlanks, sizeBound - cost, depthBound, logger
                     )
                 } else emptySequence()
             }

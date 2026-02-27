@@ -134,14 +134,10 @@ class LabelConstraints(
     fun extract(p: CVCParser) = p.sizes.mapKeys { pySizeToLabel(it.key) }
 }
 
-fun labelArities(
-    s: SearchState,
-    deps: ParameterwiseDependencyAnalysis,
-    callSolver: Boolean
-): Map<Int, Int>? {
+fun labelArities(s: SearchState, deps: ParameterwiseDependencyAnalysis): Map<Int, Int>? {
     val gen = LabelConstraints(s, deps)
     val testID = "${s.id}"
-    if (callSolver) callCVC(gen.initialQuery(), testID)
+    callCVC(gen.initialQuery(), testID)
 
     var counter = 0
     var previousSolution = readCVC(testID) ?: return null

@@ -19,7 +19,6 @@ class SmallTests {
     private fun defaultConfig(name: String) =
         Configuration(
             name = name,
-            runCVC = true,
             sizeBound = 20,
             depthBound = 4,
             namesPerRound = 10,

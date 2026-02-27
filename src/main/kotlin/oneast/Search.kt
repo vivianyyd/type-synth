@@ -1,44 +1,10 @@
 package oneast
 
 import dependencyanalysis.ParameterwiseDependencyAnalysis
+import oneast.searchstrategies.SearchStrategy
 import query.Examples
 import query.Name
 import util.*
-
-abstract class SearchStrategy(private val examples: Examples) {
-    abstract fun candidates(
-        c: SearchState,
-        unification: OneUnification,
-        introduceBlanks: Boolean,
-        fastForwardBlanks: Boolean,
-        sizeBound: Int,
-        depthBound: Int,
-        loggingSeed: SearchState,
-        logger: Logger
-    ): Sequence<SearchState>
-
-    protected fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
-
-    protected fun fastForward(candidate: SearchState): Sequence<SearchState> {
-        var curr = candidate
-        do {
-            var changed = false
-            val u = posUnification(curr)
-            curr =
-                curr.mapTypes { t ->
-                    val changes =
-                        t.allHolesWithDepth(topLevel = true).map { (hole, depth) ->
-                            hole to hole.fastForward(u, topLevel = depth == 0)
-                        }
-                    if (changes.isNotEmpty() && changes.any { it.second != null }) changed = true
-                    changes.fold(t) { acc: Type, (hole, ty): Pair<THole, Type?> ->
-                        if (ty == null) acc else acc.replace(hole, ty)
-                    }
-                }
-        } while (changed)
-        return if (curr.noHoles()) sequenceOf(curr) else emptySequence()
-    }
-}
 
 /** Lazily produces ALL solutions for [examples] from this [seed]. */
 class Search(
@@ -49,26 +15,14 @@ class Search(
     private val searchStrategy: (Examples) -> SearchStrategy,
     private val logger: Logger,
 ) {
-    private fun commit(
+    private fun allCandidates(
         c: SearchState,
-        unification: OneUnification,
-        introduceBlanks: Boolean,
-        fastForwardBlanks: Boolean,
+        emitLabelBlanks: Boolean,
         sizeBound: Int,
         depthBound: Int,
-        loggingSeed: SearchState,
     ): Sequence<SearchState> =
         searchStrategy(examples)
-            .candidates(
-                c,
-                unification,
-                introduceBlanks,
-                fastForwardBlanks,
-                sizeBound,
-                depthBound,
-                loggingSeed,
-                logger
-            )
+            .candidates(c, posUnification(c), emitLabelBlanks, sizeBound, depthBound, logger)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
@@ -133,26 +87,21 @@ class Search(
         return s.mapTypesAndSetLabelArities(mapOf()) { assignLabels(it) }
     }
 
-    private fun initialOutlines(callSolver: Boolean): List<SearchState> {
-        val firstRound =
-            logger.time("Initial search without labels or nullaries") {
-                commit(
+    private fun concreteSeeds(): List<SearchState> {
+        val initialOutlines =
+            logger.time("Initial outlines") {
+                allCandidates(
                     seed,
-                    posUnification(seed),
-                    introduceBlanks = true,
-                    fastForwardBlanks = false,
+                    emitLabelBlanks = true,
                     sizeBound = Int.MAX_VALUE,
                     depthBound = Int.MAX_VALUE,
-                    loggingSeed = seed
                 )
                     .toList()
             }
 
-        val withLabelClasses = firstRound.mapNotNull { assignLabelClasses(it) }
+        val withLabelClasses = initialOutlines.mapNotNull { assignLabelClasses(it) }
 
-        logger.log(
-            "Seeds before label arities: ${withLabelClasses.size}\n${withLabelClasses.lines()}"
-        )
+        logger.log(withLabelClasses.countedLines("Seeds before label arities"))
 
         val resolvedLabelArities =
             logger.time("Dependency analysis and solving for label arities") {
@@ -166,7 +115,7 @@ class Search(
                             ParameterwiseDependencyAnalysis(examples, arities, oracle)
                         }
 
-                    val la = labelArities(s, dep, callSolver)
+                    val la = labelArities(s, dep)
                     if (la == null) listOf()
                     else {
                         lazyCartesianProduct(la.values.map { (0..it).toList() })
@@ -179,32 +128,30 @@ class Search(
         return resolvedLabelArities.filter { it.types.all { !it.invalid() } }
     }
 
-    private fun enumerate(
-        seedOutlines: List<SearchState>,
+    private fun concretizationSearch(
+        seeds: List<SearchState>,
         currentSizeBound: Int,
         currentDepthBound: Int,
     ): Sequence<SearchState> {
-        fun check(c: SearchState) =
-            posUnification(c).ok() && examples.neg.all { !OneUnification(c, listOf(it)).ok() }
-
         // Things blow up here, so sequencing
-        val secondRounds =
-            seedOutlines.asSequence().flatMap {
-                commit(
+        // We start by searching for the functions, and try to deduce the nullaries from them.
+        val candidatesNullariesDeduced =
+            seeds.asSequence().flatMap {
+                allCandidates(
                     it,
-                    posUnification(it),
-                    introduceBlanks = false,
-                    fastForwardBlanks = true,
+                    emitLabelBlanks = false,
                     sizeBound = currentSizeBound,
                     depthBound = currentDepthBound,
-                    loggingSeed = it
                 )
             }
 
-        // Once we have exhausted the search space for functions, we transform blanks back into
-        // normal holes and enumerate for them
+        // If the functions are not contradictory but we couldn't deduce the nullaries, we transform
+        // blanks into normal holes and enumerate for them
+        // TODO completeness bug here: Our fast forward is too aggressive; if we successfully fast
+        // forward but to something that doesn't actually work, we miss all other candidates with
+        // the same fn signatures but different nullaries.
         val finalResults =
-            secondRounds.flatMap {
+            candidatesNullariesDeduced.flatMap {
                 if (it.blanks().isEmpty()) sequenceOf(it)
                 else {
                     val blanksReplacedWithHoles =
@@ -213,75 +160,65 @@ class Search(
                                 if (h is Blank) acc.replace(h, TypeHole()) else acc
                             }
                         }
-                    commit(
+                    allCandidates(
                         blanksReplacedWithHoles,
-                        posUnification(blanksReplacedWithHoles),
-                        introduceBlanks = false,
-                        fastForwardBlanks = true,
+                        emitLabelBlanks = false,
                         sizeBound = currentSizeBound,
                         depthBound = currentDepthBound,
-                        loggingSeed = blanksReplacedWithHoles
                     )
                 }
             }
 
-        return finalResults.filter { c -> check(c) }
+        return finalResults.filter { c ->
+            posUnification(c).ok() && examples.neg.all { !OneUnification(c, listOf(it)).ok() }
+        }
     }
 
     fun solutions(): Sequence<SearchState> = sequence {
-        val seedOutlines = initialOutlines(callSolver = true)
-        logger.log("Concrete seeds: ${seedOutlines.size}\n${seedOutlines.lines()}")
+        val seeds = concreteSeeds()
+        logger.log(seeds.countedLines("Concrete seeds"))
 
-        var solved = false
         for (depth in 1..config.depthBound) {
             logger.start("Depth $depth for ${examples.names}")
             for (size in 1..config.sizeBound) {
                 logger.start("Size $size for ${examples.names}")
                 val sols =
-                    enumerate(
-                        seedOutlines,
+                    concretizationSearch(
+                        seeds,
                         currentSizeBound = size,
                         currentDepthBound = depth,
-                        // get all solutions to subproblems in case one partial solution is
-                        // unrealizable
                     )
                         .iterator()
-                if (sols.hasNext()) solved = true
                 yieldAll(sols)
                 logger.stop("Size $size for ${examples.names}")
-                if (solved) {
-                    logger.log("STOPPED AT SIZE $size")
-                    break
-                }
+                // The contract is to provide *all* solutions, not just those of minimal size/depth
+                // if (solved) break
             }
             logger.stop("Depth $depth for ${examples.names}")
-            if (solved) {
-                logger.log("STOPPED AT DEPTH $depth")
-                break
-            }
+            // if (solved) break
         }
     }
-}
 
-fun Type.addParamHoles(labelArities: Map<Int, Int>, underArrow: Boolean = false): Type =
-    when (this) {
-        is Arrow ->
-            Arrow(
-                l.addParamHoles(labelArities, underArrow = true),
-                r.addParamHoles(labelArities, underArrow = true)
-            )
-        is NamedLabel -> {
-            // Only overwrite parameters if they are wrongly empty
-            if ((labelArities[this.label] ?: 0) > 0 && this.params.isEmpty()) {
-                // Children of labels are type holes if under a function, and blanks with
-                // labelOnly=false if under a nullary
-                this.copy(
-                    params =
-                    List(labelArities[this.label]!!) {
-                        if (underArrow) TypeHole() else Blank(labelOnly = false)
-                    })
-            } else this
+    private fun Type.addParamHoles(labelArities: Map<Int, Int>, underArrow: Boolean = false): Type =
+        when (this) {
+            is Arrow ->
+                Arrow(
+                    l.addParamHoles(labelArities, underArrow = true),
+                    r.addParamHoles(labelArities, underArrow = true)
+                )
+            is NamedLabel -> {
+                // Only overwrite parameters if they are wrongly empty
+                if ((labelArities[this.label] ?: 0) > 0 && this.params.isEmpty()) {
+                    // Children of labels are type holes if under a function, and blanks with
+                    // labelOnly=false if under a nullary
+                    this.copy(
+                        params =
+                        List(labelArities[this.label]!!) {
+                            if (underArrow) TypeHole() else Blank(labelOnly = false)
+                        })
+                } else this
+            }
+            is THole,
+            is Variable -> this
         }
-        is THole,
-        is Variable -> this
-    }
+}

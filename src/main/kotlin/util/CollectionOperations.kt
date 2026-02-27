@@ -167,3 +167,6 @@ inline fun <T, V> zip(vararg lists: List<T>, transform: (List<T>) -> V): List<V>
 }
 
 fun <T> Collection<T>.lines() = this.joinToString(separator = "\n")
+
+fun <T> Collection<T>.countedLines(name: String) =
+    this.joinToString(prefix = "$name: ${this.size}\n", separator = "\n")

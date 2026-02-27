@@ -223,7 +223,7 @@ sealed class THole : Type {
         labelArities: Map<Int, Int>,
         vars: Int,
         topLevel: Boolean,
-        introduceBlanks: Boolean,
+        emitLabelBlanks: Boolean,
         mustBeLeaf: Boolean
     ): List<Type>
 
@@ -326,11 +326,11 @@ class TypeHole : THole() {
         labelArities: Map<Int, Int>,
         vars: Int,
         topLevel: Boolean,
-        introduceBlanks: Boolean,
+        emitLabelBlanks: Boolean,
         mustBeLeaf: Boolean
     ): List<Type> =
         if (mustBeLeaf)
-            expansionsNoBound(unification, labelArities, vars, topLevel, introduceBlanks).filter {
+            expansionsNoBound(unification, labelArities, vars, topLevel, emitLabelBlanks).filter {
                 when (it) {
                     is Variable -> true
                     is NamedLabel -> it.params.isEmpty()
@@ -339,14 +339,14 @@ class TypeHole : THole() {
                     is TypeHole -> throw Exception("Expansions cannot include type holes")
                 }
             }
-        else expansionsNoBound(unification, labelArities, vars, topLevel, introduceBlanks)
+        else expansionsNoBound(unification, labelArities, vars, topLevel, emitLabelBlanks)
 
     private fun expansionsNoBound(
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
         topLevel: Boolean,
-        introduceBlanks: Boolean
+        emitLabelBlanks: Boolean
     ): List<Type> {
         val variableExps = if (topLevel) listOf() else (0 until vars + 1).map { Variable(it) }
         val fnExpansion = Arrow(TypeHole(), TypeHole())
@@ -376,7 +376,7 @@ class TypeHole : THole() {
         //                        )
         return constructorTypes +
             variableExps +
-            listOfNotNull(Blank(labelOnly = true).takeIf { introduceBlanks })
+                listOfNotNull(Blank(labelOnly = true).takeIf { emitLabelBlanks })
     }
 
     override fun toString() = "_"
@@ -394,7 +394,7 @@ class Blank(val labelOnly: Boolean) : THole() {
         labelArities: Map<Int, Int>,
         vars: Int,
         topLevel: Boolean,
-        introduceBlanks: Boolean,
+        emitLabelBlanks: Boolean,
         mustBeLeaf: Boolean
     ) = listOf(this)
 

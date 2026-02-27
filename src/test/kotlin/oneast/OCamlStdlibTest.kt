@@ -22,7 +22,6 @@ class OCamlStdlibTest {
         val configuration =
             Configuration(
                 name = "OCaml Stdlib",
-                runCVC = true,
                 sizeBound = 20,
                 depthBound = 4,
                 namesPerRound = 5,
