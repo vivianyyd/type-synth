@@ -17,41 +17,6 @@ Searching entangled program spaces Jimmy ECTAs https://dl.acm.org/doi/10.1145/35
 ProofWright: Towards Agentic Formal Verification of CUDA
 Drew Zagieboylo! https://arxiv.org/html/2511.12294v1#S1
 
-
-
-Checking ((chain) (dib)) (((chain) (dbi)) (dii)) with
-    put=L0[L0[V0, V0], V0] -> V0 -> V1 -> V0
-    chain=V0 -> V0 -> L0[V0, V0]
-    dbb=L0[L0[V0, V0], V0]
-    dbi=L0[L0[V0, V0], V0]
-    dib=L0[L0[V0, V0], V0]
-    dii=L0[L0[V0, V0], V0]
-    i=L0[V0, V0]
-    b=L0[V0, V0]
-
-chain dib
-    Applying (V0-22) -> ((V0-22) -> (L[V0-22, V0-22])) to L[L[V0-23, V0-23], V0-23]
-    Binding V0-22 to L[L[V0-23, V0-23], V0-23]
-        Produces (L[L[V0-23, V0-23], V0-23] -> (L[L[L[V0-23, V0-23], V0-23], L[L[V0-23, V0-23], V0-23]]))
-chain dbi
-    Applying (V0-24) -> ((V0-24) -> (L[V0-24, V0-24])) to L[L[V0-25, V0-25], V0-25]
-    Binding V0-24 to L[L[V0-25, V0-25], V0-25]
-        Produces (L[L[V0-25, V0-25], V0-25] -> (L[L[L[V0-25, V0-25], V0-25], L[L[V0-25, V0-25], V0-25]]))
-(chain dbi) dii
-    Applying (L[L[V0-25, V0-25], V0-25]) -> (L[L[L[V0-25, V0-25], V0-25], L[L[V0-25, V0-25], V0-25]]) to L[L[V0-26, V0-26], V0-26]
-    Binding V0-25 to V0-26
-    Binding V0-25 to V0-26
-    Binding V0-25 to V0-26
-        Produces L[L[L[V0-25, V0-25], V0-25], L[L[V0-25, V0-25], V0-25]]
-(chain dib) ((chain dbi) dii)
-    Applying (L[L[V0-23, V0-23], V0-23]) -> (L[L[L[V0-23, V0-23], V0-23], L[L[V0-23, V0-23], V0-23]]) to L[L[L[V0-26, V0-26], V0-26], L[L[V0-26, V0-26], V0-26]]
-    Binding V0-23 to L[V0-26, V0-26]
-    Binding V0-23 to V0-26
-    Binding V0-23 to L[L[V0-26, V0-26], V0-26]
-        Produces (L[L[L[L[L[V0-26, V0-26], V0-26], L[L[V0-26, V0-26], V0-26]], L[L[V0-26, V0-26], V0-26]], L[L[L[L[V0-26, V0-26], V0-26], L[L[V0-26, V0-26], V0-26]], L[L[V0-26, V0-26], V0-26]]])
-    This is actually ok, constraint types get really long but it's ok
-
-
 @undo :{ module Main where
 import Text.Pandoc
 import Data.Text (Text)
@@ -125,29 +90,7 @@ egg-rewrite-rule-paper-like way, we make rewrite rules for synthesis. Requires
 non-negligible load on user
 
 Static analysis on the interpreter itself should sort-of reveal big-step
-semantics? Read about metatracing)? 
-
-The Enumerators file contains multiple enumeration algorithms for program
-synthesis, parameterized over a language L. A candidate is a collection of
-partial programs. A Unification object takes as input a candidate and relevant
-positive examples, and generates a set of products.constraints on the partial programs
-in the candidate. If calling get() on Unification is null, that collection of
-partial programs is not viable.
-
-The ConcreteEnumerator file contains an enumeration algorithm which first
-enumerates building blocks for programs, then produces a lazy sequence of
-programs by calling a cartesian product on the appropriate components. For each
-program, it checks whether it is valid on the examples.
-
-The problem is that ConcreteEnumerator works on only one specific language,
-which is described in the same file. Can you fill in ProductEnumerator in
-Enumerators.Kt to use the same algorithm as ConcreteEnumerator, but to work
-over a language L?
-
-Refactor depth logic so that NArrow stores whether it its depth should be
-counted as if it's curried or not.  Vars store products.constraints that mention them -
-trying to make propagating/substitution faster. To no avail        
-
+semantics? Read about metatracing)?
 
 ===============================================================================
 
