@@ -1,7 +1,7 @@
 package oneast
 
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class FreshVariableCheckTest {
@@ -13,16 +13,15 @@ class FreshVariableCheckTest {
         val t1 = Arrow(a, Arrow(a, Arrow(b, c)))
         val t2 = Arrow(a, Arrow(a, Arrow(a, b)))
         val t3 = Arrow(a, Arrow(b, NamedLabel(0, listOf(b, c))))
+        val t4 = Arrow(a, Arrow(b, NamedLabel(0, listOf(b, a))))
+        val t5 = Arrow(Arrow(a, b), Arrow(a, Arrow(a, b)))
+        val t6 = Arrow(Arrow(a, a), Arrow(c, Arrow(a, b)))
 
-        assertEquals(setOf(0, 1), t1.variablesBeforeLastParam())
-        assertEquals(setOf(2), t1.lastParamVariables())
-        assertEquals(setOf(0), t2.variablesBeforeLastParam())
-        assertEquals(setOf(1), t2.lastParamVariables())
-        assertEquals(setOf(0, 1), t3.variablesBeforeLastParam())
-        assertEquals(setOf(1, 2), t3.lastParamVariables())
-
-        assertTrue(t1.freshVariableInOutput())
-        assertTrue(t2.freshVariableInOutput())
-        assertTrue(t3.freshVariableInOutput())
+        assertTrue(t1.invalid())
+        assertTrue(t2.invalid())
+        assertTrue(t3.invalid())
+        assertFalse(t4.invalid())
+        assertFalse(t5.invalid())
+        assertTrue(t6.invalid())
     }
 }
