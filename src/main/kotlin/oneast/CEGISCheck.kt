@@ -21,18 +21,30 @@ class CEGISCheck(
     }
 
     fun counterexample(): Pair<Example, Boolean>? {
-        while (posCtr < 100) {
+        return null // TODO remove me
+        while (posCtr < 10) {
             val next = generator.get(exampleDepthBound)
-            if (!bf.mightContain(next)) {
-                val truthValue = valid(next)
-                if (check(candidate, next) != truthValue) {
-                    return next to truthValue
-                }
-                if (truthValue) {
-                    posCtr++
-                    bf.add(next)
-                }
+            // TODO Check if it's more efficient to bloom filter it, or check truth value first?
+            val truthValue = valid(next)
+            if (check(candidate, next) != truthValue) {
+                return next to truthValue
             }
+            if (truthValue && !bf.mightContain(next)) {
+                println("Found posex $next")
+                posCtr++
+                bf.add(next)
+            }
+            //            if (!bf.mightContain(next)) {
+            //                val truthValue = valid(next)
+            //                if (check(candidate, next) != truthValue) {
+            //                    return next to truthValue
+            //                }
+            //                if (truthValue) {
+            //                    println("Found posex $next")
+            //                    posCtr++
+            //                    bf.add(next)
+            //                }
+            //            }
         }
         return null
     }
