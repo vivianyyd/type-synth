@@ -1,0 +1,1667 @@
+dictchain
+Running CVC: true
+Size bound: 20
+Depth bound: 4
+Names per round: 10
+Searching for 1 solutions
+=====
+
+[16:11:37.526]	BEG Initial search without labels or nullaries
+[16:11:37.892]	END Initial search without labels or nullaries : 381 ms
+[16:11:37.892]	Counts:
+Total candidates=1544
+[16:11:37.892]	Elapsed time: 516 ms
+[16:11:37.998]	Seeds before label arities: 780
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L1[], dii=L1[], i=L1[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L1[], dii=L1[], i=L1[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L1[], dii=L1[], i=L1[], put=V0 -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> L6[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> L0[] -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L1[], put=L1[] -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L1[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L1[], dib=L0[], dii=L1[], i=L1[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L1[], dib=L0[], dii=L1[], i=L1[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L1[], dib=L0[], dii=L1[], i=L1[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> L6[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> L0[] -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L1[], put=L1[] -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L1[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L1[], dii=L1[], i=L1[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L1[], dii=L1[], i=L1[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L1[], dii=L1[], i=L1[], put=V0 -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L1[], dib=L0[], dii=L1[], i=L1[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L1[], dib=L0[], dii=L1[], i=L1[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L1[], dib=L0[], dii=L1[], i=L1[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> V1 -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L5[], put=V0 -> V1 -> V2 -> L6[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> V1 -> L0[] -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> V1 -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L2[], dib=L3[], dii=L4[], i=L0[], put=V0 -> L0[] -> L0[] -> L5[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L1[], put=L1[] -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L1[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> V2, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L0[], dbi=L0[], dib=L1[], dii=L1[], i=L1[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L0[], dbi=L0[], dib=L1[], dii=L1[], i=L1[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L0[], dbi=L0[], dib=L1[], dii=L1[], i=L1[], put=V0 -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> V1 -> V1 -> L6[]}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L6[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L6[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L6[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L6[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L6[], put=V0 -> V1 -> V2 -> L7[]}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> V1 -> L0[] -> L6[]}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> L0[] -> V1 -> L6[]}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L2[], dbi=L3[], dib=L4[], dii=L5[], i=L0[], put=V0 -> L0[] -> L0[] -> L6[]}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L1[], put=L1[] -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L1[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> V1 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> V1 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> L1[] -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V0}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=V0 -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=V0 -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=L1[] -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=L1[] -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V0}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=L1[] -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> L1[]}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> L1[]}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> L1[]}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=L1[] -> L1[] -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V1}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> V2}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V1 -> L0[]}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V0}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> V1}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> L0[] -> L0[]}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V1}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> V2}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V0 -> L0[]}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V1 -> V1}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> V2}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> V1 -> L1[]}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V1}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> V2 -> V2}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> V3}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=V0 -> V1 -> V2 -> L1[]}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V0}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V1 -> L0[] -> V1}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> V2}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> V1 -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> V1}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V0 -> L0[]}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> L0[] -> V1 -> V1}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> V2}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> V1 -> L1[]}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V0}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> V1}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=V0 -> L0[] -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V0 -> V0}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> V0 -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V0}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> V1 -> V1}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L2[], put=L1[] -> V0 -> V1 -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> V0 -> L0[] -> V0}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> V1}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> V0 -> L0[] -> L1[]}
+{b=L0[], chain=L0[] -> L0[] -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=L0[] -> L0[] -> V0 -> V0}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> V1}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> V0 -> L1[]}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> V0}
+{b=L0[], chain=L1[] -> L1[] -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[], put=L1[] -> L0[] -> L0[] -> L1[]}
+[16:11:38.002]	BEG Dependency analysis and solving for label arities
+[16:13:13.809]	END Dependency analysis and solving for label arities : 95807 ms
+[16:13:13.809]	Counts:
+Total candidates=1544
+[16:13:13.809]	Elapsed time: 96433 ms
+[16:13:13.821]	Concrete seeds: 809
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[., .], chain=V0 -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[., .], chain=V0 -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> L0[], dbb=L0[], dbi=L0[], dib=L0[], dii=L0[], i=L0[], put=V0 -> V0 -> V0 -> L0[]}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[]}
+{b=L0[.], chain=V0 -> V0 -> L1[], dbb=L1[], dbi=L1[], dib=L1[], dii=L1[], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[]}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[., .], chain=V0 -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> L0[_, _] -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[_, _] -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[_, _] -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[_, _] -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[_, _] -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> L1[_, _] -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> L1[_, _] -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[., .], chain=V0 -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=V0 -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=V0 -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[], chain=V0 -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=V0 -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=V0 -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=V0 -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[], chain=L1[_, _] -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=L1[_, _] -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=L1[_, _] -> V0 -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=L0[_, _] -> V0 -> V1, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[], chain=L1[_, _] -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=L1[_, _] -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=L1[_, _] -> V0 -> V1, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> V1, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> V1, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[., .], chain=L0[_, _] -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=L0[_, _] -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=L0[_, _] -> V0 -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[], chain=L1[_, _] -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=L1[_, _] -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=L1[_, _] -> V0 -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> V0 -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> V0 -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> V0, dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> V0, dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> V0, dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> V0, dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> V0 -> L0[_] -> L0[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=V0 -> L0[_] -> V0 -> L0[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=V0 -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> V0 -> V0}
+{b=L0[], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> V1}
+{b=L0[], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[], put=L1[_] -> V0 -> V0 -> L1[_]}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[., .], chain=L0[_, _] -> L0[_, _] -> L0[_, _], dbb=L0[., .], dbi=L0[., .], dib=L0[., .], dii=L0[., .], i=L0[., .], put=L0[_, _] -> V0 -> V1 -> V1}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> V2}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[], chain=L1[_, _] -> L1[_, _] -> L1[_, _], dbb=L1[., .], dbi=L1[., .], dib=L1[., .], dii=L1[., .], i=L2[], put=L1[_, _] -> V0 -> V1 -> L1[_, _]}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> V0 -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> V0 -> L0[_] -> L1[_]}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L0[_] -> L0[_] -> L0[_], dbb=L0[.], dbi=L0[.], dib=L0[.], dii=L0[.], i=L0[.], put=L0[_] -> L0[_] -> V0 -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> V1}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> V0 -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> V0}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+{b=L0[.], chain=L1[_] -> L1[_] -> L1[_], dbb=L1[.], dbi=L1[.], dib=L1[.], dii=L1[.], i=L0[.], put=L1[_] -> L0[_] -> L0[_] -> L1[_]}
+[16:13:13.822]	BEG Depth 1 for [b, chain, dbb, dbi, dib, dii, i, put]
+[16:13:13.822]	BEG Size 1 for [b, chain, dbb, dbi, dib, dii, i, put]
+[16:13:14.331]	END Size 1 for [b, chain, dbb, dbi, dib, dii, i, put] : 508 ms
+[16:13:14.331]	Counts:
+Total candidates=3276
+[16:13:14.331]	Elapsed time: 96955 ms
+[16:13:14.331]	BEG Size 2 for [b, chain, dbb, dbi, dib, dii, i, put]
+[16:13:15.372]	END Size 2 for [b, chain, dbb, dbi, dib, dii, i, put] : 1041 ms
+[16:13:15.372]	Counts:
+Total candidates=9066
+[16:13:15.373]	Elapsed time: 97997 ms
+[16:13:15.373]	BEG Size 3 for [b, chain, dbb, dbi, dib, dii, i, put]
+[16:13:17.823]	END Size 3 for [b, chain, dbb, dbi, dib, dii, i, put] : 2450 ms
+[16:13:17.823]	Counts:
+Total candidates=22953
+[16:13:17.823]	Elapsed time: 100447 ms
+[16:13:17.823]	BEG Size 4 for [b, chain, dbb, dbi, dib, dii, i, put]
+[16:13:24.538]	END Size 4 for [b, chain, dbb, dbi, dib, dii, i, put] : 6715 ms
+[16:13:24.538]	Counts:
+Total candidates=52621
+[16:13:24.538]	Elapsed time: 107162 ms
+[16:13:24.538]	BEG Size 5 for [b, chain, dbb, dbi, dib, dii, i, put]
+[16:13:35.172]	END Size 5 for [b, chain, dbb, dbi, dib, dii, i, put] : 10634 ms
+[16:13:35.173]	Counts:
+Total candidates=98902
+[16:13:35.173]	Elapsed time: 117797 ms
+[16:13:35.173]	BEG Size 6 for [b, chain, dbb, dbi, dib, dii, i, put]
+[16:14:00.026]	END Size 6 for [b, chain, dbb, dbi, dib, dii, i, put] : 24853 ms
+[16:14:00.026]	Counts:
+Total candidates=185822
+[16:14:00.026]	Elapsed time: 142650 ms
+[16:14:00.026]	BEG Size 7 for [b, chain, dbb, dbi, dib, dii, i, put]
+[16:14:28.905]	END Size 7 for [b, chain, dbb, dbi, dib, dii, i, put] : 28879 ms
+[16:14:28.905]	Counts:
+Total candidates=297501
+[16:14:28.905]	Elapsed time: 171529 ms
+[16:14:28.905]	BEG Size 8 for [b, chain, dbb, dbi, dib, dii, i, put]
+[16:15:41.544]	END Size 8 for [b, chain, dbb, dbi, dib, dii, i, put] : 72639 ms
+[16:15:41.544]	Counts:
+Total candidates=501877
+[16:15:41.544]	Elapsed time: 244168 ms
+[16:15:41.544]	BEG Size 9 for [b, chain, dbb, dbi, dib, dii, i, put]
+[16:17:04.126]	END Size 9 for [b, chain, dbb, dbi, dib, dii, i, put] : 82582 ms
+[16:17:04.126]	Counts:
+Total candidates=732080
+[16:17:04.126]	Elapsed time: 326750 ms
+[16:17:04.126]	BEG Size 10 for [b, chain, dbb, dbi, dib, dii, i, put]
+[16:18:24.122]	Potential solution: {b=L0[], chain=L1[V0, V1] -> L1[V1, V2] -> L1[V0, V2], dbb=L1[L0[], L0[]], dbi=L1[L0[], L2[]], dib=L1[L2[], L0[]], dii=L1[L2[], L2[]], i=L2[], put=L1[V0, V1] -> V0 -> V1 -> L1[V0, V1]}
+[16:18:24.122]	Looking for counterexamples
+[16:18:24.128]	Found no counterexamples
+[16:18:24.128]	SOLUTION: {b=L0[], chain=L1[V0, V1] -> L1[V1, V2] -> L1[V0, V2], dbb=L1[L0[], L0[]], dbi=L1[L0[], L2[]], dib=L1[L2[], L0[]], dii=L1[L2[], L2[]], i=L2[], put=L1[V0, V1] -> V0 -> V1 -> L1[V0, V1]}
+[16:18:24.128]	END Size 10 for [b, chain, dbb, dbi, dib, dii, i, put] : 80002 ms
+[16:18:24.128]	Elapsed time: 406752 ms
+[16:18:24.128]	END Depth 1 for [b, chain, dbb, dbi, dib, dii, i, put] : 310306 ms
+[16:18:24.129]	Elapsed time: 406753 ms
+[16:18:24.129]	Counts:
+Total candidates=950698
+[16:18:24.129]	Total time: 406753 ms
