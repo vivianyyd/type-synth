@@ -42,7 +42,10 @@ class DFSEnumerator(
                 mustBeLeaf = currSizeBound <= 1 || depth >= depthBound
             )
             .asSequence()
-            .map { c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) } }
+            .map {
+                logger.count("Total candidates")
+                c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) }
+            }
             .filterNot {
                 // Importantly, this pruning is sound even when we perform it on outlines (before
                 // label arities are computed and holes inserted accordingly). That's because when
@@ -50,11 +53,9 @@ class DFSEnumerator(
                 it.types[iToFill].invalid()
             }
             .flatMap { newCandidate ->
-                logger.count("Total candidates")
                 val u = posUnification(newCandidate)
-                if (u.ok()) {
-                    recCandidates(newCandidate, u, currSizeBound = currSizeBound - 1)
-                } else emptySequence()
+                if (u.ok()) recCandidates(newCandidate, u, currSizeBound = currSizeBound - 1)
+                else emptySequence()
             }
     }
 }
