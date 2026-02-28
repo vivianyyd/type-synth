@@ -21,47 +21,45 @@ class Partitioner(
     private val logger: Logger
 ) : SearchStrategy(examples) {
     override fun candidates(c: SearchState): Sequence<SearchState> =
-        recCandidates(c, posUnification(c), sizeBound)
+        recCandidates(c, posUnification(c))
 
     private fun recCandidates(
         c: SearchState,
         unification: OneUnification,
-        currSizeBound: Int
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
 
-        if (c.noFillableHoles()) {
-            return if (!emitLabelBlanks) fastForward(c) else sequenceOf(c)
-        }
+        // We won't fast-forward label blanks that we ourselves emitted.
+        if (c.noFillableHoles()) return if (!emitLabelBlanks) fastForward(c) else sequenceOf(c)
 
-        // TODO compare with DFS to see if there are any other changes to propagate here.. Yeah
-        // that's bad style...
+        val (iToFill, _, depth) = c.shallowestFillableHole() ?: error("Impossible")
+        if (depth > depthBound) return emptySequence()
 
-        if (currSizeBound == 0) return emptySequence()
-
-        val iToFill = c.shallowestFillableHole()?.first ?: error("Impossible")
         val ty = c.types[iToFill]
         val holes = ty.allHoles().filterIsInstance<TypeHole>()
 
         val assignments = Partitions.generate(holes, ty.variables().size)
 
         return assignments
-            .map { c.mapTypeAtIndex(iToFill) { typ -> applyPartition(typ, it) } }
-            .flatMap { newCandidate ->
+            .map {
                 logger.count("Total candidates")
+                TODO(
+                    "As we introduce blanks DURING search, we want to conservatively " +
+                            "fast forward at each step so we know what label a node has after " +
+                            "we introduce it, so we can prune"
+                )
+                c.mapTypeAtIndex(iToFill) { typ -> applyPartition(typ, it) }
+            }
+            .filterNot {
+                // Importantly, this pruning is sound even when we perform it on outlines (before
+                // label arities are computed and holes inserted accordingly). That's because when
+                // we are generating outlines, labels are considered blanks
+                it.types[iToFill].invalid()
+            }
+            .flatMap { newCandidate ->
                 val u = posUnification(newCandidate)
-                if (u.ok()) {
-                    // Committing a blank at the top-level is free
-                    val cost = 1
-                    TODO(
-                        "Cost is number of holes. but maybe in partition enum no need for size bound"
-                    )
-                    TODO(
-                        "As we introduce blanks DURING search, we actually want to" +
-                                "conservatively fast forward at each step. When is fastForwardBlanks passed as true/false?"
-                    )
-                    recCandidates(newCandidate, u, currSizeBound - cost)
-                } else emptySequence()
+                if (u.ok()) recCandidates(newCandidate, u)
+                else emptySequence()
             }
     }
 
@@ -77,8 +75,8 @@ class Partitioner(
         return partition.blocks.foldIndexed(type) { block, acc, holes ->
             val replacement: () -> Type =
                 /*
-                IGNORE the IntelliJ code fix suggestion to [make] block the subject of the when!
-                This breaks correctness, since when statements can only compare elements of the same type.
+                IGNORE the IntelliJ code fix suggestion to make [block] the subject of the when!
+                This breaks correctness, since `when` statements can only compare elements of the same type.
                 Since [labelledBlockIndex] is an Int?, it will never match against [block], even when its
                 runtime value is actually a non-null integer equal to [block].
                   */
