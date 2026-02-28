@@ -27,7 +27,10 @@ class DFSEnumerator(
         if (c.noHoles()) return sequenceOf(c)
 
         // We won't fast-forward label blanks that we ourselves emitted.
-        if (c.noFillableHoles()) return if (!emitLabelBlanks) fastForward(c) else sequenceOf(c)
+        if (c.noFillableHoles())
+            return if (!emitLabelBlanks) conservativeFastForward(c, depthBound)
+            /* conservative fast forward might return something with holes, which must be filled in a later stage as dictated by Search */
+            else sequenceOf(c)
 
         if (currSizeBound == 0) return emptySequence()
 

@@ -30,7 +30,8 @@ class Partitioner(
         if (c.noHoles()) return sequenceOf(c)
 
         // We won't fast-forward label blanks that we ourselves emitted.
-        if (c.noFillableHoles()) return if (!emitLabelBlanks) fastForward(c) else sequenceOf(c)
+        if (c.noFillableHoles())
+            return if (!emitLabelBlanks) conservativeFastForward(c, depthBound) else sequenceOf(c)
 
         val (iToFill, _, depth) = c.shallowestFillableHole() ?: error("Impossible")
         if (depth > depthBound) return emptySequence()
@@ -41,14 +42,15 @@ class Partitioner(
         val assignments = Partitions.generate(holes, ty.variables().size)
 
         return assignments
-            .map {
+            .flatMap {
                 logger.count("Total candidates")
-                TODO(
-                    "As we introduce blanks DURING search, we want to conservatively " +
-                            "fast forward after placing blanks so we know what label a node has after " +
-                            "we introduce it, so we can prune"
-                )
-                c.mapTypeAtIndex(iToFill) { typ -> applyPartition(typ, it) }
+//                TODO(
+//                    "As we introduce blanks DURING search, we want to conservatively " +
+//                            "fast forward after placing blanks so we know what label a node has after " +
+//                            "we introduce it, so we can prune"
+//                )
+                val partitioned = c.mapTypeAtIndex(iToFill) { typ -> applyPartition(typ, it) }
+                conservativeFastForward(partitioned, depthBound)
             }
             .filterNot {
                 // Importantly, this pruning is sound even when we perform it on outlines (before

@@ -266,22 +266,22 @@ sealed class THole : Type {
         not. This prevents us from an infinite loop when we try to get the fixpoint of this
         function, since our default antiunification behavior is to make another hole. If at the
         top-level we can't do anything, we shouldn't replace this hole with another hole, we
-        should just return no changes. We still want to keep that behavior in antiunify() though, since we need it to fill the leaves when we are fast-forwarding to an entire tree. */
+        should just return no changes. We still want to keep that behavior in antiunify() though,
+        since we need it to fill the leaves when we are fast-forwarding to an entire tree. */
         if (constrs.isEmpty() || antiunifies.any { it !is ConstraintTypeConstructor }) return null
         if (constrs.any { a -> constrs.any { b -> !a.match(b) } }) return null
         return antiunify(antiunifies, defaultAntiunifier = defaultHoleMaker)
     }
-
 
     /**
      * Fast forward once we've hit our budget, a last-ditch effort to find a solution if we were
      * quite close.
      */
     fun fastForward(unification: OneUnification): Type? {
-        val defaultVariable = { Variable(0) }
+        val defaultVariable = Variable(0)
 
         val antiunifies = unification.holeEquals(this)
-        val au = antiunify(antiunifies, defaultAntiunifier = defaultVariable)
+        val au = antiunify(antiunifies, defaultAntiunifier = { defaultVariable })
         return if (au is Constructor) {
             val instsPointTo =
                 antiunifies.filterIsInstance<InstantiationTy>().mapNotNull {
@@ -303,7 +303,7 @@ sealed class THole : Type {
      * and Constructors.
      */
     private fun antiunify(exprs: List<ConstraintTy>, defaultAntiunifier: () -> Type): Type? {
-        if (exprs.isEmpty()) return defaultAntiunifier() // might as well give this a try
+        if (exprs.isEmpty()) return defaultAntiunifier()
         if (exprs.any { it is ConstraintVariable }) return defaultAntiunifier()
 
         val constructors = exprs.filterIsInstance<ConstraintTypeConstructor>()
@@ -477,7 +477,10 @@ sealed class ConstraintTypeConstructor(open val params: List<ConstraintTy>) : Co
 
     private val variables by lazy { params.flatMap { it.variables() } }
 
-    override fun variables() = variables
+    override fun variables(): List<ConstraintVariable> {
+        if (toString().length > 500) TODO("I am long: $this")
+        return variables
+    }
 }
 
 data class ConstraintArrow(override val params: List<ConstraintTy>) :

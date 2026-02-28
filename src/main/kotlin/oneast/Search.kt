@@ -180,7 +180,7 @@ class Search(
         // the same fn signatures but different nullaries.
         val finalResults =
             candidatesNullariesDeduced.flatMap {
-                if (it.blanks().isEmpty()) sequenceOf(it)
+                if (it.noHoles()) sequenceOf(it)
                 else {
                     val blanksReplacedWithHoles =
                         it.mapTypes { t ->
