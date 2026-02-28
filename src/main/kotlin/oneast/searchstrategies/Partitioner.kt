@@ -13,14 +13,20 @@ fun main() {
     seq.take(100).forEach { println(it) }
 }
 
-class Partitioner(examples: Examples) : SearchStrategy(examples) {
-    override fun candidates(
+class Partitioner(
+    examples: Examples,
+    private val emitLabelBlanks: Boolean,
+    private val sizeBound: Int,
+    private val depthBound: Int,
+    private val logger: Logger
+) : SearchStrategy(examples) {
+    override fun candidates(c: SearchState): Sequence<SearchState> =
+        recCandidates(c, posUnification(c), sizeBound)
+
+    private fun recCandidates(
         c: SearchState,
         unification: OneUnification,
-        emitLabelBlanks: Boolean,
-        sizeBound: Int,
-        depthBound: Int,
-        logger: Logger
+        currSizeBound: Int
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
 
@@ -31,7 +37,7 @@ class Partitioner(examples: Examples) : SearchStrategy(examples) {
         // TODO compare with DFS to see if there are any other changes to propagate here.. Yeah
         // that's bad style...
 
-        if (sizeBound == 0) return emptySequence()
+        if (currSizeBound == 0) return emptySequence()
 
         val iToFill = c.shallowestFillableHole()?.first ?: error("Impossible")
         val ty = c.types[iToFill]
@@ -54,9 +60,7 @@ class Partitioner(examples: Examples) : SearchStrategy(examples) {
                         "As we introduce blanks DURING search, we actually want to" +
                                 "conservatively fast forward at each step. When is fastForwardBlanks passed as true/false?"
                     )
-                    candidates(
-                        newCandidate, u, emitLabelBlanks, sizeBound - cost, depthBound, logger
-                    )
+                    recCandidates(newCandidate, u, currSizeBound - cost)
                 } else emptySequence()
             }
     }

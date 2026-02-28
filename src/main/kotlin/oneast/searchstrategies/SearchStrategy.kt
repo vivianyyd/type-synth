@@ -5,17 +5,9 @@ import oneast.SearchState
 import oneast.THole
 import oneast.Type
 import query.Examples
-import util.Logger
 
 abstract class SearchStrategy(private val examples: Examples) {
-    abstract fun candidates(
-        c: SearchState,
-        unification: OneUnification,
-        emitLabelBlanks: Boolean,
-        sizeBound: Int,
-        depthBound: Int,
-        logger: Logger
-    ): Sequence<SearchState>
+    abstract fun candidates(c: SearchState): Sequence<SearchState>
 
     protected fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 

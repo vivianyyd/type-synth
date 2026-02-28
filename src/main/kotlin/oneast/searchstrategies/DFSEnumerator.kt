@@ -6,35 +6,40 @@ import query.Examples
 import util.Logger
 
 /** Fills one hole at a time, shallowest first, in DFS style. */
-class DFSEnumerator(examples: Examples) : SearchStrategy(examples) {
+class DFSEnumerator(
+    examples: Examples,
+    private val emitLabelBlanks: Boolean,
+    private val sizeBound: Int,
+    private val depthBound: Int,
+    private val logger: Logger
+) : SearchStrategy(examples) {
     // TODO can also implement a stateful version where we mutate the tree by picking a hole which
     //   has a parent pointer, for each of the expansions, modify the parent and recurse. when done,
     //   restore tree to original state
-    override fun candidates(
+    override fun candidates(c: SearchState): Sequence<SearchState> =
+        recCandidates(c, posUnification(c), sizeBound)
+
+    private fun recCandidates(
         c: SearchState,
         unification: OneUnification,
-        emitLabelBlanks: Boolean,
-        sizeBound: Int,
-        depthBound: Int,
-        logger: Logger
+        currSizeBound: Int
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
 
         // We won't fast-forward label blanks that we ourselves emitted.
         if (c.noFillableHoles()) return if (!emitLabelBlanks) fastForward(c) else sequenceOf(c)
 
-        if (sizeBound == 0) return emptySequence()
+        if (currSizeBound == 0) return emptySequence()
 
-        val (iToFill, holeWithDepth) = c.shallowestFillableHole() ?: error("Impossible")
-        val (hole, depth) = holeWithDepth
+        val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
         return hole
             .expansions(
                 unification = unification,
                 labelArities = c.labelArities,
                 vars = c.types[iToFill].variables().size,
-                topLevel = hole == c.types[iToFill],
+                canBeVar = hole != c.types[iToFill],
                 emitLabelBlanks = emitLabelBlanks,
-                mustBeLeaf = sizeBound <= 1 || depth >= depthBound
+                mustBeLeaf = currSizeBound <= 1 || depth >= depthBound
             )
             .asSequence()
             .map { c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) } }
@@ -48,7 +53,7 @@ class DFSEnumerator(examples: Examples) : SearchStrategy(examples) {
                 logger.count("Total candidates")
                 val u = posUnification(newCandidate)
                 if (u.ok()) {
-                    candidates(newCandidate, u, emitLabelBlanks, sizeBound - 1, depthBound, logger)
+                    recCandidates(newCandidate, u, currSizeBound = currSizeBound - 1)
                 } else emptySequence()
             }
     }

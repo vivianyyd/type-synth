@@ -12,7 +12,8 @@ class Search(
     private val examples: Examples,
     private val oracle: Oracle,
     private val config: Configuration,
-    private val searchStrategy: (Examples) -> SearchStrategy,
+    // Using factory design pattern feels like giving up
+    private val searchStrategy: (Examples, Boolean, Int, Int, Logger) -> SearchStrategy,
     private val logger: Logger,
 ) {
     private fun allCandidates(
@@ -21,8 +22,8 @@ class Search(
         sizeBound: Int,
         depthBound: Int,
     ): Sequence<SearchState> =
-        searchStrategy(examples)
-            .candidates(c, posUnification(c), emitLabelBlanks, sizeBound, depthBound, logger)
+        searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger)
+            .candidates(c)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 

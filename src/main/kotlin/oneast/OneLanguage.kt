@@ -22,16 +22,15 @@ class SearchState(
 
     fun fnArities(): Map<String, Int> = names.mapValues { (_, i) -> types[i].fnArity() }
 
-    /**
-     * @return (index of type containing shallowest fillable hole, (the hole, depth of the hole)).
-     */
-    fun shallowestFillableHole(): Pair<Int, Pair<THole, Int>>? =
+    /** @return (index of type containing shallowest fillable hole, the hole, depth of the hole). */
+    fun shallowestFillableHole(): Triple<Int, THole, Int>? =
         types
             .withIndex()
             .mapNotNull { ti ->
                 ti.value.shallowestFillableHole(topLevel = true)?.let { ti.index to it }
             }
             .minByOrNull { it.second.second }
+            ?.let { Triple(it.first, it.second.first, it.second.second) }
 
     fun noFillableHoles() = types.all { it.shallowestFillableHole(topLevel = true) == null }
 
@@ -83,7 +82,12 @@ sealed interface Type {
             is Variable -> if (rightPath) emptySet() else variables()
         }
 
-    /** A valid type cannot be concrete and have a fresh variable in the output type. */
+    /**
+     * A valid *top-level* type cannot be concrete and have a fresh variable in the output type. It
+     * also can't just be any arbitrary variable. The latter should never happen since we will not
+     * enumerate Variables if the hole is a root, so we skip that check here. This is obviously not
+     * true for any subterm of a type so idk maybe there should be some extra class somewhere but whatever
+     */
     fun invalid() = noHoles() && freshVariableInOutput()
 
     private fun freshVariableInOutput() =
@@ -222,7 +226,7 @@ sealed class THole : Type {
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
-        topLevel: Boolean,
+        canBeVar: Boolean,
         emitLabelBlanks: Boolean,
         mustBeLeaf: Boolean
     ): List<Type>
@@ -325,12 +329,12 @@ class TypeHole : THole() {
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
-        topLevel: Boolean,
+        canBeVar: Boolean,
         emitLabelBlanks: Boolean,
         mustBeLeaf: Boolean
     ): List<Type> =
         if (mustBeLeaf)
-            expansionsNoBound(unification, labelArities, vars, topLevel, emitLabelBlanks).filter {
+            expansionsNoBound(unification, labelArities, vars, canBeVar, emitLabelBlanks).filter {
                 when (it) {
                     is Variable -> true
                     is NamedLabel -> it.params.isEmpty()
@@ -339,16 +343,16 @@ class TypeHole : THole() {
                     is TypeHole -> throw Exception("Expansions cannot include type holes")
                 }
             }
-        else expansionsNoBound(unification, labelArities, vars, topLevel, emitLabelBlanks)
+        else expansionsNoBound(unification, labelArities, vars, canBeVar, emitLabelBlanks)
 
     private fun expansionsNoBound(
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
-        topLevel: Boolean,
+        canBeVar: Boolean,
         emitLabelBlanks: Boolean
     ): List<Type> {
-        val variableExps = if (topLevel) listOf() else (0 until vars + 1).map { Variable(it) }
+        val variableExps = if (canBeVar) (0 until vars + 1).map { Variable(it) } else emptyList()
         val fnExpansion = Arrow(TypeHole(), TypeHole())
         val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
         // If there are no existing labels, we need to learn them.
@@ -393,7 +397,7 @@ class Blank(val labelOnly: Boolean) : THole() {
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
-        topLevel: Boolean,
+        canBeVar: Boolean,
         emitLabelBlanks: Boolean,
         mustBeLeaf: Boolean
     ) = listOf(this)
