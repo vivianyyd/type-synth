@@ -22,8 +22,7 @@ class Search(
         sizeBound: Int,
         depthBound: Int,
     ): Sequence<SearchState> =
-        searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger)
-            .candidates(c)
+        searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger).candidates(c)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
@@ -136,6 +135,7 @@ class Search(
     ): Sequence<SearchState> {
         // Things blow up here, so sequencing
         // We start by searching for the functions, and try to deduce the nullaries from them.
+        logger.log("Searching for function signatures")
         val candidatesNullariesDeduced =
             seeds.asSequence().flatMap {
                 allCandidates(
@@ -151,24 +151,27 @@ class Search(
         // TODO completeness bug here: Our fast forward is too aggressive; if we successfully fast
         // forward but to something that doesn't actually work, we miss all other candidates with
         // the same fn signatures but different nullaries.
+        logger.log("Searching for nullaries")
         val finalResults =
-            candidatesNullariesDeduced.flatMap {
-                if (it.blanks().isEmpty()) sequenceOf(it)
-                else {
-                    val blanksReplacedWithHoles =
-                        it.mapTypes { t ->
-                            t.blanks().fold(t) { acc: Type, h: THole ->
-                                if (h is Blank) acc.replace(h, TypeHole()) else acc
+            candidatesNullariesDeduced
+                .flatMap {
+                    if (it.blanks().isEmpty()) sequenceOf(it)
+                    else {
+                        val blanksReplacedWithHoles =
+                            it.mapTypes { t ->
+                                t.blanks().fold(t) { acc: Type, h: THole ->
+                                    if (h is Blank) acc.replace(h, TypeHole()) else acc
+                                }
                             }
-                        }
-                    allCandidates(
-                        blanksReplacedWithHoles,
-                        emitLabelBlanks = false,
-                        sizeBound = currentSizeBound,
-                        depthBound = currentDepthBound,
-                    )
+                        allCandidates(
+                            blanksReplacedWithHoles,
+                            emitLabelBlanks = false,
+                            sizeBound = currentSizeBound,
+                            depthBound = currentDepthBound,
+                        )
+                    }
                 }
-            }
+                .filter { it.noHoles() }
 
         return finalResults.filter { c ->
             posUnification(c).ok() && examples.neg.all { !OneUnification(c, listOf(it)).ok() }
