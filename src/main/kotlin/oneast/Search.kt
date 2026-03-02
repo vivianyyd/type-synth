@@ -113,12 +113,6 @@ class Search(
                 val dependencyAnalyses =
                     mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
 
-                fun <T> Sequence<T>.toStream(): Stream<T> =
-                    StreamSupport.stream(
-                        Spliterators.spliteratorUnknownSize(iterator(), 0),
-                        false
-                    )
-
                 val statesWithDeps =
                     withLabelClasses.map { s ->
                         val arities = s.fnArities()
@@ -127,7 +121,7 @@ class Search(
                                 ParameterwiseDependencyAnalysis(examples, arities, oracle)
                             }
                         s to dep
-                    }
+                    }.toList()
 
                 statesWithDeps
                     .parallelStream()
@@ -237,3 +231,9 @@ class Search(
             is Variable -> this
         }
 }
+
+private fun <T> Sequence<T>.toStream(): Stream<T> =
+    StreamSupport.stream(
+        Spliterators.spliteratorUnknownSize(iterator(), 0),
+        false
+    )
