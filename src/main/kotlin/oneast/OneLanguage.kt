@@ -110,6 +110,8 @@ sealed interface Type {
 
     fun allHoles(): List<THole>
 
+    fun numFillableHoles() = allHoles().filterIsInstance<TypeHole>().size
+
     fun blanks() = allHoles().filterIsInstance<Blank>()
 
     fun allHolesWithDepth(topLevel: Boolean): List<Pair<THole, Int>>
