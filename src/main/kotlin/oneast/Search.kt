@@ -5,6 +5,8 @@ import oneast.searchstrategies.SearchStrategy
 import query.Examples
 import query.Name
 import util.*
+import java.util.stream.Collectors
+import java.util.stream.StreamSupport
 
 /** Lazily produces ALL solutions for [examples] from this [seed]. */
 class Search(
@@ -106,25 +108,31 @@ class Search(
 
         val resolvedLabelArities =
             logger.time("Dependency analysis and solving for label arities") {
+                // Phase 1: compute dependency analyses sequentially (memoized by arities)
                 val dependencyAnalyses =
                     mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
-
-                withLabelClasses.flatMap { s ->
+                val seedsWithDeps = withLabelClasses.map { s ->
                     val arities = s.fnArities()
                     val dep =
                         dependencyAnalyses.getOrPut(arities) {
                             ParameterwiseDependencyAnalysis(examples, arities, oracle)
                         }
+                    s to dep
+                }
 
+                // Phase 2: run labelArities() calls in parallel
+                seedsWithDeps.parallelStream().flatMap { (s, dep) ->
                     val la = labelArities(s, dep)
-                    if (la == null) listOf()
-                    else {
+                    if (la == null) java.util.stream.Stream.empty()
+                    else StreamSupport.stream(
                         lazyCartesianProduct(la.values.map { (0..it).toList() })
                             .map { la.keys.zip(it).toMap() }
                             .map { s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) } }
-                            .toList()
-                    }
-                }
+                            .asIterable()
+                            .spliterator(),
+                        false
+                    )
+                }.collect(Collectors.toList())
             }
         return resolvedLabelArities.filter { it.types.all { !it.invalid() } }
     }
