@@ -15,3 +15,5 @@ results/logs/big
 *.o
 *.cache*
 tmp.log
+Cons.log
+Dict-Put.log

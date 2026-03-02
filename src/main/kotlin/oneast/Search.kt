@@ -5,6 +5,8 @@ import oneast.searchstrategies.SearchStrategy
 import query.Examples
 import query.Name
 import util.*
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
 /** Lazily produces ALL solutions for [examples] from this [seed]. */
 class Search(
@@ -109,22 +111,27 @@ class Search(
                 val dependencyAnalyses =
                     mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
 
-                withLabelClasses.flatMap { s ->
-                    val arities = s.fnArities()
-                    val dep =
-                        dependencyAnalyses.getOrPut(arities) {
-                            ParameterwiseDependencyAnalysis(examples, arities, oracle)
-                        }
+                val statesWithDeps =
+                    withLabelClasses.map { s ->
+                        val arities = s.fnArities()
+                        val dep =
+                            dependencyAnalyses.getOrPut(arities) {
+                                ParameterwiseDependencyAnalysis(examples, arities, oracle)
+                            }
+                        s to dep
+                    }
 
-                    val la = labelArities(s, dep)
-                    if (la == null) listOf()
-                    else {
+                statesWithDeps
+                    .parallelStream()
+                    .flatMap { (s, dep) ->
+                        val la = labelArities(s, dep) ?: return@flatMap Stream.empty<SearchState>()
                         lazyCartesianProduct(la.values.map { (0..it).toList() })
                             .map { la.keys.zip(it).toMap() }
                             .map { s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) } }
                             .toList()
+                            .stream()
                     }
-                }
+                    .collect(Collectors.toList())
             }
         return resolvedLabelArities.filter { it.types.all { !it.invalid() } }
     }
