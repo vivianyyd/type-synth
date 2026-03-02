@@ -5,8 +5,10 @@ import oneast.searchstrategies.SearchStrategy
 import query.Examples
 import query.Name
 import util.*
+import java.util.Spliterators
 import java.util.stream.Collectors
 import java.util.stream.Stream
+import java.util.stream.StreamSupport
 
 /** Lazily produces ALL solutions for [examples] from this [seed]. */
 class Search(
@@ -111,6 +113,12 @@ class Search(
                 val dependencyAnalyses =
                     mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
 
+                fun <T> Sequence<T>.toStream(): Stream<T> =
+                    StreamSupport.stream(
+                        Spliterators.spliteratorUnknownSize(iterator(), 0),
+                        false
+                    )
+
                 val statesWithDeps =
                     withLabelClasses.map { s ->
                         val arities = s.fnArities()
@@ -128,8 +136,7 @@ class Search(
                         lazyCartesianProduct(la.values.map { (0..it).toList() })
                             .map { la.keys.zip(it).toMap() }
                             .map { s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) } }
-                            .toList()
-                            .stream()
+                            .toStream()
                     }
                     .collect(Collectors.toList())
             }
