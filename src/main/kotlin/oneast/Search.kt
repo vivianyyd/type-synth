@@ -124,7 +124,7 @@ class Search(
                 statesWithDeps
                     .parallelStream()
                     .flatMap { (s, dep) ->
-                        val la = labelArities(s, dep) ?: return@flatMap Stream.empty<SearchState>()
+                        val la = labelArities(s, dep) ?: return@flatMap Stream.empty()
                         lazyCartesianProduct(la.values.map { (0..it).toList() })
                             .map { la.keys.zip(it).toMap() }
                             .map { s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) } }
