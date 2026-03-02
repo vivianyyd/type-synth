@@ -5,9 +5,9 @@ import oneast.searchstrategies.SearchStrategy
 import query.Examples
 import query.Name
 import util.*
-import java.util.Spliterators
-import java.util.Spliterator
 import java.util.stream.Collectors
+import java.util.Spliterator
+import java.util.Spliterators
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 
@@ -114,6 +114,7 @@ class Search(
                 val dependencyAnalyses =
                     mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
 
+                // Compute dependency analyses sequentially before launching parallel label solving.
                 val statesWithDeps =
                     withLabelClasses.map { s ->
                         val arities = s.fnArities()
@@ -122,7 +123,7 @@ class Search(
                                 ParameterwiseDependencyAnalysis(examples, arities, oracle)
                             }
                         s to dep
-                    }.toList()
+                    }
 
                 statesWithDeps
                     .parallelStream()
@@ -233,6 +234,7 @@ class Search(
         }
 }
 
+/** Converts a Kotlin [Sequence] to a sequential Java [Stream] while preserving order. */
 private fun <T> Sequence<T>.toStream(): Stream<T> =
     StreamSupport.stream(
         Spliterators.spliteratorUnknownSize(iterator(), Spliterator.ORDERED),
