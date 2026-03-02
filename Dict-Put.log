@@ -1,0 +1,61 @@
+Dict Put
+Size bound: 20
+Depth bound: 4
+Names per round: 10
+Searching for 1 solutions
+=====
+
+[17:18:11.147]	BEG Initial outlines
+[17:18:11.179]	END Initial outlines : 32 ms
+[17:18:11.179]	Counts:
+Total candidates=101
+[17:18:11.181]	Elapsed time: 36 ms
+[17:18:11.207]	Seeds before label arities: 47
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V0 -> V0 -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V0 -> V0 -> L0[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L0[], Eii=L0[], put=V0 -> V0 -> V1 -> V0, tr=L1[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V0 -> V1 -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V0 -> V1 -> L0[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V0 -> L0[] -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V0 -> L0[] -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V0 -> L0[] -> L0[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L1[], Eii=L0[], put=V0 -> V1 -> V0 -> V0, tr=L1[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V1 -> V0 -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> V1 -> V0 -> L0[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> V1 -> V1 -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> V1 -> V1 -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> V1 -> V1 -> L4[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> V1 -> V2 -> V0, tr=L4[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> V1 -> V2 -> V1, tr=L4[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> V1 -> V2 -> V2, tr=L4[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> V1 -> V2 -> L4[], tr=L5[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> V1 -> L0[] -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> V1 -> L0[] -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> V1 -> L0[] -> V2, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> V1 -> L0[] -> L4[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> L0[] -> V0 -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> L0[] -> V0 -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=V0 -> L0[] -> V0 -> L0[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> L0[] -> V1 -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> L0[] -> V1 -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> L0[] -> V1 -> V2, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> L0[] -> V1 -> L4[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> L0[] -> L0[] -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> L0[] -> L0[] -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L2[], Eii=L3[], put=V0 -> L0[] -> L0[] -> L4[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=L0[] -> V0 -> V0 -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L1[], Eii=L1[], put=L1[] -> V0 -> V0 -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L1[], Eii=L1[], put=L1[] -> V0 -> V0 -> L1[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=L0[] -> V0 -> V1 -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=L0[] -> V0 -> V1 -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L1[], Eii=L1[], put=L1[] -> V0 -> V1 -> V2, tr=L2[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L1[], Eii=L1[], put=L1[] -> V0 -> V1 -> L1[], tr=L2[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=L0[] -> V0 -> L0[] -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L1[], Eii=L1[], put=L1[] -> V0 -> L0[] -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L1[], Eii=L1[], put=L1[] -> V0 -> L0[] -> L1[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L0[], Eib=L0[], Eii=L0[], put=L0[] -> L0[] -> V0 -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L1[], Eii=L1[], put=L1[] -> L0[] -> V0 -> V1, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L1[], Eii=L1[], put=L1[] -> L0[] -> V0 -> L1[], tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L1[], Eii=L1[], put=L1[] -> L0[] -> L0[] -> V0, tr=L0[]}
+{0=L0[], 1=L0[], Ebi=L1[], Eib=L1[], Eii=L1[], put=L1[] -> L0[] -> L0[] -> L1[], tr=L0[]}
+[17:18:11.208]	BEG Dependency analysis and solving for label arities

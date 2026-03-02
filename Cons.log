@@ -1,0 +1,27 @@
+Cons
+Size bound: 20
+Depth bound: 4
+Names per round: 10
+Searching for 1 solutions
+=====
+
+[17:18:11.225]	BEG Initial outlines
+[17:18:11.227]	END Initial outlines : 2 ms
+[17:18:11.229]	Counts:
+
+[17:18:11.229]	Elapsed time: 4 ms
+[17:18:11.230]	Seeds before label arities: 13
+{0=L0[], LLi=L0[], Li=L0[], []b=L1[], cons=V0 -> V0 -> V0, tr=L1[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=V0 -> V0 -> L0[], tr=L0[]}
+{0=L0[], LLi=L1[], Li=L2[], []b=L3[], cons=V0 -> V1 -> V0, tr=L4[]}
+{0=L0[], LLi=L1[], Li=L2[], []b=L3[], cons=V0 -> V1 -> V1, tr=L4[]}
+{0=L0[], LLi=L1[], Li=L2[], []b=L3[], cons=V0 -> V1 -> L4[], tr=L5[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=V0 -> L0[] -> V0, tr=L0[]}
+{0=L0[], LLi=L1[], Li=L1[], []b=L1[], cons=V0 -> L1[] -> V1, tr=L2[]}
+{0=L0[], LLi=L1[], Li=L1[], []b=L1[], cons=V0 -> L1[] -> L1[], tr=L2[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=L0[] -> V0 -> V0, tr=L0[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=L0[] -> V0 -> V1, tr=L0[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=L0[] -> V0 -> L0[], tr=L0[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=L0[] -> L0[] -> V0, tr=L0[]}
+{0=L0[], LLi=L0[], Li=L0[], []b=L0[], cons=L0[] -> L0[] -> L0[], tr=L0[]}
+[17:18:11.232]	BEG Dependency analysis and solving for label arities
