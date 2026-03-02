@@ -6,6 +6,7 @@ import query.Examples
 import query.Name
 import util.*
 import java.util.Spliterators
+import java.util.Spliterator
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
@@ -234,6 +235,6 @@ class Search(
 
 private fun <T> Sequence<T>.toStream(): Stream<T> =
     StreamSupport.stream(
-        Spliterators.spliteratorUnknownSize(iterator(), 0),
+        Spliterators.spliteratorUnknownSize(iterator(), Spliterator.ORDERED),
         false
     )
