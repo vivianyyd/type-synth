@@ -5,9 +5,9 @@ import oneast.searchstrategies.SearchStrategy
 import query.Examples
 import query.Name
 import util.*
-import java.util.stream.Collectors
 import java.util.Spliterator
 import java.util.Spliterators
+import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 
@@ -128,11 +128,14 @@ class Search(
                 statesWithDeps
                     .parallelStream()
                     .flatMap { (s, dep) ->
-                        val la = labelArities(s, dep) ?: return@flatMap Stream.empty()
-                        lazyCartesianProduct(la.values.map { (0..it).toList() })
-                            .map { la.keys.zip(it).toMap() }
-                            .map { s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) } }
-                            .toStream()
+                        val la = labelArities(s, dep)
+                        if (la == null) Stream.empty()
+                        else {
+                            lazyCartesianProduct(la.values.map { (0..it).toList() })
+                                .map { la.keys.zip(it).toMap() }
+                                .map { s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) } }
+                                .toStream()
+                        }
                     }
                     .collect(Collectors.toList())
             }
