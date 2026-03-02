@@ -3,9 +3,9 @@ package fixtures.data
 import fixtures.haskell.parseHaskellTypes
 import query.AbstractQuery
 import query.Examples
-import util.NewCheckingOracle
+import util.CheckingGroundTruthOracle
 import util.io.parseSExpr
-import util.io.toExpression
+import util.io.toExample
 
 object SomeHaskell : AbstractQuery() {
     val groundTruth =
@@ -220,12 +220,10 @@ object SomeHaskell : AbstractQuery() {
             "or (repeat (Just True))",
         )
 
-    val posexsNames = posexs.map { parseSExpr(it).toExpression() }.unzip()
-    val posExamples = posexsNames.first
-    val negExamples = negexs.map { parseSExpr(it).toExpression().first }
-    val names = posexsNames.second.fold(setOf<String>()) { a, s -> a.union(s) }
+    val posExamples = posexs.map { parseSExpr(it).toExample() }
+    val negExamples = negexs.map { parseSExpr(it).toExample() }
     override val name: String = "Some Haskell Examples"
 
     override val examples = Examples(posExamples, negExamples)
-    override val oracle = NewCheckingOracle(groundTruthMap)
+    override val oracle = CheckingGroundTruthOracle(groundTruthMap)
 }

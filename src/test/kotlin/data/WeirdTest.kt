@@ -3,8 +3,8 @@ package fixtures.data
 import query.AbstractQuery
 import query.Examples
 import util.ScrappyNewOracle
-import util.io.parseApp
-import util.io.parseExamples
+import util.io.signedExample
+import util.io.signedExamplesFromStrings
 
 object WeirdTest : AbstractQuery() {
     override val name = "Weird"
@@ -32,6 +32,6 @@ object WeirdTest : AbstractQuery() {
             "(+ (inc (id n)))" to "int",
         )
 
-    override val examples: Examples = parseExamples(exs.keys)
-    override val oracle = ScrappyNewOracle(exs.mapKeys { parseApp(it.key) })
+    override val examples: Examples = signedExamplesFromStrings(exs.keys)
+    override val oracle = ScrappyNewOracle(exs.mapKeys { signedExample(it.key) })
 }

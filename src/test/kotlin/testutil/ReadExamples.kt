@@ -2,7 +2,7 @@ package testutil
 
 import query.Example
 import query.Examples
-import util.io.toExample
+import util.io.unsignedExample
 import java.io.File
 
 fun loadQuery(dir: File): Examples {
@@ -20,7 +20,9 @@ fun loadQuery(dir: File): Examples {
             else -> null
         }?.let { destination ->
             file.useLines { lines ->
-                lines.forEach { line -> if (line.isNotBlank()) destination.add(line.toExample()) }
+                lines.forEach { line ->
+                    if (line.isNotBlank()) destination.add(unsignedExample(line))
+                }
             }
         }
     }

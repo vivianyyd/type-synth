@@ -4,7 +4,7 @@ import products.types.parseType
 import query.AbstractQuery
 import query.Examples
 import util.CheckingOracle
-import util.io.parseExamples
+import util.io.signedExamplesFromStrings
 
 object DictTest : AbstractQuery() {
     override val name = "Dict"
@@ -83,7 +83,7 @@ object DictTest : AbstractQuery() {
 
     private val exs = basics + put
 
-    override val examples: Examples = parseExamples(exs)
+    override val examples: Examples = signedExamplesFromStrings(exs)
     override val oracle =
         CheckingOracle(
             mapOf(

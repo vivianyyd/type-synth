@@ -4,8 +4,8 @@ import oneast.searchstrategies.DFSEnumerator
 import testutil.loadQuery
 import testutil.ocaml.OCamlChecker
 import testutil.ocaml.OcamlTypeParser
+import util.CheckingGroundTruthOracle
 import util.Logger
-import util.NewCheckingOracle
 import util.io.cvc.clearCVC
 import util.join
 import java.io.File
@@ -17,7 +17,7 @@ class OCamlStdlibTest {
         val dir = join("src", "test", "input", "ocaml-stdlib")
         val query = loadQuery(File(dir))
         val oracleTypes = OcamlTypeParser().parseSignatures(File(join(dir, "all.types")).readText())
-        val oracle = NewCheckingOracle(oracleTypes)
+        val oracle = CheckingGroundTruthOracle(oracleTypes)
 
         val configuration =
             Configuration(
