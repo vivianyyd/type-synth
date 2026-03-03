@@ -1,4 +1,4 @@
-package fixtures.data
+package data
 
 import query.AbstractQuery
 import query.Examples
@@ -11,32 +11,32 @@ object PolymorphicNil : AbstractQuery() {
 
     private val intExamples =
         mapOf(
-            "(+ 0)" to "int",
+            "(+ Num)" to "int",
             "(+ nil)" to "la",
             "(+ cons)" to "f",
-            "(+ (cons 0))" to "lint to lint",
-            "(+ (cons 0 nil))" to "lint",
-            "(+ (cons 0 (cons 0 nil)))" to "lint",
+            "(+ (cons Num))" to "lint to lint",
+            "(+ (cons Num nil))" to "lint",
+            "(+ (cons Num (cons Num nil)))" to "lint",
             "(+ (cons nil))" to "la to la",
             "(+ (cons nil nil))" to "la",
             "(+ (cons nil (cons nil nil)))" to "lla",
-            "(- (cons nil 0))" to null,
+            "(- (cons nil Num))" to null,
             // [3_0]->[L2([L0()])]->[L2([L0()])])
             // The following two had to be added for correctness in label equiv classes, but seem a
             // little excessive
-            "(+ (cons (cons 0 nil)))" to "llint to llint",
+            "(+ (cons (cons Num nil)))" to "llint to llint",
             //        "(+ (cons cons))" to "lf to lf",
         )
     private val boolExamples =
         mapOf(
-            "(+ tr)" to "bool",
+            "(+ true)" to "bool",
             "(+ nil)" to "lbool",
-            "(+ (cons tr))" to "lbool to lbool",
-            "(+ (cons tr nil))" to "lbool",
-            "(+ (cons tr (cons tr nil)))" to "lbool",
-            "(- (cons nil tr))" to null,
-            "(- (cons 0 (cons tr nil)))" to null,
-            "(- (cons tr (cons 0 nil)))" to null,
+            "(+ (cons true))" to "lbool to lbool",
+            "(+ (cons true nil))" to "lbool",
+            "(+ (cons true (cons true nil)))" to "lbool",
+            "(- (cons nil true))" to null,
+            "(- (cons Num (cons true nil)))" to null,
+            "(- (cons true (cons Num nil)))" to null,
         )
     private val exs = intExamples + boolExamples
 

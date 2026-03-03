@@ -1,4 +1,4 @@
-package fixtures.data
+package data
 
 import products.types.parseType
 import query.AbstractQuery
@@ -10,71 +10,70 @@ object PolymorphicDict : AbstractQuery() {
     override val name = "Dict"
     private val basics =
         listOf(
-            "(+ 0)",
-            "(+ 1)",
-            "(+ tr)",
+            "(+ Num)",
+            "(+ true)",
             "(+ {})",
             "(+ put)",
         )
     private val put =
         listOf(
             "(+ (put {}))",
-            "(+ (put {} 0))",
-            "(+ (put {} 1))",
-            "(+ (put {} 0 tr))",
-            "(+ (put (put {} 0 tr)))",
-            "(+ (put (put {} 1 tr)))",
-            "(+ (put (put {} 0 tr) 0))",
-            "(+ (put (put {} 0 tr) 1))",
-            "(+ (put (put {} 1 tr) 1))",
-            "(+ (put (put {} 0 tr) 0 tr))",
-            "(+ (put (put {} 0 tr) 1 tr))",
-            "(+ (put (put {} 1 tr) 1 tr))",
+            "(+ (put {} Num))",
+            "(+ (put {} Num))",
+            "(+ (put {} Num true))",
+            "(+ (put (put {} Num true)))",
+            "(+ (put (put {} Num true)))",
+            "(+ (put (put {} Num true) Num))",
+            "(+ (put (put {} Num true) Num))",
+            "(+ (put (put {} Num true) Num))",
+            "(+ (put (put {} Num true) Num true))",
+            "(+ (put (put {} Num true) Num true))",
+            "(+ (put (put {} Num true) Num true))",
             ////////////
             "(+ (put {}))",
-            "(+ (put {} tr))",
-            "(+ (put {} tr 0))",
-            "(+ (put (put {} tr 0)))",
-            "(+ (put (put {} tr 0) tr))",
-            "(+ (put (put {} tr 0) tr 0))",
-            "(+ (put (put {} tr 1) tr 0))",
-            "(+ (put (put {} tr 1) tr))",
-            "(+ (put (put {} tr 1) tr 1))",
+            "(+ (put {} true))",
+            "(+ (put {} true Num))",
+            "(+ (put (put {} true Num)))",
+            "(+ (put (put {} true Num) true))",
+            "(+ (put (put {} true Num) true Num))",
+            "(+ (put (put {} true Num) true Num))",
+            "(+ (put (put {} true Num) true))",
+            "(+ (put (put {} true Num) true Num))",
             //////////
             //        "(+ (put {}))",
-            //        "(+ (put {} tr))",
-            //        "(+ (put {} tr tr))",
-            //        "(+ (put (put {} tr tr)))",
-            //        "(+ (put (put {} tr tr) tr))",
-            //        "(+ (put (put {} tr tr) tr tr))",
+            //        "(+ (put {} true))",
+            //        "(+ (put {} true true))",
+            //        "(+ (put (put {} true true)))",
+            //        "(+ (put (put {} true true) true))",
+            //        "(+ (put (put {} true true) true true))",
             //        //////////
             "(+ (put {}))",
-            "(+ (put {} 0 1))",
-            "(+ (put {} 1 0))",
-            "(+ (put {} 1 1))",
-            "(+ (put (put {} 0 0)))",
-            "(+ (put (put {} 1 0)))",
-            "(+ (put (put {} 0 1) 0))",
-            "(+ (put (put {} 0 1) 1))",
-            "(+ (put (put {} 1 0) 1))",
-            "(+ (put (put {} 0 0) 0 1))",
-            "(+ (put (put {} 0 0) 1 0))",
-            "(+ (put (put {} 1 0) 1 1))",
+            "(+ (put {} Num Num))",
+            "(+ (put {} Num Num))",
+            "(+ (put {} Num Num))",
+            "(+ (put (put {} Num Num)))",
+            "(+ (put (put {} Num Num)))",
+            "(+ (put (put {} Num Num) Num))",
+            "(+ (put (put {} Num Num) Num))",
+            "(+ (put (put {} Num Num) Num))",
+            "(+ (put (put {} Num Num) Num Num))",
+            "(+ (put (put {} Num Num) Num Num))",
+            "(+ (put (put {} Num Num) Num Num))",
 
             ////////////
-            "(- (put 0))",
-            "(- (put tr))",
-            "(- (put 1))",
+            "(- (put Num))",
+            "(- (put true))",
+            "(- (put Num))",
             "(- (put (put {})))",
-            "(- (put (put {} tr)))",
+            "(- (put (put {} true)))",
             "(- (put (put {})))",
-            "(- (put (put {} 0)))",
-            "(- (put (put {} 0 tr) 0 0))",
-            "(- (put (put {} 0 tr) tr))",
-            "(- (put (put {} 0 1) tr))",
-            "(- (put (put {} 0 1) 1 tr))",
-            "(- (put (put {} tr 1) 0))",
-            "(- (put (put {} tr 1) tr tr))",
+            "(- (put (put {} Num)))",
+            "(- (put (put {} Num true) Num Num))",
+            "(- (put (put {} Num true) true))",
+            "(- (put (put {} Num Num) true))",
+            "(- (put (put {} Num Num) Num true))",
+            "(- (put (put {} true Num) Num))",
+            "(- (put (put {} true Num) true true))",
         )
 
     // TODO next: chain operator takes dicts ab, bc and produces ac
@@ -85,9 +84,8 @@ object PolymorphicDict : AbstractQuery() {
     override val oracle =
         CheckingOracle(
             mapOf(
-                "0" to "(i)",
-                "1" to "(i)",
-                "tr" to "(b)",
+                "Num" to "(i)",
+                "true" to "(b)",
                 "{}" to "(d a b)",
                 "put" to "(-> (d k v) (-> k (-> v (d k v))))"
             )

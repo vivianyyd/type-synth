@@ -1,56 +1,56 @@
 ((~-) true)
-((~-) "a")
+((~-) Str)
 
 ((~+) true)
-((~+) "a")
+((~+) Str)
 
-((+) 0 "a")
-((+) true 1)
+((+) Num Str)
+((+) true Num)
 
-((-) 0 "a")
-((-) true 1)
+((-) Num Str)
+((-) true Num)
 
-((*) 0 "a")
-((*) true 1)
+((*) Num Str)
+((*) true Num)
 
-((/) 0 "a")
-((/) true 1)
+((/) Num Str)
+((/) true Num)
 
-((mod) 0 "a")
-((mod) true 1)
+((mod) Num Str)
+((mod) true Num)
 
 (abs true)
-(abs "a")
+(abs Str)
 
 (succ true)
-(succ "a")
+(succ Str)
 
 (pred true)
-(pred "a")
+(pred Str)
 
-(max_int 0)
-((+) max_int "a")
+(max_int Num)
+((+) max_int Str)
 
-(min_int 0)
-((-) min_int "a")
+(min_int Num)
+((-) min_int Str)
 
-((land) true 0)
-((land) 0 "a")
+((land) true Num)
+((land) Num Str)
 
-((lor) true 0)
-((lor) 0 "a")
+((lor) true Num)
+((lor) Num Str)
 
-((lxor) true 0)
-((lxor) 0 "a")
+((lxor) true Num)
+((lxor) Num Str)
 
-((lsl) true 0)
-((lsl) 0 "a")
+((lsl) true Num)
+((lsl) Num Str)
 
-((lsr) true 0)
-((lsr) 0 "a")
+((lsr) true Num)
+((lsr) Num Str)
 
-((asr) true 0)
-((asr) 0 "a")
+((asr) true Num)
+((asr) Num Str)
 
 (lnot true)
-(lnot "a")
+(lnot Str)

@@ -5,11 +5,7 @@ import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlin.streams.toList
 
-data class TypeCheckResult(
-    val expr: String,
-    val isValid: Boolean,
-    val errorMessage: String? = null
-)
+data class TypeCheckResult(val isValid: Boolean, val errorMessage: String? = null)
 
 /**
  * Type-checks OCaml expressions by compiling them individually.
@@ -24,13 +20,20 @@ class OCamlChecker(
 
     private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
 
+    private val desugarAtomsToDummies = listOf("Num" to "1", "Str" to "Dummy")
+
+    private fun desugar(expr: String) =
+        desugarAtomsToDummies.fold(expr) { acc, (from, to) -> acc.replace(from, to) }
+
     /** Check if a single expression is valid OCaml code. */
     fun isValid(expr: String): TypeCheckResult {
+        val desugaredExpr = desugar(expr)
+
         val tempFile = Files.createTempFile("ocaml_check_", ".ml").toFile()
 
         try {
             // Write preamble + expression
-            tempFile.writeText(preamble + "let _ = ($expr)\n")
+            tempFile.writeText(preamble + "let _ = ($desugaredExpr)\n")
 
             // Build command
             val command = buildCommand(tempFile)
@@ -43,13 +46,13 @@ class OCamlChecker(
 
             if (!exitCode) {
                 process.destroyForcibly()
-                return TypeCheckResult(expr, false, "Compilation timeout")
+                return TypeCheckResult(false, "Compilation timeout")
             }
 
             val isValid = process.exitValue() == 0
             val errorMsg = if (!isValid) output.trim() else null
 
-            return TypeCheckResult(expr, isValid, errorMsg)
+            return TypeCheckResult(isValid, errorMsg)
         } finally {
             // Clean up temp files
             tempFile.delete()
@@ -98,9 +101,9 @@ fun main() {
         )
 
     println("=== Stdlib only ===")
-    val results = checker.checkAll(exprs)
-    results.forEach { result ->
-        println("Expression: ${result.expr.replace("\n", "\\n")}")
+    exprs.forEach { expr ->
+        val result = checker.isValid(expr)
+        println("Expression: ${expr.replace("\n", "\\n")}")
         println("Valid: ${result.isValid}")
         if (!result.isValid) {
             println("Error: ${result.errorMessage}")
@@ -119,9 +122,9 @@ fun main() {
         )
 
     println("=== With Base library ===")
-    val baseResults = baseChecker.checkAll(baseExprs)
-    baseResults.forEach { result ->
-        println("Expression: ${result.expr}")
+    baseExprs.forEach { expr ->
+        val result = baseChecker.isValid(expr)
+        println("Expression: ${expr}")
         println("Valid: ${result.isValid}")
         println()
     }

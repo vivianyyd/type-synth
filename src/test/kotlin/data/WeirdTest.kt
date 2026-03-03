@@ -1,4 +1,4 @@
-package fixtures.data
+package data
 
 import query.AbstractQuery
 import query.Examples

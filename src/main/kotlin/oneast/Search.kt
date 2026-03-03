@@ -24,8 +24,7 @@ class Search(
         sizeBound: Int,
         depthBound: Int,
     ): Sequence<SearchState> =
-        searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger)
-            .candidates(c)
+        searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger).candidates(c)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 

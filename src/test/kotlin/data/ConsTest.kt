@@ -1,4 +1,4 @@
-package fixtures.data
+package data
 
 import query.AbstractQuery
 import query.Examples
@@ -34,16 +34,16 @@ object ConsTest : AbstractQuery() {
     private val boolExamples =
         mapOf(
             "(+ tr)" to "bool",
-            "(+ []b)" to "lbool",
+            "(+ Lb)" to "lbool",
             "(+ (cons tr))" to "lbool to lbool",
-            "(+ (cons tr []b))" to "lbool",
-            "(+ (cons tr (cons tr []b)))" to "lbool",
-            "(- (cons 0 []b))" to null,
+            "(+ (cons tr Lb))" to "lbool",
+            "(+ (cons tr (cons tr Lb)))" to "lbool",
+            "(- (cons 0 Lb))" to null,
             "(- (cons tr Li))" to null,
             "(- (cons 0 LLi))" to null,
             "(- (cons tr LLi))" to null,
             "(- (cons tr (cons 0 Li)))" to null,
-            "(+ (cons []b))" to "llbool to llbool"
+            "(+ (cons Lb))" to "llbool to llbool"
         )
     private val exs = intExamples + boolExamples
 

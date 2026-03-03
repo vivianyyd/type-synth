@@ -2,7 +2,7 @@ package core
 
 import core.enumerate.EnumeratorTag
 import core.unification.UnificationTag
-import fixtures.data.ConsTest
+import data.ConsTest
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import util.Configuration

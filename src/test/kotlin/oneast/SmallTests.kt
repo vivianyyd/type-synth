@@ -1,7 +1,7 @@
 package oneast
 
-import fixtures.data.ConsTest
-import fixtures.data.DictTest
+import data.ConsTest
+import data.DictTest
 import query.Example
 import util.Logger
 import util.io.parseTest
