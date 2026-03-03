@@ -1,6 +1,6 @@
 package oneast
 
-import oneast.searchstrategies.DFSEnumerator
+import oneast.searchstrategies.MutatingDFS
 import query.AbstractQuery
 import query.Example
 import util.Config
@@ -42,7 +42,7 @@ fun run(
     val engine =
         Engine(
             query.examples,
-            { e, s -> Search(e, s, query.oracle, configuration, ::DFSEnumerator, logger) },
+            { e, s -> Search(e, s, query.oracle, configuration, ::MutatingDFS, logger) },
             languageGroundTruth,
             logger,
             configuration.namesPerRound

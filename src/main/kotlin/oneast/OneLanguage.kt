@@ -9,13 +9,13 @@ class SearchState(
      * contains enumerated types such that all types enumerated in round i appear before all types
      * enumerated in round j > i.
      */
-    val types: List<Type>,
+    val types: MutableList<Type>,
     val labelArities: Map<Int, Int>
 ) {
     companion object {
         var nextId = 0
 
-        val emptyState = SearchState(mapOf(), listOf(), mapOf())
+        val emptyState = SearchState(mapOf(), mutableListOf(), mapOf())
     }
 
     val id = nextId++
@@ -47,24 +47,33 @@ class SearchState(
     fun asMap() = asMap
 
     fun mapTypesAndSetLabelArities(newArities: Map<Int, Int>, transform: (Type) -> Type) =
-        SearchState(names = names, types = types.map(transform), labelArities = newArities)
+        SearchState(
+            names = names, types = types.map(transform).toMutableList(), labelArities = newArities
+        )
 
     fun mapTypes(transform: (Type) -> Type): SearchState =
-        SearchState(names = names, types = types.map(transform), labelArities = labelArities)
+        SearchState(
+            names = names,
+            types = types.map(transform).toMutableList(),
+            labelArities = labelArities
+        )
 
     fun mapTypeAtIndex(i: Int, transform: (Type) -> Type): SearchState =
         SearchState(
             names = names,
-            types = types.mapIndexed { j, t -> if (i == j) transform(t) else t },
-            labelArities = labelArities)
+            types = types.mapIndexed { j, t -> if (i == j) transform(t) else t }.toMutableList(),
+            labelArities = labelArities
+        )
 
     override fun toString() = asMap.toString()
 }
 
 sealed interface Type {
+    fun replaceInPlace(target: Type, replacement: Type) {}
+
     private fun lastParamVariables(): Set<Int> =
         when (this) {
-            is Arrow -> r.lastParamVariables()
+            is Arrow -> r().lastParamVariables()
             is NamedLabel,
             is THole,
             is Variable -> variables()
@@ -74,8 +83,8 @@ sealed interface Type {
         when (this) {
             is Arrow ->
                 if (rightPath)
-                    l.variablesBeforeLastParam(rightPath = false) /* == variables() */ +
-                            r.variablesBeforeLastParam(rightPath = true)
+                    l().variablesBeforeLastParam(rightPath = false) /* == variables() */ +
+                            r().variablesBeforeLastParam(rightPath = true)
                 else variables()
             is NamedLabel,
             is THole,
@@ -86,7 +95,8 @@ sealed interface Type {
      * A valid *top-level* type cannot be concrete and have a fresh variable in the output type. It
      * also can't just be any arbitrary variable. The latter should never happen since we will not
      * enumerate Variables if the hole is a root, so we skip that check here. This is obviously not
-     * true for any subterm of a type so idk maybe there should be some extra class somewhere but whatever
+     * true for any subterm of a type so idk maybe there should be some extra class somewhere but
+     * whatever
      */
     fun invalid() = noHoles() && freshVariableInOutput()
 
@@ -119,18 +129,26 @@ sealed interface Type {
     /** The number of parameters this type has. */
     fun fnArity(): Int =
         when (this) {
-            is Arrow -> 1 + r.fnArity()
+            is Arrow -> 1 + r().fnArity()
             else -> 1
         }
 }
 
-sealed class Constructor(open val params: List<Type>) : Type {
+sealed class Constructor(open val params: MutableList<Type>) : Type {
+    override fun replaceInPlace(target: Type, replacement: Type) {
+        params.replaceAll {
+            if (it == target) replacement else it
+        }
+        // This is hacky but safe bc they are not data classes
+        params.forEach { it.replaceInPlace(target, replacement) }
+    }
+
     override fun allHoles() = params.flatMap { it.allHoles() }
 
     override fun variables() = params.flatMap { it.variables() }.toSet()
 }
 
-data class Variable(val v: Int) : Type {
+class Variable(val v: Int) : Type {
     override fun maxParamDepth(countArrow: Boolean) = 0
 
     override fun allHoles() = emptyList<THole>()
@@ -148,9 +166,13 @@ data class Variable(val v: Int) : Type {
     override fun toString() = "V$v"
 }
 
-data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
+class Arrow(l: Type, r: Type) : Constructor(mutableListOf(l, r)) {
+    fun l() = params[0]
+
+    fun r() = params[1]
+
     override fun allHolesWithDepth(topLevel: Boolean) =
-        (l.allHolesWithDepth(topLevel = false) + r.allHolesWithDepth(topLevel = topLevel)).map {
+        (l().allHolesWithDepth(topLevel = false) + r().allHolesWithDepth(topLevel = topLevel)).map {
             it.first to it.second + (if (topLevel) 0 else 1)
         }
 
@@ -163,19 +185,19 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
             ?.let { it.first to it.second + (if (topLevel) 0 else 1) }
 
     override fun maxParamDepth(countArrow: Boolean) =
-        (if (countArrow) 1 else 0) + max(l.maxParamDepth(true), r.maxParamDepth(countArrow))
+        (if (countArrow) 1 else 0) + max(l().maxParamDepth(true), r().maxParamDepth(countArrow))
 
     override fun instantiate(instId: Int): ConstraintTy =
-        ConstraintArrow(l.instantiate(instId), r.instantiate(instId))
+        ConstraintArrow(l().instantiate(instId), r().instantiate(instId))
 
     override fun replace(hole: THole, replacement: Type) =
-        Arrow(l.replace(hole, replacement), r.replace(hole, replacement))
+        Arrow(l().replace(hole, replacement), r().replace(hole, replacement))
 
-    override fun toString() = "${if (l is Arrow) "($l)" else "$l"} -> $r"
+    override fun toString() = "${if (l() is Arrow) "(${l()})" else "${l()}"} -> ${r()}"
 }
 
 /** Could also be called DefinedLabel? */
-data class NamedLabel(val label: Int, override val params: List<Type>) : Constructor(params) {
+class NamedLabel(val label: Int, override val params: MutableList<Type>) : Constructor(params) {
     override fun allHolesWithDepth(topLevel: Boolean) =
         params.flatMap { it.allHolesWithDepth(topLevel).map { it.first to it.second + 1 } }
 
@@ -193,7 +215,7 @@ data class NamedLabel(val label: Int, override val params: List<Type>) : Constru
         ConstraintLabel(label, params.map { it.instantiate(instId) })
 
     override fun replace(hole: THole, replacement: Type) =
-        copy(params = params.map { it.replace(hole, replacement) })
+        NamedLabel(label, params = params.map { it.replace(hole, replacement) }.toMutableList())
 
     override fun toString() = "L$label[${params.joinToString(", ")}]"
 }
@@ -315,7 +337,8 @@ sealed class THole : Type {
     private fun ConstraintTy.toNode(): Type =
         when (this) {
             is ConstraintArrow -> Arrow(this.l.toNode(), this.r.toNode())
-            is ConstraintLabel -> NamedLabel(this.label, this.params.map { it.toNode() })
+            is ConstraintLabel ->
+                NamedLabel(this.label, this.params.map { it.toNode() }.toMutableList())
             is ConstraintVariable -> Variable(this.v)
             is InstantiationTy -> error("Unreachable pattern match - convert Instantiation to node")
             Bottom -> error("Antiunifying should never produce Bottom")
@@ -354,7 +377,8 @@ class TypeHole : THole() {
     ): List<Type> {
         val variableExps = if (canBeVar) (0 until vars + 1).map { Variable(it) } else emptyList()
         val fnExpansion = Arrow(TypeHole(), TypeHole())
-        val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
+        val labelExpansions =
+            labelArities.map { NamedLabel(it.key, MutableList(it.value) { TypeHole() }) }
         // If there are no existing labels, we need to learn them.
         // For now, instead we will explicitly introduce only blanks for expansions
         // An alternate implementation might introduce a blank if [labelExpansions] is empty
@@ -383,7 +407,7 @@ class TypeHole : THole() {
                 listOfNotNull(Blank(labelOnly = true).takeIf { emitLabelBlanks })
     }
 
-    override fun toString() = "_"
+    override fun toString() = "_${id}"
 }
 
 /**

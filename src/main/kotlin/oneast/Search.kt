@@ -1,6 +1,7 @@
 package oneast
 
 import dependencyanalysis.ParameterwiseDependencyAnalysis
+import oneast.searchstrategies.DFSEnumerator
 import oneast.searchstrategies.SearchStrategy
 import query.Examples
 import query.Name
@@ -18,14 +19,21 @@ class Search(
     private val searchStrategy: (Examples, Boolean, Int, Int, Logger) -> SearchStrategy,
     private val logger: Logger,
 ) {
+    private fun oldCandidates(
+        c: SearchState,
+        emitLabelBlanks: Boolean,
+        sizeBound: Int,
+        depthBound: Int,
+    ): Sequence<SearchState> =
+        DFSEnumerator(examples, emitLabelBlanks, sizeBound, depthBound, logger).candidates(c)
+
     private fun allCandidates(
         c: SearchState,
         emitLabelBlanks: Boolean,
         sizeBound: Int,
         depthBound: Int,
     ): Sequence<SearchState> =
-        searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger)
-            .candidates(c)
+        searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger).candidates(c)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
@@ -76,12 +84,14 @@ class Search(
 
         fun assignLabels(t: Type): Type =
             when (t) {
-                is Arrow -> Arrow(assignLabels(t.l), assignLabels(t.r))
-                is NamedLabel -> t.copy(params = t.params.map { assignLabels(it) })
+                is Arrow -> Arrow(assignLabels(t.l()), assignLabels(t.r()))
+                is NamedLabel ->
+                    NamedLabel(t.label, params = t.params.map { assignLabels(it) }.toMutableList())
                 is Blank ->
                     NamedLabel(
                         label = getLabel(t),
-                        params = emptyList()
+                        params =
+                        mutableListOf<Type>()
                     ) // empty since we haven't decided arities yet
                 is TypeHole -> error("Shouldn't happen")
                 is Variable -> t
@@ -93,7 +103,7 @@ class Search(
     private fun concreteSeeds(): List<SearchState> {
         val initialOutlines =
             logger.time("Initial outlines") {
-                allCandidates(
+                oldCandidates(
                     seed,
                     emitLabelBlanks = true,
                     sizeBound = Int.MAX_VALUE,
@@ -111,28 +121,34 @@ class Search(
                 // Phase 1: compute dependency analyses sequentially (memoized by arities)
                 val dependencyAnalyses =
                     mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
-                val seedsWithDeps = withLabelClasses.map { s ->
-                    val arities = s.fnArities()
-                    val dep =
-                        dependencyAnalyses.getOrPut(arities) {
-                            ParameterwiseDependencyAnalysis(examples, arities, oracle)
-                        }
-                    s to dep
-                }
+                val seedsWithDeps =
+                    withLabelClasses.map { s ->
+                        val arities = s.fnArities()
+                        val dep =
+                            dependencyAnalyses.getOrPut(arities) {
+                                ParameterwiseDependencyAnalysis(examples, arities, oracle)
+                            }
+                        s to dep
+                    }
 
                 // Phase 2: run labelArities() calls in parallel
-                seedsWithDeps.parallelStream().flatMap { (s, dep) ->
-                    val la = labelArities(s, dep)
-                    if (la == null) java.util.stream.Stream.empty()
-                    else StreamSupport.stream(
-                        lazyCartesianProduct(la.values.map { (0..it).toList() })
-                            .map { la.keys.zip(it).toMap() }
-                            .map { s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) } }
-                            .asIterable()
-                            .spliterator(),
-                        false
-                    )
-                }.collect(Collectors.toList())
+                seedsWithDeps
+                    .parallelStream()
+                    .flatMap { (s, dep) ->
+                        val la = labelArities(s, dep)
+                        if (la == null) java.util.stream.Stream.empty()
+                        else
+                            StreamSupport.stream(
+                                lazyCartesianProduct(la.values.map { (0..it).toList() })
+                                    .map { la.keys.zip(it).toMap() }
+                                    .map {
+                                        s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) }
+                                    }
+                                    .asIterable()
+                                    .spliterator(),
+                                false)
+                    }
+                    .collect(Collectors.toList())
             }
         return resolvedLabelArities.filter { it.types.all { !it.invalid() } }
     }
@@ -212,17 +228,18 @@ class Search(
         when (this) {
             is Arrow ->
                 Arrow(
-                    l.addParamHoles(labelArities, underArrow = true),
-                    r.addParamHoles(labelArities, underArrow = true)
+                    l().addParamHoles(labelArities, underArrow = true),
+                    r().addParamHoles(labelArities, underArrow = true)
                 )
             is NamedLabel -> {
                 // Only overwrite parameters if they are wrongly empty
                 if ((labelArities[this.label] ?: 0) > 0 && this.params.isEmpty()) {
                     // Children of labels are type holes if under a function, and blanks with
                     // labelOnly=false if under a nullary
-                    this.copy(
+                    NamedLabel(
+                        label,
                         params =
-                        List(labelArities[this.label]!!) {
+                        MutableList(labelArities[this.label]!!) {
                             if (underArrow) TypeHole() else Blank(labelOnly = false)
                         })
                 } else this
