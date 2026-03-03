@@ -97,7 +97,8 @@ fun main() {
             "1 + 2",
             "fun x ->\n  x + true", // type error: bool vs int
             "List.map succ [1;2;3]",
-            "let f x y = x + y in f 1 2"
+            "let f x y = x + y in f 1 2",
+            "compare []"
         )
 
     println("=== Stdlib only ===")
@@ -126,6 +127,9 @@ fun main() {
         val result = baseChecker.isValid(expr)
         println("Expression: ${expr}")
         println("Valid: ${result.isValid}")
+        if (!result.isValid) {
+            println("Error: ${result.errorMessage}")
+        }
         println()
     }
 
