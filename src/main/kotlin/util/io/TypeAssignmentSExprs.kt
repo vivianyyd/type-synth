@@ -29,7 +29,8 @@ fun SExpr.toType(): Type =
             } else {
                 NamedLabel(
                     label = fst.value.hashCode(),
-                    params = this.elements.drop(1).map { it.toType() })
+                    params = this.elements.drop(1).map { it.toType() }.toMutableList()
+                )
             }
         }
     }
@@ -38,7 +39,7 @@ fun parseType(s: String) = parseSExpr(s).toType()
 
 fun Type.toSExpr(): SExpr =
     when (this) {
-        is Arrow -> SExpr.Lst(listOf(SExpr.Atm("->"), l.toSExpr(), r.toSExpr()))
+        is Arrow -> SExpr.Lst(listOf(SExpr.Atm("->"), l().toSExpr(), r().toSExpr()))
         is NamedLabel -> SExpr.Lst(listOf(SExpr.Atm("$label")) + params.map { it.toSExpr() })
         is Variable -> SExpr.Atm("$v")
         is Error,

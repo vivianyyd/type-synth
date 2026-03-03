@@ -26,7 +26,7 @@ class CheckingGroundTruthOracle(secret: Map<String, Type>) : GroundTruth, Oracle
 
 private fun Type.labels(): Set<Pair<Int, Int>> =
     when (this) {
-        is Arrow -> l.labels() + r.labels()
+        is Arrow -> l().labels() + r().labels()
         is NamedLabel -> params.flatMap { it.labels() }.toSet() + (label to params.size)
         is THole,
         is Variable -> emptySet()
@@ -36,6 +36,8 @@ fun stateFromSecret(secret: Map<String, Type>): SearchState {
     val labelArities = secret.values.flatMap { it.labels() }.toSet().toMap()
     val (names, types) = secret.toList().unzip()
     return SearchState(
-        names = names.withIndex().associate { it.value to it.index }, types = types, labelArities
+        names = names.withIndex().associate { it.value to it.index },
+        types = types.toMutableList(),
+        labelArities
     )
 }

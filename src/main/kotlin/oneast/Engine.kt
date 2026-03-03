@@ -63,7 +63,7 @@ class Engine(
             SearchState(
                 names = newNames,
                 types =
-                List(newSize) { i ->
+                MutableList(newSize) { i ->
                     if (i < oldSize) state.types[i]
                     // Importantly, we force names that are applied to be Arrows
                     // and names that are not to be labels.

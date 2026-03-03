@@ -28,6 +28,14 @@ class DFSEnumerator(
 
         // We won't fast-forward label blanks that we ourselves emitted.
         if (c.noFillableHoles()) return if (!emitLabelBlanks) fastForward(c) else sequenceOf(c)
+        /*
+        return if (!emitLabelBlanks) {
+                val ff = fastForward(c)
+                val tmp = ff.toList()
+                if (tmp.isNotEmpty()) logger.log("FF to ${tmp.first()} from $c")
+                tmp.asSequence()
+            } else sequenceOf(c)
+         */
 
         if (currSizeBound == 0) return emptySequence()
 

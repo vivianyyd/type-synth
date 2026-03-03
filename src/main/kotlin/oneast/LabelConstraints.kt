@@ -29,9 +29,9 @@ class LabelConstraints(
                 var curr = tree
                 var count = 0
                 while (curr is Arrow) {
-                    m[ParameterNode(name, count)] = curr.l
+                    m[ParameterNode(name, count)] = curr.l()
                     count++
-                    curr = curr.r
+                    curr = curr.r()
                 }
                 m[ParameterNode(name, count)] = curr
                 m
