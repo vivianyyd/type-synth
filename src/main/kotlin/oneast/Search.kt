@@ -121,18 +121,25 @@ class Search(
                 }
 
                 // Phase 2: run labelArities() calls in parallel
-                seedsWithDeps.parallelStream().flatMap { (s, dep) ->
-                    val la = labelArities(s, dep)
-                    if (la == null) java.util.stream.Stream.empty()
-                    else StreamSupport.stream(
-                        lazyCartesianProduct(la.values.map { (0..it).toList() })
-                            .map { la.keys.zip(it).toMap() }
-                            .map { s.mapTypesAndSetLabelArities(la) { it.addParamHoles(la) } }
-                            .asIterable()
-                            .spliterator(),
-                        false
-                    )
-                }.collect(Collectors.toList())
+                seedsWithDeps
+                    .parallelStream()
+                    .flatMap { (s, dep) ->
+                        val la = labelArities(s, dep)
+                        if (la == null) java.util.stream.Stream.empty()
+                        else {
+                            val (labels, arities) = la.toList().unzip()
+                            StreamSupport.stream(
+                                lazyCartesianProduct(arities.map { (0..it).toList() })
+                                    .map { labels.zip(it).toMap() }
+                                    .map { subla ->
+                                        s.mapTypesAndSetLabelArities(subla) { it.addParamHoles(subla) }
+                                    }
+                                    .asIterable()
+                                    .spliterator(),
+                                false)
+                        }
+                    }
+                    .collect(Collectors.toList())
             }
         return resolvedLabelArities.filter { it.types.all { !it.invalid() } }
     }
