@@ -106,12 +106,12 @@ class Search(
 
         logger.log(withLabelClasses.countedLines("Seeds before label arities"))
 
-        val resolvedLabelArities =
-            logger.time("Dependency analysis and solving for label arities") {
+        val seedsWithDeps =
+            logger.time("Dependency analysis") {
                 // Phase 1: compute dependency analyses sequentially (memoized by arities)
                 val dependencyAnalyses =
                     mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
-                val seedsWithDeps = withLabelClasses.map { s ->
+                withLabelClasses.map { s ->
                     val arities = s.fnArities()
                     val dep =
                         dependencyAnalyses.getOrPut(arities) {
@@ -119,7 +119,10 @@ class Search(
                         }
                     s to dep
                 }
+            }
 
+        val resolvedLabelArities =
+            logger.time("Solving for label arities") {
                 // Phase 2: run labelArities() calls in parallel
                 seedsWithDeps
                     .parallelStream()
@@ -132,7 +135,9 @@ class Search(
                                 lazyCartesianProduct(arities.map { (0..it).toList() })
                                     .map { labels.zip(it).toMap() }
                                     .map { subla ->
-                                        s.mapTypesAndSetLabelArities(subla) { it.addParamHoles(subla) }
+                                        s.mapTypesAndSetLabelArities(subla) {
+                                            it.addParamHoles(subla)
+                                        }
                                     }
                                     .asIterable()
                                     .spliterator(),

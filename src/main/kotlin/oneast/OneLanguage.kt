@@ -23,7 +23,7 @@ class SearchState(
     fun fnArities(): Map<String, Int> = names.mapValues { (_, i) -> types[i].fnArity() }
 
     /** @return (index of type containing shallowest fillable hole, the hole, depth of the hole). */
-    fun shallowestFillableHole(): Triple<Int, THole, Int>? =
+    fun shallowestFillableHole(): Triple<Int, TypeHole, Int>? =
         types
             .withIndex()
             .mapNotNull { ti ->
@@ -86,7 +86,8 @@ sealed interface Type {
      * A valid *top-level* type cannot be concrete and have a fresh variable in the output type. It
      * also can't just be any arbitrary variable. The latter should never happen since we will not
      * enumerate Variables if the hole is a root, so we skip that check here. This is obviously not
-     * true for any subterm of a type so idk maybe there should be some extra class somewhere but whatever
+     * true for any subterm of a type so idk maybe there should be some extra class somewhere but
+     * whatever
      */
     fun invalid() = noHoles() && freshVariableInOutput()
 
@@ -110,7 +111,7 @@ sealed interface Type {
 
     fun allHolesWithDepth(topLevel: Boolean): List<Pair<THole, Int>>
 
-    fun shallowestFillableHole(topLevel: Boolean): Pair<THole, Int>?
+    fun shallowestFillableHole(topLevel: Boolean): Pair<TypeHole, Int>?
 
     fun variables(): Set<Int>
 
