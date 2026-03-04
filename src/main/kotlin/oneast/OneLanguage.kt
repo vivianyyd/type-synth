@@ -38,7 +38,10 @@ class SearchState(
 
     fun noHoles() = types.all { it.noHoles() }
 
-    fun typeOf(name: String) = types[names[name]!!]
+    fun typeOf(name: String): Type {
+        if (name !in names) error("$name not in $names")
+        return types[names[name]!!]
+    }
 
     fun maxParamDepth() = types.maxOf { it.maxParamDepth(countArrow = false) }
 
@@ -412,6 +415,8 @@ sealed interface ConstraintTy {
 
 object Bottom : ConstraintTy {
     override fun variables() = emptyList<ConstraintVariable>()
+
+    override fun toString(): String = "⊥"
 }
 
 // TODO Consider whether I want two different types of instantiations for TypeHoles vs

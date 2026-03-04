@@ -89,14 +89,14 @@ class Search(
         return s.mapTypesAndSetLabelArities(mapOf()) { assignLabels(it) }
     }
 
-    private fun concreteSeeds(): List<SearchState> {
+    private fun concreteSeeds(size: Int, depth: Int): List<SearchState> {
         val initialOutlines =
             logger.time("Initial outlines") {
                 allCandidates(
                     seed,
                     emitLabelBlanks = true,
-                    sizeBound = Int.MAX_VALUE,
-                    depthBound = Int.MAX_VALUE,
+                    sizeBound = size,
+                    depthBound = depth,
                 )
                     .toList()
             }
@@ -195,29 +195,33 @@ class Search(
     }
 
     fun solutions(): Sequence<SearchState> = sequence {
-        val seeds = concreteSeeds()
-        logger.log(seeds.countedLines("Concrete seeds"))
-
         for (depth in 1..config.depthBound) {
-            logger.start("Depth $depth for ${examples.names}")
-            for (size in 1..config.sizeBound) {
-                logger.start("Size $size for ${examples.names}")
-                val sols =
-                    concretizationSearch(
-                        seeds,
-                        currentSizeBound = size,
-                        currentDepthBound = depth,
-                    )
-                        .iterator()
-                yieldAll(sols)
-                logger.stop("Size $size for ${examples.names}")
-                // The contract is to provide *all* solutions, not just those of minimal size/depth
+            logger.start("Depth $depth for outlines of ${examples.names}")
+            val seeds = concreteSeeds(config.sizeBound, depth)
+            if (seeds.isEmpty()) continue
+            logger.log(seeds.countedLines("Concrete seeds"))
+
+            for (depth in 1..config.depthBound) {
+                logger.start("Depth $depth for ${examples.names}")
+                for (size in 1..config.sizeBound) {
+                    logger.start("Size $size for ${examples.names}")
+                    val sols =
+                        concretizationSearch(
+                            seeds,
+                            currentSizeBound = size,
+                            currentDepthBound = depth,
+                        )
+                            .iterator()
+                    yieldAll(sols)
+                    logger.stop("Size $size for ${examples.names}")
+                    // The contract is to provide *all* solutions, not just those of minimal size/depth
+                    // if (solved) break
+                }
+                logger.stop("Depth $depth for ${examples.names}")
                 // if (solved) break
             }
-            logger.stop("Depth $depth for ${examples.names}")
-            // if (solved) break
         }
-    }
+        }
 
     private fun Type.addParamHoles(labelArities: Map<Int, Int>, underArrow: Boolean = false): Type =
         when (this) {

@@ -38,6 +38,18 @@ class SmallTests {
     }
 
     @Test
+    fun `polymorphic dict chain`() {
+        val testName = "polymorphic-dictchain"
+        val query = parseTest(testName)
+        val languageGroundTruth: (Example) -> Boolean = { e -> TODO() }
+
+        val configuration = defaultConfig(testName)
+        val logger = defaultLogger(configuration, logName = "tmp")
+
+        assert(run(query, languageGroundTruth, configuration, logger).isNotEmpty())
+    }
+
+    @Test
     fun `recovers dict put types`() {
         val query = DictTest
         val languageGroundTruth: (Example) -> Boolean = { e -> TODO() }
