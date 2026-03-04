@@ -62,7 +62,7 @@ abstract class SearchStrategy(private val examples: Examples) {
         do {
             var changed = false
             val u = posUnification(curr)
-            ok = curr.maxParamDepth() <= depthBound && u.ok() // force the thunk, and enforce bound
+            ok = curr.maxParamDepth() <= depthBound && u.ok // force the thunk, and enforce bound
             if (!ok) break
             curr =
                 curr.mapTypes { t ->

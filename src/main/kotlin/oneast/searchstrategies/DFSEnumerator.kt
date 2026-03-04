@@ -9,6 +9,7 @@ import util.Logger
 class DFSEnumerator(
     examples: Examples,
     private val emitLabelBlanks: Boolean,
+    private val emitConstructors: Boolean,
     private val sizeBound: Int,
     private val depthBound: Int,
     private val logger: Logger
@@ -42,6 +43,7 @@ class DFSEnumerator(
                 vars = c.types[iToFill].variables().size,
                 canBeVar = hole != c.types[iToFill],
                 emitLabelBlanks = emitLabelBlanks,
+                emitConstructors = emitConstructors,
                 mustBeLeaf = currSizeBound <= 1 || depth >= depthBound
             )
             .asSequence()

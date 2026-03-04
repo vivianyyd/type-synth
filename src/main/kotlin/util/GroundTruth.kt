@@ -12,7 +12,7 @@ class CheckingGroundTruthOracle(secret: Map<String, Type>) : GroundTruth, Oracle
     // This doesn't enforce the invariant that a label must have the same arity always
     private val truth = stateFromSecret(secret)
 
-    override fun valid(example: Example): Boolean = OneUnification(truth, listOf(example)).ok()
+    override fun valid(example: Example): Boolean = OneUnification(truth, listOf(example)).ok
 
     override fun equal(a: Example, b: Example): Boolean {
         val u = OneUnification(truth, listOf(a, b))

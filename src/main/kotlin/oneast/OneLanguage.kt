@@ -247,6 +247,7 @@ sealed class THole : Type {
         vars: Int,
         canBeVar: Boolean,
         emitLabelBlanks: Boolean,
+        emitConstructors: Boolean,
         mustBeLeaf: Boolean
     ): List<Type>
 
@@ -370,10 +371,11 @@ class TypeHole : THole() {
         vars: Int,
         canBeVar: Boolean,
         emitLabelBlanks: Boolean,
+        emitConstructors: Boolean,
         mustBeLeaf: Boolean
     ): List<Type> =
         if (mustBeLeaf)
-            expansionsNoBound(unification, labelArities, vars, canBeVar, emitLabelBlanks).filter {
+            expansionsNoBound(unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors).filter {
                 when (it) {
                     is Variable -> true
                     is NamedLabel -> it.params.isEmpty()
@@ -382,14 +384,15 @@ class TypeHole : THole() {
                     is TypeHole -> throw Exception("Expansions cannot include type holes")
                 }
             }
-        else expansionsNoBound(unification, labelArities, vars, canBeVar, emitLabelBlanks)
+        else expansionsNoBound(unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors)
 
     private fun expansionsNoBound(
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
-        emitLabelBlanks: Boolean
+        emitLabelBlanks: Boolean,
+        emitConstructors: Boolean
     ): List<Type> {
         val variableExps = if (canBeVar) (0 until vars + 1).map { Variable(it) } else emptyList()
         val fnExpansion = Arrow(TypeHole(), TypeHole())
@@ -400,7 +403,7 @@ class TypeHole : THole() {
 
         val instances = unification.holeEquals(this).filterIsInstance<ConstraintTypeConstructor>()
         val constructorTypes = // this would be cleaner if implemented as a filter
-            if (instances.isNotEmpty()) {
+            if (emitConstructors && instances.isNotEmpty()) {
                 val i = instances.first()
                 if (instances.any { !i.match(it) }) emptyList()
                 else
@@ -438,6 +441,7 @@ class Blank(val labelOnly: Boolean) : THole() {
         vars: Int,
         canBeVar: Boolean,
         emitLabelBlanks: Boolean,
+        emitConstructors: Boolean,
         mustBeLeaf: Boolean
     ) = listOf(this)
 
