@@ -104,7 +104,7 @@ class Engine(
             } else {
                 logger.log("Adding counterexample ${ctrex.first}\tPosex: ${ctrex.second}")
                 logger.log(
-                    "Sanity check OK: ${ctrex.second == OneUnification(solution, listOf(ctrex.first)).ok()}"
+                    "Sanity check OK: ${ctrex.second != OneUnification(solution, listOf(ctrex.first)).ok()}"
                 )
                 if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
             }
