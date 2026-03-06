@@ -195,7 +195,7 @@ class Search(
     }
 
     fun solutions(): Sequence<SearchState> = sequence {
-        for (depth in 1..config.depthBound) {
+        for (depth in 0..config.depthBound) {
             logger.start("Depth $depth for outlines of ${examples.names}")
             val seeds = concreteSeeds(config.sizeBound, depth)
             if (seeds.isEmpty()) continue
@@ -214,14 +214,15 @@ class Search(
                             .iterator()
                     yieldAll(sols)
                     logger.stop("Size $size for ${examples.names}")
-                    // The contract is to provide *all* solutions, not just those of minimal size/depth
+                    // The contract is to provide *all* solutions, not just those of minimal
+                    // size/depth
                     // if (solved) break
                 }
                 logger.stop("Depth $depth for ${examples.names}")
                 // if (solved) break
             }
         }
-        }
+    }
 
     private fun Type.addParamHoles(labelArities: Map<Int, Int>, underArrow: Boolean = false): Type =
         when (this) {

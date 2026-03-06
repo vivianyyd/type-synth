@@ -158,13 +158,28 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
             it.first to it.second + (if (topLevel) 0 else 1)
         }
 
-    override fun shallowestFillableHole(topLevel: Boolean) =
-        params
-            .mapIndexedNotNull { i, p ->
-                p.shallowestFillableHole(topLevel = if (i == 0) false else topLevel)
+    private fun lastParam(): Type {
+        fun lastParam(t: Type): Type =
+            when (t) {
+                is Arrow -> lastParam(t.r)
+                is NamedLabel,
+                is THole,
+                is Variable -> t
             }
+        return lastParam(this)
+    }
+
+    override fun shallowestFillableHole(topLevel: Boolean): Pair<TypeHole, Int>? {
+        val left = l.shallowestFillableHole(topLevel = false)
+        val rite = r.shallowestFillableHole(topLevel = topLevel)
+        val riteAdjusted =
+            // This physical equality check works since holes are not data classes
+            if (topLevel && rite != null && rite.first == lastParam()) rite.first to -1
+            else rite
+        return listOfNotNull(left, riteAdjusted)
             .minByOrNull { it.second }
             ?.let { it.first to it.second + (if (topLevel) 0 else 1) }
+    }
 
     override fun maxParamDepth(countArrow: Boolean) =
         (if (countArrow) 1 else 0) + max(l.maxParamDepth(true), r.maxParamDepth(countArrow))
