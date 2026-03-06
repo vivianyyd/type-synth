@@ -1,8 +1,10 @@
 package oneast
 
 import oneast.searchstrategies.DFSEnumerator
+import oneast.searchstrategies.SearchStrategy
 import query.AbstractQuery
 import query.Example
+import query.Examples
 import util.Config
 import util.Logger
 import util.io.cvc.clearCVC
@@ -17,6 +19,7 @@ fun main() {
     val configuration =
         Configuration(
             name = testName,
+            searchStrategy = ::DFSEnumerator,
             sizeBound = 20,
             depthBound = 4,
             namesPerRound = 10,
@@ -39,14 +42,7 @@ fun run(
 ): List<SearchState> {
     clearCVC()
 
-    val engine =
-        Engine(
-            query.examples,
-            { e, s -> Search(e, s, query.oracle, configuration, ::DFSEnumerator, logger) },
-            languageGroundTruth,
-            logger,
-            configuration.namesPerRound
-        )
+    val engine = Engine(query, languageGroundTruth, configuration, logger)
 
     val solutions = mutableListOf<SearchState>()
 
@@ -63,6 +59,7 @@ fun run(
 
 data class Configuration(
     val name: String,
+    val searchStrategy: (Examples, Boolean, Int, Int, Logger) -> SearchStrategy,
     val sizeBound: Int,
     val depthBound: Int,
     val namesPerRound: Int,
@@ -71,6 +68,7 @@ data class Configuration(
     override fun toString(): String =
         listOf(
             name,
+            "Search strategy: $searchStrategy",
             "Size bound: $sizeBound",
             "Depth bound: $depthBound",
             "Names per round: $namesPerRound",

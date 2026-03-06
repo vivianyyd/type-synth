@@ -17,7 +17,6 @@ private fun FlatApp.toSExpr(): SExpr =
 fun parseTest(name: String): Query {
     val exs = readExamples(name)
     return Query(
-        name,
         signedExamplesFromStrings(exs.second.filter { it.isNotBlank() }),
         oracleFromAssignment(exs.first)
     )

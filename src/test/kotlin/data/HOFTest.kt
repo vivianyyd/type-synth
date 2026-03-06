@@ -7,8 +7,6 @@ import util.io.signedExample
 import util.io.signedExamplesFromStrings
 
 object HOFTest : AbstractQuery() {
-    override val name = "HOFs"
-
     /*
     f: a -> b
     g: (a -> b) -> c

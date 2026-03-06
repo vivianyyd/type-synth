@@ -222,7 +222,6 @@ object SomeHaskell : AbstractQuery() {
 
     val posExamples = posexs.map { parseSExpr(it).toExample() }
     val negExamples = negexs.map { parseSExpr(it).toExample() }
-    override val name: String = "Some Haskell Examples"
 
     override val examples = Examples(posExamples, negExamples)
     override val oracle = CheckingGroundTruthOracle(groundTruthMap)

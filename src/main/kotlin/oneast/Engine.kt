@@ -1,27 +1,21 @@
 package oneast
 
-import query.App
-import query.Example
-import query.Examples
-import query.Name
+import query.*
 import util.Logger
 import kotlin.math.min
 
-typealias SearchProvider = (SearchState, Examples) -> Search
-
 class Engine(
-    startingExamples: Examples,
-    private val searchProvider: SearchProvider,
+    private val query: AbstractQuery,
     private val languageGroundTruth: (Example) -> Boolean,
-    private val logger: Logger,
-    private val namesPerRound: Int
+    private val config: Configuration,
+    private val logger: Logger
 ) {
-    private val names = startingExamples.names
-    private val posExamples = startingExamples.posNoSubexprs.toMutableList()
-    private val negExamples = startingExamples.neg.toMutableList()
+    private val names = query.examples.names
+    private val posExamples = query.examples.posNoSubexprs.toMutableList()
+    private val negExamples = query.examples.neg.toMutableList()
 
     // ceiling division
-    private val numRounds = (names.size + namesPerRound - 1) / namesPerRound
+    private val numRounds = (names.size + config.namesPerRound - 1) / config.namesPerRound
     private val scheduled = mutableListOf<Set<String>>()
 
     init {
@@ -31,10 +25,10 @@ class Engine(
                     .select(
                         // whether a name occurs in subexprs is good signal for its
                         // importance.
-                        startingExamples.posWithSubexprs,
+                        query.examples.posWithSubexprs,
                         names,
                         buildSet { scheduled.forEach { addAll(it) } },
-                        namesPerRound
+                        config.namesPerRound
                     )
             )
         }
@@ -44,7 +38,7 @@ class Engine(
     private fun buildNextQuery(state: SearchState): Pair<Examples, SearchState>? {
         if (names.size == state.names.size) return null
 
-        val scheduledRound = scheduled[state.names.size / namesPerRound].toList()
+        val scheduledRound = scheduled[state.names.size / config.namesPerRound].toList()
         // TODO I think enumeration doesn't actually need the subexprs, so we should make a separate
         //   query type which contains only maximal examples so we don't waste so much space
         val oldSize = state.names.size
@@ -78,7 +72,7 @@ class Engine(
     }
 
     private fun solveQuery(examples: Examples, state: SearchState): Sequence<SearchState> {
-        val solver = searchProvider(state, examples)
+        val solver = Search(state, examples, query.oracle, config, logger)
         return solver.solutions()
     }
 

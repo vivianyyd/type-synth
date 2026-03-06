@@ -7,8 +7,6 @@ import util.io.signedExample
 import util.io.signedExamplesFromStrings
 
 object PolymorphicNil : AbstractQuery() {
-    override val name = "PolymorphicNil"
-
     private val intExamples =
         mapOf(
             "(+ Num)" to "int",

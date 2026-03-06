@@ -1,7 +1,6 @@
 package oneast
 
 import dependencyanalysis.ParameterwiseDependencyAnalysis
-import oneast.searchstrategies.SearchStrategy
 import query.Examples
 import query.Name
 import util.*
@@ -14,9 +13,7 @@ class Search(
     private val examples: Examples,
     private val oracle: Oracle,
     private val config: Configuration,
-    // Using factory design pattern feels like giving up
-    private val searchStrategy: (Examples, Boolean, Int, Int, Logger) -> SearchStrategy,
-    private val logger: Logger,
+    private val logger: Logger
 ) {
     private fun allCandidates(
         c: SearchState,
@@ -24,7 +21,7 @@ class Search(
         sizeBound: Int,
         depthBound: Int,
     ): Sequence<SearchState> =
-        searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger).candidates(c)
+        config.searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger).candidates(c)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 

@@ -7,7 +7,6 @@ import util.CheckingOracle
 import util.io.signedExamplesFromStrings
 
 object PolymorphicDict : AbstractQuery() {
-    override val name = "Dict"
     private val basics =
         listOf(
             "(+ Num)",

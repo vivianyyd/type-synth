@@ -17,7 +17,6 @@ data class Configuration(
 ) : Config {
     override fun toString(): String =
         listOf(
-            query.name,
             "Running CVC: $runCVC",
             enumeratorTag,
             unificationTag,

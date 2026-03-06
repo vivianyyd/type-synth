@@ -7,8 +7,6 @@ import util.io.signedExample
 import util.io.signedExamplesFromStrings
 
 object ConsTest : AbstractQuery() {
-    override val name = "Cons"
-
     private val intExamples =
         mapOf(
             "(+ 0)" to "int",

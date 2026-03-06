@@ -7,8 +7,6 @@ import util.io.signedExample
 import util.io.signedExamplesFromStrings
 
 object IdTest : AbstractQuery() {
-    override val name = "Id&inc"
-
     /*
     inc: int -> int
     n: int

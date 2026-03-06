@@ -7,8 +7,6 @@ import util.io.signedExample
 import util.io.signedExamplesFromStrings
 
 object WeirdTest : AbstractQuery() {
-    override val name = "Weird"
-
     // f:. f id 0 is valid, but f_swap 0 id is not.
     private val exs =
         mapOf(

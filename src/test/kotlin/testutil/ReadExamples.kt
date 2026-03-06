@@ -5,7 +5,7 @@ import query.Examples
 import util.io.unsignedExample
 import java.io.File
 
-fun loadQuery(dir: File): Examples {
+fun loadExamples(dir: File): Examples {
     val pos = mutableListOf<Example>()
     val neg = mutableListOf<Example>()
 

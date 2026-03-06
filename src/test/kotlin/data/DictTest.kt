@@ -7,7 +7,6 @@ import util.CheckingOracle
 import util.io.signedExamplesFromStrings
 
 object DictTest : AbstractQuery() {
-    override val name = "Dict"
     private val basics =
         listOf(
             "(+ Num)",

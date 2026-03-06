@@ -24,7 +24,7 @@ data class ConfigForOld(
     val writeIR: Boolean = true
 ) : Config {
     override fun toString(): String =
-        listOf(querySpec.name, "Running CVC: $runCVC", "Max depth: $maxDepth")
+        listOf("Running CVC: $runCVC", "Max depth: $maxDepth")
             .joinToString(separator = "\n", postfix = "\n=====\n")
 }
 

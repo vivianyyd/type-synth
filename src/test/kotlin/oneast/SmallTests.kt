@@ -2,6 +2,7 @@ package oneast
 
 import data.ConsTest
 import data.DictTest
+import oneast.searchstrategies.DFSEnumerator
 import query.Example
 import util.Logger
 import util.io.parseTest
@@ -19,6 +20,7 @@ class SmallTests {
     private fun defaultConfig(name: String) =
         Configuration(
             name = name,
+            searchStrategy = ::DFSEnumerator,
             sizeBound = 20,
             depthBound = 4,
             namesPerRound = 10,

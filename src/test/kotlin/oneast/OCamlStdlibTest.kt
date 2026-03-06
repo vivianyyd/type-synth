@@ -1,7 +1,8 @@
 package oneast
 
 import oneast.searchstrategies.DFSEnumerator
-import testutil.loadQuery
+import query.Query
+import testutil.loadExamples
 import testutil.ocaml.OCamlChecker
 import testutil.ocaml.OcamlTypeParser
 import util.CheckingGroundTruthOracle
@@ -15,13 +16,15 @@ class OCamlStdlibTest {
     @Test
     fun `can reconstruct stdlib`() {
         val dir = join("src", "test", "input", "ocaml-stdlib")
-        val query = loadQuery(File(dir))
+        val examples = loadExamples(File(dir))
         val oracleTypes = OcamlTypeParser().parseSignatures(File(join(dir, "all.types")).readText())
         val oracle = CheckingGroundTruthOracle(oracleTypes)
+        val query = Query(examples, oracle)
 
         val configuration =
             Configuration(
                 name = "OCaml Stdlib",
+                searchStrategy = ::DFSEnumerator,
                 sizeBound = 20,
                 depthBound = 4,
                 namesPerRound = 5,
@@ -40,13 +43,9 @@ class OCamlStdlibTest {
         val engine =
             Engine(
                 query,
-                { s, q ->
-                    logger.log("Searching $s")
-                    Search(s, q, oracle, configuration, ::DFSEnumerator, logger)
-                },
                 { e -> OCamlChecker().isValid(e.toString()).isValid },
-                logger,
-                namesPerRound = configuration.namesPerRound
+                configuration,
+                logger
             )
         // TODO oracle should be in query, numsols in config
 
