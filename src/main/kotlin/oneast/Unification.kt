@@ -39,7 +39,7 @@ class OneUnification(private val candidate: SearchState, private val exs: List<E
                 type(ex.fn)?.let { f ->
                     type(ex.arg)?.let { arg ->
                         when (f) {
-                            is ConstraintArrow -> apply(f, arg)
+                            is ConstraintArrow -> unify(f.l, arg)?.let { applyBindings(f.r, it) }
                             is InstantiationTy -> {
                                 /* since we continue deriving constraints after seeing f, introduce
                                 a bottom type which doesn't correspond to any node. once this
@@ -55,12 +55,6 @@ class OneUnification(private val candidate: SearchState, private val exs: List<E
                 }
         }
 
-    fun apply(fn: ConstraintArrow, arg: ConstraintTy): ConstraintTy? =
-        unify(fn.l, arg)?.let {
-            if (fn.l is Bottom || fn.r is Bottom || arg is Bottom) Bottom
-            else applyBindings(fn.r, it)
-        }
-
     private fun holeConstraint(inst: InstantiationTy, t: ConstraintTy): List<Binding>? =
         // unifying a Blank that must be a Label with an Arrow should fail
         if (inst.hole is Blank && inst.hole.labelOnly && t is ConstraintArrow) null
@@ -73,7 +67,7 @@ class OneUnification(private val candidate: SearchState, private val exs: List<E
      * Returns a list of bindings resulting from unifying [arg] with [param], or null if they are
      * incompatible.
      */
-    fun unify(param: ConstraintTy, arg: ConstraintTy): List<Binding>? =
+    private fun unify(param: ConstraintTy, arg: ConstraintTy): List<Binding>? =
         when (param) {
             Bottom -> emptyList()
             is ConstraintVariable ->
@@ -123,10 +117,10 @@ class OneUnification(private val candidate: SearchState, private val exs: List<E
                     is ConstraintLabel -> t.copy(params = reboundParams)
                 }
             }
-            is InstantiationTy -> error("hasConstraintVariable should have been false")
+            is InstantiationTy -> error("variables() should be empty")
         }
     }
 
-    fun applyBindings(t: ConstraintTy, bindings: List<Binding>): ConstraintTy =
+    private fun applyBindings(t: ConstraintTy, bindings: List<Binding>): ConstraintTy =
         bindings.fold(t) { acc, (v, sub) -> applyBinding(acc, v, sub) }
 }
