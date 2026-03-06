@@ -1,4 +1,4 @@
-(i (i))	(b (b))	({} (d a b))    (put (-> (d k v) (-> k (-> v (d k v)))))	(chain (-> (d a b) (-> (d b c) (d a c))))
+(i (i));(b (b));({} (d a b));(put (-> (d k v) (-> k (-> v (d k v)))));(chain (-> (d a b) (-> (d b c) (d a c))))
 (- (put (chain (put {} i b) (put {} b b)) i i))
 
 

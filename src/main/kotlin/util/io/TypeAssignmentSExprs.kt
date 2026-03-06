@@ -5,7 +5,7 @@ import util.CheckingGroundTruthOracle
 
 fun oracleFromAssignment(context: String) =
     CheckingGroundTruthOracle(
-        context.split('\t').associate {
+        context.split(';').associate {
             val assign = parseSExpr(it)
             require(
                 assign is SExpr.Lst && assign.elements.size == 2 && assign.elements[0] is SExpr.Atm
