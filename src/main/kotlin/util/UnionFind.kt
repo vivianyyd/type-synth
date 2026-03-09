@@ -140,3 +140,115 @@ class IntUnionFind {
     val size: Int
         get() = parent.size
 }
+
+/**
+ * Generic union-find (disjoint-set) data structure for elements of type [T].
+ *
+ * We use a map-based representation instead of index arrays: `parent` maps every element directly
+ * to its parent element (roots map to themselves), and `treeSize` maps each root to its subtree
+ * size. This eliminates the need for a separate `values` list and `indexOf` reverse-map that
+ * [IntUnionFind] requires, because elements of an arbitrary type [T] are not naturally associated
+ * with consecutive integer indices. The map approach keeps the code simpler and equally efficient
+ * (O(α(n)) amortized per operation with path compression and union-by-size).
+ *
+ * [T] must be [Comparable] so that we can preserve the same "canonical element = smallest in the
+ * set" invariant that [IntUnionFind] provides.
+ */
+class UnionFind<T : Comparable<T>> {
+    // parent[x] = parent of x; root elements satisfy parent[x] == x
+    private val parent = mutableMapOf<T, T>()
+
+    // treeSize[x] = number of nodes in the tree rooted at x (only meaningful for roots)
+    private val treeSize = mutableMapOf<T, Int>()
+
+    var componentCount: Int = 0
+        private set
+
+    /** Ensure [value] exists in the structure. Returns true if it was newly added. */
+    fun add(value: T): Boolean {
+        if (value in parent) return false
+        parent[value] = value
+        treeSize[value] = 1
+        componentCount++
+        return true
+    }
+
+    /** Internal: find the root of [value]'s set with iterative path compression. */
+    private fun findRoot(value: T): T {
+        var x = value
+        // Walk up to the root.
+        while (parent[x] != x) {
+            x = parent[x]!!
+        }
+        val root = x
+        // Path-compress: point every visited node directly at the root.
+        var cur = value
+        while (parent[cur] != cur) {
+            val next = parent[cur]!!
+            parent[cur] = root
+            cur = next
+        }
+        return root
+    }
+
+    /**
+     * Find the canonical (smallest) element of the set containing [value]. Returns null if
+     * [value] is not present.
+     */
+    fun find(value: T): T? {
+        if (value !in parent) return null
+        return findRoot(value)
+    }
+
+    /** Returns true if both values are present and belong to the same set. */
+    fun connected(a: T, b: T): Boolean {
+        if (a !in parent || b !in parent) return false
+        return findRoot(a) == findRoot(b)
+    }
+
+    /**
+     * Union the sets containing [a] and [b], adding either element if not yet present. The
+     * canonical element of the merged set is the lesser of the two current canonicals, preserving
+     * the smallest-wins invariant.
+     */
+    fun union(a: T, b: T) {
+        add(a)
+        add(b)
+        val ra = findRoot(a)
+        val rb = findRoot(b)
+        if (ra == rb) return
+
+        // Attach the root with the larger canonical value under the one with the smaller canonical
+        // value so that the smaller canonical always remains the root. This mirrors IntUnionFind's
+        // union strategy: canonical-value comparison is the tie-breaker, not tree size. treeSize is
+        // still maintained so the field is available for any future size-based heuristics.
+        if (ra <= rb) {
+            parent[rb] = ra
+            treeSize[ra] = treeSize[ra]!! + treeSize[rb]!!
+        } else {
+            parent[ra] = rb
+            treeSize[rb] = treeSize[rb]!! + treeSize[ra]!!
+        }
+        componentCount--
+    }
+
+    /** Return all sets as a map from canonical element to list of members (unsorted). */
+    fun allSets(): Map<T, List<T>> {
+        // Compress all paths first so parent[x] is the root for every x.
+        // findRoot only writes existing entries (never adds/removes keys), so iterating
+        // parent.keys directly while updating values is safe.
+        for (x in parent.keys) {
+            parent[x] = findRoot(x)
+        }
+        val groups = mutableMapOf<T, MutableList<T>>()
+        for (x in parent.keys) {
+            val root = parent[x]!!
+            groups.getOrPut(root) { mutableListOf() }.add(x)
+        }
+        return groups
+    }
+
+    /** Number of elements currently stored. */
+    val size: Int
+        get() = parent.size
+}
