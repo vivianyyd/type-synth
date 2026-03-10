@@ -54,7 +54,7 @@ class DFSEnumerator(
             }
             .flatMap { newCandidate ->
                 val u = posUnification(newCandidate)
-                if (u.ok()) recCandidates(newCandidate, u, currSizeBound = currSizeBound - 1)
+                if (u.ok) recCandidates(newCandidate, u, currSizeBound = currSizeBound - 1)
                 else emptySequence()
             }
     }

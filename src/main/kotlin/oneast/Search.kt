@@ -187,7 +187,7 @@ class Search(
             }
 
         return finalResults.filter { c ->
-            posUnification(c).ok() && examples.neg.all { !OneUnification(c, listOf(it)).ok() }
+            posUnification(c).ok && examples.neg.all { !OneUnification(c, listOf(it)).ok }
         }
     }
 

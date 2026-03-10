@@ -11,9 +11,8 @@ typealias Binding = Pair<ConstraintVariable, ConstraintTy>
  * This unification does not persist state after evaluating a candidate, and cannot be used more
  * than once.
  */
-class OneUnification(private val candidate: SearchState, private val exs: List<Example>) {
-    private var evaluated = false
-    private var error = false
+class OneUnification(private val candidate: SearchState, exs: List<Example>) {
+    val ok = exs.all { type(it) != null }
     private val holeConstraints = mutableMapOf<Int, MutableList<ConstraintTy>>() // holeId
 
     private val insts = Counter() // Number of times any top-level type has been instantiated
@@ -21,15 +20,7 @@ class OneUnification(private val candidate: SearchState, private val exs: List<E
     fun holeEquals(hole: THole): List<ConstraintTy> = holeEquals(hole.id)
 
     private fun holeEquals(hole: Int): List<ConstraintTy> =
-        if (ok()) holeConstraints[hole] ?: listOf() else listOf()
-
-    fun ok(): Boolean {
-        if (!evaluated) {
-            error = exs.any { type(it) == null }
-            evaluated = true
-        }
-        return !error
-    }
+        if (ok) holeConstraints[hole] ?: listOf() else listOf()
 
     fun type(ex: Example): ConstraintTy? =
         when (ex) {

@@ -58,8 +58,7 @@ class Partitioner(
             }
             .flatMap { newCandidate ->
                 val u = posUnification(newCandidate)
-                if (u.ok()) recCandidates(newCandidate, u)
-                else emptySequence()
+                if (u.ok) recCandidates(newCandidate, u) else emptySequence()
             }
     }
 
