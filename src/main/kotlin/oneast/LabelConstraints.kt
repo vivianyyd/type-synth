@@ -12,18 +12,19 @@ class LabelConstraints(
     private val dep: ParameterwiseDependencyAnalysis
 ) {
 
-    private val pyName = mutableMapOf<String, String>()
+    private val nameToPy = mutableMapOf<String, String>()
     private val decls = mutableListOf<String>()
     private val constrs = mutableListOf<String>()
 
     init {
-        var pyNameFresh = 0
+        var fresh = 0
         s.names.keys.forEach { name ->
-            val n = "_${name.filter { it.isLetterOrDigit() }}"
-            if (n !in pyName.values) pyName[name] = n else pyName[name] = n + "_${pyNameFresh++}"
+            val stripped = "_${name.filter { it.isLetterOrDigit() }}"
+            if (stripped !in nameToPy.values) nameToPy[name] = stripped
+            else nameToPy[name] = stripped + "_${fresh++}"
         }
 
-        val nodeToType =
+        val paramToType =
             s.names.entries.fold(mutableMapOf<ParameterNode, Type>()) { m, (name, index) ->
                 val tree = s.types[index]
                 var curr = tree
@@ -37,53 +38,61 @@ class LabelConstraints(
                 m
             }
 
-        // Declare top-level variables, label sizes
-        val vars = nodeToType.values.filterIsInstance<Variable>().map { py(it) }.toSet().toList()
-        //        TODO("need to look inside functions for labels")
+        /*
+        Declare parameters, and top-level variables and label sizes.
+        - Each parameter corresponds to a set that represents the variables that appear in it.
+          We use Int sets since there are arbitrarily many Ints
+        - Each unique variable corresponds to a unique Int that may be an element of a set.
+        - Each unique label corresponds to a label size, which is an integer.
+        Note that we only analyze the variables and labels that occur at the top-level.
+         */
+        s.names.keys.forEach { name ->
+            val nodes = dep.nodes(name)
+            decls.addAll(nodes.map { "${py(it)} = Const('${py(it)}', SetSort(IntSort()))" })
+        }
+        val vars = paramToType.values.filterIsInstance<Variable>().map { py(it) }.toSet().toList()
         val lsizes =
-            nodeToType.values.filterIsInstance<NamedLabel>().map { pySize(it) }.toSet().toList()
+            paramToType.values.filterIsInstance<NamedLabel>().map { pySize(it) }.toSet().toList()
         declareInts(vars)
         declareInts(lsizes)
 
+        // All distinct variables must correspond to unique elements in a set
         val varsDistinct =
             vars.flatMapIndexed { i, u ->
                 vars.mapIndexedNotNull { j, v -> if (u == v || i < j) null else "$u != $v" }
             }
 
+        // This assumption leads us to overestimate label arities sometimes:
+        // Each label size must be at least the cardinality of each parameter for which that label
+        // appears at the top-level.
+        // It is an overestimation because consider a function that returns a list of pairs. The
+        // output parameter must contain two variables, and therefore has cardinality 2. But the
+        // list label actually can still have size 1.
         val labelsMatchConstrs =
-            nodeToType
+            paramToType
                 .filter { (_, t) -> t is NamedLabel }
                 .map { (n, t) -> "${pySize(t as NamedLabel)} >= Cardinality(${py(n)})" }
 
+        // When a variable appears as a top-level parameter, that parameter is a singleton set.
         val varsAreSingletons =
-            nodeToType
+            paramToType
                 .filter { (_, t) -> t is Variable }
                 .map { (n, t) -> "${py(n)} == Singleton(${py(t as Variable)})" }
 
         constrs.addAll(varsDistinct + labelsMatchConstrs + varsAreSingletons)
 
-        /** Union parameters [0 to n) */
-        fun union(name: String, n: Int): String {
-            require(n > 0)
-            return if (n == 1) py(ParameterNode(name, 0))
-            else "SetUnion(${union(name, n - 1)}, ${py(ParameterNode(name, n - 1))})"
-        }
-
-        s.names.keys.forEach { name ->
-            val nodes = dep.nodes(name)
-            decls.addAll(nodes.map { "${py(it)} = Const('${py(it)}', SetSort(IntSort()))" })
-        }
-
         // Translate dependency info into set constraints
+        // If a parameter is fixed, its variables are a subset of the union of previous parameters
         val fixedConstrs =
-            dep.fixed.flatMap { (name, a) ->
-                // if fixed, vars for this param are a subset of union of previous ones
-                a.mapIndexedNotNull { i, fixed ->
+            dep.fixed.flatMap { (name, fixedParams) ->
+                fixedParams.mapIndexedNotNull { i, fixed ->
                     if (fixed && i > 0) {
                         "IsSubset(${py(ParameterNode(name, i))}, ${union(name, i)})"
                     } else null
                 }
             }
+        // If a parameter is constrained, it has nonempty intersection with union of previous
+        // parameters
         val constrainedConstrs =
             dep.constrained.flatMap { (name, a) ->
                 a.mapIndexedNotNull { i, constrained ->
@@ -97,11 +106,20 @@ class LabelConstraints(
 
     fun pyParamToNode(p: String) =
         ParameterNode(
-            pyName.entries.find { it.value == p.removePrefix("p").substringBeforeLast('_') }!!.key,
+            nameToPy.entries
+                .find { it.value == p.removePrefix("p").substringBeforeLast('_') }!!
+                .key,
             p.substringAfterLast('_').toInt()
         )
 
-    fun py(node: ParameterNode) = "p${pyName[node.f]!!}_${node.i}"
+    /** Union parameters [0 to [n]) of [name]. */
+    fun union(name: String, n: Int): String {
+        require(n > 0)
+        return if (n == 1) py(ParameterNode(name, 0))
+        else "SetUnion(${union(name, n - 1)}, ${py(ParameterNode(name, n - 1))})"
+    }
+
+    private fun py(node: ParameterNode) = "p${nameToPy[node.f]!!}_${node.i}"
 
     private fun py(v: Variable) = "$v"
 
@@ -109,7 +127,7 @@ class LabelConstraints(
 
     private fun pySize(l: NamedLabel) = pySize(l.label)
 
-    fun pySizeToLabel(s: String) = s.removePrefix("size").toInt()
+    private fun pySizeToLabel(s: String) = s.removePrefix("size").toInt()
 
     private fun declareInts(names: List<String>) {
         if (names.isEmpty()) return

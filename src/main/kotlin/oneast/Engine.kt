@@ -83,10 +83,10 @@ class Engine(
             yield(state)
             return@sequence
         }
+        logger.log("Current query: ${nextQueryAndSeed.second}")
 
         for (solution in solveQuery(nextQueryAndSeed.first, nextQueryAndSeed.second)) {
-            logger.log("Potential solution: $solution")
-            logger.log("Looking for counterexamples")
+            logger.log("Looking for counterexamples for potential solution $solution")
             val ctrex =
                 CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth) { s, e ->
                     OneUnification(s, listOf(e)).ok
@@ -96,10 +96,7 @@ class Engine(
                 logger.log("Found no counterexamples")
                 yieldAll(searchRec(solution))
             } else {
-                logger.log("Adding counterexample ${ctrex.first}\tPosex: ${ctrex.second}")
-                logger.log(
-                    "Sanity check OK: ${ctrex.second != OneUnification(solution, listOf(ctrex.first)).ok()}"
-                )
+                logger.log("Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}")
                 if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
             }
         }

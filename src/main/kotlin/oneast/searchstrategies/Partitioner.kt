@@ -45,7 +45,7 @@ class Partitioner(
                 logger.count("Total candidates")
                 TODO(
                     "As we introduce blanks DURING search, we want to conservatively " +
-                            "fast forward at each step so we know what label a node has after " +
+                            "fast forward after placing blanks so we know what label a node has after " +
                             "we introduce it, so we can prune"
                 )
                 c.mapTypeAtIndex(iToFill) { typ -> applyPartition(typ, it) }

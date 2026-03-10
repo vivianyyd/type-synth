@@ -15,13 +15,17 @@ class Search(
     private val config: Configuration,
     private val logger: Logger
 ) {
+    private val names = examples.names
+
     private fun allCandidates(
         c: SearchState,
         emitLabelBlanks: Boolean,
         sizeBound: Int,
         depthBound: Int,
     ): Sequence<SearchState> =
-        config.searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger).candidates(c)
+        config
+            .searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger)
+            .candidates(c)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
@@ -30,17 +34,22 @@ class Search(
         val u = posUnification(s)
         val uf = IntUnionFind()
 
+        // Make equivalence classes of blanks
         s.blanks().forEach { blank ->
             u.holeEquals(blank).forEach { other ->
                 if (other is InstantiationTy) {
                     if (other.hole !is Blank) return null
+                    require(blank.labelOnly && other.hole.labelOnly)
                     uf.union(blank.id, other.hole.id)
                 }
             }
         }
 
         // TODO It's not really clear why we need this if we've done the previous step properly but
-        //   we do sooo that is bad
+        //   we do sooo that is bad. Do we still need it if all primitives of a single type are the
+        //   same atom?
+        // TODO actually we were indeed doing the previous step wrong... wasn't actually forcing the
+        //   unification thunk so there were no hole constraints. See if we can remove this one now
         for ((n1, i) in s.names) {
             for ((n2, j) in s.names) {
                 val t1 = s.types[i]
@@ -50,11 +59,12 @@ class Search(
             }
         }
 
+        // Set up mapping to assign labels to equivalence classes
         val freshLabel = Counter()
         freshLabel.ensureGt(s.labelArities.keys.maxOrNull() ?: -1)
         val holeToLabel = mutableMapOf<Int, Int>()
 
-        // Populate with equivalences to existing labels
+        // Populate with bindings to existing labels
         val holes = s.types.flatMap { it.allHoles() }.filterIsInstance<Blank>()
         holes.forEach {
             val constructors = u.holeEquals(it).filterIsInstance<ConstraintTypeConstructor>()
@@ -68,17 +78,18 @@ class Search(
             }
         }
 
+        // Iterate through types and substitute labels for blanks - either the hole's equivalence
+        // class' canonical element already has a label, or we make a fresh one
         fun getLabel(h: Blank) = holeToLabel.getOrPut(uf.find(h.id) ?: h.id) { freshLabel.get() }
 
         fun assignLabels(t: Type): Type =
             when (t) {
                 is Arrow -> Arrow(assignLabels(t.l), assignLabels(t.r))
                 is NamedLabel -> t.copy(params = t.params.map { assignLabels(it) })
-                is Blank ->
-                    NamedLabel(
-                        label = getLabel(t),
-                        params = emptyList()
-                    ) // empty since we haven't decided arities yet
+                is Blank -> NamedLabel(label = getLabel(t), params = emptyList())
+                // If it's a new label, we haven't decided its arity yet. If it's an existing label,
+                // we could assign the appropriate arity here. But we will do it again later, and
+                // the arity might be changed when we resolve anyway. So don't bother yet
                 is TypeHole -> error("Shouldn't happen")
                 is Variable -> t
             }
@@ -192,31 +203,24 @@ class Search(
     }
 
     fun solutions(): Sequence<SearchState> = sequence {
-        for (depth in 0..config.depthBound) {
-            logger.start("Depth $depth for outlines of ${examples.names}")
-            val seeds = concreteSeeds(config.sizeBound, depth)
+        for (seedDepth in 0..config.depthBound) {
+            val seeds =
+                logger.time("Depth $seedDepth outlining $names") {
+                    concreteSeeds(config.sizeBound, seedDepth)
+                }
+
             if (seeds.isEmpty()) continue
             logger.log(seeds.countedLines("Concrete seeds"))
 
             for (depth in 1..config.depthBound) {
-                logger.start("Depth $depth for ${examples.names}")
+                logger.start("Depth $depth concretizing $names")
                 for (size in 1..config.sizeBound) {
-                    logger.start("Size $size for ${examples.names}")
-                    val sols =
-                        concretizationSearch(
-                            seeds,
-                            currentSizeBound = size,
-                            currentDepthBound = depth,
-                        )
-                            .iterator()
+                    logger.start("Size $size concretizing $names")
+                    val sols = concretizationSearch(seeds, size, depth).iterator()
                     yieldAll(sols)
-                    logger.stop("Size $size for ${examples.names}")
-                    // The contract is to provide *all* solutions, not just those of minimal
-                    // size/depth
-                    // if (solved) break
+                    logger.stop("Size $size concretizing $names")
                 }
-                logger.stop("Depth $depth for ${examples.names}")
-                // if (solved) break
+                logger.stop("Depth $depth concretizing $names")
             }
         }
     }
@@ -229,13 +233,14 @@ class Search(
                     r.addParamHoles(labelArities, underArrow = true)
                 )
             is NamedLabel -> {
-                // Only overwrite parameters if they are wrongly empty
-                if ((labelArities[this.label] ?: 0) > 0 && this.params.isEmpty()) {
+                // We *always* overwrite parameters if there is mismatch
+                val arity = labelArities[this.label] ?: 0
+                if (this.params.size != arity) {
                     // Children of labels are type holes if under a function, and blanks with
                     // labelOnly=false if under a nullary
                     this.copy(
                         params =
-                        List(labelArities[this.label]!!) {
+                        List(arity) {
                             if (underArrow) TypeHole() else Blank(labelOnly = false)
                         })
                 } else this
