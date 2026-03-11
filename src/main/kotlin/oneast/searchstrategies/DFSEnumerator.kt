@@ -9,6 +9,7 @@ import util.Logger
 class DFSEnumerator(
     examples: Examples,
     private val emitLabelBlanks: Boolean,
+    private val emitConstructors: Boolean,
     private val sizeBound: Int,
     private val depthBound: Int,
     private val logger: Logger
@@ -27,7 +28,10 @@ class DFSEnumerator(
         if (c.noHoles()) return sequenceOf(c)
 
         // We won't fast-forward label blanks that we ourselves emitted.
-        if (c.noFillableHoles()) return if (!emitLabelBlanks) fastForward(c) else sequenceOf(c)
+        if (c.noFillableHoles())
+            return if (!emitLabelBlanks) conservativeFastForward(c, depthBound)
+            /* conservative fast forward might return something with holes, which must be filled in a later stage as dictated by Search */
+            else sequenceOf(c)
 
         if (currSizeBound == 0) return emptySequence()
 
@@ -39,6 +43,7 @@ class DFSEnumerator(
                 vars = c.types[iToFill].variables().size,
                 canBeVar = hole != c.types[iToFill],
                 emitLabelBlanks = emitLabelBlanks,
+                emitConstructors = emitConstructors,
                 mustBeLeaf = currSizeBound <= 1 || depth >= depthBound
             )
             .asSequence()

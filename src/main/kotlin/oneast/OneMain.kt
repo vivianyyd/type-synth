@@ -59,7 +59,7 @@ fun run(
 
 data class Configuration(
     val name: String,
-    val searchStrategy: (Examples, Boolean, Int, Int, Logger) -> SearchStrategy,
+    val searchStrategy: (Examples, Boolean, Boolean, Int, Int, Logger) -> SearchStrategy,
     val sizeBound: Int,
     val depthBound: Int,
     val namesPerRound: Int,

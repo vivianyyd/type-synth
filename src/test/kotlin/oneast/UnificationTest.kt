@@ -32,7 +32,7 @@ class UnificationTest {
         makeContext(context.toList())
 
     private fun ok(context: SearchState, program: Example) =
-        OneUnification(context, listOf(program)).ok()
+        OneUnification(context, listOf(program)).ok
 
     private fun assertOk(context: SearchState, program: Example) = assertTrue(ok(context, program))
 
@@ -45,9 +45,7 @@ class UnificationTest {
         val bai = Arrow(Arrow(b, a), Arrow(a, b))
         val context = makeContext("f" to bai, "g" to ab)
         assertOk(context, App(f, g))
-        assertEquals(
-            OneUnification(context, emptyList()).type(App(f, g))!!.toNode(), Arrow(b, a)
-        )
+        assertEquals(OneUnification(context, emptyList()).type(App(f, g))!!.toNode(), Arrow(b, a))
     }
 
     @Test
@@ -88,8 +86,7 @@ class UnificationTest {
         println(unify.type(compare))
 
         assertEquals( // (V0 -> V0 -> V0) -> L0[]
-            Arrow(Arrow(a, Arrow(a, a)), I),
-            unify.type(App(compare, max))!!.toNode()
+            Arrow(Arrow(a, Arrow(a, a)), I), unify.type(App(compare, max))!!.toNode()
         )
         assertEquals( // (V0 -> V0 -> L0[]) -> (V0 -> V0 -> L0[])
             Arrow(
@@ -99,7 +96,7 @@ class UnificationTest {
             unify.type(App(max, compare))!!.toNode()
         )
 
-        assertTrue(unify.ok())
+        assertTrue(unify.ok)
     }
 
     @Test

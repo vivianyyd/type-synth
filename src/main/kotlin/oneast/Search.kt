@@ -20,11 +20,12 @@ class Search(
     private fun allCandidates(
         c: SearchState,
         emitLabelBlanks: Boolean,
+        emitConstructors: Boolean,
         sizeBound: Int,
         depthBound: Int,
     ): Sequence<SearchState> =
         config
-            .searchStrategy(examples, emitLabelBlanks, sizeBound, depthBound, logger)
+            .searchStrategy(examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, logger)
             .candidates(c)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
@@ -103,6 +104,7 @@ class Search(
                 allCandidates(
                     seed,
                     emitLabelBlanks = true,
+                    emitConstructors = true,
                     sizeBound = size,
                     depthBound = depth,
                 )
@@ -168,6 +170,7 @@ class Search(
                 allCandidates(
                     it,
                     emitLabelBlanks = false,
+                    emitConstructors = true,
                     sizeBound = currentSizeBound,
                     depthBound = currentDepthBound,
                 )
@@ -180,7 +183,7 @@ class Search(
         // the same fn signatures but different nullaries.
         val finalResults =
             candidatesNullariesDeduced.flatMap {
-                if (it.blanks().isEmpty()) sequenceOf(it)
+                if (it.noHoles()) sequenceOf(it)
                 else {
                     val blanksReplacedWithHoles =
                         it.mapTypes { t ->
@@ -191,6 +194,7 @@ class Search(
                     allCandidates(
                         blanksReplacedWithHoles,
                         emitLabelBlanks = false,
+                        emitConstructors = false, // TODO here is something we are testing out.
                         sizeBound = currentSizeBound,
                         depthBound = currentDepthBound,
                     )

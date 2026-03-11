@@ -78,7 +78,7 @@ sealed interface Type {
             is Arrow ->
                 if (rightPath)
                     l.variablesBeforeLastParam(rightPath = false) /* == variables() */ +
-                            r.variablesBeforeLastParam(rightPath = true)
+                        r.variablesBeforeLastParam(rightPath = true)
                 else variables()
             is NamedLabel,
             is THole,
@@ -174,8 +174,7 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
         val rite = r.shallowestFillableHole(topLevel = topLevel)
         val riteAdjusted =
             // This physical equality check works since holes are not data classes
-            if (topLevel && rite != null && rite.first == lastParam()) rite.first to -1
-            else rite
+            if (topLevel && rite != null && rite.first == lastParam()) rite.first to -1 else rite
         return listOfNotNull(left, riteAdjusted)
             .minByOrNull { it.second }
             ?.let { it.first to it.second + (if (topLevel) 0 else 1) }
@@ -247,66 +246,45 @@ sealed class THole : Type {
         vars: Int,
         canBeVar: Boolean,
         emitLabelBlanks: Boolean,
+        emitConstructors: Boolean,
         mustBeLeaf: Boolean
     ): List<Type>
 
-    fun fastForward(unification: OneUnification, topLevel: Boolean): Type? {
-        val defaultVariable =
-            if (topLevel) null
-            else ConstraintVariable(0, instId = 0) // instId shouldn't matter, dummy here
+    /**
+     * A more conservative fast-forward, where we are guaranteed to return a Type iff it was the
+     * only way we could continue. We actually want to introduce holes here since we can't guess
+     * anything, but we autofill all the holes we can at once. If a hole points to an Instantiation,
+     * Variable, or Bottom, we do not fast forward.
+     */
+    fun conservativeFastForward(unification: OneUnification): Type? {
+        val defaultHoleMaker = { TypeHole() }
 
         val antiunifies = unification.holeEquals(this)
-        return antiunify(antiunifies, unification, defaultVariable)?.toNode()
+        val constrs = antiunifies.filterIsInstance<ConstraintTypeConstructor>()
+
+        /* It may seem redundant to perform these checks when antiunify() does them as well, but it is
+        not. This prevents us from an infinite loop when we try to get the fixpoint of this
+        function, since our default antiunification behavior is to make another hole. If at the
+        top-level we can't do anything, we shouldn't replace this hole with another hole, we
+        should just return no changes. We still want to keep that behavior in antiunify() though,
+        since we need it to fill the leaves when we are fast-forwarding to an entire tree. */
+        if (constrs.isEmpty() || antiunifies.any { it !is ConstraintTypeConstructor }) return null
+        if (constrs.any { a -> constrs.any { b -> !a.match(b) } }) return null
+        return antiunify(antiunifies, defaultAntiunifier = defaultHoleMaker)
     }
 
-    private fun antiunify(
-        exprs: List<ConstraintTy>,
-        unification: OneUnification,
-        defaultVariable: ConstraintVariable?
-    ): ConstraintTy? {
-        if (exprs.isEmpty()) return defaultVariable // might as well give this a try
-        if (exprs.any { it is ConstraintVariable }) return defaultVariable
+    /**
+     * Fast forward once we've hit our budget, a last-ditch effort to find a solution if we were
+     * quite close.
+     */
+    fun fastForward(unification: OneUnification): Type? {
+        val defaultVariable = Variable(0)
 
-        val insts = exprs.filterIsInstance<InstantiationTy>()
-        val constructors = exprs.filterIsInstance<ConstraintTypeConstructor>()
-
-        if (constructors.isEmpty() ||
-            constructors.any { a -> constructors.any { b -> !a.match(b) } })
-            return defaultVariable
-
-        // We know they match now
-        val auConstrs =
-            when (constructors.first()) {
-                is ConstraintArrow -> {
-                    antiunify(
-                            constructors.map { (it as ConstraintArrow).l },
-                            unification,
-                            defaultVariable)
-                        ?.let { l ->
-                            antiunify(
-                                    constructors.map { (it as ConstraintArrow).r },
-                                    unification,
-                                    defaultVariable)
-                                ?.let { r -> ConstraintArrow(l, r) }
-                        }
-                }
-                is ConstraintLabel -> {
-                    val params =
-                        List(constructors.first().params.size) { i ->
-                                antiunify(
-                                    constructors.map { (it as ConstraintLabel).params[i] },
-                                    unification,
-                                    defaultVariable)
-                            }
-                            .filterNotNull()
-                    if (params.size != constructors.first().params.size) null
-                    else ConstraintLabel((constructors.first() as ConstraintLabel).label, params)
-                }
-            }
-
-        return if (auConstrs != null) {
+        val antiunifies = unification.holeEquals(this)
+        val au = antiunify(antiunifies, defaultAntiunifier = { defaultVariable })
+        return if (au is Constructor) {
             val instsPointTo =
-                insts.mapNotNull {
+                antiunifies.filterIsInstance<InstantiationTy>().mapNotNull {
                     // todo this is not efficient, if you read it you'll see we examine things
                     //  multiple times
                     val instEqs = unification.holeEquals(it.hole)
@@ -315,8 +293,50 @@ sealed class THole : Type {
                     if (instEqs.any { it is ConstraintVariable }) null
                     else takeFirstIfMatch(instEqs.filterIsInstance<ConstraintTypeConstructor>())
                 }
-            takeFirstIfMatch(listOf(auConstrs) + instsPointTo)
-        } else null
+            takeFirstIfMatch(listOf(au.instantiate(0) as ConstraintTypeConstructor) + instsPointTo)
+                ?.toNode()
+        } else au
+    }
+
+    /**
+     * Antiunifies types in [exprs], *ignoring Instantiations and Bottom*. Only considers Variables
+     * and Constructors.
+     */
+    private fun antiunify(exprs: List<ConstraintTy>, defaultAntiunifier: () -> Type): Type? {
+        if (exprs.isEmpty()) return defaultAntiunifier()
+        if (exprs.any { it is ConstraintVariable }) return defaultAntiunifier()
+
+        val constructors = exprs.filterIsInstance<ConstraintTypeConstructor>()
+
+        if (constructors.isEmpty() ||
+            constructors.any { a -> constructors.any { b -> !a.match(b) } }
+        )
+            return defaultAntiunifier()
+
+        // We know they match now
+        return when (constructors.first()) {
+            is ConstraintArrow -> {
+                antiunify(constructors.map { (it as ConstraintArrow).l }, defaultAntiunifier)
+                    ?.let { l ->
+                        antiunify(
+                            constructors.map { (it as ConstraintArrow).r }, defaultAntiunifier
+                        )
+                            ?.let { r -> Arrow(l, r) }
+                    }
+            }
+            is ConstraintLabel -> {
+                val params =
+                    List(constructors.first().params.size) { i ->
+                        antiunify(
+                            constructors.map { (it as ConstraintLabel).params[i] },
+                            defaultAntiunifier
+                        )
+                    }
+                        .filterNotNull()
+                if (params.size != constructors.first().params.size) null
+                else NamedLabel((constructors.first() as ConstraintLabel).label, params)
+            }
+        }
     }
 
     /** Returns the first node if top-level constructors all match; null if mismatch or empty. */
@@ -350,26 +370,34 @@ class TypeHole : THole() {
         vars: Int,
         canBeVar: Boolean,
         emitLabelBlanks: Boolean,
+        emitConstructors: Boolean,
         mustBeLeaf: Boolean
     ): List<Type> =
         if (mustBeLeaf)
-            expansionsNoBound(unification, labelArities, vars, canBeVar, emitLabelBlanks).filter {
-                when (it) {
-                    is Variable -> true
-                    is NamedLabel -> it.params.isEmpty()
-                    is Arrow -> false
-                    is Blank -> true
-                    is TypeHole -> throw Exception("Expansions cannot include type holes")
+            expansionsNoBound(
+                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors
+            )
+                .filter {
+                    when (it) {
+                        is Variable -> true
+                        is NamedLabel -> it.params.isEmpty()
+                        is Arrow -> false
+                        is Blank -> true
+                        is TypeHole -> throw Exception("Expansions cannot include type holes")
+                    }
                 }
-            }
-        else expansionsNoBound(unification, labelArities, vars, canBeVar, emitLabelBlanks)
+        else
+            expansionsNoBound(
+                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors
+            )
 
     private fun expansionsNoBound(
         unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
-        emitLabelBlanks: Boolean
+        emitLabelBlanks: Boolean,
+        emitConstructors: Boolean
     ): List<Type> {
         val variableExps = if (canBeVar) (0 until vars + 1).map { Variable(it) } else emptyList()
         val fnExpansion = Arrow(TypeHole(), TypeHole())
@@ -380,7 +408,7 @@ class TypeHole : THole() {
 
         val instances = unification.holeEquals(this).filterIsInstance<ConstraintTypeConstructor>()
         val constructorTypes = // this would be cleaner if implemented as a filter
-            if (instances.isNotEmpty()) {
+            if (emitConstructors && instances.isNotEmpty()) {
                 val i = instances.first()
                 if (instances.any { !i.match(it) }) emptyList()
                 else
@@ -418,6 +446,7 @@ class Blank(val labelOnly: Boolean) : THole() {
         vars: Int,
         canBeVar: Boolean,
         emitLabelBlanks: Boolean,
+        emitConstructors: Boolean,
         mustBeLeaf: Boolean
     ) = listOf(this)
 
@@ -457,7 +486,7 @@ sealed class ConstraintTypeConstructor(open val params: List<ConstraintTy>) : Co
 
     private val variables by lazy { params.flatMap { it.variables() } }
 
-    override fun variables() = variables
+    override fun variables(): List<ConstraintVariable> = variables
 }
 
 data class ConstraintArrow(override val params: List<ConstraintTy>) :
