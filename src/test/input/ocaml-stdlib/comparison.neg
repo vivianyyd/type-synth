@@ -1,4 +1,5 @@
 ((=) Num Str)
+((<>) Num Str)
 ((<) true Num)
 ((>) Str Num)
 ((<=) (compare Num Num) true)
@@ -9,3 +10,6 @@
 (compare Num Str)
 (min true Num)
 (max Str Num)
+(compare Num (min Str Str))
+(min (max Num Num) Str)
+(max Str (compare Str Str))

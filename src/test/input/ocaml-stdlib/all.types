@@ -10,9 +10,6 @@ val <> : 'a -> 'a -> bool
 val = : 'a -> 'a -> bool
 val > : 'a -> 'a -> bool
 val >= : 'a -> 'a -> bool
-val [0;1] : int list
-val [0] : int list
-val [1] : int list
 val abs : int -> int
 val asr : int -> int -> int
 val compare : 'a -> 'a -> int

@@ -8,7 +8,8 @@
 ((+) true Num)
 
 ((-) Num Str)
-((-) true Num)
+((-) true)
+(compare ((-) Num Num) Str)
 
 ((*) Num Str)
 ((*) true Num)

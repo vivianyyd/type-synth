@@ -11,12 +11,14 @@
 ((~+) (abs ((-) Num Num)))
 
 ((+) Num Num)
+((+) Num ((-) Num Num))
 ((+) (succ Num) Num)
 ((+) (pred Num) Num)
 ((+) (abs ((-) Num Num)) Num)
 ((+) (compare Num Num) (compare Num Num))
 
 ((-) Num Num)
+((-) Num ((-) Num Num))
 ((-) (succ Num) Num)
 ((-) (pred Num) Num)
 ((-) (max Num Num) (min Num Num))
