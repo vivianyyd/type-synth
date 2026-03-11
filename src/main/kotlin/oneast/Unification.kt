@@ -12,10 +12,13 @@ typealias Binding = Pair<ConstraintVariable, ConstraintTy>
  * than once.
  */
 class OneUnification(private val candidate: SearchState, exs: List<Example>) {
-    val ok = exs.all { type(it) != null }
+    private val insts = Counter() // Number of times any top-level type has been instantiated
+
     private val holeConstraints = mutableMapOf<Int, MutableList<ConstraintTy>>() // holeId
 
-    private val insts = Counter() // Number of times any top-level type has been instantiated
+    // The order of these declarations matters; [insts] and [holeConstraints] must be instantiated
+    // before they are used to compute types
+    val ok = exs.all { type(it) != null }
 
     fun holeEquals(hole: THole): List<ConstraintTy> = holeEquals(hole.id)
 
