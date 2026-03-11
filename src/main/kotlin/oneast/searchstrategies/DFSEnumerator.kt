@@ -19,7 +19,7 @@ class DFSEnumerator(
     //   restore tree to original state
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
-        return if (u.ok) recCandidates(c, u, sizeBound) else emptySequence()
+        return if (u.ok) recCandidates(c, u, sizeBound, c.types.sumOf { it.numFillableHoles() }) else emptySequence()
     }
 
     /**
@@ -28,7 +28,8 @@ class DFSEnumerator(
     private fun recCandidates(
         c: SearchState,
         unification: OneUnification,
-        currSizeBound: Int
+        currSizeBound: Int,
+        holesRemaining: Int
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
 
@@ -39,7 +40,7 @@ class DFSEnumerator(
             /* conservative fast forward might return something with holes, which must be filled in a later stage as dictated by Search */
             else sequenceOf(c)
 
-        if (currSizeBound == 0) return emptySequence()
+        if (currSizeBound - holesRemaining < 0) return emptySequence()
 
         val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
         return hole
@@ -50,22 +51,28 @@ class DFSEnumerator(
                 canBeVar = hole != c.types[iToFill],
                 emitLabelBlanks = emitLabelBlanks,
                 emitConstructors = emitConstructors,
-                mustBeLeaf = currSizeBound <= 1 || depth >= depthBound
+                mustBeLeaf = currSizeBound - holesRemaining <= 1 || depth >= depthBound
             )
             .asSequence()
             .map {
                 logger.count("Total candidates")
-                c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) }
+                it.numFillableHoles() to c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) }
             }
-            .filterNot {
+            .filterNot { (_, it) ->
                 // Importantly, this pruning is sound even when we perform it on outlines (before
                 // label arities are computed and holes inserted accordingly). That's because when
                 // we are generating outlines, labels are considered blanks
                 it.types[iToFill].invalid()
             }
-            .flatMap { newCandidate ->
+            .flatMap { (introducedHoles, newCandidate) ->
                 val u = posUnification(newCandidate)
-                if (u.ok) recCandidates(newCandidate, u, currSizeBound = currSizeBound - 1)
+                if (u.ok)
+                    recCandidates(
+                        newCandidate,
+                        u,
+                        currSizeBound = currSizeBound - 1,
+                        holesRemaining = holesRemaining - 1 + introducedHoles
+                    )
                 else emptySequence()
             }
     }
