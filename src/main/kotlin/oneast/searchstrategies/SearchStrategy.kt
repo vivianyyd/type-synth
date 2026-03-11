@@ -73,6 +73,6 @@ abstract class SearchStrategy(private val examples: Examples) {
                     }
                 }
         } while (changed)
-        return if (ok) curr else null
+        return if (posUnification(curr).ok) curr else null
     }
 }

@@ -174,8 +174,7 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
         val rite = r.shallowestFillableHole(topLevel = topLevel)
         val riteAdjusted =
             // This physical equality check works since holes are not data classes
-            if (topLevel && rite != null && rite.first == lastParam()) rite.first to -1
-            else rite
+            if (topLevel && rite != null && rite.first == lastParam()) rite.first to -1 else rite
         return listOfNotNull(left, riteAdjusted)
             .minByOrNull { it.second }
             ?.let { it.first to it.second + (if (topLevel) 0 else 1) }
@@ -375,16 +374,22 @@ class TypeHole : THole() {
         mustBeLeaf: Boolean
     ): List<Type> =
         if (mustBeLeaf)
-            expansionsNoBound(unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors).filter {
-                when (it) {
-                    is Variable -> true
-                    is NamedLabel -> it.params.isEmpty()
-                    is Arrow -> false
-                    is Blank -> true
-                    is TypeHole -> throw Exception("Expansions cannot include type holes")
+            expansionsNoBound(
+                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors
+            )
+                .filter {
+                    when (it) {
+                        is Variable -> true
+                        is NamedLabel -> it.params.isEmpty()
+                        is Arrow -> false
+                        is Blank -> true
+                        is TypeHole -> throw Exception("Expansions cannot include type holes")
+                    }
                 }
-            }
-        else expansionsNoBound(unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors)
+        else
+            expansionsNoBound(
+                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors
+            )
 
     private fun expansionsNoBound(
         unification: OneUnification,
@@ -481,10 +486,7 @@ sealed class ConstraintTypeConstructor(open val params: List<ConstraintTy>) : Co
 
     private val variables by lazy { params.flatMap { it.variables() } }
 
-    override fun variables(): List<ConstraintVariable> {
-        if (toString().length > 500) TODO("I am long: $this")
-        return variables
-    }
+    override fun variables(): List<ConstraintVariable> = variables
 }
 
 data class ConstraintArrow(override val params: List<ConstraintTy>) :
