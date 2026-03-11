@@ -15,7 +15,7 @@ class Search(
     private val config: Configuration,
     private val logger: Logger
 ) {
-    private val names = examples.names
+    private val names = seed.names.keys
 
     private fun allCandidates(
         c: SearchState,
@@ -184,6 +184,10 @@ class Search(
         val finalResults =
             candidatesNullariesDeduced.flatMap {
                 if (it.noHoles()) sequenceOf(it)
+                // We only want to enumerate the nullaries. If there are still holes under function
+                // types, we simply didn't have the size or depth budget to finish. jk. this logic
+                // is directly handled in dfs enumerator
+                //                else if (it.types.filterIsInstance<Arrow>().all { it.noHoles() })
                 else {
                     val blanksReplacedWithHoles =
                         it.mapTypes { t ->
@@ -191,6 +195,8 @@ class Search(
                                 if (h is Blank) acc.replace(h, TypeHole()) else acc
                             }
                         }
+                    // Need to respect depth bound here or in conservative FF
+                    logger.log("Enumerating nullaries: $blanksReplacedWithHoles")
                     allCandidates(
                         blanksReplacedWithHoles,
                         emitLabelBlanks = false,
@@ -198,20 +204,47 @@ class Search(
                         sizeBound = currentSizeBound,
                         depthBound = currentDepthBound,
                     )
-                }
+                } // else emptySequence()
             }
 
         return finalResults.filter { c ->
-            posUnification(c).ok && examples.neg.all { !OneUnification(c, listOf(it)).ok }
+            if (!(posUnification(c).ok))
+                error(
+                    "Enumerator should never return something that fails posexs at concretization stage"
+                )
+            examples.neg.all { !OneUnification(c, listOf(it)).ok }
+        }
+    }
+
+    private fun <T> ifFirst(seq: Sequence<T>, condition: (T) -> Boolean): Sequence<T> {
+        val iterator = seq.iterator()
+
+        return if (!iterator.hasNext()) {
+            emptySequence()
+        } else {
+            val first = iterator.next()
+
+            if (condition(first)) {
+                sequence {
+                    yield(first)
+                    yieldAll(iterator)
+                }
+            } else {
+                emptySequence()
+            }
         }
     }
 
     fun solutions(): Sequence<SearchState> = sequence {
+        val seen = mutableSetOf<SearchState>()
         for (seedDepth in 0..config.depthBound) {
-            val seeds =
+            var seeds =
                 logger.time("Depth $seedDepth outlining $names") {
                     concreteSeeds(config.sizeBound, seedDepth)
                 }
+            // Only try concretizing the new seeds
+            seeds = (seeds.toSet() - seen).toList()
+            seen.addAll(seeds)
 
             if (seeds.isEmpty()) continue
             logger.log(seeds.countedLines("Concrete seeds"))

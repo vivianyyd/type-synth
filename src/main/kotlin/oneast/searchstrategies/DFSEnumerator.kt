@@ -17,9 +17,14 @@ class DFSEnumerator(
     // TODO can also implement a stateful version where we mutate the tree by picking a hole which
     //   has a parent pointer, for each of the expansions, modify the parent and recurse. when done,
     //   restore tree to original state
-    override fun candidates(c: SearchState): Sequence<SearchState> =
-        recCandidates(c, posUnification(c), sizeBound)
+    override fun candidates(c: SearchState): Sequence<SearchState> {
+        val u = posUnification(c)
+        return if (u.ok) recCandidates(c, u, sizeBound) else emptySequence()
+    }
 
+    /**
+     * As long as seed [c] passes positive examples, states returned by this function do as well.
+     */
     private fun recCandidates(
         c: SearchState,
         unification: OneUnification,
@@ -29,7 +34,8 @@ class DFSEnumerator(
 
         // We won't fast-forward label blanks that we ourselves emitted.
         if (c.noFillableHoles())
-            return if (!emitLabelBlanks) conservativeFastForward(c, depthBound)
+            return if (!emitLabelBlanks)
+                conservativeFastForward(c, depthBound).filter { it.maxParamDepth() <= depthBound }
             /* conservative fast forward might return something with holes, which must be filled in a later stage as dictated by Search */
             else sequenceOf(c)
 
