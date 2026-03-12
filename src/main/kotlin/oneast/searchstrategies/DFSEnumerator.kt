@@ -19,7 +19,8 @@ class DFSEnumerator(
     //   restore tree to original state
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
-        return if (u.ok) recCandidates(c, u, sizeBound, c.types.sumOf { it.numFillableHoles() }) else emptySequence()
+        return if (u.ok) recCandidates(c, u, sizeBound, c.types.sumOf { it.numFillableHoles() })
+        else emptySequence()
     }
 
     /**
@@ -36,7 +37,7 @@ class DFSEnumerator(
         // We won't fast-forward label blanks that we ourselves emitted.
         if (c.noFillableHoles())
             return if (!emitLabelBlanks)
-                conservativeFastForward(c, depthBound).filter { it.maxParamDepth() <= depthBound }
+                unionFastForward(c, depthBound).filter { it.maxParamDepth() <= depthBound }
             /* conservative fast forward might return something with holes, which must be filled in a later stage as dictated by Search */
             else sequenceOf(c)
 

@@ -55,11 +55,18 @@ class SearchState(
     fun mapTypes(transform: (Type) -> Type): SearchState =
         SearchState(names = names, types = types.map(transform), labelArities = labelArities)
 
+    fun mapTypesOrNull(transform: (Type) -> Type?): SearchState? {
+        val newTypes = types.map(transform)
+        return if (null in newTypes) null else
+            SearchState(names = names, types = newTypes.requireNoNulls(), labelArities = labelArities)
+    }
+
     fun mapTypeAtIndex(i: Int, transform: (Type) -> Type): SearchState =
         SearchState(
             names = names,
             types = types.mapIndexed { j, t -> if (i == j) transform(t) else t },
-            labelArities = labelArities)
+            labelArities = labelArities
+        )
 
     override fun toString() = asMap.toString()
 }
@@ -226,6 +233,48 @@ sealed class THole : Type {
         fun resetIds() {
             nextId = 0
         }
+
+        /**
+         * Antiunifies types in [exprs], *ignoring Instantiations and Bottom*. Only considers Variables
+         * and Constructors.
+         */
+        fun antiunify(exprs: List<ConstraintTy>, defaultAntiunifier: () -> Type): Type? {
+            if (exprs.isEmpty()) return defaultAntiunifier()
+            if (exprs.any { it is ConstraintVariable }) return defaultAntiunifier()
+
+            val constructors = exprs.filterIsInstance<ConstraintTypeConstructor>()
+
+            if (constructors.isEmpty() ||
+                constructors.any { a -> constructors.any { b -> !a.match(b) } }
+            )
+                return defaultAntiunifier()
+
+            // We know they match now
+            return when (constructors.first()) {
+                is ConstraintArrow -> {
+                    antiunify(constructors.map { (it as ConstraintArrow).l }, defaultAntiunifier)
+                        ?.let { l ->
+                            antiunify(
+                                constructors.map { (it as ConstraintArrow).r }, defaultAntiunifier
+                            )
+                                ?.let { r -> Arrow(l, r) }
+                        }
+                }
+                is ConstraintLabel -> {
+                    val params =
+                        List(constructors.first().params.size) { i ->
+                            antiunify(
+                                constructors.map { (it as ConstraintLabel).params[i] },
+                                defaultAntiunifier
+                            )
+                        }
+                            .filterNotNull()
+                    if (params.size != constructors.first().params.size) null
+                    else NamedLabel((constructors.first() as ConstraintLabel).label, params)
+                }
+            }
+        }
+
     }
 
     val id = nextId++
@@ -298,47 +347,6 @@ sealed class THole : Type {
             takeFirstIfMatch(listOf(au.instantiate(0) as ConstraintTypeConstructor) + instsPointTo)
                 ?.toNode()
         } else au
-    }
-
-    /**
-     * Antiunifies types in [exprs], *ignoring Instantiations and Bottom*. Only considers Variables
-     * and Constructors.
-     */
-    private fun antiunify(exprs: List<ConstraintTy>, defaultAntiunifier: () -> Type): Type? {
-        if (exprs.isEmpty()) return defaultAntiunifier()
-        if (exprs.any { it is ConstraintVariable }) return defaultAntiunifier()
-
-        val constructors = exprs.filterIsInstance<ConstraintTypeConstructor>()
-
-        if (constructors.isEmpty() ||
-            constructors.any { a -> constructors.any { b -> !a.match(b) } }
-        )
-            return defaultAntiunifier()
-
-        // We know they match now
-        return when (constructors.first()) {
-            is ConstraintArrow -> {
-                antiunify(constructors.map { (it as ConstraintArrow).l }, defaultAntiunifier)
-                    ?.let { l ->
-                        antiunify(
-                            constructors.map { (it as ConstraintArrow).r }, defaultAntiunifier
-                        )
-                            ?.let { r -> Arrow(l, r) }
-                    }
-            }
-            is ConstraintLabel -> {
-                val params =
-                    List(constructors.first().params.size) { i ->
-                        antiunify(
-                            constructors.map { (it as ConstraintLabel).params[i] },
-                            defaultAntiunifier
-                        )
-                    }
-                        .filterNotNull()
-                if (params.size != constructors.first().params.size) null
-                else NamedLabel((constructors.first() as ConstraintLabel).label, params)
-            }
-        }
     }
 
     /** Returns the first node if top-level constructors all match; null if mismatch or empty. */
