@@ -1,5 +1,6 @@
-package oneast
+package oneast.unit
 
+import oneast.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

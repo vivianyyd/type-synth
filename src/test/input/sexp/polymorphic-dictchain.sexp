@@ -1,18 +1,7 @@
 (i (i));(b (b));({} (d a b));(put (-> (d k v) (-> k (-> v (d k v)))));(chain (-> (d a b) (-> (d b c) (d a c))))
-(- (put (chain (put {} i b) (put {} b b)) i i))
-
-
-
 
 (+ (chain {} {}))
-
-
-
-
 (+ (chain (put {} b b) (put {} b b)))
-(- (chain (put {} i b) (put {} i b)))
-(- (chain (put {} i b) (put {} i i)))
-(- (chain (put {} b i) (put {} b b)))
 (+ (put (chain (put {} i b) (put {} b i)) i i))
 (+ (put (put {} i b) i b))
 (+ (put (chain (put {} i b) (put {} b b)) i b))
@@ -36,13 +25,17 @@
 (+ (chain (chain (put {} b b) (put (put {} b b) b b))))
 (+ (chain (chain (put {} b b) (chain (put {} b i) (put {} i b)))))
 (+ (chain (chain (put {} b b) (chain (put {} b i) (put (put {} i b) i b)))))
+
+(- (put (chain (put {} i b) (put {} b b)) i i))
+(- (chain (put {} i b) (put {} i b)))
+(- (chain (put {} i b) (put {} i i)))
+(- (chain (put {} b i) (put {} b b)))
 (- (put (put {} i i) (put (put {} i i))))
 (- (put (put {} b i) (put (put {} i i) i)))
 (- (chain (put (put {} i i))))
 (- (chain (put {} i i) (put (put {} i i))))
 (- (chain (put {} i i) (chain (put {} i i))))
 (- (chain (put {} i i) (chain (put (put {} i i) i i))))
-(- (put (put {} i i)))
 (- (put (put (put (put {} i i) i i))))
 (- (put (put (chain (put {} i i) (put {} i i)))))
 (- (put (put (chain (put {} i i) (put (put {} i i) i i)))))

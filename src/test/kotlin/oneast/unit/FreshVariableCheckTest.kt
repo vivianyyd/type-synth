@@ -1,5 +1,8 @@
-package oneast
+package oneast.unit
 
+import oneast.Arrow
+import oneast.NamedLabel
+import oneast.Variable
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue

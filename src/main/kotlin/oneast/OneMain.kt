@@ -1,48 +1,23 @@
 package oneast
 
-import oneast.searchstrategies.DFSEnumerator
 import oneast.searchstrategies.SearchStrategy
 import query.AbstractQuery
-import query.Example
 import query.Examples
 import util.Config
+import util.GroundTruth
 import util.Logger
 import util.io.cvc.clearCVC
-import util.io.parseTest
 import util.lines
-
-fun main() {
-    val testName = "dictchain"
-    val query = parseTest(testName)
-    val languageGroundTruth: (Example) -> Boolean = { e -> TODO() }
-
-    val configuration =
-        Configuration(
-            name = testName,
-            searchStrategy = ::DFSEnumerator,
-            sizeBound = 20,
-            depthBound = 4,
-            namesPerRound = 10,
-            numSols = Solutions.NumSolutions(1)
-        )
-
-    val logger =
-        Logger(
-            configuration = configuration, logFilename = "tmp.log", logToFile = true, verbosity = 5
-        )
-
-    run(query, languageGroundTruth, configuration, logger)
-}
 
 fun run(
     query: AbstractQuery,
-    languageGroundTruth: (Example) -> Boolean,
+    languageGroundTruth: GroundTruth,
     configuration: Configuration,
     logger: Logger
 ): List<SearchState> {
     clearCVC()
 
-    val engine = Engine(query, languageGroundTruth, configuration, logger)
+    val engine = Engine(query, languageGroundTruth::valid, configuration, logger)
 
     val solutions = mutableListOf<SearchState>()
 

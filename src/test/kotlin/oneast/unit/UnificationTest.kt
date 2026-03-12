@@ -1,5 +1,6 @@
-package oneast
+package oneast.unit
 
+import oneast.*
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 import query.App

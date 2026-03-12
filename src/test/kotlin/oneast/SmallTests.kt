@@ -1,12 +1,12 @@
 package oneast
 
-import data.ConsTest
-import data.DictTest
 import oneast.searchstrategies.DFSEnumerator
-import query.Example
+import util.GroundTruth
 import util.Logger
 import util.io.parseTest
 import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class SmallTests {
     private fun defaultLogger(
@@ -27,49 +27,35 @@ class SmallTests {
             numSols = Solutions.NumSolutions(1)
         )
 
-    @Test
-    fun `recovers dict chain types`() {
-        val testName = "dictchain"
+    private fun test(testName: String) {
         val query = parseTest(testName)
-        val languageGroundTruth: (Example) -> Boolean = { e -> TODO() }
-
+        val languageGroundTruth: GroundTruth = query.oracle
         val configuration = defaultConfig(testName)
-        val logger = defaultLogger(configuration, logName = "tmp")
+        val logger = defaultLogger(configuration, logName = testName)
 
         assert(run(query, languageGroundTruth, configuration, logger).isNotEmpty())
     }
 
     @Test
-    fun `polymorphic dict chain`() {
-        val testName = "polymorphic-dictchain"
-        val query = parseTest(testName)
-        val languageGroundTruth: (Example) -> Boolean = { e -> TODO() }
+    fun `validate tests`() {
+        listOf("cons", "dictchain", "dictput", "hofs", "id-inc", "polymorphic-dictchain", "polymorphic-nil").forEach {
+            val query = parseTest(it)
+            query.examples.posNoSubexprs.forEach {
+                assertTrue(query.oracle.valid(it), "Bad positive example: $it")
+            }
+            query.examples.neg.forEach {
+                assertFalse(query.oracle.valid(it), "Bad negative example: $it")
+            }
+        }
 
-        val configuration = defaultConfig(testName)
-        val logger = defaultLogger(configuration, logName = "tmp")
-
-        assert(run(query, languageGroundTruth, configuration, logger).isNotEmpty())
     }
 
     @Test
-    fun `recovers dict put types`() {
-        val query = DictTest
-        val languageGroundTruth: (Example) -> Boolean = { e -> TODO() }
-
-        val configuration = defaultConfig("Dict Put")
-        val logger = defaultLogger(configuration)
-
-        assert(run(query, languageGroundTruth, configuration, logger).isNotEmpty())
-    }
+    fun `recovers dict chain types`() = test("dictchain")
 
     @Test
-    fun `recovers cons types`() {
-        val query = ConsTest
-        val languageGroundTruth: (Example) -> Boolean = { e -> TODO() }
+    fun `recovers cons types`() = test("cons")
 
-        val configuration = defaultConfig("Cons")
-        val logger = defaultLogger(configuration)
-
-        assert(run(query, languageGroundTruth, configuration, logger).isNotEmpty())
-    }
+    @Test
+    fun `polymorphic dict chain`() = test("polymorphic-dictchain")
 }

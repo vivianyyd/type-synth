@@ -1,0 +1,10 @@
+(n (i));(inc (-> (i) (i)));(id (-> a a))
+
+(+ (inc n))
+(+ (inc (inc n)))
+(+ (id inc))
+(+ (id n))
+(+ (id (inc n)))
+(- (inc id))
+(+ ((id inc) n))
+(+ (inc (id n)))
