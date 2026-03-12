@@ -196,7 +196,6 @@ class Search(
                             }
                         }
                     // Need to respect depth bound here or in conservative FF
-                    logger.log("Enumerating nullaries: $blanksReplacedWithHoles")
                     allCandidates(
                         blanksReplacedWithHoles,
                         emitLabelBlanks = false,
