@@ -2,6 +2,7 @@
 ((<>) Num Str)
 ((<) true Num)
 ((>) Str Num)
+(min Num ((=) Num Num))
 ((<=) (compare Num Num) true)
 ((>=) (min Num Num) Str)
 ((<>) ((<) Num Num) Num)

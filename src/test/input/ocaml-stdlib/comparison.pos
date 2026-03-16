@@ -34,11 +34,15 @@
 (compare true (= Num Num))
 (compare true (<> Num Num))
 
-(min Num Num)
+(compare (< Num Num) (= Num Num))
+(compare (<= Num Num) (= Num Num))
+(compare (> Num Num) (= Num Num))
+(compare (>= Num Num) (= Num Num))
+(compare (<> Num Num) (= Num Num))
+
 (min Num Num)
 (min Str Str)
 
-(max Num Num)
 (max Num Num)
 (max Str Str)
 
