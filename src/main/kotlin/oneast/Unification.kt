@@ -100,7 +100,11 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
             is InstantiationTy -> if (arg == param) listOf() else holeConstraint(param, arg)
         }
 
-    fun applyBinding(t: ConstraintTy, v: ConstraintVariable, sub: ConstraintTy): ConstraintTy {
+    private fun applyBinding(
+        t: ConstraintTy,
+        v: ConstraintVariable,
+        sub: ConstraintTy
+    ): ConstraintTy {
         if (t.variables().isEmpty()) return t
         return when (t) {
             Bottom -> t
