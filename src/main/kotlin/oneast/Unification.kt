@@ -5,8 +5,6 @@ import query.Example
 import query.Name
 import util.Counter
 
-typealias Binding = Pair<ConstraintVariable, ConstraintTy>
-
 /**
  * This unification does not persist state after evaluating a candidate, and cannot be used more
  * than once.
@@ -23,7 +21,7 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
     fun holeEquals(hole: THole): List<ConstraintTy> = holeEquals(hole.id)
 
     private fun holeEquals(hole: Int): List<ConstraintTy> =
-        if (ok) holeConstraints[hole] ?: listOf() else listOf()
+        if (ok) holeConstraints[hole]?.map { prune(it) } ?: listOf() else listOf()
 
     fun type(ex: Example): ConstraintTy? =
         when (ex) {
@@ -33,7 +31,7 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
                 type(ex.fn)?.let { f ->
                     type(ex.arg)?.let { arg ->
                         when (f) {
-                            is ConstraintArrow -> unify(f.l, arg)?.let { applyBindings(f.r, it) }
+                            is ConstraintArrow -> unify(f.l, arg)?.let { f.r }
                             is InstantiationTy -> {
                                 /* since we continue deriving constraints after seeing f, introduce
                                 a bottom type which doesn't correspond to any node. once this
@@ -50,76 +48,74 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
                 }
         }
 
-    private fun holeConstraint(inst: InstantiationTy, t: ConstraintTy): List<Binding>? =
+    private fun holeConstraint(inst: InstantiationTy, t: ConstraintTy): Unit? =
         // unifying a Blank that must be a Label with an Arrow should fail
-        if (inst.hole is Blank && inst.hole.labelOnly && t is ConstraintArrow) null
+        if (inst.hole is Blank && inst.hole.labelOnly && prune(t) is ConstraintArrow) null
         else {
             holeConstraints.getOrPut(inst.hole.id) { mutableListOf() }.add(t)
-            listOf()
+            Unit
         }
+
+    private fun occurs(v: ConstraintVariable, t: ConstraintTy): Boolean {
+        val t = prune(t)
+        return when (t) {
+            Bottom,
+            is InstantiationTy -> false
+            is ConstraintVariable -> t.binding == v.binding
+            is ConstraintTypeConstructor -> t.params.any { occurs(v, it) }
+        }
+    }
+
+    private fun bind(v: ConstraintVariable, t: ConstraintTy): Unit? {
+        require(v.binding is Unbound)
+        if (occurs(v, t)) return null
+        v.binding = Link(t)
+        return Unit
+    }
+
+    private fun prune(t: ConstraintTy): ConstraintTy {
+        return if (t is ConstraintVariable && t.binding is Link) {
+            val tt = prune((t.binding as Link).t)
+            t.binding = Link(tt)
+            tt
+        } else t
+    }
 
     /**
      * Returns a list of bindings resulting from unifying [arg] with [param], or null if they are
      * incompatible.
      */
-    private fun unify(param: ConstraintTy, arg: ConstraintTy): List<Binding>? =
-        when (param) {
-            Bottom -> emptyList()
+    private fun unify(param: ConstraintTy, arg: ConstraintTy): Unit? {
+        val param = prune(param)
+        val arg = prune(arg)
+        return when (param) {
+            Bottom -> Unit
             is ConstraintVariable ->
                 when (param) {
-                    arg -> listOf()
-                    in arg.variables() -> null
-                    else -> listOf(Binding(param, arg))
+                    arg -> Unit
+                    else -> bind(param, arg)
                 }
             is ConstraintTypeConstructor ->
                 when (arg) {
-                    Bottom -> emptyList()
+                    Bottom -> Unit
                     is ConstraintTypeConstructor -> {
                         if (param.match(arg)) {
-                            var bindings: MutableList<Binding>? = mutableListOf()
+                            var result: Unit? = Unit
                             param.params.zip(arg.params).forEach {
-                                if (bindings != null) {
-                                    val l = applyBindings(it.first, bindings!!)
-                                    val r = applyBindings(it.second, bindings!!)
-                                    val u = unify(l, r)
-                                    if (u == null) bindings = null else bindings!!.addAll(u)
-                                }
+                                if (result != null) result = unify(it.first, it.second)
                             }
-                            bindings
+                            result
                         } else null
                     }
                     is ConstraintVariable ->
                         // e.g. a function expects param (int -> int) and we pass ('a -> 'a)
                         when (arg) {
-                            param -> listOf()
-                            in param.variables() -> null
-                            else -> listOf(Binding(arg, param))
+                            param -> Unit
+                            else -> bind(arg, param)
                         }
-                    is InstantiationTy -> if (arg == param) listOf() else holeConstraint(arg, param)
+                    is InstantiationTy -> if (arg == param) Unit else holeConstraint(arg, param)
                 }
-            is InstantiationTy -> if (arg == param) listOf() else holeConstraint(param, arg)
-        }
-
-    private fun applyBinding(
-        t: ConstraintTy,
-        v: ConstraintVariable,
-        sub: ConstraintTy
-    ): ConstraintTy {
-        if (t.variables().isEmpty()) return t
-        return when (t) {
-            Bottom -> t
-            is ConstraintVariable -> if (t == v) sub else t
-            is ConstraintTypeConstructor -> {
-                val reboundParams = t.params.map { applyBinding(it, v, sub) }
-                when (t) {
-                    is ConstraintArrow -> t.copy(params = reboundParams)
-                    is ConstraintLabel -> t.copy(params = reboundParams)
-                }
-            }
-            is InstantiationTy -> error("variables() should be empty")
+            is InstantiationTy -> if (arg == param) Unit else holeConstraint(param, arg)
         }
     }
-
-    private fun applyBindings(t: ConstraintTy, bindings: List<Binding>): ConstraintTy =
-        bindings.fold(t) { acc, (v, sub) -> applyBinding(acc, v, sub) }
 }

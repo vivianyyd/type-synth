@@ -387,7 +387,10 @@ class UnificationTest {
         when (this) {
             is ConstraintArrow -> Arrow(this.l.toNode(), this.r.toNode())
             is ConstraintLabel -> NamedLabel(this.label, this.params.map { it.toNode() })
-            is ConstraintVariable -> Variable(this.v)
+            is ConstraintVariable -> when (binding) {
+                is Unbound -> Variable((binding as Unbound).v)
+                is Link -> (binding as Link).t.toNode()
+            }
             is InstantiationTy -> error("Unreachable pattern match - convert Instantiation to node")
             Bottom -> error("Antiunifying should never produce Bottom")
         }

@@ -16,8 +16,11 @@ class CheckingGroundTruthOracle(secret: Map<String, Type>) : GroundTruth, Oracle
 
     override fun equal(a: Example, b: Example): Boolean {
         val u = OneUnification(truth, listOf(a, b))
-        val ta = u.type(a)
-        val tb = u.type(b)
+        val ta = u.type(a)?.toNode()
+        val tb = u.type(b)?.toNode()
+        // TODO this should work modulo alpha equivalence
+        // Constraint variables are no longer data classes, so we convert them to nodes here which
+        // is kind of janky
         return ta != null && tb != null && ta == tb
     }
 
