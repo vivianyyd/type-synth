@@ -42,7 +42,8 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
                                 in a future pass. */
                                 holeConstraint(f, ConstraintArrow(arg, Bottom))?.let { Bottom }
                             }
-                            is Bottom -> Bottom
+                            is ConstraintVariable,
+                            is Bottom -> Bottom // we are applying an unbound variable
                             else -> null
                         }
                     }
