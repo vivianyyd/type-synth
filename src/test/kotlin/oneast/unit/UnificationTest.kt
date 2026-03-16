@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import query.App
 import query.Example
 import query.Name
+import util.io.parseTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -39,6 +40,24 @@ class UnificationTest {
 
     private fun assertFail(context: SearchState, program: Example) =
         assertFalse(ok(context, program))
+
+    @Test
+    fun `id inc`() {
+        val examples = parseTest("id-inc").examples
+        // {id=_ -> V0, inc=_ -> _, n=.L} ought to pass the positive example
+        // (id inc) n
+        val context =
+            makeContext(
+                listOf(
+                    "id" to Arrow(TypeHole(), a),
+                    "inc" to Arrow(TypeHole(), TypeHole()),
+                    "n" to Blank(labelOnly = true)
+                )
+            )
+        examples.posNoSubexprs.forEach {
+            assert(OneUnification(context, listOf(it)).ok) { "Bad positive example: $it" }
+        }
+    }
 
     @Test
     fun `functions with same variables`() {
