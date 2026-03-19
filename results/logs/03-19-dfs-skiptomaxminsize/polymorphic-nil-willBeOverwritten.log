@@ -1,0 +1,73 @@
+polymorphic-nil
+Search strategy: fun `<init>`(query.Examples, kotlin.Boolean, kotlin.Boolean, kotlin.Int, kotlin.Int, util.Logger): oneast.searchstrategies.DFSEnumerator
+Size bound: 20
+Depth bound: 4
+Names per round: 10
+Searching for 1 solutions
+=====
+
+[11:50:38.811]	Current query: {Num=.L, cons=_ -> _, nil=.L, true=.L}
+[11:50:38.811]	BEG Depth 0 outlining [Num, cons, nil, true]
+[11:50:38.811]	BEG Initial outlines
+[11:50:38.811]	END Initial outlines : 0 ms
+[11:50:38.812]	Counts:
+
+[11:50:38.812]	Elapsed time: 65 ms
+[11:50:38.812]	Seeds before label arities: 14
+{Num=L0[], cons=V0 -> V0 -> V0, nil=L0[], true=L0[]}
+{Num=L0[], cons=V0 -> V1 -> V0, nil=L1[], true=L2[]}
+{Num=L0[], cons=V0 -> L0[] -> V0, nil=L0[], true=L0[]}
+{Num=L0[], cons=V1 -> V0 -> V0, nil=L1[], true=L2[]}
+{Num=L0[], cons=V1 -> L1[] -> V0, nil=L1[], true=L2[]}
+{Num=L0[], cons=L0[] -> V0 -> V0, nil=L0[], true=L0[]}
+{Num=L0[], cons=L0[] -> V1 -> V0, nil=L0[], true=L0[]}
+{Num=L0[], cons=L0[] -> L0[] -> V0, nil=L0[], true=L0[]}
+{Num=L0[], cons=V0 -> V0 -> L0[], nil=L0[], true=L0[]}
+{Num=L0[], cons=V0 -> V1 -> L1[], nil=L2[], true=L3[]}
+{Num=L0[], cons=V0 -> L1[] -> L1[], nil=L1[], true=L2[]}
+{Num=L0[], cons=L0[] -> V0 -> L0[], nil=L0[], true=L0[]}
+{Num=L0[], cons=L0[] -> L0[] -> L0[], nil=L0[], true=L0[]}
+{Num=L0[], cons=L0[] -> V0, nil=L0[], true=L0[]}
+[11:50:38.812]	BEG Dependency analysis
+[11:50:38.813]	END Dependency analysis : 1 ms
+[11:50:38.813]	Counts:
+
+[11:50:38.813]	Elapsed time: 66 ms
+[11:50:38.813]	BEG Solving for label arities
+[11:50:39.657]	END Solving for label arities : 844 ms
+[11:50:39.658]	Counts:
+
+[11:50:39.658]	Elapsed time: 911 ms
+[11:50:39.658]	END Depth 0 outlining [Num, cons, nil, true] : 847 ms
+[11:50:39.658]	Counts:
+
+[11:50:39.658]	Elapsed time: 911 ms
+[11:50:39.658]	Concrete seeds: 15
+{Num=L0[], cons=V0 -> V0 -> V0, nil=L0[], true=L0[]}
+{Num=L0[], cons=V0 -> L0[] -> V0, nil=L0[], true=L0[]}
+{Num=L0[.], cons=V0 -> L0[_] -> V0, nil=L0[.], true=L0[.]}
+{Num=L0[], cons=V1 -> L1[_] -> V0, nil=L1[.], true=L2[]}
+{Num=L0[], cons=L0[] -> V0 -> V0, nil=L0[], true=L0[]}
+{Num=L0[.], cons=L0[_] -> V0 -> V0, nil=L0[.], true=L0[.]}
+{Num=L0[.], cons=L0[_] -> V1 -> V0, nil=L0[.], true=L0[.]}
+{Num=L0[.], cons=L0[_] -> L0[_] -> V0, nil=L0[.], true=L0[.]}
+{Num=L0[], cons=V0 -> V0 -> L0[], nil=L0[], true=L0[]}
+{Num=L0[], cons=V0 -> L1[] -> L1[], nil=L1[], true=L2[]}
+{Num=L0[], cons=V0 -> L1[_] -> L1[_], nil=L1[.], true=L2[]}
+{Num=L0[], cons=L0[] -> V0 -> L0[], nil=L0[], true=L0[]}
+{Num=L0[.], cons=L0[_] -> V0 -> L0[_], nil=L0[.], true=L0[.]}
+{Num=L0[], cons=L0[] -> L0[] -> L0[], nil=L0[], true=L0[]}
+{Num=L0[.], cons=L0[_] -> L0[_] -> L0[_], nil=L0[.], true=L0[.]}
+[11:50:39.658]	Max min size: 3
+[11:50:39.658]	BEG Depth 1 concretizing [Num, cons, nil, true]
+[11:50:39.658]	BEG Size 3 concretizing [Num, cons, nil, true]
+[11:50:39.659]	Looking for counterexamples for potential solution {Num=L0[], cons=V0 -> L1[V0] -> L1[V0], nil=L1[V0], true=L2[]}
+[11:50:39.659]	Found no counterexamples
+[11:50:39.659]	SOLUTION: {Num=L0[], cons=V0 -> L1[V0] -> L1[V0], nil=L1[V0], true=L2[]}
+[11:50:39.659]	END Size 3 concretizing [Num, cons, nil, true] : 1 ms
+[11:50:39.659]	Elapsed time: 912 ms
+[11:50:39.659]	END Depth 1 concretizing [Num, cons, nil, true] : 1 ms
+[11:50:39.659]	Elapsed time: 912 ms
+[11:50:39.659]	Counts:
+Total candidates=54
+[11:50:39.659]	Total time: 912 ms

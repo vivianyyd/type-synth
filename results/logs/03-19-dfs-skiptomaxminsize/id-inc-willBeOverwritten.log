@@ -1,0 +1,67 @@
+id-inc
+Search strategy: fun `<init>`(query.Examples, kotlin.Boolean, kotlin.Boolean, kotlin.Int, kotlin.Int, util.Logger): oneast.searchstrategies.DFSEnumerator
+Size bound: 20
+Depth bound: 4
+Names per round: 10
+Searching for 1 solutions
+=====
+
+[11:49:23.783]	Current query: {id=_ -> _, inc=_ -> _, n=.L}
+[11:49:23.783]	BEG Depth 0 outlining [id, inc, n]
+[11:49:23.783]	BEG Initial outlines
+[11:49:23.784]	END Initial outlines : 1 ms
+[11:49:23.784]	Counts:
+Total candidates=82
+[11:49:23.784]	Elapsed time: 32 ms
+[11:49:23.784]	Seeds before label arities: 16
+{id=V0 -> V1 -> V0, inc=V0 -> V0, n=L0[]}
+{id=V0 -> L0[] -> V0, inc=V0 -> V0, n=L0[]}
+{id=V1 -> V0 -> V0, inc=V0 -> V0, n=L0[]}
+{id=V1 -> L0[] -> V0, inc=V0 -> V0, n=L0[]}
+{id=V0 -> V1 -> V0, inc=V0 -> L0[], n=L1[]}
+{id=V0 -> L0[] -> V0, inc=V0 -> L1[], n=L0[]}
+{id=V1 -> V0 -> V0, inc=V0 -> L0[], n=L1[]}
+{id=V1 -> L0[] -> V0, inc=V0 -> L1[], n=L0[]}
+{id=V0 -> V1 -> L0[], inc=V0 -> V0, n=L1[]}
+{id=V0 -> L0[] -> L1[], inc=V0 -> V0, n=L0[]}
+{id=V0 -> V1 -> L0[], inc=V0 -> L1[], n=L2[]}
+{id=V0 -> L0[] -> L1[], inc=V0 -> L2[], n=L0[]}
+{id=V0 -> V0, inc=V0 -> V0, n=L0[]}
+{id=V0 -> V0, inc=L0[] -> V0, n=L0[]}
+{id=V0 -> V0, inc=V0 -> L0[], n=L1[]}
+{id=V0 -> V0, inc=L0[] -> L0[], n=L0[]}
+[11:49:23.784]	BEG Dependency analysis
+[11:49:23.784]	END Dependency analysis : 0 ms
+[11:49:23.784]	Counts:
+Total candidates=82
+[11:49:23.784]	Elapsed time: 32 ms
+[11:49:23.784]	BEG Solving for label arities
+[11:49:24.719]	END Solving for label arities : 935 ms
+[11:49:24.719]	Counts:
+Total candidates=82
+[11:49:24.719]	Elapsed time: 967 ms
+[11:49:24.719]	END Depth 0 outlining [id, inc, n] : 936 ms
+[11:49:24.719]	Counts:
+Total candidates=82
+[11:49:24.719]	Elapsed time: 967 ms
+[11:49:24.719]	Concrete seeds: 7
+{id=V0 -> L0[] -> V0, inc=V0 -> V0, n=L0[]}
+{id=V0 -> L0[] -> V0, inc=V0 -> L1[], n=L0[]}
+{id=V0 -> L0[] -> L1[], inc=V0 -> V0, n=L0[]}
+{id=V0 -> L0[] -> L1[], inc=V0 -> L2[], n=L0[]}
+{id=V0 -> V0, inc=V0 -> V0, n=L0[]}
+{id=V0 -> V0, inc=V0 -> L0[], n=L1[]}
+{id=V0 -> V0, inc=L0[] -> L0[], n=L0[]}
+[11:49:24.719]	Max min size: 0
+[11:49:24.719]	BEG Depth 1 concretizing [id, inc, n]
+[11:49:24.719]	BEG Size 0 concretizing [id, inc, n]
+[11:49:24.720]	Looking for counterexamples for potential solution {id=V0 -> V0, inc=L0[] -> L0[], n=L0[]}
+[11:49:24.720]	Found no counterexamples
+[11:49:24.720]	SOLUTION: {id=V0 -> V0, inc=L0[] -> L0[], n=L0[]}
+[11:49:24.720]	END Size 0 concretizing [id, inc, n] : 1 ms
+[11:49:24.720]	Elapsed time: 968 ms
+[11:49:24.720]	END Depth 1 concretizing [id, inc, n] : 1 ms
+[11:49:24.720]	Elapsed time: 968 ms
+[11:49:24.720]	Counts:
+Total candidates=82
+[11:49:24.720]	Total time: 968 ms

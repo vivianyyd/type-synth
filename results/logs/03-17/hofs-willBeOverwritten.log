@@ -1,0 +1,1355 @@
+hofs
+Search strategy: fun `<init>`(query.Examples, kotlin.Boolean, kotlin.Boolean, kotlin.Int, kotlin.Int, util.Logger): oneast.searchstrategies.DFSEnumerator
+Size bound: 20
+Depth bound: 4
+Names per round: 10
+Searching for 1 solutions
+=====
+
+[13:40:15.517]	Current query: {a=.L, f=_ -> _, g=_ -> _, h=_ -> _}
+[13:40:15.517]	BEG Depth 0 outlining [a, f, g, h]
+[13:40:15.517]	BEG Initial outlines
+[13:40:15.517]	END Initial outlines : 0 ms
+[13:40:15.517]	Counts:
+Total candidates=114
+[13:40:15.518]	Elapsed time: 3 ms
+[13:40:15.518]	Seeds before label arities: 16
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=V0 -> L1[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=V0 -> L1[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=V0 -> L2[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=V0 -> L3[]}
+[13:40:15.518]	BEG Dependency analysis
+[13:40:15.518]	END Dependency analysis : 0 ms
+[13:40:15.518]	Counts:
+Total candidates=114
+[13:40:15.518]	Elapsed time: 4 ms
+[13:40:15.518]	BEG Solving for label arities
+[13:40:16.194]	END Solving for label arities : 676 ms
+[13:40:16.194]	Counts:
+Total candidates=114
+[13:40:16.194]	Elapsed time: 680 ms
+[13:40:16.195]	END Depth 0 outlining [a, f, g, h] : 678 ms
+[13:40:16.195]	Counts:
+Total candidates=114
+[13:40:16.195]	Elapsed time: 681 ms
+[13:40:16.195]	Concrete seeds: 12
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=V0 -> L1[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=V0 -> L3[]}
+[13:40:16.195]	BEG Depth 1 concretizing [a, f, g, h]
+[13:40:16.195]	BEG Size 1 concretizing [a, f, g, h]
+[13:40:16.195]	END Size 1 concretizing [a, f, g, h] : 0 ms
+[13:40:16.195]	Counts:
+Total candidates=114
+[13:40:16.195]	Elapsed time: 681 ms
+[13:40:16.195]	BEG Size 2 concretizing [a, f, g, h]
+[13:40:16.195]	END Size 2 concretizing [a, f, g, h] : 0 ms
+[13:40:16.195]	Counts:
+Total candidates=114
+[13:40:16.195]	Elapsed time: 681 ms
+[13:40:16.195]	BEG Size 3 concretizing [a, f, g, h]
+[13:40:16.195]	END Size 3 concretizing [a, f, g, h] : 0 ms
+[13:40:16.195]	Counts:
+Total candidates=114
+[13:40:16.195]	Elapsed time: 681 ms
+[13:40:16.195]	BEG Size 4 concretizing [a, f, g, h]
+[13:40:16.196]	END Size 4 concretizing [a, f, g, h] : 1 ms
+[13:40:16.196]	Counts:
+Total candidates=114
+[13:40:16.196]	Elapsed time: 682 ms
+[13:40:16.196]	BEG Size 5 concretizing [a, f, g, h]
+[13:40:16.196]	END Size 5 concretizing [a, f, g, h] : 0 ms
+[13:40:16.196]	Counts:
+Total candidates=114
+[13:40:16.196]	Elapsed time: 682 ms
+[13:40:16.196]	BEG Size 6 concretizing [a, f, g, h]
+[13:40:16.196]	END Size 6 concretizing [a, f, g, h] : 0 ms
+[13:40:16.196]	Counts:
+Total candidates=114
+[13:40:16.196]	Elapsed time: 682 ms
+[13:40:16.196]	BEG Size 7 concretizing [a, f, g, h]
+[13:40:16.196]	END Size 7 concretizing [a, f, g, h] : 0 ms
+[13:40:16.196]	Counts:
+Total candidates=114
+[13:40:16.196]	Elapsed time: 682 ms
+[13:40:16.196]	BEG Size 8 concretizing [a, f, g, h]
+[13:40:16.196]	END Size 8 concretizing [a, f, g, h] : 0 ms
+[13:40:16.196]	Counts:
+Total candidates=114
+[13:40:16.196]	Elapsed time: 682 ms
+[13:40:16.196]	BEG Size 9 concretizing [a, f, g, h]
+[13:40:16.197]	END Size 9 concretizing [a, f, g, h] : 1 ms
+[13:40:16.197]	Counts:
+Total candidates=114
+[13:40:16.197]	Elapsed time: 683 ms
+[13:40:16.197]	BEG Size 10 concretizing [a, f, g, h]
+[13:40:16.197]	END Size 10 concretizing [a, f, g, h] : 0 ms
+[13:40:16.197]	Counts:
+Total candidates=114
+[13:40:16.197]	Elapsed time: 683 ms
+[13:40:16.197]	BEG Size 11 concretizing [a, f, g, h]
+[13:40:16.197]	END Size 11 concretizing [a, f, g, h] : 0 ms
+[13:40:16.197]	Counts:
+Total candidates=114
+[13:40:16.197]	Elapsed time: 683 ms
+[13:40:16.197]	BEG Size 12 concretizing [a, f, g, h]
+[13:40:16.197]	END Size 12 concretizing [a, f, g, h] : 0 ms
+[13:40:16.197]	Counts:
+Total candidates=114
+[13:40:16.197]	Elapsed time: 683 ms
+[13:40:16.197]	BEG Size 13 concretizing [a, f, g, h]
+[13:40:16.197]	END Size 13 concretizing [a, f, g, h] : 0 ms
+[13:40:16.197]	Counts:
+Total candidates=114
+[13:40:16.197]	Elapsed time: 683 ms
+[13:40:16.197]	BEG Size 14 concretizing [a, f, g, h]
+[13:40:16.197]	END Size 14 concretizing [a, f, g, h] : 0 ms
+[13:40:16.198]	Counts:
+Total candidates=114
+[13:40:16.198]	Elapsed time: 684 ms
+[13:40:16.198]	BEG Size 15 concretizing [a, f, g, h]
+[13:40:16.198]	END Size 15 concretizing [a, f, g, h] : 0 ms
+[13:40:16.198]	Counts:
+Total candidates=114
+[13:40:16.198]	Elapsed time: 684 ms
+[13:40:16.198]	BEG Size 16 concretizing [a, f, g, h]
+[13:40:16.198]	END Size 16 concretizing [a, f, g, h] : 0 ms
+[13:40:16.198]	Counts:
+Total candidates=114
+[13:40:16.198]	Elapsed time: 684 ms
+[13:40:16.198]	BEG Size 17 concretizing [a, f, g, h]
+[13:40:16.198]	END Size 17 concretizing [a, f, g, h] : 0 ms
+[13:40:16.198]	Counts:
+Total candidates=114
+[13:40:16.198]	Elapsed time: 684 ms
+[13:40:16.198]	BEG Size 18 concretizing [a, f, g, h]
+[13:40:16.198]	END Size 18 concretizing [a, f, g, h] : 0 ms
+[13:40:16.198]	Counts:
+Total candidates=114
+[13:40:16.198]	Elapsed time: 684 ms
+[13:40:16.198]	BEG Size 19 concretizing [a, f, g, h]
+[13:40:16.198]	END Size 19 concretizing [a, f, g, h] : 0 ms
+[13:40:16.198]	Counts:
+Total candidates=114
+[13:40:16.198]	Elapsed time: 684 ms
+[13:40:16.198]	BEG Size 20 concretizing [a, f, g, h]
+[13:40:16.199]	END Size 20 concretizing [a, f, g, h] : 1 ms
+[13:40:16.199]	Counts:
+Total candidates=114
+[13:40:16.199]	Elapsed time: 685 ms
+[13:40:16.199]	END Depth 1 concretizing [a, f, g, h] : 4 ms
+[13:40:16.199]	Counts:
+Total candidates=114
+[13:40:16.199]	Elapsed time: 685 ms
+[13:40:16.199]	BEG Depth 2 concretizing [a, f, g, h]
+[13:40:16.199]	BEG Size 1 concretizing [a, f, g, h]
+[13:40:16.199]	END Size 1 concretizing [a, f, g, h] : 0 ms
+[13:40:16.199]	Counts:
+Total candidates=114
+[13:40:16.199]	Elapsed time: 685 ms
+[13:40:16.199]	BEG Size 2 concretizing [a, f, g, h]
+[13:40:16.199]	END Size 2 concretizing [a, f, g, h] : 0 ms
+[13:40:16.199]	Counts:
+Total candidates=114
+[13:40:16.199]	Elapsed time: 685 ms
+[13:40:16.199]	BEG Size 3 concretizing [a, f, g, h]
+[13:40:16.199]	END Size 3 concretizing [a, f, g, h] : 0 ms
+[13:40:16.199]	Counts:
+Total candidates=114
+[13:40:16.199]	Elapsed time: 685 ms
+[13:40:16.199]	BEG Size 4 concretizing [a, f, g, h]
+[13:40:16.199]	END Size 4 concretizing [a, f, g, h] : 0 ms
+[13:40:16.199]	Counts:
+Total candidates=114
+[13:40:16.199]	Elapsed time: 685 ms
+[13:40:16.200]	BEG Size 5 concretizing [a, f, g, h]
+[13:40:16.200]	END Size 5 concretizing [a, f, g, h] : 0 ms
+[13:40:16.200]	Counts:
+Total candidates=114
+[13:40:16.200]	Elapsed time: 686 ms
+[13:40:16.200]	BEG Size 6 concretizing [a, f, g, h]
+[13:40:16.200]	END Size 6 concretizing [a, f, g, h] : 0 ms
+[13:40:16.200]	Counts:
+Total candidates=114
+[13:40:16.200]	Elapsed time: 686 ms
+[13:40:16.200]	BEG Size 7 concretizing [a, f, g, h]
+[13:40:16.200]	END Size 7 concretizing [a, f, g, h] : 0 ms
+[13:40:16.200]	Counts:
+Total candidates=114
+[13:40:16.200]	Elapsed time: 686 ms
+[13:40:16.200]	BEG Size 8 concretizing [a, f, g, h]
+[13:40:16.200]	END Size 8 concretizing [a, f, g, h] : 0 ms
+[13:40:16.200]	Counts:
+Total candidates=114
+[13:40:16.200]	Elapsed time: 686 ms
+[13:40:16.200]	BEG Size 9 concretizing [a, f, g, h]
+[13:40:16.200]	END Size 9 concretizing [a, f, g, h] : 0 ms
+[13:40:16.200]	Counts:
+Total candidates=114
+[13:40:16.200]	Elapsed time: 686 ms
+[13:40:16.200]	BEG Size 10 concretizing [a, f, g, h]
+[13:40:16.201]	END Size 10 concretizing [a, f, g, h] : 1 ms
+[13:40:16.201]	Counts:
+Total candidates=114
+[13:40:16.201]	Elapsed time: 687 ms
+[13:40:16.201]	BEG Size 11 concretizing [a, f, g, h]
+[13:40:16.201]	END Size 11 concretizing [a, f, g, h] : 0 ms
+[13:40:16.201]	Counts:
+Total candidates=114
+[13:40:16.201]	Elapsed time: 687 ms
+[13:40:16.201]	BEG Size 12 concretizing [a, f, g, h]
+[13:40:16.201]	END Size 12 concretizing [a, f, g, h] : 0 ms
+[13:40:16.201]	Counts:
+Total candidates=114
+[13:40:16.201]	Elapsed time: 687 ms
+[13:40:16.201]	BEG Size 13 concretizing [a, f, g, h]
+[13:40:16.201]	END Size 13 concretizing [a, f, g, h] : 0 ms
+[13:40:16.201]	Counts:
+Total candidates=114
+[13:40:16.201]	Elapsed time: 687 ms
+[13:40:16.201]	BEG Size 14 concretizing [a, f, g, h]
+[13:40:16.201]	END Size 14 concretizing [a, f, g, h] : 0 ms
+[13:40:16.201]	Counts:
+Total candidates=114
+[13:40:16.201]	Elapsed time: 687 ms
+[13:40:16.201]	BEG Size 15 concretizing [a, f, g, h]
+[13:40:16.202]	END Size 15 concretizing [a, f, g, h] : 1 ms
+[13:40:16.202]	Counts:
+Total candidates=114
+[13:40:16.202]	Elapsed time: 688 ms
+[13:40:16.202]	BEG Size 16 concretizing [a, f, g, h]
+[13:40:16.202]	END Size 16 concretizing [a, f, g, h] : 0 ms
+[13:40:16.202]	Counts:
+Total candidates=114
+[13:40:16.202]	Elapsed time: 688 ms
+[13:40:16.202]	BEG Size 17 concretizing [a, f, g, h]
+[13:40:16.202]	END Size 17 concretizing [a, f, g, h] : 0 ms
+[13:40:16.202]	Counts:
+Total candidates=114
+[13:40:16.202]	Elapsed time: 688 ms
+[13:40:16.202]	BEG Size 18 concretizing [a, f, g, h]
+[13:40:16.202]	END Size 18 concretizing [a, f, g, h] : 0 ms
+[13:40:16.202]	Counts:
+Total candidates=114
+[13:40:16.202]	Elapsed time: 688 ms
+[13:40:16.202]	BEG Size 19 concretizing [a, f, g, h]
+[13:40:16.202]	END Size 19 concretizing [a, f, g, h] : 0 ms
+[13:40:16.202]	Counts:
+Total candidates=114
+[13:40:16.202]	Elapsed time: 688 ms
+[13:40:16.202]	BEG Size 20 concretizing [a, f, g, h]
+[13:40:16.203]	END Size 20 concretizing [a, f, g, h] : 1 ms
+[13:40:16.203]	Counts:
+Total candidates=114
+[13:40:16.203]	Elapsed time: 689 ms
+[13:40:16.203]	END Depth 2 concretizing [a, f, g, h] : 4 ms
+[13:40:16.203]	Counts:
+Total candidates=114
+[13:40:16.203]	Elapsed time: 689 ms
+[13:40:16.203]	BEG Depth 3 concretizing [a, f, g, h]
+[13:40:16.203]	BEG Size 1 concretizing [a, f, g, h]
+[13:40:16.203]	END Size 1 concretizing [a, f, g, h] : 0 ms
+[13:40:16.203]	Counts:
+Total candidates=114
+[13:40:16.203]	Elapsed time: 689 ms
+[13:40:16.203]	BEG Size 2 concretizing [a, f, g, h]
+[13:40:16.203]	END Size 2 concretizing [a, f, g, h] : 0 ms
+[13:40:16.203]	Counts:
+Total candidates=114
+[13:40:16.203]	Elapsed time: 689 ms
+[13:40:16.203]	BEG Size 3 concretizing [a, f, g, h]
+[13:40:16.203]	END Size 3 concretizing [a, f, g, h] : 0 ms
+[13:40:16.203]	Counts:
+Total candidates=114
+[13:40:16.203]	Elapsed time: 689 ms
+[13:40:16.203]	BEG Size 4 concretizing [a, f, g, h]
+[13:40:16.203]	END Size 4 concretizing [a, f, g, h] : 0 ms
+[13:40:16.203]	Counts:
+Total candidates=114
+[13:40:16.203]	Elapsed time: 689 ms
+[13:40:16.203]	BEG Size 5 concretizing [a, f, g, h]
+[13:40:16.203]	END Size 5 concretizing [a, f, g, h] : 0 ms
+[13:40:16.203]	Counts:
+Total candidates=114
+[13:40:16.203]	Elapsed time: 689 ms
+[13:40:16.204]	BEG Size 6 concretizing [a, f, g, h]
+[13:40:16.204]	END Size 6 concretizing [a, f, g, h] : 0 ms
+[13:40:16.204]	Counts:
+Total candidates=114
+[13:40:16.204]	Elapsed time: 690 ms
+[13:40:16.204]	BEG Size 7 concretizing [a, f, g, h]
+[13:40:16.204]	END Size 7 concretizing [a, f, g, h] : 0 ms
+[13:40:16.204]	Counts:
+Total candidates=114
+[13:40:16.204]	Elapsed time: 690 ms
+[13:40:16.204]	BEG Size 8 concretizing [a, f, g, h]
+[13:40:16.204]	END Size 8 concretizing [a, f, g, h] : 0 ms
+[13:40:16.204]	Counts:
+Total candidates=114
+[13:40:16.204]	Elapsed time: 690 ms
+[13:40:16.204]	BEG Size 9 concretizing [a, f, g, h]
+[13:40:16.204]	END Size 9 concretizing [a, f, g, h] : 0 ms
+[13:40:16.204]	Counts:
+Total candidates=114
+[13:40:16.204]	Elapsed time: 690 ms
+[13:40:16.204]	BEG Size 10 concretizing [a, f, g, h]
+[13:40:16.204]	END Size 10 concretizing [a, f, g, h] : 0 ms
+[13:40:16.204]	Counts:
+Total candidates=114
+[13:40:16.204]	Elapsed time: 690 ms
+[13:40:16.204]	BEG Size 11 concretizing [a, f, g, h]
+[13:40:16.204]	END Size 11 concretizing [a, f, g, h] : 0 ms
+[13:40:16.204]	Counts:
+Total candidates=114
+[13:40:16.205]	Elapsed time: 691 ms
+[13:40:16.205]	BEG Size 12 concretizing [a, f, g, h]
+[13:40:16.205]	END Size 12 concretizing [a, f, g, h] : 0 ms
+[13:40:16.205]	Counts:
+Total candidates=114
+[13:40:16.205]	Elapsed time: 691 ms
+[13:40:16.205]	BEG Size 13 concretizing [a, f, g, h]
+[13:40:16.205]	END Size 13 concretizing [a, f, g, h] : 0 ms
+[13:40:16.205]	Counts:
+Total candidates=114
+[13:40:16.205]	Elapsed time: 691 ms
+[13:40:16.205]	BEG Size 14 concretizing [a, f, g, h]
+[13:40:16.205]	END Size 14 concretizing [a, f, g, h] : 0 ms
+[13:40:16.205]	Counts:
+Total candidates=114
+[13:40:16.205]	Elapsed time: 691 ms
+[13:40:16.205]	BEG Size 15 concretizing [a, f, g, h]
+[13:40:16.205]	END Size 15 concretizing [a, f, g, h] : 0 ms
+[13:40:16.205]	Counts:
+Total candidates=114
+[13:40:16.205]	Elapsed time: 691 ms
+[13:40:16.205]	BEG Size 16 concretizing [a, f, g, h]
+[13:40:16.205]	END Size 16 concretizing [a, f, g, h] : 0 ms
+[13:40:16.205]	Counts:
+Total candidates=114
+[13:40:16.205]	Elapsed time: 691 ms
+[13:40:16.205]	BEG Size 17 concretizing [a, f, g, h]
+[13:40:16.206]	END Size 17 concretizing [a, f, g, h] : 1 ms
+[13:40:16.206]	Counts:
+Total candidates=114
+[13:40:16.206]	Elapsed time: 692 ms
+[13:40:16.206]	BEG Size 18 concretizing [a, f, g, h]
+[13:40:16.206]	END Size 18 concretizing [a, f, g, h] : 0 ms
+[13:40:16.206]	Counts:
+Total candidates=114
+[13:40:16.206]	Elapsed time: 692 ms
+[13:40:16.206]	BEG Size 19 concretizing [a, f, g, h]
+[13:40:16.206]	END Size 19 concretizing [a, f, g, h] : 0 ms
+[13:40:16.206]	Counts:
+Total candidates=114
+[13:40:16.206]	Elapsed time: 692 ms
+[13:40:16.206]	BEG Size 20 concretizing [a, f, g, h]
+[13:40:16.206]	END Size 20 concretizing [a, f, g, h] : 0 ms
+[13:40:16.206]	Counts:
+Total candidates=114
+[13:40:16.206]	Elapsed time: 692 ms
+[13:40:16.206]	END Depth 3 concretizing [a, f, g, h] : 3 ms
+[13:40:16.206]	Counts:
+Total candidates=114
+[13:40:16.206]	Elapsed time: 692 ms
+[13:40:16.206]	BEG Depth 4 concretizing [a, f, g, h]
+[13:40:16.206]	BEG Size 1 concretizing [a, f, g, h]
+[13:40:16.206]	END Size 1 concretizing [a, f, g, h] : 0 ms
+[13:40:16.206]	Counts:
+Total candidates=114
+[13:40:16.206]	Elapsed time: 692 ms
+[13:40:16.206]	BEG Size 2 concretizing [a, f, g, h]
+[13:40:16.206]	END Size 2 concretizing [a, f, g, h] : 0 ms
+[13:40:16.207]	Counts:
+Total candidates=114
+[13:40:16.207]	Elapsed time: 693 ms
+[13:40:16.207]	BEG Size 3 concretizing [a, f, g, h]
+[13:40:16.207]	END Size 3 concretizing [a, f, g, h] : 0 ms
+[13:40:16.207]	Counts:
+Total candidates=114
+[13:40:16.207]	Elapsed time: 693 ms
+[13:40:16.207]	BEG Size 4 concretizing [a, f, g, h]
+[13:40:16.207]	END Size 4 concretizing [a, f, g, h] : 0 ms
+[13:40:16.207]	Counts:
+Total candidates=114
+[13:40:16.207]	Elapsed time: 693 ms
+[13:40:16.207]	BEG Size 5 concretizing [a, f, g, h]
+[13:40:16.207]	END Size 5 concretizing [a, f, g, h] : 0 ms
+[13:40:16.207]	Counts:
+Total candidates=114
+[13:40:16.207]	Elapsed time: 693 ms
+[13:40:16.207]	BEG Size 6 concretizing [a, f, g, h]
+[13:40:16.208]	END Size 6 concretizing [a, f, g, h] : 1 ms
+[13:40:16.208]	Counts:
+Total candidates=114
+[13:40:16.208]	Elapsed time: 694 ms
+[13:40:16.208]	BEG Size 7 concretizing [a, f, g, h]
+[13:40:16.208]	END Size 7 concretizing [a, f, g, h] : 0 ms
+[13:40:16.208]	Counts:
+Total candidates=114
+[13:40:16.208]	Elapsed time: 694 ms
+[13:40:16.208]	BEG Size 8 concretizing [a, f, g, h]
+[13:40:16.208]	END Size 8 concretizing [a, f, g, h] : 0 ms
+[13:40:16.208]	Counts:
+Total candidates=114
+[13:40:16.208]	Elapsed time: 694 ms
+[13:40:16.208]	BEG Size 9 concretizing [a, f, g, h]
+[13:40:16.208]	END Size 9 concretizing [a, f, g, h] : 0 ms
+[13:40:16.208]	Counts:
+Total candidates=114
+[13:40:16.208]	Elapsed time: 694 ms
+[13:40:16.208]	BEG Size 10 concretizing [a, f, g, h]
+[13:40:16.209]	END Size 10 concretizing [a, f, g, h] : 1 ms
+[13:40:16.209]	Counts:
+Total candidates=114
+[13:40:16.209]	Elapsed time: 695 ms
+[13:40:16.209]	BEG Size 11 concretizing [a, f, g, h]
+[13:40:16.209]	END Size 11 concretizing [a, f, g, h] : 0 ms
+[13:40:16.209]	Counts:
+Total candidates=114
+[13:40:16.209]	Elapsed time: 695 ms
+[13:40:16.209]	BEG Size 12 concretizing [a, f, g, h]
+[13:40:16.209]	END Size 12 concretizing [a, f, g, h] : 0 ms
+[13:40:16.209]	Counts:
+Total candidates=114
+[13:40:16.209]	Elapsed time: 695 ms
+[13:40:16.209]	BEG Size 13 concretizing [a, f, g, h]
+[13:40:16.209]	END Size 13 concretizing [a, f, g, h] : 0 ms
+[13:40:16.210]	Counts:
+Total candidates=114
+[13:40:16.210]	Elapsed time: 696 ms
+[13:40:16.210]	BEG Size 14 concretizing [a, f, g, h]
+[13:40:16.210]	END Size 14 concretizing [a, f, g, h] : 0 ms
+[13:40:16.210]	Counts:
+Total candidates=114
+[13:40:16.210]	Elapsed time: 696 ms
+[13:40:16.210]	BEG Size 15 concretizing [a, f, g, h]
+[13:40:16.210]	END Size 15 concretizing [a, f, g, h] : 0 ms
+[13:40:16.210]	Counts:
+Total candidates=114
+[13:40:16.210]	Elapsed time: 696 ms
+[13:40:16.210]	BEG Size 16 concretizing [a, f, g, h]
+[13:40:16.210]	END Size 16 concretizing [a, f, g, h] : 0 ms
+[13:40:16.210]	Counts:
+Total candidates=114
+[13:40:16.210]	Elapsed time: 696 ms
+[13:40:16.210]	BEG Size 17 concretizing [a, f, g, h]
+[13:40:16.211]	END Size 17 concretizing [a, f, g, h] : 1 ms
+[13:40:16.211]	Counts:
+Total candidates=114
+[13:40:16.211]	Elapsed time: 697 ms
+[13:40:16.211]	BEG Size 18 concretizing [a, f, g, h]
+[13:40:16.211]	END Size 18 concretizing [a, f, g, h] : 0 ms
+[13:40:16.211]	Counts:
+Total candidates=114
+[13:40:16.211]	Elapsed time: 697 ms
+[13:40:16.211]	BEG Size 19 concretizing [a, f, g, h]
+[13:40:16.211]	END Size 19 concretizing [a, f, g, h] : 0 ms
+[13:40:16.211]	Counts:
+Total candidates=114
+[13:40:16.211]	Elapsed time: 697 ms
+[13:40:16.211]	BEG Size 20 concretizing [a, f, g, h]
+[13:40:16.211]	END Size 20 concretizing [a, f, g, h] : 0 ms
+[13:40:16.211]	Counts:
+Total candidates=114
+[13:40:16.211]	Elapsed time: 697 ms
+[13:40:16.211]	END Depth 4 concretizing [a, f, g, h] : 5 ms
+[13:40:16.211]	Counts:
+Total candidates=114
+[13:40:16.211]	Elapsed time: 697 ms
+[13:40:16.212]	BEG Depth 1 outlining [a, f, g, h]
+[13:40:16.212]	BEG Initial outlines
+[13:40:16.224]	END Initial outlines : 12 ms
+[13:40:16.224]	Counts:
+Total candidates=1576
+[13:40:16.224]	Elapsed time: 710 ms
+[13:40:16.232]	Seeds before label arities: 560
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V1 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=(V1 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=(V1 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> L1[]) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V1) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V1) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V1) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V1) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V1) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> V0, h=(V0 -> L3[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> V0, h=(V1 -> L3[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V1) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V1 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(L1[] -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(L1[] -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(L1[] -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> V0, h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> V0, h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V1 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V1 -> V0) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V1 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V1 -> V0) -> V0, h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V1 -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V1 -> L1[]) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> V0, h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V1) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V1) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V1) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V1) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V1) -> V0, h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(V1 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(V1 -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V1) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(L1[] -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(L1[] -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(L1[] -> L2[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V1) -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V1) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V1) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> V0, h=(V0 -> V0) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> V0, h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> V0, h=(V0 -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=V0 -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=V0 -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=V0 -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V1 -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V1) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> V0, h=V0 -> L3[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> V0) -> L1[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(L1[] -> V0) -> L2[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(L1[] -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=V0 -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> V0, g=(V1 -> V0) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(V1 -> V0) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V1 -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V1) -> V0, h=(V0 -> V0) -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V1) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V1) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> V0, h=V0 -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> V0, h=V0 -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V1 -> V0) -> V0, h=V0 -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(V1 -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> V0, h=V0 -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V1) -> V0, h=V0 -> L1[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(V0 -> V0) -> L1[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(L1[] -> V0) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=(L1[] -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> V0, h=V0 -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=(V1 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=(V1 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=(V0 -> L3[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=(V1 -> L3[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V1 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(L2[] -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(L2[] -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(L2[] -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> L1[], h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> L1[], h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> L1[], h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> L1[], h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> L1[], h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> L1[], h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(L2[] -> V0) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(L2[] -> V1) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(L2[] -> L1[]) -> V0}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=(V0 -> V1) -> L4[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=(V0 -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=V0 -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=V0 -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=V0 -> L4[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> V0) -> L2[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(L2[] -> V0) -> L3[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(L2[] -> L1[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=V0 -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V0) -> L1[], h=V0 -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> V1) -> L1[], h=V0 -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(V0 -> L1[]) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> V0) -> L1[], h=V0 -> L2[]}
+{a=L0[], f=L0[] -> V0, g=(L0[] -> L1[]) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(V0 -> V0) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(L2[] -> V0) -> L3[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=(L2[] -> L1[]) -> L3[]}
+{a=L0[], f=L0[] -> V0, g=V0 -> L1[], h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> L1[]) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=(V0 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=(V1 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V1) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V1) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V1) -> V0, h=(V0 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V1) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V1) -> V0, h=(V1 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> V0, h=(V0 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> V0, h=(V1 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V1) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(L2[] -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(L2[] -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(L2[] -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> L1[]) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V1) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V1) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V1) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V1) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V1) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V1) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(L2[] -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(L2[] -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(L2[] -> L3[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=(V0 -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V1) -> V0, h=(V0 -> V0) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V1) -> V0, h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V1) -> V0, h=(V0 -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> V0, h=(V0 -> V0) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> V0, h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> V0, h=(V0 -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V1 -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=V0 -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V1) -> V0, h=V0 -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> V0, h=V0 -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(L2[] -> V0) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(L2[] -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V1) -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V1) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V1) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=V0 -> L1[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V1) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(L2[] -> V0) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(L2[] -> L3[]) -> L4[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=(V0 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=(V1 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=(V0 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=(V1 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(L3[] -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(L3[] -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(L3[] -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=(V1 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V1 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(L3[] -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(L3[] -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(L3[] -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=(V0 -> V1) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=(V0 -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=(V0 -> V1) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=(V0 -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=V0 -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=V0 -> L4[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> V0) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(L3[] -> V0) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(L3[] -> L2[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> V0) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(L3[] -> V0) -> L4[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(L3[] -> L2[]) -> L4[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=V0 -> L3[]}
+[13:40:16.232]	BEG Dependency analysis
+[13:40:16.233]	END Dependency analysis : 1 ms
+[13:40:16.233]	Counts:
+Total candidates=1576
+[13:40:16.233]	Elapsed time: 719 ms
+[13:40:16.233]	BEG Solving for label arities
+[13:40:39.992]	END Solving for label arities : 23759 ms
+[13:40:39.992]	Counts:
+Total candidates=1576
+[13:40:39.992]	Elapsed time: 24478 ms
+[13:40:39.994]	END Depth 1 outlining [a, f, g, h] : 23782 ms
+[13:40:39.994]	Counts:
+Total candidates=1576
+[13:40:39.994]	Elapsed time: 24480 ms
+[13:40:39.995]	Concrete seeds: 282
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(L1[] -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=V0 -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> V0, h=V0 -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V1 -> V0) -> V0, h=V0 -> L1[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> V0) -> L1[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(L1[] -> V0) -> L2[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=(L1[] -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=V0 -> V0, h=V0 -> L1[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=(V0 -> L3[]) -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(L2[] -> V0) -> V0}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=V0 -> V0}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=(V0 -> V1) -> L4[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=(V0 -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V0) -> L1[], h=V0 -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> V1) -> L1[], h=V0 -> L2[]}
+{a=L0[], f=V0 -> V0, g=(V0 -> L1[]) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> V0) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=V0 -> V0, g=(L1[] -> L2[]) -> L3[], h=V0 -> L4[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> V0) -> L2[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(L2[] -> V0) -> L3[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=(L2[] -> L1[]) -> L3[]}
+{a=L0[], f=V0 -> V0, g=V0 -> L1[], h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=(V0 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(L2[] -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(L2[] -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=(V0 -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V1 -> V0) -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> V0, h=V0 -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(L2[] -> V0) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=(L2[] -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=(V0 -> V1) -> L1[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> V0, h=V0 -> L1[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V1 -> V0) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> V0, h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> V0) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(L2[] -> V0) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=(L2[] -> L3[]) -> L4[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> V0, h=V0 -> L2[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=(V0 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=(V0 -> L3[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(L3[] -> V0) -> V0}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=(V0 -> L1[]) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=V0 -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> V1) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> L2[]) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V1 -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(L3[] -> V0) -> V0}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=V0 -> V0}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=(V0 -> V1) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=(V0 -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=(V0 -> V1) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=(V0 -> L3[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V0) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> V1) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(V0 -> L1[]) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> V0) -> L3[], h=V0 -> L4[]}
+{a=L0[], f=V0 -> L1[], g=(L2[] -> L1[]) -> L3[], h=V0 -> L4[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> V0) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(L3[] -> V0) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=(L3[] -> L2[]) -> L4[]}
+{a=L0[], f=V0 -> L1[], g=V0 -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=(V0 -> V1) -> L2[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=(V0 -> L1[]) -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L0[], g=(V0 -> V0) -> L1[], h=V0 -> L2[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> V1) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(V0 -> L1[]) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> V0) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=(L0[] -> L1[]) -> L2[], h=V0 -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> V0) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> V1) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(V0 -> L2[]) -> L3[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(L3[] -> V0) -> L4[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=(L3[] -> L2[]) -> L4[]}
+{a=L0[], f=L0[] -> L1[], g=V0 -> L2[], h=V0 -> L3[]}
+[13:40:39.995]	BEG Depth 1 concretizing [a, f, g, h]
+[13:40:39.995]	BEG Size 1 concretizing [a, f, g, h]
+[13:40:39.995]	Looking for counterexamples for potential solution {a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V0 -> V1) -> V0}
+[13:40:39.995]	Found no counterexamples
+[13:40:39.995]	SOLUTION: {a=L0[], f=V0 -> V0, g=(V0 -> V0) -> V0, h=(V0 -> V1) -> V0}
+[13:40:39.995]	END Size 1 concretizing [a, f, g, h] : 0 ms
+[13:40:39.995]	Elapsed time: 24481 ms
+[13:40:39.995]	END Depth 1 concretizing [a, f, g, h] : 0 ms
+[13:40:39.995]	Elapsed time: 24481 ms
+[13:40:39.995]	Counts:
+Total candidates=1576
+[13:40:39.995]	Total time: 24481 ms

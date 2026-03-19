@@ -1,0 +1,158 @@
+dictput
+Search strategy: fun `<init>`(query.Examples, kotlin.Boolean, kotlin.Boolean, kotlin.Int, kotlin.Int, util.Logger): oneast.searchstrategies.DFSEnumerator
+Size bound: 20
+Depth bound: 4
+Names per round: 10
+Searching for 1 solutions
+=====
+
+[11:48:53.982]	Current query: {Ebi=.L, Eib=.L, Eii=.L, Num=.L, put=_ -> _, true=.L}
+[11:48:53.982]	BEG Depth 0 outlining [Ebi, Eib, Eii, Num, put, true]
+[11:48:53.982]	BEG Initial outlines
+[11:48:53.983]	END Initial outlines : 1 ms
+[11:48:53.983]	Counts:
+Total candidates=93
+[11:48:53.983]	Elapsed time: 35 ms
+[11:48:53.985]	Seeds before label arities: 51
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> V0 -> V0 -> V0, true=L0[]}
+{Ebi=L0[], Eib=L1[], Eii=L1[], Num=L1[], put=V0 -> V0 -> V1 -> V0, true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> V0 -> L0[] -> V0, true=L0[]}
+{Ebi=L0[], Eib=L1[], Eii=L0[], Num=L0[], put=V0 -> V1 -> V0 -> V0, true=L1[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> V1 -> V1 -> V0, true=L3[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> V1 -> V2 -> V0, true=L4[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> V1 -> L3[] -> V0, true=L3[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> L0[] -> V0 -> V0, true=L0[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> L3[] -> V1 -> V0, true=L3[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> L3[] -> L3[] -> V0, true=L3[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V1 -> V0 -> V0 -> V0, true=L3[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V1 -> V0 -> V1 -> V0, true=L0[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V1 -> V0 -> V2 -> V0, true=L4[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V1 -> V0 -> L3[] -> V0, true=L3[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V1 -> V1 -> V0 -> V0, true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V1 -> V1 -> L0[] -> V0, true=L0[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V1 -> V2 -> V0 -> V0, true=L4[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V1 -> V2 -> L3[] -> V0, true=L3[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V1 -> L3[] -> V0 -> V0, true=L3[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V1 -> L0[] -> V1 -> V0, true=L0[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V1 -> L3[] -> V2 -> V0, true=L3[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V1 -> L3[] -> L3[] -> V0, true=L3[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=L0[] -> V0 -> V0 -> V0, true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=L0[] -> V0 -> V1 -> V0, true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=L0[] -> V0 -> L0[] -> V0, true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=L0[] -> V1 -> V0 -> V0, true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> V1 -> V1 -> V0, true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> V1 -> V2 -> V0, true=L2[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> V1 -> L1[] -> V0, true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=L0[] -> L0[] -> V0 -> V0, true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> L1[] -> V1 -> V0, true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> L1[] -> L1[] -> V0, true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> V0 -> V0 -> L0[], true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> V0 -> V1 -> L0[], true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> V0 -> L0[] -> L0[], true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> V1 -> V0 -> L0[], true=L0[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> V1 -> V1 -> L4[], true=L3[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> V1 -> V2 -> L4[], true=L5[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> V1 -> L3[] -> L4[], true=L3[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> L0[] -> V0 -> L0[], true=L0[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> L3[] -> V1 -> L4[], true=L3[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> L3[] -> L3[] -> L4[], true=L3[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> V0 -> V0 -> L0[], true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> V0 -> V1 -> L0[], true=L2[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> V0 -> L1[] -> L0[], true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> L1[] -> V0 -> L0[], true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> L1[] -> L1[] -> L0[], true=L1[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V1 -> L3[] -> V0, true=L3[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> V1 -> V0, true=L2[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> L1[] -> V0, true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> V0, true=L2[]}
+[11:48:53.985]	BEG Dependency analysis
+[11:48:53.986]	END Dependency analysis : 1 ms
+[11:48:53.986]	Counts:
+Total candidates=93
+[11:48:53.986]	Elapsed time: 38 ms
+[11:48:53.986]	BEG Solving for label arities
+[11:48:56.268]	END Solving for label arities : 2282 ms
+[11:48:56.268]	Counts:
+Total candidates=93
+[11:48:56.268]	Elapsed time: 2320 ms
+[11:48:56.268]	END Depth 0 outlining [Ebi, Eib, Eii, Num, put, true] : 2286 ms
+[11:48:56.268]	Counts:
+Total candidates=93
+[11:48:56.269]	Elapsed time: 2320 ms
+[11:48:56.269]	Concrete seeds: 63
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> V0 -> V0 -> V0, true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> V0 -> L0[] -> V0, true=L0[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L0[.], put=V0 -> V0 -> L0[_] -> V0, true=L0[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> L0[] -> V0 -> V0, true=L0[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L0[.], put=V0 -> L0[_] -> V0 -> V0, true=L0[.]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> L3[] -> L3[] -> V0, true=L3[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[.], put=V0 -> L3[_] -> L3[_] -> V0, true=L3[.]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L0[.], put=V1 -> V1 -> L0[_] -> V0, true=L0[.]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L0[.], put=V1 -> L0[_] -> V1 -> V0, true=L0[.]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[.], put=V1 -> L3[_] -> L3[_] -> V0, true=L3[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=L0[] -> V0 -> V0 -> V0, true=L0[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L0[.], put=L0[_] -> V0 -> V0 -> V0, true=L0[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=L0[] -> V0 -> V1 -> V0, true=L0[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L0[.], put=L0[_] -> V0 -> V1 -> V0, true=L0[.]}
+{Ebi=L0[., .], Eib=L0[., .], Eii=L0[., .], Num=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0, true=L0[., .]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=L0[] -> V0 -> L0[] -> V0, true=L0[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L0[.], put=L0[_] -> V0 -> L0[_] -> V0, true=L0[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=L0[] -> V1 -> V0 -> V0, true=L0[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L0[.], put=L0[_] -> V1 -> V0 -> V0, true=L0[.]}
+{Ebi=L0[., .], Eib=L0[., .], Eii=L0[., .], Num=L0[., .], put=L0[_, _] -> V1 -> V0 -> V0, true=L0[., .]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> V1 -> V1 -> V0, true=L1[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> V1 -> V2 -> V0, true=L2[]}
+{Ebi=L0[., .], Eib=L0[., .], Eii=L0[., .], Num=L1[], put=L0[_, _] -> V1 -> V2 -> V0, true=L2[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[.], put=L0[] -> V1 -> L1[_] -> V0, true=L1[.]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> V1 -> L1[] -> V0, true=L1[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[.], put=L0[_] -> V1 -> L1[_] -> V0, true=L1[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=L0[] -> L0[] -> V0 -> V0, true=L0[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L0[.], put=L0[_] -> L0[_] -> V0 -> V0, true=L0[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[.], put=L0[] -> L1[_] -> V1 -> V0, true=L1[.]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> L1[] -> V1 -> V0, true=L1[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[.], put=L0[_] -> L1[_] -> V1 -> V0, true=L1[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[.], put=L0[] -> L1[_] -> L1[_] -> V0, true=L1[.]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> L1[] -> L1[] -> V0, true=L1[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[.], put=L0[_] -> L1[_] -> L1[_] -> V0, true=L1[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> V0 -> V0 -> L0[], true=L0[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> V0 -> L0[] -> L0[], true=L0[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L0[.], put=V0 -> V0 -> L0[_] -> L0[_], true=L0[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L0[], put=V0 -> L0[] -> V0 -> L0[], true=L0[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L0[.], put=V0 -> L0[_] -> V0 -> L0[_], true=L0[.]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[], put=V0 -> L3[] -> L3[] -> L4[], true=L3[]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[.], put=V0 -> L3[_] -> L3[_] -> L4[], true=L3[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> V0 -> V0 -> L0[], true=L1[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> V0 -> V0 -> L0[_], true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> V0 -> V1 -> L0[], true=L2[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> V0 -> V1 -> L0[_], true=L2[]}
+{Ebi=L0[., .], Eib=L0[., .], Eii=L0[., .], Num=L1[], put=L0[_, _] -> V0 -> V1 -> L0[_, _], true=L2[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> V0 -> L1[] -> L0[], true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[.], put=L0[] -> V0 -> L1[_] -> L0[], true=L1[.]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> V0 -> L1[] -> L0[_], true=L1[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[.], put=L0[_] -> V0 -> L1[_] -> L0[_], true=L1[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> L1[] -> V0 -> L0[], true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[.], put=L0[] -> L1[_] -> V0 -> L0[], true=L1[.]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> L1[] -> V0 -> L0[_], true=L1[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[.], put=L0[_] -> L1[_] -> V0 -> L0[_], true=L1[.]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[], put=L0[] -> L1[] -> L1[] -> L0[], true=L1[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[.], put=L0[] -> L1[_] -> L1[_] -> L0[], true=L1[.]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> L1[] -> L1[] -> L0[_], true=L1[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[.], put=L0[_] -> L1[_] -> L1[_] -> L0[_], true=L1[.]}
+{Ebi=L0[], Eib=L1[], Eii=L2[], Num=L3[.], put=V1 -> L3[_] -> V0, true=L3[.]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> V1 -> V0, true=L2[]}
+{Ebi=L0[], Eib=L0[], Eii=L0[], Num=L1[.], put=L0[] -> L1[_] -> V0, true=L1[.]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[], put=L0[_] -> L1[] -> V0, true=L1[]}
+{Ebi=L0[.], Eib=L0[.], Eii=L0[.], Num=L1[.], put=L0[_] -> L1[_] -> V0, true=L1[.]}
+[11:48:56.269]	Max min size: 4
+[11:48:56.269]	BEG Depth 1 concretizing [Ebi, Eib, Eii, Num, put, true]
+[11:48:56.269]	BEG Size 4 concretizing [Ebi, Eib, Eii, Num, put, true]
+[11:48:56.296]	Looking for counterexamples for potential solution {Ebi=L0[L2[], L1[]], Eib=L0[L1[], L2[]], Eii=L0[L1[], L1[]], Num=L1[], put=L0[V0, V1] -> V0 -> V1 -> L0[V0, V1], true=L2[]}
+[11:48:56.297]	Found no counterexamples
+[11:48:56.297]	SOLUTION: {Ebi=L0[L2[], L1[]], Eib=L0[L1[], L2[]], Eii=L0[L1[], L1[]], Num=L1[], put=L0[V0, V1] -> V0 -> V1 -> L0[V0, V1], true=L2[]}
+[11:48:56.297]	END Size 4 concretizing [Ebi, Eib, Eii, Num, put, true] : 28 ms
+[11:48:56.297]	Elapsed time: 2349 ms
+[11:48:56.297]	END Depth 1 concretizing [Ebi, Eib, Eii, Num, put, true] : 28 ms
+[11:48:56.297]	Elapsed time: 2349 ms
+[11:48:56.297]	Counts:
+Total candidates=373
+[11:48:56.297]	Total time: 2349 ms

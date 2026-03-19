@@ -1,0 +1,182 @@
+cons
+Search strategy: fun `<init>`(query.Examples, kotlin.Boolean, kotlin.Boolean, kotlin.Int, kotlin.Int, util.Logger): oneast.searchstrategies.Partitioner
+Size bound: 20
+Depth bound: 4
+Names per round: 10
+Searching for 1 solutions
+=====
+
+[14:30:48.502]	Current query: {LLi=.L, Lb=.L, Li=.L, Num=.L, cons=_ -> _, true=.L}
+[14:30:48.502]	BEG Depth 0 outlining [LLi, Lb, Li, Num, cons, true]
+[14:30:48.502]	BEG Initial outlines
+[14:30:48.503]	END Initial outlines : 1 ms
+[14:30:48.503]	Counts:
+
+[14:30:48.503]	Elapsed time: 3 ms
+[14:30:48.505]	Seeds before label arities: 14
+{LLi=L0[], Lb=L1[], Li=L0[], Num=L0[], cons=V0 -> V0 -> V0, true=L1[]}
+{LLi=L0[], Lb=L1[], Li=L2[], Num=L3[], cons=V0 -> V1 -> V0, true=L4[]}
+{LLi=L0[], Lb=L0[], Li=L0[], Num=L0[], cons=V0 -> L0[] -> V0, true=L0[]}
+{LLi=L0[], Lb=L1[], Li=L2[], Num=L3[], cons=V1 -> V0 -> V0, true=L4[]}
+{LLi=L0[], Lb=L0[], Li=L0[], Num=L1[], cons=V1 -> L0[] -> V0, true=L2[]}
+{LLi=L0[], Lb=L1[], Li=L0[], Num=L0[], cons=L0[] -> V0 -> V0, true=L0[]}
+{LLi=L0[], Lb=L1[], Li=L0[], Num=L0[], cons=L0[] -> V1 -> V0, true=L0[]}
+{LLi=L0[], Lb=L0[], Li=L0[], Num=L0[], cons=L0[] -> L0[] -> V0, true=L0[]}
+{LLi=L0[], Lb=L0[], Li=L0[], Num=L0[], cons=V0 -> V0 -> L0[], true=L0[]}
+{LLi=L0[], Lb=L1[], Li=L2[], Num=L3[], cons=V0 -> V1 -> L4[], true=L5[]}
+{LLi=L0[], Lb=L0[], Li=L0[], Num=L1[], cons=V0 -> L0[] -> L0[], true=L2[]}
+{LLi=L0[], Lb=L1[], Li=L0[], Num=L0[], cons=L0[] -> V0 -> L0[], true=L0[]}
+{LLi=L0[], Lb=L0[], Li=L0[], Num=L0[], cons=L0[] -> L0[] -> L0[], true=L0[]}
+{LLi=L0[], Lb=L1[], Li=L0[], Num=L0[], cons=L0[] -> V0, true=L0[]}
+[14:30:48.505]	BEG Dependency analysis
+[14:30:48.506]	END Dependency analysis : 1 ms
+[14:30:48.506]	Counts:
+
+[14:30:48.506]	Elapsed time: 6 ms
+[14:30:48.506]	BEG Solving for label arities
+[14:30:49.151]	END Solving for label arities : 645 ms
+[14:30:49.151]	Counts:
+
+[14:30:49.151]	Elapsed time: 651 ms
+[14:30:49.151]	END Depth 0 outlining [LLi, Lb, Li, Num, cons, true] : 649 ms
+[14:30:49.151]	Counts:
+
+[14:30:49.151]	Elapsed time: 651 ms
+[14:30:49.151]	Concrete seeds: 15
+{LLi=L0[], Lb=L1[], Li=L0[], Num=L0[], cons=V0 -> V0 -> V0, true=L1[]}
+{LLi=L0[], Lb=L0[], Li=L0[], Num=L0[], cons=V0 -> L0[] -> V0, true=L0[]}
+{LLi=L0[.], Lb=L0[.], Li=L0[.], Num=L0[.], cons=V0 -> L0[_] -> V0, true=L0[.]}
+{LLi=L0[.], Lb=L0[.], Li=L0[.], Num=L1[], cons=V1 -> L0[_] -> V0, true=L2[]}
+{LLi=L0[], Lb=L1[], Li=L0[], Num=L0[], cons=L0[] -> V0 -> V0, true=L0[]}
+{LLi=L0[.], Lb=L1[], Li=L0[.], Num=L0[.], cons=L0[_] -> V0 -> V0, true=L0[.]}
+{LLi=L0[.], Lb=L1[], Li=L0[.], Num=L0[.], cons=L0[_] -> V1 -> V0, true=L0[.]}
+{LLi=L0[.], Lb=L0[.], Li=L0[.], Num=L0[.], cons=L0[_] -> L0[_] -> V0, true=L0[.]}
+{LLi=L0[], Lb=L0[], Li=L0[], Num=L0[], cons=V0 -> V0 -> L0[], true=L0[]}
+{LLi=L0[], Lb=L0[], Li=L0[], Num=L1[], cons=V0 -> L0[] -> L0[], true=L2[]}
+{LLi=L0[.], Lb=L0[.], Li=L0[.], Num=L1[], cons=V0 -> L0[_] -> L0[_], true=L2[]}
+{LLi=L0[], Lb=L1[], Li=L0[], Num=L0[], cons=L0[] -> V0 -> L0[], true=L0[]}
+{LLi=L0[.], Lb=L1[], Li=L0[.], Num=L0[.], cons=L0[_] -> V0 -> L0[_], true=L0[.]}
+{LLi=L0[], Lb=L0[], Li=L0[], Num=L0[], cons=L0[] -> L0[] -> L0[], true=L0[]}
+{LLi=L0[.], Lb=L0[.], Li=L0[.], Num=L0[.], cons=L0[_] -> L0[_] -> L0[_], true=L0[.]}
+[14:30:49.151]	BEG Depth 1 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.151]	BEG Size 1 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.153]	END Size 1 concretizing [LLi, Lb, Li, Num, cons, true] : 2 ms
+[14:30:49.154]	Counts:
+
+[14:30:49.154]	Elapsed time: 654 ms
+[14:30:49.154]	BEG Size 2 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.157]	END Size 2 concretizing [LLi, Lb, Li, Num, cons, true] : 3 ms
+[14:30:49.158]	Counts:
+Total candidates=86
+[14:30:49.158]	Elapsed time: 658 ms
+[14:30:49.158]	BEG Size 3 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.164]	END Size 3 concretizing [LLi, Lb, Li, Num, cons, true] : 6 ms
+[14:30:49.164]	Counts:
+Total candidates=159
+[14:30:49.164]	Elapsed time: 664 ms
+[14:30:49.164]	BEG Size 4 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.177]	END Size 4 concretizing [LLi, Lb, Li, Num, cons, true] : 12 ms
+[14:30:49.177]	Counts:
+Total candidates=292
+[14:30:49.177]	Elapsed time: 677 ms
+[14:30:49.177]	BEG Size 5 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.195]	END Size 5 concretizing [LLi, Lb, Li, Num, cons, true] : 18 ms
+[14:30:49.195]	Counts:
+Total candidates=487
+[14:30:49.195]	Elapsed time: 695 ms
+[14:30:49.195]	BEG Size 6 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.213]	END Size 6 concretizing [LLi, Lb, Li, Num, cons, true] : 18 ms
+[14:30:49.214]	Counts:
+Total candidates=682
+[14:30:49.214]	Elapsed time: 714 ms
+[14:30:49.214]	BEG Size 7 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.237]	END Size 7 concretizing [LLi, Lb, Li, Num, cons, true] : 23 ms
+[14:30:49.237]	Counts:
+Total candidates=877
+[14:30:49.237]	Elapsed time: 737 ms
+[14:30:49.237]	BEG Size 8 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.263]	END Size 8 concretizing [LLi, Lb, Li, Num, cons, true] : 26 ms
+[14:30:49.263]	Counts:
+Total candidates=1072
+[14:30:49.263]	Elapsed time: 763 ms
+[14:30:49.263]	BEG Size 9 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.289]	END Size 9 concretizing [LLi, Lb, Li, Num, cons, true] : 26 ms
+[14:30:49.289]	Counts:
+Total candidates=1267
+[14:30:49.289]	Elapsed time: 789 ms
+[14:30:49.289]	BEG Size 10 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.306]	END Size 10 concretizing [LLi, Lb, Li, Num, cons, true] : 17 ms
+[14:30:49.306]	Counts:
+Total candidates=1462
+[14:30:49.306]	Elapsed time: 806 ms
+[14:30:49.306]	BEG Size 11 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.323]	END Size 11 concretizing [LLi, Lb, Li, Num, cons, true] : 17 ms
+[14:30:49.323]	Counts:
+Total candidates=1657
+[14:30:49.323]	Elapsed time: 823 ms
+[14:30:49.323]	BEG Size 12 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.339]	END Size 12 concretizing [LLi, Lb, Li, Num, cons, true] : 16 ms
+[14:30:49.340]	Counts:
+Total candidates=1852
+[14:30:49.340]	Elapsed time: 840 ms
+[14:30:49.340]	BEG Size 13 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.356]	END Size 13 concretizing [LLi, Lb, Li, Num, cons, true] : 16 ms
+[14:30:49.356]	Counts:
+Total candidates=2047
+[14:30:49.356]	Elapsed time: 856 ms
+[14:30:49.356]	BEG Size 14 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.373]	END Size 14 concretizing [LLi, Lb, Li, Num, cons, true] : 17 ms
+[14:30:49.373]	Counts:
+Total candidates=2242
+[14:30:49.373]	Elapsed time: 873 ms
+[14:30:49.373]	BEG Size 15 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.389]	END Size 15 concretizing [LLi, Lb, Li, Num, cons, true] : 16 ms
+[14:30:49.389]	Counts:
+Total candidates=2437
+[14:30:49.389]	Elapsed time: 889 ms
+[14:30:49.390]	BEG Size 16 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.408]	END Size 16 concretizing [LLi, Lb, Li, Num, cons, true] : 18 ms
+[14:30:49.408]	Counts:
+Total candidates=2632
+[14:30:49.408]	Elapsed time: 908 ms
+[14:30:49.408]	BEG Size 17 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.429]	END Size 17 concretizing [LLi, Lb, Li, Num, cons, true] : 21 ms
+[14:30:49.429]	Counts:
+Total candidates=2827
+[14:30:49.429]	Elapsed time: 929 ms
+[14:30:49.429]	BEG Size 18 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.452]	END Size 18 concretizing [LLi, Lb, Li, Num, cons, true] : 23 ms
+[14:30:49.452]	Counts:
+Total candidates=3022
+[14:30:49.452]	Elapsed time: 952 ms
+[14:30:49.452]	BEG Size 19 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.473]	END Size 19 concretizing [LLi, Lb, Li, Num, cons, true] : 21 ms
+[14:30:49.473]	Counts:
+Total candidates=3217
+[14:30:49.473]	Elapsed time: 973 ms
+[14:30:49.473]	BEG Size 20 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.489]	END Size 20 concretizing [LLi, Lb, Li, Num, cons, true] : 16 ms
+[14:30:49.489]	Counts:
+Total candidates=3412
+[14:30:49.489]	Elapsed time: 989 ms
+[14:30:49.489]	END Depth 1 concretizing [LLi, Lb, Li, Num, cons, true] : 338 ms
+[14:30:49.489]	Counts:
+Total candidates=3412
+[14:30:49.489]	Elapsed time: 989 ms
+[14:30:49.489]	BEG Depth 2 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.489]	BEG Size 1 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.493]	END Size 1 concretizing [LLi, Lb, Li, Num, cons, true] : 4 ms
+[14:30:49.493]	Counts:
+Total candidates=3448
+[14:30:49.493]	Elapsed time: 993 ms
+[14:30:49.493]	BEG Size 2 concretizing [LLi, Lb, Li, Num, cons, true]
+[14:30:49.509]	Looking for counterexamples for potential solution {LLi=L0[L0[L1[]]], Lb=L0[L2[]], Li=L0[L1[]], Num=L1[], cons=V0 -> L0[V0] -> L0[V0], true=L2[]}
+[14:30:49.510]	Found no counterexamples
+[14:30:49.510]	SOLUTION: {LLi=L0[L0[L1[]]], Lb=L0[L2[]], Li=L0[L1[]], Num=L1[], cons=V0 -> L0[V0] -> L0[V0], true=L2[]}
+[14:30:49.511]	END Size 2 concretizing [LLi, Lb, Li, Num, cons, true] : 18 ms
+[14:30:49.511]	Elapsed time: 1011 ms
+[14:30:49.511]	END Depth 2 concretizing [LLi, Lb, Li, Num, cons, true] : 22 ms
+[14:30:49.511]	Elapsed time: 1011 ms
+[14:30:49.511]	Counts:
+Total candidates=3553
+[14:30:49.511]	Total time: 1011 ms
