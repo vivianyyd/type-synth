@@ -11,27 +11,85 @@ fun main() {
     val seq = Partitions.generate(elems, n)
     // Lazily take first few outputs
     seq.take(100).forEach { println(it) }
+
+    val ty =
+        Arrow(
+            NamedLabel(1, listOf(TypeHole(), TypeHole())),
+            Arrow(
+                NamedLabel(1, listOf(TypeHole(), TypeHole())),
+                NamedLabel(1, listOf(TypeHole(), TypeHole()))
+            )
+        )
+    val holes = ty.allHoles().filterIsInstance<TypeHole>()
+
+    val assignments = Partitions.generate(holes, ty.variables().size)
+
+    fun replaceAll(type: Type, holes: List<TypeHole>, replacement: () -> Type) =
+        holes.fold(type) { acc, hole -> acc.replace(hole, replacement()) }
+
+    fun applyPartition(type: Type, partition: PartitionResult<TypeHole>): Type {
+        var fresh = type.variables().size
+        return partition.blocks.foldIndexed(type) { block, acc, holes ->
+            val replacement: () -> Type =
+                when {
+                    block == partition.constrBlockIndex -> {
+                        { Blank(labelOnly = false) }
+                    }
+                    block in partition.assignments -> {
+                        { Variable(partition.assignments[block]!!) }
+                    }
+                    else -> {
+                        { Variable(fresh++) }
+                    }
+                }
+            replaceAll(acc, holes, replacement)
+        }
+    }
+
+    val out = assignments.map { applyPartition(ty, it) }.toList()
+    println("${out.size} assignments")
+    println("${out.toSet().size} without duplicates")
 }
 
+/**
+ * Fills all holes at the same depth in one type at a time, shallowest first, by partitioning them
+ * into groups of type constructors or variables.
+ */
 class Partitioner(
     examples: Examples,
     private val emitLabelBlanks: Boolean,
+    private val emitConstructors: Boolean,
     private val sizeBound: Int,
     private val depthBound: Int,
     private val logger: Logger
 ) : SearchStrategy(examples) {
-    override fun candidates(c: SearchState): Sequence<SearchState> =
-        recCandidates(c, posUnification(c))
+    override fun candidates(c: SearchState): Sequence<SearchState> {
+        val u = posUnification(c)
+        return if (u.ok) recCandidates(c, u, sizeBound, c.types.sumOf { it.numFillableHoles() })
+        else emptySequence()
+    }
 
+    /**
+     * As long as seed [c] passes positive examples, states returned by this function do as well.
+     */
     private fun recCandidates(
         c: SearchState,
         unification: OneUnification,
+        currSizeBound: Int,
+        holesRemaining: Int
     ): Sequence<SearchState> {
+        logger.count("Recursed")
         if (c.noHoles()) return sequenceOf(c)
 
         // We won't fast-forward label blanks that we ourselves emitted.
         if (c.noFillableHoles())
-            return if (!emitLabelBlanks) conservativeFastForward(c, depthBound) else sequenceOf(c)
+            return if (!emitLabelBlanks) {
+                unionFastForward(c, depthBound).filterNot {
+                    it.types.any { it is Arrow && it.blanks().isNotEmpty() }
+                }
+            } else sequenceOf(c)
+
+        if (currSizeBound - holesRemaining < 0) return emptySequence()
 
         val (iToFill, _, depth) = c.shallowestFillableHole() ?: error("Impossible")
         if (depth > depthBound) return emptySequence()
@@ -44,23 +102,27 @@ class Partitioner(
         return assignments
             .flatMap {
                 logger.count("Total candidates")
-//                TODO(
-//                    "As we introduce blanks DURING search, we want to conservatively " +
-//                            "fast forward after placing blanks so we know what label a node has after " +
-//                            "we introduce it, so we can prune"
-//                )
                 val partitioned = c.mapTypeAtIndex(iToFill) { typ -> applyPartition(typ, it) }
-                conservativeFastForward(partitioned, depthBound)
+                logger.log("$partitioned")
+                unionFastForward(partitioned, depthBound)
             }
             .filterNot {
                 // Importantly, this pruning is sound even when we perform it on outlines (before
                 // label arities are computed and holes inserted accordingly). That's because when
                 // we are generating outlines, labels are considered blanks
-                it.types[iToFill].invalid()
+                it.types[iToFill].invalid() ||
+                        (it.types[iToFill] is Arrow &&
+                                it.types[iToFill].blanks().isNotEmpty()) // unsuccessful ff
             }
             .flatMap { newCandidate ->
                 val u = posUnification(newCandidate)
-                if (u.ok) recCandidates(newCandidate, u) else emptySequence()
+                if (u.ok)
+                    recCandidates(
+                        newCandidate,
+                        u,
+                        currSizeBound = currSizeBound - holes.size,
+                        holesRemaining = newCandidate.types.sumOf { it.numFillableHoles() })
+                else emptySequence()
             }
     }
 
@@ -82,14 +144,22 @@ class Partitioner(
                 runtime value is actually a non-null integer equal to [block].
                   */
                 when {
-                    block == partition.labelledBlockIndex -> {
-                        { Blank(labelOnly = true) }
+                    block == partition.constrBlockIndex -> {
+                        // A parameter may contain something like L[L[a -> b]], so the blanks we
+                        // introduce may be arrows in addition to labels
+                        { Blank(labelOnly = emitLabelBlanks) }
                     }
                     block in partition.assignments -> {
                         { Variable(partition.assignments[block]!!) }
                     }
                     else -> {
-                        { Variable(fresh++) }
+                        // We don't want everything in this block to be its own fresh var; instead
+                        // we want one fresh var for the entire block. Let's say we want the
+                        // assignment where none of the blocks are bound variables, each is its own
+                        // fresh var. That should come about from the partition containing only
+                        // singletons where each block gets a new fresh var.
+                        val v = fresh++
+                        { Variable(v) }
                     }
                 }
             replaceAll(acc, holes, replacement)
@@ -117,7 +187,9 @@ class Partitioner(
  */
 data class PartitionResult<T>(
     val blocks: List<List<T>>,
-    val labelledBlockIndex: Int?, // null = no labelled block
+    val constrBlockIndex:
+    Int?, // null = no constructor block - these can specialize to any type constructor, i.e.
+    // labels or arrows.
     val assignments: Map<Int, Int> // blockIndex -> number in 0..n-1
 )
 
@@ -147,7 +219,7 @@ object Partitions {
                         yield(
                             PartitionResult(
                                 blocks = blocks,
-                                labelledBlockIndex = labelled,
+                                constrBlockIndex = labelled,
                                 assignments = assignment
                             )
                         )
@@ -219,9 +291,6 @@ object Partitions {
             }
             val block = blockIndices[i]
 
-            // Option 1: leave unassigned
-            backtrack(i + 1)
-
             // Option 2: assign any unused number
             for (num in 0 until n) {
                 if (!used[num]) {
@@ -232,6 +301,8 @@ object Partitions {
                     used[num] = false
                 }
             }
+            // Option 1: leave unassigned
+            backtrack(i + 1)
         }
 
         backtrack(0)
