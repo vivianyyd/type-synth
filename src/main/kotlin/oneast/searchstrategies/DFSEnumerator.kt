@@ -36,9 +36,7 @@ class DFSEnumerator(
 
         // We won't fast-forward label blanks that we ourselves emitted.
         if (c.noFillableHoles())
-            return if (!emitLabelBlanks)
-                unionFastForward(c, depthBound).filter { it.maxParamDepth() <= depthBound }
-            /* conservative fast forward might return something with holes, which must be filled in a later stage as dictated by Search */
+            return if (!emitLabelBlanks) unionFastForward(c, depthBound)
             else sequenceOf(c)
 
         if (currSizeBound - holesRemaining < 0) return emptySequence()

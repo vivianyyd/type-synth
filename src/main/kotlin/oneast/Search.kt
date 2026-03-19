@@ -51,14 +51,15 @@ class Search(
         //   same atom?
         // TODO actually we were indeed doing the previous step wrong... wasn't actually forcing the
         //   unification thunk so there were no hole constraints. See if we can remove this one now
-        for ((n1, i) in s.names) {
-            for ((n2, j) in s.names) {
-                val t1 = s.types[i]
-                val t2 = s.types[j]
-                if (i < j && t1 is Blank && t2 is Blank && oracle.equal(Name(n1), Name(n2)))
-                    uf.union(t1.id, t2.id)
-            }
-        }
+        //        for ((n1, i) in s.names) {
+        //            for ((n2, j) in s.names) {
+        //                val t1 = s.types[i]
+        //                val t2 = s.types[j]
+        //                if (i < j && t1 is Blank && t2 is Blank && oracle.equal(Name(n1),
+        // Name(n2)))
+        //                    uf.union(t1.id, t2.id)
+        //            }
+        //        }
 
         // Set up mapping to assign labels to equivalence classes
         val freshLabel = Counter()
@@ -144,6 +145,8 @@ class Search(
                                 lazyCartesianProduct(arities.map { (0..it).toList() })
                                     .map { labels.zip(it).toMap() }
                                     .map { subla ->
+                                        // TODO - if any of the new label arity assignments disagree
+                                        //   w previous, we clear them
                                         s.mapTypesAndSetLabelArities(subla) {
                                             it.addParamHoles(subla)
                                         }
