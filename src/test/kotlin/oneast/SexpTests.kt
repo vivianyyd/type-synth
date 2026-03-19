@@ -1,7 +1,6 @@
 package oneast
 
-import oneast.searchstrategies.DFSEnumerator
-import org.junit.jupiter.api.Disabled
+import oneast.searchstrategies.Partitioner
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -38,16 +37,16 @@ class SexpTests {
     private fun defaultConfig(name: String) =
         Configuration(
             name = name,
-            searchStrategy = ::DFSEnumerator,
+            searchStrategy = ::Partitioner,
             sizeBound = 20,
             depthBound = 4,
             namesPerRound = 10,
             numSols = Solutions.NumSolutions(1)
         )
 
-    @Disabled
+    //    @Disabled
     @Test
-    fun `just one`() = test("hofs")
+    fun `just one`() = test("polymorphic-dictchain")
 
     @ParameterizedTest
     @MethodSource("testNames")

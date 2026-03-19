@@ -1,8 +1,8 @@
 package oneast
 
 import dependencyanalysis.ParameterwiseDependencyAnalysis
+import oneast.searchstrategies.DFSEnumerator
 import query.Examples
-import query.Name
 import util.*
 import java.util.stream.Collectors
 import java.util.stream.StreamSupport
@@ -25,7 +25,19 @@ class Search(
         depthBound: Int,
     ): Sequence<SearchState> =
         config
-            .searchStrategy(examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, logger)
+            .searchStrategy(
+                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, logger
+            )
+            .candidates(c)
+
+    private fun initCandidates(
+        c: SearchState,
+        emitLabelBlanks: Boolean,
+        emitConstructors: Boolean,
+        sizeBound: Int,
+        depthBound: Int,
+    ): Sequence<SearchState> =
+        DFSEnumerator(examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, logger)
             .candidates(c)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
@@ -102,7 +114,7 @@ class Search(
     private fun concreteSeeds(size: Int, depth: Int): List<SearchState> {
         val initialOutlines =
             logger.time("Initial outlines") {
-                allCandidates(
+                initCandidates(
                     seed,
                     emitLabelBlanks = true,
                     emitConstructors = true,
