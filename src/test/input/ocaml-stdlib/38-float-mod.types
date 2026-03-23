@@ -50,7 +50,6 @@ val asinh : float -> float
 val atanh : float -> float
 val erf : float -> float
 val erfc : float -> float
-val trunc : float -> float
 val mod_float : float -> float -> float
 val modf : float -> float * float
 val frexp : float -> float * int
