@@ -1,0 +1,24 @@
+TODO make our own syntactic sugar for :: and pair literals. force the LLM to only use our cons and pair constructors instead of list literals or pair literals. what about records? let cons h t = h :: t
+
+
+
+Generate small examples of OCaml expressions that use the following functions. Use only prefix notation. Refrain from using let bindings or function abstraction, only use function application. Parentheses are used around function names which consist of symbols when used as prefix operators. You may only use the names/functions which appear in the function declarations provided.
+Each example should be separated by a newline.
+Instead of int literals or string literals or character literals or float literals, use the keywords Num, Str, Char, Flt. You can still use normal boolean literals. Do not use any other literals that require special parsing. That includes pairs, lists, and arrays. If you can think of other literals you would WANT to use in examples, note it in a TODO somewhere visible, like in the README.
+If you want to construct a list, you must do so by calling a custom function of mine:
+val cons : 'a -> 'a list -> 'a list
+You may use the empty list literal []. This is the only list literal you may use. You must otherwise call cons with prefix notation.
+If you want to construct an array, you must use Array.make.
+If you want to construct a pair, you must use a custom function of mine:
+val pair: 'a -> 'b -> ('a * 'b)
+Although you are allowed to use lists pairs and arrays, you should avoid them as often as you can in favor of simpler values like Num, Str, true, false when you can.
+
+For each parameter of each function, we want at least 2 positive examples that demonstrate the full flexibility of values it can take in. That is, if it's a type parameter, we want to witness values of different types passed as inputs. If it's a type constructor with a parameter inside, for example, a function that takes any list or any pair, we want to witness different list contents or different combinations of paired types. Or, if a function takes two elements each of arbitrary type, like 'a -> 'b -> 'a, we want to have an example that really shows they can be different types.
+For each parameter, we also want at least 2 negative examples. We want negative examples to be nontrivial - for instance, if there is a type constraint from some type variable being shared between two parameters, we want to witness that type constraint being broken. For example, suppose some function takes two lists of the same element type. A good negative example for that function might be passing two lists of different element types. We could also have an example where for either one of the arguments, some non-list value is passed.
+We want negative examples to be MINIMAL - that is, we want negative examples where all strict subexpressions are valid. For instance, OCaml has partial application/currying; if we have an example fails due to the second argument, we shouldn't write a negative example that also includes a third argument.
+We don't want any negative examples that fail simply due to runtime errors. In fact, it's okay to include examples that will fail at runtime, as long as they will compile with no problems.
+We also want examples that show constraints on the output types of each function. For instance, we can use the output by passing it to a different function that also restricts its inputs in some way. For example, to show that the output of some function is always an int, we can have an example that passes that output to succ or (+), or pass it to (=) where the other input is Num.
+As an non-example, it's NOT useful to pass the output of (=) to a function that takes an 'a if our goal is to show that the output is a boolean.
+
+For higher-order functions, try your best to keep the examples simple. For instance, if we want an example for function composition/piping, we could use an arithmetic or boolean operation, or a simple string conversion function instead of constructing our own function using a let binding.
+Do not use any anonymous/lambda functions. If you must declare a function, put it in a let binding.
