@@ -1,0 +1,97 @@
+// Notes: There are TODOs scattered in the types files
+// TODO: un/parse pairs
+0-basics | Basics: grouped tokens, literals
+// Skipped: Exceptions
+1-comparison | Comparisons
+2-boolean | Boolean operations
+// Skipped: Debugging
+3-composition | Composition operators
+4-arith | Integer arithmetic
+5-bitwise | Bitwise operations
+6-float | Floating-point arithmetic | REQUIRES TUPLES, custom fpclass typedec
+7-str | String operations. More string operations are provided in module String.
+8-char | Character operations. More character operations are provided in module Char.
+9-unit | Unit operations
+10-strconv | String conversion functions | Requires Option
+11-pair | Pair operations
+12-list | List operations. More list operations are provided in module List.
+13-io | Input/output. Just declares stdin/out/err
+14-stdout | Output functions on standard output
+15-stderr | Output functions on standard error
+16-stdin | Input functions on standard input | Requires option
+17-out | General output functions | Requires list
+18-in | General input functions
+19-ref | References
+20-result | Result type declaration. TODO: un/parse constructors to fn calls
+// Skipped: Operations on format strings - 6ary tuples lol
+21-termination | Program termination
+
+// BEGIN Standard library modules
+
+// Skipped: Arg
+22-array-mod | Array module | Requires option, Seq.t sequences
+// Skipped ArrayLabels: it is the same as array but with labeled arguments
+23-atomic-mod
+// Skipped: Bigarray - mostly type declarations and constructors at top level, submodules for 1d 2d and 3d arrays
+24-bool-mod | Bool module | superset of boolean operations in toplevel stdlib module
+25-buffer-mod | Requires in/out channels, bytes, Seq.t, Uchar.t, pairs
+26-bytes-mod
+
+// Not yet processed:
+module BytesLabels: BytesLabels
+module Callback: Callback
+module Char: Char
+module Complex: Complex
+module Condition: Condition
+module Digest: Digest
+module Domain: Domain
+module Dynarray: Dynarray
+module Pqueue: Pqueue
+module Effect: Effect
+module Either: Either
+module Ephemeron: Ephemeron
+module Filename: Filename
+module Float: Float
+module Format: Format
+module Fun: Fun
+module Gc: Gc
+module Hashtbl: Hashtbl
+module Iarray: Iarray
+module In_channel: In_channel
+module Int: Int
+module Int32: Int32
+module Int64: Int64
+module Lazy: Lazy
+module Lexing: Lexing
+module List: List
+module ListLabels: ListLabels
+module Map: Map
+module Marshal: Marshal
+module MoreLabels: MoreLabels
+module Mutex: Mutex
+module Nativeint: Nativeint
+module Obj: Obj
+module Oo: Oo
+module Option: Option
+module Out_channel: Out_channel
+module Pair: Pair
+module Parsing: Parsing
+module Printexc: Printexc
+module Printf: Printf
+module Queue: Queue
+module Random: Random
+module Result: Result
+module Repr: Repr
+module Scanf: Scanf
+module Semaphore: Semaphore
+module Seq: Seq
+module Set: Set
+module Stack: Stack
+module StdLabels: StdLabels
+module String: String
+module StringLabels: StringLabels
+module Sys: Sys
+module Type: Type
+module Uchar: Uchar
+module Unit: Unit
+module Weak: Weak

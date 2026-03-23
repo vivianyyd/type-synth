@@ -1,0 +1,8 @@
+val print_char : char -> unit
+val print_string : string -> unit
+val print_bytes : bytes -> unit
+val print_int : int -> unit
+val print_float : float -> unit
+val print_endline : string -> unit
+val print_newline : unit -> unit
+

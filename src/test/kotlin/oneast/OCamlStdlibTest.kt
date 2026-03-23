@@ -15,9 +15,14 @@ import kotlin.test.Test
 class OCamlStdlibTest {
     @Test
     fun `can reconstruct stdlib`() {
-        val dir = join("src", "test", "input", "ocaml-stdlib")
-        val examples = loadExamples(File(dir))
-        val oracleTypes = OcamlTypeParser().parseSignatures(File(join(dir, "all.types")).readText())
+        val dir = File(join("src", "test", "input", "ocaml-stdlib"))
+        val examples = loadExamples(dir)
+        val parser = OcamlTypeParser()
+        val oracleTypes = buildMap {
+            dir.listFiles()
+                ?.filter { it.extension == "types" && it.isFile }
+                ?.forEach { file -> putAll(parser.parseSignatures(file.readText())) }
+        }
         val oracle = CheckingGroundTruthOracle(oracleTypes)
         val query = Query(examples, oracle)
 
@@ -42,10 +47,7 @@ class OCamlStdlibTest {
         clearCVC() // TODO This should really be done by the engine or someone else
         val engine =
             Engine(
-                query,
-                { e -> OCamlChecker().isValid(e.toString()).isValid },
-                configuration,
-                logger
+                query, { e -> OCamlChecker().isValid(e.toString()).isValid }, configuration, logger
             )
         // TODO oracle should be in query, numsols in config
 

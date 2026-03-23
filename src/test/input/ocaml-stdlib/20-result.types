@@ -1,0 +1,5 @@
+// Result type
+// TODO parse and unparse
+// type ('a, 'b) result =
+// |Ok of 'a
+// |Error of 'b

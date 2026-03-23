@@ -1,0 +1,5 @@
+val read_line : unit -> string
+val read_int_opt : unit -> int option
+val read_int : unit -> int
+val read_float_opt : unit -> float option
+val read_float : unit -> float

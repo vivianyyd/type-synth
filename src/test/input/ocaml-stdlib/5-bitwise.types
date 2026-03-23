@@ -1,0 +1,7 @@
+val (land) : int -> int -> int
+val (lor) : int -> int -> int
+val (lxor) : int -> int -> int
+val lnot : int -> int
+val (lsl) : int -> int -> int
+val (lsr) : int -> int -> int
+val (asr) : int -> int -> int

@@ -1,0 +1,6 @@
+// TODO parse and unparse ref access: type 'a ref = { mutable contents : 'a; }
+val ref : 'a -> 'a ref
+val (!) : 'a ref -> 'a  // Equivalent to fun r -> r.contents.
+val (:=) : 'a ref -> 'a -> unit
+val incr : int ref -> unit
+val decr : int ref -> unit

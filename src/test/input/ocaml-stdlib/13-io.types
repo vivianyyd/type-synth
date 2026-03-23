@@ -1,0 +1,3 @@
+val stdin : in_channel
+val stdout : out_channel
+val stderr : out_channel

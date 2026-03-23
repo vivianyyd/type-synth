@@ -1,0 +1,7 @@
+val prerr_char : char -> unit
+val prerr_string : string -> unit
+val prerr_bytes : bytes -> unit
+val prerr_int : int -> unit
+val prerr_float : float -> unit
+val prerr_endline : string -> unit
+val prerr_newline : unit -> unit

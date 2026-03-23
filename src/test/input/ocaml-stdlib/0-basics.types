@@ -1,0 +1,7 @@
+// Grouped tokens
+val Str : string
+val Num : int
+
+// Basics
+val true : bool
+val false : bool

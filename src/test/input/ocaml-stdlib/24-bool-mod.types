@@ -1,0 +1,15 @@
+val not : bool -> bool
+val (&&) : bool -> bool -> bool
+val (||) : bool -> bool -> bool
+val logand : bool -> bool -> bool
+val logor : bool -> bool -> bool
+val logxor : bool -> bool -> bool
+// Bool--Predicates and comparisons
+val equal : bool -> bool -> bool
+val compare : bool -> bool -> int
+// Bool--Converting
+val to_int : bool -> int
+val to_float : bool -> float
+val to_string : bool -> string
+val seeded_hash : int -> bool -> int
+val hash : bool -> int
