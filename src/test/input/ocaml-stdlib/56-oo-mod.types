@@ -1,0 +1,3 @@
+// Oo
+val copy : (< .. > as 'a) -> 'a
+val id : < .. > -> int

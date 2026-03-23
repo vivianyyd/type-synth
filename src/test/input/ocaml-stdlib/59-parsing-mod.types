@@ -1,0 +1,11 @@
+// Parsing
+val symbol_start : unit -> int
+val symbol_end : unit -> int
+val rhs_start : int -> int
+val rhs_end : int -> int
+val symbol_start_pos : unit -> Lexing.position
+val symbol_end_pos : unit -> Lexing.position
+val rhs_start_pos : int -> Lexing.position
+val rhs_end_pos : int -> Lexing.position
+val clear_parser : unit -> unit
+val set_trace : bool -> bool

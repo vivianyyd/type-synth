@@ -1,0 +1,125 @@
+// Float
+// type t = float
+val zero : float
+val one : float
+val minus_one : float
+val nan : float
+val infinity : float
+val neg_infinity : float
+val pi : float
+val max_float : float
+val min_float : float
+val epsilon : float
+val is_finite : float -> bool
+val is_infinite : float -> bool
+val is_nan : float -> bool
+val is_integer : float -> bool
+val of_int : int -> float
+val to_int : float -> int
+val of_string : string -> float
+val of_string_opt : string -> float option
+val to_string : float -> string
+// type fpclass = FP_normal | FP_subnormal | FP_zero | FP_infinite | FP_nan
+val classify_float : float -> fpclass
+val round : float -> float
+val floor : float -> float
+val ceil : float -> float
+val trunc : float -> float
+val sqrt : float -> float
+val cbrt : float -> float
+val exp : float -> float
+val exp2 : float -> float
+val log : float -> float
+val log2 : float -> float
+val log10 : float -> float
+val expm1 : float -> float
+val log1p : float -> float
+val cos : float -> float
+val sin : float -> float
+val tan : float -> float
+val acos : float -> float
+val asin : float -> float
+val atan : float -> float
+val atan2 : float -> float -> float
+val hypot : float -> float -> float
+val cosh : float -> float
+val sinh : float -> float
+val tanh : float -> float
+val acosh : float -> float
+val asinh : float -> float
+val atanh : float -> float
+val erf : float -> float
+val erfc : float -> float
+val mod_float : float -> float -> float
+val modf : float -> float * float
+val frexp : float -> float * int
+val ldexp : float -> int -> float
+val compare : float -> float -> int
+val equal : float -> float -> bool
+val min : float -> float -> float
+val max : float -> float -> float
+val min_num : float -> float -> float
+val max_num : float -> float -> float
+val min_max : float -> float -> float * float
+val min_max_num : float -> float -> float * float
+val add : float -> float -> float
+val sub : float -> float -> float
+val mul : float -> float -> float
+val div : float -> float -> float
+val rem : float -> float -> float
+val abs : float -> float
+val neg : float -> float
+val succ : float -> float
+val pred : float -> float
+val next_after : float -> float -> float
+val copy_sign : float -> float -> float
+val sign_bit : float -> bool
+val seeded_hash : int -> float -> int
+val hash : float -> int
+val of_bits : int64 -> float
+val to_bits : float -> int64
+// Float--Array submodule
+// type Float.Array.t = floatarray
+val Array.make : int -> float -> floatarray
+val Array.create : int -> floatarray
+val Array.init : int -> (int -> float) -> floatarray
+val Array.append : floatarray -> floatarray -> floatarray
+val Array.concat : floatarray list -> floatarray
+val Array.sub : floatarray -> int -> int -> floatarray
+val Array.copy : floatarray -> floatarray
+val Array.fill : floatarray -> int -> int -> float -> unit
+val Array.blit : floatarray -> int -> floatarray -> int -> int -> unit
+val Array.length : floatarray -> int
+val Array.get : floatarray -> int -> float
+val Array.set : floatarray -> int -> float -> unit
+val Array.to_list : floatarray -> float list
+val Array.of_list : float list -> floatarray
+val Array.iter : (float -> unit) -> floatarray -> unit
+val Array.iteri : (int -> float -> unit) -> floatarray -> unit
+val Array.map : (float -> float) -> floatarray -> floatarray
+val Array.map_inplace : (float -> float) -> floatarray -> unit
+val Array.mapi : (int -> float -> float) -> floatarray -> floatarray
+val Array.mapi_inplace : (int -> float -> float) -> floatarray -> unit
+val Array.fold_left : ('acc -> float -> 'acc) -> 'acc -> floatarray -> 'acc
+val Array.fold_right : (float -> 'acc -> 'acc) -> floatarray -> 'acc -> 'acc
+val Array.iter2 : (float -> float -> unit) -> floatarray -> floatarray -> unit
+val Array.map2 : (float -> float -> float) -> floatarray -> floatarray -> floatarray
+val Array.for_all : (float -> bool) -> floatarray -> bool
+val Array.exists : (float -> bool) -> floatarray -> bool
+val Array.mem : float -> floatarray -> bool
+val Array.mem_ieee : float -> floatarray -> bool
+val Array.find_opt : (float -> bool) -> floatarray -> float option
+val Array.find_index : (float -> bool) -> floatarray -> int option
+val Array.find_map : (float -> 'a option) -> floatarray -> 'a option
+val Array.find_mapi : (int -> float -> 'a option) -> floatarray -> 'a option
+val Array.sort : (float -> float -> int) -> floatarray -> unit
+val Array.stable_sort : (float -> float -> int) -> floatarray -> unit
+val Array.fast_sort : (float -> float -> int) -> floatarray -> unit
+val Array.shuffle : rand:(int -> int) -> floatarray -> unit
+val Array.to_seq : floatarray -> float Seq.t
+val Array.to_seqi : floatarray -> (int * float) Seq.t
+val Array.of_seq : float Seq.t -> floatarray
+val Array.map_to_array : (float -> 'a) -> floatarray -> 'a array
+val Array.map_from_array : ('a -> float) -> 'a array -> floatarray
+val Array.equal : floatarray -> floatarray -> bool
+val Array.compare : floatarray -> floatarray -> int

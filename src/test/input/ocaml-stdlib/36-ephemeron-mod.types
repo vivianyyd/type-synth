@@ -1,0 +1,53 @@
+// Ephemeron
+// Ephemeron--S module type (weak hash table interface)
+// type S.key
+// type 'a S.t
+// val S.create : int -> 'a S.t
+// val S.clear : 'a S.t -> unit
+// val S.reset : 'a S.t -> unit
+// val S.copy : 'a S.t -> 'a S.t
+// val S.add : 'a S.t -> S.key -> 'a -> unit
+// val S.remove : 'a S.t -> S.key -> unit
+// val S.find : 'a S.t -> S.key -> 'a
+// val S.find_opt : 'a S.t -> S.key -> 'a option
+// val S.find_all : 'a S.t -> S.key -> 'a list
+// val S.replace : 'a S.t -> S.key -> 'a -> unit
+// val S.mem : 'a S.t -> S.key -> bool
+// val S.length : 'a S.t -> int
+// val S.clean : 'a S.t -> unit
+// Ephemeron--K1 submodule (one-key ephemerons)
+// type ('k,'d) K1.t
+val K1.make : 'k -> 'd -> ('k, 'd) K1.t
+val K1.query : ('k, 'd) K1.t -> 'k -> 'd option
+// Ephemeron--K1.Bucket
+// type ('k, 'd) K1.Bucket.t
+val K1.Bucket.make : unit -> ('k, 'd) K1.Bucket.t
+val K1.Bucket.add : ('k, 'd) K1.Bucket.t -> 'k -> 'd -> unit
+val K1.Bucket.remove : ('k, 'd) K1.Bucket.t -> 'k -> unit
+val K1.Bucket.find : ('k, 'd) K1.Bucket.t -> 'k -> 'd option
+val K1.Bucket.length : ('k, 'd) K1.Bucket.t -> int
+val K1.Bucket.clear : ('k, 'd) K1.Bucket.t -> unit
+// Ephemeron--K2 submodule (two-key ephemerons)
+// type ('k1,'k2,'d) K2.t
+val K2.make : 'k1 -> 'k2 -> 'd -> ('k1, 'k2, 'd) K2.t
+val K2.query : ('k1, 'k2, 'd) K2.t -> 'k1 -> 'k2 -> 'd option
+// Ephemeron--K2.Bucket
+// type ('k1, 'k2, 'd) K2.Bucket.t
+val K2.Bucket.make : unit -> ('k1, 'k2, 'd) K2.Bucket.t
+val K2.Bucket.add : ('k1, 'k2, 'd) K2.Bucket.t -> 'k1 -> 'k2 -> 'd -> unit
+val K2.Bucket.remove : ('k1, 'k2, 'd) K2.Bucket.t -> 'k1 -> 'k2 -> unit
+val K2.Bucket.find : ('k1, 'k2, 'd) K2.Bucket.t -> 'k1 -> 'k2 -> 'd option
+val K2.Bucket.length : ('k1, 'k2, 'd) K2.Bucket.t -> int
+val K2.Bucket.clear : ('k1, 'k2, 'd) K2.Bucket.t -> unit
+// Ephemeron--Kn submodule (n-key ephemerons)
+// type ('k,'d) Kn.t
+val Kn.make : 'k array -> 'd -> ('k, 'd) Kn.t
+val Kn.query : ('k, 'd) Kn.t -> 'k array -> 'd option
+// Ephemeron--Kn.Bucket
+// type ('k, 'd) Kn.Bucket.t
+val Kn.Bucket.make : unit -> ('k, 'd) Kn.Bucket.t
+val Kn.Bucket.add : ('k, 'd) Kn.Bucket.t -> 'k array -> 'd -> unit
+val Kn.Bucket.remove : ('k, 'd) Kn.Bucket.t -> 'k array -> unit
+val Kn.Bucket.find : ('k, 'd) Kn.Bucket.t -> 'k array -> 'd option
+val Kn.Bucket.length : ('k, 'd) Kn.Bucket.t -> int
+val Kn.Bucket.clear : ('k, 'd) Kn.Bucket.t -> unit

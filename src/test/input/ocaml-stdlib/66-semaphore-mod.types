@@ -1,0 +1,14 @@
+// Semaphore
+// Semaphore--Counting submodule
+// type Counting.t
+val Counting.make : int -> Counting.t
+val Counting.release : Counting.t -> unit
+val Counting.acquire : Counting.t -> unit
+val Counting.try_acquire : Counting.t -> bool
+val Counting.get_value : Counting.t -> int
+// Semaphore--Binary submodule
+// type Binary.t
+val Binary.make : bool -> Binary.t
+val Binary.release : Binary.t -> unit
+val Binary.acquire : Binary.t -> unit
+val Binary.try_acquire : Binary.t -> bool

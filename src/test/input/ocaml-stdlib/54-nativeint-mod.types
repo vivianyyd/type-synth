@@ -1,0 +1,43 @@
+// Nativeint
+// type t = nativeint
+val zero : nativeint
+val one : nativeint
+val minus_one : nativeint
+val neg : nativeint -> nativeint
+val add : nativeint -> nativeint -> nativeint
+val sub : nativeint -> nativeint -> nativeint
+val mul : nativeint -> nativeint -> nativeint
+val div : nativeint -> nativeint -> nativeint
+val unsigned_div : nativeint -> nativeint -> nativeint
+val rem : nativeint -> nativeint -> nativeint
+val unsigned_rem : nativeint -> nativeint -> nativeint
+val succ : nativeint -> nativeint
+val pred : nativeint -> nativeint
+val abs : nativeint -> nativeint
+val size : int
+val max_int : nativeint
+val min_int : nativeint
+val logand : nativeint -> nativeint -> nativeint
+val logor : nativeint -> nativeint -> nativeint
+val logxor : nativeint -> nativeint -> nativeint
+val lognot : nativeint -> nativeint
+val shift_left : nativeint -> int -> nativeint
+val shift_right : nativeint -> int -> nativeint
+val shift_right_logical : nativeint -> int -> nativeint
+val of_int : int -> nativeint
+val to_int : nativeint -> int
+val unsigned_to_int : nativeint -> int option
+val of_float : float -> nativeint
+val to_float : nativeint -> float
+val of_int32 : int32 -> nativeint
+val to_int32 : nativeint -> int32
+val of_string : string -> nativeint
+val of_string_opt : string -> nativeint option
+val to_string : nativeint -> string
+val compare : t -> t -> int
+val unsigned_compare : t -> t -> int
+val equal : t -> t -> bool
+val min : t -> t -> t
+val max : t -> t -> t
+val seeded_hash : int -> t -> int
+val hash : t -> int

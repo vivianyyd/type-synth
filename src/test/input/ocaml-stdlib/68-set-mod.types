@@ -1,0 +1,50 @@
+// Set
+// Set--OrderedType module type (input signature)
+// type OrderedType.t
+// val OrderedType.compare : t -> t -> int
+// Set--S module type (output signature of Make functor)
+// type S.elt
+// type S.t
+// val S.empty : S.t
+// val S.add : S.elt -> S.t -> S.t
+// val S.singleton : S.elt -> S.t
+// val S.remove : S.elt -> S.t -> S.t
+// val S.union : S.t -> S.t -> S.t
+// val S.inter : S.t -> S.t -> S.t
+// val S.disjoint : S.t -> S.t -> bool
+// val S.diff : S.t -> S.t -> S.t
+// val S.cardinal : S.t -> int
+// val S.elements : S.t -> S.elt list
+// val S.min_elt : S.t -> S.elt
+// val S.min_elt_opt : S.t -> S.elt option
+// val S.max_elt : S.t -> S.elt
+// val S.max_elt_opt : S.t -> S.elt option
+// val S.choose : S.t -> S.elt
+// val S.choose_opt : S.t -> S.elt option
+// val S.find : S.elt -> S.t -> S.elt
+// val S.find_opt : S.elt -> S.t -> S.elt option
+// val S.find_first : (S.elt -> bool) -> S.t -> S.elt
+// val S.find_first_opt : (S.elt -> bool) -> S.t -> S.elt option
+// val S.find_last : (S.elt -> bool) -> S.t -> S.elt
+// val S.find_last_opt : (S.elt -> bool) -> S.t -> S.elt option
+// val S.iter : (S.elt -> unit) -> S.t -> unit
+// val S.fold : (S.elt -> 'acc -> 'acc) -> S.t -> 'acc -> 'acc
+// val S.map : (S.elt -> S.elt) -> S.t -> S.t
+// val S.filter : (S.elt -> bool) -> S.t -> S.t
+// val S.filter_map : (S.elt -> S.elt option) -> S.t -> S.t
+// val S.partition : (S.elt -> bool) -> S.t -> S.t * S.t
+// val S.split : S.elt -> S.t -> S.t * bool * S.t
+// val S.is_empty : S.t -> bool
+// val S.mem : S.elt -> S.t -> bool
+// val S.equal : S.t -> S.t -> bool
+// val S.compare : S.t -> S.t -> int
+// val S.subset : S.t -> S.t -> bool
+// val S.for_all : (S.elt -> bool) -> S.t -> bool
+// val S.exists : (S.elt -> bool) -> S.t -> bool
+// val S.to_list : S.t -> S.elt list
+// val S.of_list : S.elt list -> S.t
+// val S.to_seq : S.t -> S.elt Seq.t
+// val S.to_rev_seq : S.t -> S.elt Seq.t
+// val S.to_seq_from : S.elt -> S.t -> S.elt Seq.t
+// val S.add_seq : S.elt Seq.t -> S.t -> S.t
+// val S.of_seq : S.elt Seq.t -> S.t

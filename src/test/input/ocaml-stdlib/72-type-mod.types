@@ -1,0 +1,7 @@
+// Type
+// type (_, _) eq = Equal: ('a, 'a) eq
+// Type--Id submodule
+// type !'a Id.t
+val Id.make : unit -> 'a Id.t
+val Id.uid : 'a Id.t -> int
+val Id.provably_equal : 'a Id.t -> 'b Id.t -> ('a, 'b) eq option

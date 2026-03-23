@@ -1,0 +1,33 @@
+// Char
+// type t = char
+val code : char -> int
+val chr : int -> char
+val escaped : char -> string
+val compare : t -> t -> int
+val equal : t -> t -> bool
+// Char--Ascii submodule
+val Ascii.min : char
+val Ascii.max : char
+val Ascii.is_valid : char -> bool
+val Ascii.is_upper : char -> bool
+val Ascii.is_lower : char -> bool
+val Ascii.is_letter : char -> bool
+val Ascii.is_alphanum : char -> bool
+val Ascii.is_white : char -> bool
+val Ascii.is_blank : char -> bool
+val Ascii.is_graphic : char -> bool
+val Ascii.is_print : char -> bool
+val Ascii.is_control : char -> bool
+val Ascii.is_digit : char -> bool
+val Ascii.digit_to_int : char -> int
+val Ascii.digit_of_int : int -> char
+val Ascii.is_hex_digit : char -> bool
+val Ascii.hex_digit_to_int : char -> int
+val Ascii.lower_hex_digit_of_int : int -> char
+val Ascii.upper_hex_digit_of_int : int -> char
+val Ascii.uppercase : char -> char
+val Ascii.lowercase : char -> char
+val lowercase_ascii : char -> char
+val uppercase_ascii : char -> char
+val seeded_hash : int -> t -> int
+val hash : t -> int

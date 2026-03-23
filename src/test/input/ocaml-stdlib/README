@@ -37,61 +37,123 @@
 25-buffer-mod | Requires in/out channels, bytes, Seq.t, Uchar.t, pairs
 26-bytes-mod
 
-// Not yet processed:
-module BytesLabels: BytesLabels
-module Callback: Callback
-module Char: Char
-module Complex: Complex
-module Condition: Condition
-module Digest: Digest
-module Domain: Domain
-module Dynarray: Dynarray
-module Pqueue: Pqueue
-module Effect: Effect
-module Either: Either
-module Ephemeron: Ephemeron
-module Filename: Filename
-module Float: Float
-module Format: Format
-module Fun: Fun
-module Gc: Gc
-module Hashtbl: Hashtbl
-module Iarray: Iarray
-module In_channel: In_channel
-module Int: Int
-module Int32: Int32
-module Int64: Int64
-module Lazy: Lazy
-module Lexing: Lexing
-module List: List
-module ListLabels: ListLabels
-module Map: Map
-module Marshal: Marshal
-module MoreLabels: MoreLabels
-module Mutex: Mutex
-module Nativeint: Nativeint
-module Obj: Obj
-module Oo: Oo
-module Option: Option
-module Out_channel: Out_channel
-module Pair: Pair
-module Parsing: Parsing
-module Printexc: Printexc
-module Printf: Printf
-module Queue: Queue
-module Random: Random
-module Result: Result
-module Repr: Repr
-module Scanf: Scanf
-module Semaphore: Semaphore
-module Seq: Seq
-module Set: Set
-module Stack: Stack
-module StdLabels: StdLabels
-module String: String
-module StringLabels: StringLabels
-module Sys: Sys
-module Type: Type
-module Uchar: Uchar
-module Unit: Unit
-module Weak: Weak
+27-callback-mod | Callback module
+28-char-mod | Char module
+29-complex-mod | Complex module | Requires pairs (for polar/modf result)
+30-condition-mod | Condition module (thread synchronization)
+31-digest-mod | Digest module (MD5)
+32-domain-mod | Domain module (multicore)
+33-dynarray-mod | Dynarray module (dynamic arrays)
+34-effect-mod | Effect module (algebraic effects) | Requires Printexc.raw_backtrace
+// type Effect.t = 'a eff = ..
+35-either-mod | Either module
+// type Either.t = Left of 'a | Right of 'b
+36-ephemeron-mod | Ephemeron module (weak hash tables)
+37-filename-mod | Filename module
+38-float-mod | Float module | Requires pairs, Seq.t, fpclass type
+// type Float.fpclass = FP_normal | FP_subnormal | FP_zero | FP_infinite | FP_nan
+39-format-mod | Format module (pretty printing) | Requires Buffer, Seq, Either, Result
+// type Format.formatter
+// type Format.stag = ..
+// type Format.tag = string
+// type Format.formatter_stag_functions
+40-fun-mod | Fun module
+41-gc-mod | Gc module (garbage collector control) | Requires Printexc.raw_backtrace
+// type Gc.stat (record)
+// type Gc.control (record)
+// type Gc.alarm
+// type Gc.Memprof.allocation_source = Normal | Marshal | Custom
+// type Gc.Memprof.allocation (record)
+// type Gc.Memprof.tracker (record)
+42-hashtbl-mod | Hashtbl module | Requires Seq.t
+// type Hashtbl.statistics (record)
+43-iarray-mod | Iarray module (immutable arrays) | Requires Seq.t
+// type +'a Iarray.t = 'a iarray
+44-in-channel-mod | In_channel module | Requires open_flag type
+// type In_channel.t = in_channel
+// type In_channel.open_flag = Open_rdonly | Open_wronly | Open_append | Open_creat | Open_trunc | Open_excl | Open_binary | Open_text | Open_nonblock
+// Skipped: input_bigarray, really_input_bigarray (require Bigarray); fold_lines
+45-int-mod | Int module
+// type Int.t = int
+// Skipped: no nativeint conversion functions in Int module (use Nativeint.of_int / Nativeint.to_int)
+46-int32-mod | Int32 module
+// type Int32.t = int32
+47-int64-mod | Int64 module
+// type Int64.t = int64
+48-lazy-mod | Lazy module
+// type 'a Lazy.t = 'a CamlinternalLazy.t
+49-lexing-mod | Lexing module (ocamllex runtime)
+// type Lexing.position (record)
+// type Lexing.lexbuf (record)
+50-list-mod | List module | Requires Either.t, Seq.t
+// Skipped ListLabels: it is the same as List but with labeled arguments
+51-map-mod | Map module (functional maps, functor-based)
+52-marshal-mod | Marshal module (serialization) | Requires extern_flags type
+// type Marshal.extern_flags = No_sharing | Closures | Compat_32
+53-mutex-mod | Mutex module
+// type Mutex.t
+54-nativeint-mod | Nativeint module
+// type Nativeint.t = nativeint
+55-obj-mod | Obj module (unsafe internal operations)
+// type Obj.t
+// type Obj.raw_data = nativeint
+56-oo-mod | Oo module (object-oriented operations)
+57-option-mod | Option module | Requires Seq.t, Result.t
+// type 'a Option.t = 'a option = None | Some of 'a
+58-out-channel-mod | Out_channel module | Requires open_flag type, Bigarray
+// type Out_channel.t = out_channel
+// type Out_channel.open_flag = Open_rdonly | Open_wronly | Open_append | Open_creat | Open_trunc | Open_excl | Open_binary | Open_text | Open_nonblock
+59-parsing-mod | Parsing module (ocamlyacc runtime) | Requires Lexing.position
+60-printexc-mod | Printexc module | Requires raw_backtrace types
+// type Printexc.t = exn = ..
+// type Printexc.raw_backtrace
+// type Printexc.raw_backtrace_slot
+// type Printexc.backtrace_slot = Unknown_location | Known_location of ...
+61-printf-mod | Printf module | Requires Buffer.t, format types
+// Skipped: deprecated kprintf (use ksprintf instead)
+62-queue-mod | Queue module | Requires Seq.t
+// type !'a Queue.t
+63-random-mod | Random module | Requires Int32.t, Nativeint.t, Int64.t
+// type Random.State.t
+64-result-mod | Result module | Requires Seq.t
+// type ('a,'e) Result.t = ('a,'e) result = Ok of 'a | Error of 'e
+65-scanf-mod | Scanf module | Requires format types
+// type Scanf.Scanning.in_channel
+66-semaphore-mod | Semaphore module (counting and binary semaphores)
+// type Semaphore.Counting.t
+// type Semaphore.Binary.t
+67-seq-mod | Seq module (lazy sequences) | Requires Either.t
+// type 'a Seq.t = unit -> 'a Seq.node
+// type +'a Seq.node = Nil | Cons of 'a * 'a Seq.t
+68-set-mod | Set module (functional sets, functor-based)
+69-stack-mod | Stack module | Requires Seq.t
+// type !'a Stack.t
+// Skipped StdLabels: it is a collection of labeled modules (ArrayLabels, ListLabels, StringLabels)
+70-string-mod | String module | Requires Seq.t, Uchar.utf_decode, bytes
+// type String.t = string
+// Skipped: Binary decoding of integers section (get_uint8, get_int8, get_uint16_ne/be/le, get_int16_ne/be/le, get_int32_ne/be/le, get_int64_ne/be/le)
+// Skipped StringLabels: it is the same as String but with labeled arguments
+71-sys-mod | Sys module
+// type Sys.backend_type = Native | Bytecode | Other of string
+// type Sys.signal = int
+// type Sys.signal_behavior = Signal_default | Signal_ignore | Signal_handle of (signal -> unit)
+// type Sys.extra_prefix = Plus | Tilde
+// type Sys.extra_info = extra_prefix * string
+// type Sys.ocaml_release_info (record)
+72-type-mod | Type module (type introspection)
+// type (_, _) Type.eq = Equal: ('a, 'a) Type.eq
+// type !'a Type.Id.t
+73-uchar-mod | Uchar module (Unicode characters)
+// type Uchar.t
+// type Uchar.utf_decode
+// Skipped: utf_8_decode_length_of_byte, max_utf_8_decode_length, utf_8_byte_length, utf_16_byte_length
+74-unit-mod | Unit module
+// type Unit.t = unit = ()
+75-weak-mod | Weak module (weak pointers and hash sets)
+// type !'a Weak.t
+// Skipped BytesLabels: it is the same as Bytes but with labeled arguments
+// Skipped MoreLabels: it is a collection of labeled modules (Hashtbl, Map, Set with labels)
+76-pair-mod | Pair module (new in 5.4)
+// type ('a, 'b) Pair.t = 'a * 'b
+77-repr-mod | Repr module - polymorphic/physical comparison (new in 5.4)
+78-pqueue-mod | Pqueue module (priority queues, new in 5.4) | Functor-based, all val entries are module-type signatures
