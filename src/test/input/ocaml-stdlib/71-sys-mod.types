@@ -1,0 +1,81 @@
+// Sys
+val argv : string array
+val executable_name : string
+val file_exists : string -> bool
+val is_directory : string -> bool
+val is_regular_file : string -> bool
+val remove : string -> unit
+val rename : string -> string -> unit
+val getenv : string -> string
+val getenv_opt : string -> string option
+val command : string -> int
+val time : unit -> float
+val chdir : string -> unit
+val mkdir : string -> int -> unit
+val rmdir : string -> unit
+val getcwd : unit -> string
+val readdir : string -> string array
+val io_buffer_size : int
+val interactive : bool ref
+val os_type : string
+// type backend_type = Native | Bytecode | Other of string
+val backend_type : backend_type
+val unix : bool
+val win32 : bool
+val cygwin : bool
+val word_size : int
+val int_size : int
+val big_endian : bool
+val max_string_length : int
+val max_array_length : int
+val max_floatarray_length : int
+val runtime_variant : unit -> string
+val runtime_parameters : unit -> string
+val poll_actions : unit -> unit
+// type signal = int
+// type signal_behavior = Signal_default | Signal_ignore | Signal_handle of (signal -> unit)
+// type extra_prefix = Plus | Tilde
+// type extra_info = extra_prefix * string
+// type ocaml_release_info = { major : int; minor : int; patchlevel : int; extra : extra_info option }
+val signal : signal -> signal_behavior -> signal_behavior
+val set_signal : signal -> signal_behavior -> unit
+val sigabrt : signal
+val sigalrm : signal
+val sigfpe : signal
+val sighup : signal
+val sigill : signal
+val sigint : signal
+val sigkill : signal
+val sigpipe : signal
+val sigquit : signal
+val sigsegv : signal
+val sigterm : signal
+val sigusr1 : signal
+val sigusr2 : signal
+val sigchld : signal
+val sigcont : signal
+val sigstop : signal
+val sigtstp : signal
+val sigttin : signal
+val sigttou : signal
+val sigvtalrm : signal
+val sigprof : signal
+val sigbus : signal
+val sigpoll : signal
+val sigsys : signal
+val sigtrap : signal
+val sigurg : signal
+val sigxcpu : signal
+val sigxfsz : signal
+val sigio : signal
+val sigwinch : signal
+val signal_to_string : signal -> string
+val signal_of_int : int -> signal
+val signal_to_int : signal -> int
+val catch_break : bool -> unit
+val ocaml_version : string
+val development_version : bool
+val ocaml_release : ocaml_release_info
+val enable_runtime_warnings : bool -> unit
+val runtime_warnings_enabled : unit -> bool
+val opaque_identity : 'a -> 'a

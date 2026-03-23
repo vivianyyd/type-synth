@@ -1,0 +1,26 @@
+// Weak
+// type !'a t
+val create : int -> 'a t
+val length : 'a t -> int
+val set : 'a t -> int -> 'a option -> unit
+val get : 'a t -> int -> 'a option
+val get_copy : 'a t -> int -> 'a option
+val check : 'a t -> int -> bool
+val fill : 'a t -> int -> int -> 'a option -> unit
+val blit : 'a t -> int -> 'a t -> int -> int -> unit
+// Weak--S module type (weak hash set interface)
+// type S.data
+// type S.t
+// val S.create : int -> S.t
+// val S.clear : S.t -> unit
+// val S.merge : S.t -> S.data -> S.data
+// val S.add : S.t -> S.data -> unit
+// val S.remove : S.t -> S.data -> unit
+// val S.find : S.t -> S.data -> S.data
+// val S.find_opt : S.t -> S.data -> S.data option
+// val S.find_all : S.t -> S.data -> S.data list
+// val S.mem : S.t -> S.data -> bool
+// val S.iter : (S.data -> unit) -> S.t -> unit
+// val S.fold : (S.data -> 'acc -> 'acc) -> S.t -> 'acc -> 'acc
+// val S.count : S.t -> int
+// val S.stats : S.t -> int * int * int * int * int * int

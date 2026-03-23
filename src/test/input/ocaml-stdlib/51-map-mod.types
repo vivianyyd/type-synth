@@ -1,0 +1,50 @@
+// Map
+// Map--OrderedType module type (input signature)
+// type OrderedType.t
+// val OrderedType.compare : t -> t -> int
+// Map--S module type (output signature of Make functor)
+// type S.key
+// type +'a S.t
+// val S.empty : 'a S.t
+// val S.add : S.key -> 'a -> 'a S.t -> 'a S.t
+// val S.add_to_list : S.key -> 'a -> 'a list S.t -> 'a list S.t
+// val S.update : S.key -> ('a option -> 'a option) -> 'a S.t -> 'a S.t
+// val S.singleton : S.key -> 'a -> 'a S.t
+// val S.remove : S.key -> 'a S.t -> 'a S.t
+// val S.merge : (S.key -> 'a option -> 'b option -> 'c option) -> 'a S.t -> 'b S.t -> 'c S.t
+// val S.union : (S.key -> 'a -> 'a -> 'a option) -> 'a S.t -> 'a S.t -> 'a S.t
+// val S.cardinal : 'a S.t -> int
+// val S.is_empty : 'a S.t -> bool
+// val S.mem : S.key -> 'a S.t -> bool
+// val S.find : S.key -> 'a S.t -> 'a
+// val S.find_opt : S.key -> 'a S.t -> 'a option
+// val S.find_first : (S.key -> bool) -> 'a S.t -> S.key * 'a
+// val S.find_first_opt : (S.key -> bool) -> 'a S.t -> (S.key * 'a) option
+// val S.find_last : (S.key -> bool) -> 'a S.t -> S.key * 'a
+// val S.find_last_opt : (S.key -> bool) -> 'a S.t -> (S.key * 'a) option
+// val S.iter : (S.key -> 'a -> unit) -> 'a S.t -> unit
+// val S.fold : (S.key -> 'a -> 'acc -> 'acc) -> 'a S.t -> 'acc -> 'acc
+// val S.map : ('a -> 'b) -> 'a S.t -> 'b S.t
+// val S.mapi : (S.key -> 'a -> 'b) -> 'a S.t -> 'b S.t
+// val S.filter : (S.key -> 'a -> bool) -> 'a S.t -> 'a S.t
+// val S.filter_map : (S.key -> 'a -> 'b option) -> 'a S.t -> 'b S.t
+// val S.partition : (S.key -> 'a -> bool) -> 'a S.t -> 'a S.t * 'a S.t
+// val S.split : S.key -> 'a S.t -> 'a S.t * 'a option * 'a S.t
+// val S.for_all : (S.key -> 'a -> bool) -> 'a S.t -> bool
+// val S.exists : (S.key -> 'a -> bool) -> 'a S.t -> bool
+// val S.equal : ('a -> 'a -> bool) -> 'a S.t -> 'a S.t -> bool
+// val S.compare : ('a -> 'a -> int) -> 'a S.t -> 'a S.t -> int
+// val S.min_binding : 'a S.t -> S.key * 'a
+// val S.min_binding_opt : 'a S.t -> (S.key * 'a) option
+// val S.max_binding : 'a S.t -> S.key * 'a
+// val S.max_binding_opt : 'a S.t -> (S.key * 'a) option
+// val S.choose : 'a S.t -> S.key * 'a
+// val S.choose_opt : 'a S.t -> (S.key * 'a) option
+// val S.bindings : 'a S.t -> (S.key * 'a) list
+// val S.to_list : 'a S.t -> (S.key * 'a) list
+// val S.of_list : (S.key * 'a) list -> 'a S.t
+// val S.to_seq : 'a S.t -> (S.key * 'a) Seq.t
+// val S.to_rev_seq : 'a S.t -> (S.key * 'a) Seq.t
+// val S.to_seq_from : S.key -> 'a S.t -> (S.key * 'a) Seq.t
+// val S.add_seq : (S.key * 'a) Seq.t -> 'a S.t -> 'a S.t
+// val S.of_seq : (S.key * 'a) Seq.t -> 'a S.t

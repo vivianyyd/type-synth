@@ -1,0 +1,83 @@
+// Format
+// type formatter
+val std_formatter : formatter
+val err_formatter : formatter
+val str_formatter : formatter
+val stdbuf : Buffer.t
+val make_formatter : (string -> int -> int -> unit) -> (unit -> unit) -> formatter
+val formatter_of_buffer : Buffer.t -> formatter
+val formatter_of_out_channel : out_channel -> formatter
+val get_str_formatter : unit -> formatter
+val flush_str_formatter : unit -> string
+// Format--Output functions
+val fprintf : formatter -> ('a, formatter, unit) format -> 'a
+val printf : ('a, formatter, unit) format -> 'a
+val eprintf : ('a, formatter, unit) format -> 'a
+val sprintf : ('a, unit, string) format -> 'a
+val asprintf : ('a, formatter, unit, string) format4 -> 'a
+val dprintf : ('a, formatter, unit) format -> formatter -> 'a
+val ifprintf : formatter -> ('a, formatter, unit) format -> 'a
+val kfprintf : (formatter -> 'b) -> formatter -> ('a, formatter, unit, 'b) format4 -> 'a
+val kdprintf : ((formatter -> unit) -> 'b) -> ('a, formatter, unit, 'b) format4 -> 'a
+val kasprintf : (string -> 'b) -> ('a, formatter, unit, 'b) format4 -> 'a
+val ksprintf : (string -> 'b) -> ('a, unit, string, 'b) format4 -> 'a
+// Format--Formatting
+val pp_print_string : formatter -> string -> unit
+val pp_print_bytes : formatter -> bytes -> unit
+val pp_print_int : formatter -> int -> unit
+val pp_print_float : formatter -> float -> unit
+val pp_print_char : formatter -> char -> unit
+val pp_print_bool : formatter -> bool -> unit
+val pp_print_nothing : formatter -> unit -> unit
+val pp_print_list : ?pp_sep:(formatter -> unit -> unit) -> (formatter -> 'a -> unit) -> formatter -> 'a list -> unit
+val pp_print_array : ?pp_sep:(formatter -> unit -> unit) -> (formatter -> 'a -> unit) -> formatter -> 'a array -> unit
+val pp_print_seq : ?pp_sep:(formatter -> unit -> unit) -> (formatter -> 'a -> unit) -> formatter -> 'a Seq.t -> unit
+val pp_print_text : formatter -> string -> unit
+val pp_print_option : ?none:(formatter -> unit -> unit) -> (formatter -> 'a -> unit) -> formatter -> 'a option -> unit
+val pp_print_result : ok:(formatter -> 'a -> unit) -> error:(formatter -> 'e -> unit) -> formatter -> ('a, 'e) result -> unit
+val pp_print_either : left:(formatter -> 'a -> unit) -> right:(formatter -> 'b -> unit) -> formatter -> ('a, 'b) Either.t -> unit
+// Format--Box management
+val pp_open_box : formatter -> int -> unit
+val pp_close_box : formatter -> unit -> unit
+val pp_open_hbox : formatter -> unit -> unit
+val pp_open_vbox : formatter -> int -> unit
+val pp_open_hvbox : formatter -> int -> unit
+val pp_open_hovbox : formatter -> int -> unit
+val pp_open_stag : formatter -> stag -> unit
+val pp_close_stag : formatter -> unit -> unit
+val pp_set_tags : formatter -> bool -> unit
+val pp_set_print_tags : formatter -> bool -> unit
+val pp_set_mark_tags : formatter -> bool -> unit
+val pp_get_print_tags : formatter -> unit -> bool
+val pp_get_mark_tags : formatter -> unit -> bool
+// Format--Break hints
+val pp_print_space : formatter -> unit -> unit
+val pp_print_cut : formatter -> unit -> unit
+val pp_print_break : formatter -> int -> int -> unit
+val pp_print_custom_break : formatter -> fits:(string * int * string) -> breaks:(string * int * string) -> unit
+val pp_force_newline : formatter -> unit -> unit
+val pp_print_if_newline : formatter -> unit -> unit
+val pp_print_newline : formatter -> unit -> unit
+// Format--Margin and indentation
+val pp_set_margin : formatter -> int -> unit
+val pp_get_margin : formatter -> unit -> int
+val pp_set_max_indent : formatter -> int -> unit
+val pp_get_max_indent : formatter -> unit -> int
+val pp_set_tab : formatter -> unit -> unit
+val pp_print_tab : formatter -> unit -> unit
+val pp_set_geometry : formatter -> max_indent:int -> margin:int -> unit
+val pp_safe_set_geometry : formatter -> max_indent:int -> margin:int -> unit
+val pp_get_geometry : formatter -> unit -> int * int
+val pp_update_geometry : formatter -> (int -> int -> int * int) -> unit
+// Format--Tag handling
+// type stag = ..
+// type tag = string
+val pp_set_formatter_stag_functions : formatter -> formatter_stag_functions -> unit
+val pp_get_formatter_stag_functions : formatter -> unit -> formatter_stag_functions
+// Format--Output channel settings
+val pp_set_formatter_output_functions : formatter -> (string -> int -> int -> unit) -> (unit -> unit) -> unit
+val pp_get_formatter_output_functions : formatter -> unit -> (string -> int -> int -> unit) * (unit -> unit)
+val pp_set_formatter_out_channel : formatter -> out_channel -> unit
+val pp_get_formatter_out_buffer : formatter -> unit -> Buffer.t
+val pp_set_all_formatter_output_functions : formatter -> out:(string -> int -> int -> unit) -> flush:(unit -> unit) -> newline:(unit -> unit) -> spaces:(int -> unit) -> unit
+val pp_get_all_formatter_output_functions : formatter -> unit -> (string -> int -> int -> unit) * (unit -> unit) * (unit -> unit) * (int -> unit)

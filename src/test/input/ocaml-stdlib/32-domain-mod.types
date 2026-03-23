@@ -1,0 +1,18 @@
+// Domain
+// type 'a t
+// type id = private int
+val spawn : (unit -> 'a) -> 'a t
+val join : 'a t -> 'a
+val get_id : 'a t -> id
+val self : unit -> id
+val before_first_spawn : (unit -> unit) -> unit
+val at_exit : (unit -> unit) -> unit
+val cpu_relax : unit -> unit
+val is_main_domain : unit -> bool
+val recommended_domain_count : unit -> int
+val self_index : unit -> int
+// Domain--DLS (Domain-local Storage)
+// type 'a DLS.key
+val DLS.new_key : ?split_from_parent:('a -> 'a) -> (unit -> 'a) -> 'a DLS.key
+val DLS.get : 'a DLS.key -> 'a
+val DLS.set : 'a DLS.key -> 'a -> unit

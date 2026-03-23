@@ -1,0 +1,21 @@
+// Effect
+// type 'a t = 'a eff = ..
+val perform : 'a t -> 'a
+// Effect--Deep submodule
+// type ('a,'b) Deep.continuation
+// type ('a,'b) Deep.handler = { retc: 'a -> 'b; exnc: exn -> 'b; effc: 'c.'c t -> (('c,'b) continuation -> 'b) option }
+// type 'a Deep.effect_handler = { effc: 'b. 'b t -> (('b, 'a) continuation -> 'a) option }
+val Deep.match_with : ('c -> 'a) -> 'c -> ('a, 'b) Deep.handler -> 'b
+val Deep.try_with : ('b -> 'a) -> 'b -> 'a Deep.effect_handler -> 'a
+val Deep.continue : ('a, 'b) Deep.continuation -> 'a -> 'b
+val Deep.discontinue : ('a, 'b) Deep.continuation -> exn -> 'b
+val Deep.discontinue_with_backtrace : ('a, 'b) Deep.continuation -> exn -> Printexc.raw_backtrace -> 'b
+val Deep.get_callstack : ('a, 'b) Deep.continuation -> int -> Printexc.raw_backtrace
+// Effect--Shallow submodule
+// type ('a,'b) Shallow.continuation
+// type ('a,'b) Shallow.handler = { retc: 'a -> 'b; exnc: exn -> 'b; effc: 'c.'c t -> (('c,'a) continuation -> 'b) option }
+val Shallow.fiber : ('a -> 'b) -> ('a, 'b) Shallow.continuation
+val Shallow.continue_with : ('c, 'a) Shallow.continuation -> 'c -> ('a, 'b) Shallow.handler -> 'b
+val Shallow.discontinue_with : ('c, 'a) Shallow.continuation -> exn -> ('a, 'b) Shallow.handler -> 'b
+val Shallow.discontinue_with_backtrace : ('a, 'b) Shallow.continuation -> exn -> Printexc.raw_backtrace -> ('b, 'c) Shallow.handler -> 'c
+val Shallow.get_callstack : ('a, 'b) Shallow.continuation -> int -> Printexc.raw_backtrace

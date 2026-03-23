@@ -1,0 +1,45 @@
+// Random
+val init : int -> unit
+val full_init : int array -> unit
+val self_init : unit -> unit
+val bits : unit -> int
+val int : int -> int
+val full_int : int -> int
+val int_in_range : min:int -> max:int -> int
+val int32 : Int32.t -> Int32.t
+val int32_in_range : min:int32 -> max:int32 -> int32
+val nativeint : Nativeint.t -> Nativeint.t
+val nativeint_in_range : min:nativeint -> max:nativeint -> nativeint
+val int64 : Int64.t -> Int64.t
+val int64_in_range : min:int64 -> max:int64 -> int64
+val float : float -> float
+val bool : unit -> bool
+val bits32 : unit -> Int32.t
+val bits64 : unit -> Int64.t
+val nativebits : unit -> Nativeint.t
+val get_state : unit -> State.t
+val set_state : State.t -> unit
+val split : unit -> State.t
+// Random--State submodule
+// type State.t
+val State.make : int array -> State.t
+val State.make_self_init : unit -> State.t
+val State.copy : State.t -> State.t
+val State.bits : State.t -> int
+val State.int : State.t -> int -> int
+val State.full_int : State.t -> int -> int
+val State.int_in_range : State.t -> min:int -> max:int -> int
+val State.int32 : State.t -> Int32.t -> Int32.t
+val State.int32_in_range : State.t -> min:int32 -> max:int32 -> int32
+val State.nativeint : State.t -> Nativeint.t -> Nativeint.t
+val State.nativeint_in_range : State.t -> min:nativeint -> max:nativeint -> nativeint
+val State.int64 : State.t -> Int64.t -> Int64.t
+val State.int64_in_range : State.t -> min:int64 -> max:int64 -> int64
+val State.float : State.t -> float -> float
+val State.bool : State.t -> bool
+val State.bits32 : State.t -> Int32.t
+val State.bits64 : State.t -> Int64.t
+val State.nativebits : State.t -> Nativeint.t
+val State.split : State.t -> State.t
+val State.to_binary_string : State.t -> string
+val State.of_binary_string : string -> State.t

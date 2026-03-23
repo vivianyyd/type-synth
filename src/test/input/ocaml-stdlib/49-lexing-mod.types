@@ -1,0 +1,18 @@
+// Lexing
+// type position = { pos_fname : string; pos_lnum : int; pos_bol : int; pos_cnum : int }
+// type lexbuf = { refill_buff : lexbuf -> unit; mutable lex_buffer : bytes; mutable lex_buffer_len : int; mutable lex_abs_pos : int; mutable lex_start_pos : int; mutable lex_curr_pos : int; mutable lex_last_pos : int; mutable lex_last_action : int; mutable lex_eof_reached : bool; mutable lex_mem : int array; mutable lex_start_p : position; mutable lex_curr_p : position }
+val dummy_pos : position
+val from_channel : ?with_positions:bool -> in_channel -> lexbuf
+val from_string : ?with_positions:bool -> string -> lexbuf
+val from_function : ?with_positions:bool -> (bytes -> int -> int) -> lexbuf
+val set_position : lexbuf -> position -> unit
+val set_filename : lexbuf -> string -> unit
+val with_positions : lexbuf -> bool
+val lexeme : lexbuf -> string
+val lexeme_char : lexbuf -> int -> char
+val lexeme_start : lexbuf -> int
+val lexeme_end : lexbuf -> int
+val lexeme_start_p : lexbuf -> position
+val lexeme_end_p : lexbuf -> position
+val new_line : lexbuf -> unit
+val flush_input : lexbuf -> unit

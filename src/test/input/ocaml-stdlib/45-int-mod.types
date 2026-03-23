@@ -1,0 +1,32 @@
+// Int
+// type t = int
+val zero : int
+val one : int
+val minus_one : int
+val neg : int -> int
+val add : int -> int -> int
+val sub : int -> int -> int
+val mul : int -> int -> int
+val div : int -> int -> int
+val rem : int -> int -> int
+val succ : int -> int
+val pred : int -> int
+val abs : int -> int
+val max_int : int
+val min_int : int
+val logand : int -> int -> int
+val logor : int -> int -> int
+val logxor : int -> int -> int
+val lognot : int -> int
+val shift_left : int -> int -> int
+val shift_right : int -> int -> int
+val shift_right_logical : int -> int -> int
+val equal : int -> int -> bool
+val compare : int -> int -> int
+val min : int -> int -> int
+val max : int -> int -> int
+val to_float : int -> float
+val of_float : float -> int
+val to_string : int -> string
+val seeded_hash : int -> t -> int
+val hash : t -> int

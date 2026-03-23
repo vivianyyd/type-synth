@@ -1,0 +1,25 @@
+// Scanf
+// type Scanning.in_channel
+// type Scanning.file_name = string
+val Scanning.stdin : Scanning.in_channel
+val Scanning.open_in : string -> Scanning.in_channel
+val Scanning.open_in_bin : string -> Scanning.in_channel
+val Scanning.close_in : Scanning.in_channel -> unit
+val Scanning.from_string : string -> Scanning.in_channel
+val Scanning.from_bytes : bytes -> Scanning.in_channel
+val Scanning.from_function : (unit -> char) -> Scanning.in_channel
+val Scanning.from_channel : in_channel -> Scanning.in_channel
+val Scanning.end_of_input : Scanning.in_channel -> bool
+val Scanning.beginning_of_input : Scanning.in_channel -> bool
+val Scanning.name_of_input : Scanning.in_channel -> string
+val sscanf : string -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
+val scanf : ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
+val fscanf : Scanning.in_channel -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
+val sscanf_opt : string -> ('a, Scanning.in_channel, 'b option) format -> 'a -> 'b option
+val scanf_opt : ('a, Scanning.in_channel, 'b option) format -> 'a -> 'b option
+val bscanf : Scanning.in_channel -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
+val bscanf_opt : Scanning.in_channel -> ('a, Scanning.in_channel, 'b option) format -> 'a -> 'b option
+val kscanf : Scanning.in_channel -> (Scanning.in_channel -> exn -> 'b) -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
+val ksscanf : string -> (Scanning.in_channel -> exn -> 'b) -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
+val format_from_string : string -> ('a, 'b, 'c, 'd) format4 -> ('a, 'b, 'c, 'd) format4
+val unescaped : string -> string

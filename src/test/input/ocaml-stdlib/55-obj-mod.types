@@ -1,0 +1,62 @@
+// Obj
+// type t
+// type raw_data = nativeint
+val repr : 'a -> t
+val obj : t -> 'a
+val magic : 'a -> 'b
+val is_block : t -> bool
+val is_int : t -> bool
+val tag : t -> int
+val size : t -> int
+val reachable_words : t -> int
+val field : t -> int -> t
+val set_field : t -> int -> t -> unit
+val double_field : t -> int -> float
+val set_double_field : t -> int -> float -> unit
+val raw_field : t -> int -> raw_data
+val set_raw_field : t -> int -> raw_data -> unit
+val new_block : int -> int -> t
+val dup : t -> t
+val add_offset : t -> Int32.t -> t
+val with_tag : int -> t -> t
+val first_non_constant_constructor_tag : int
+val last_non_constant_constructor_tag : int
+val forcing_tag : int
+val cont_tag : int
+val lazy_tag : int
+val closure_tag : int
+val object_tag : int
+val infix_tag : int
+val forward_tag : int
+val no_scan_tag : int
+val abstract_tag : int
+val string_tag : int
+val double_tag : int
+val double_array_tag : int
+val custom_tag : int
+val int_tag : int
+val out_of_heap_tag : int
+val unaligned_tag : int
+// Obj--Extension_constructor submodule
+// type Extension_constructor.t = extension_constructor
+val Extension_constructor.of_val : 'a -> extension_constructor
+val Extension_constructor.name : extension_constructor -> string
+val Extension_constructor.id : extension_constructor -> int
+// Obj--Ephemeron submodule
+// type Ephemeron.obj_t = t
+// type Ephemeron.t
+val Ephemeron.create : int -> Ephemeron.t
+val Ephemeron.length : Ephemeron.t -> int
+val Ephemeron.get_key : Ephemeron.t -> int -> Ephemeron.obj_t option
+val Ephemeron.get_key_copy : Ephemeron.t -> int -> Ephemeron.obj_t option
+val Ephemeron.set_key : Ephemeron.t -> int -> Ephemeron.obj_t -> unit
+val Ephemeron.unset_key : Ephemeron.t -> int -> unit
+val Ephemeron.check_key : Ephemeron.t -> int -> bool
+val Ephemeron.blit_key : Ephemeron.t -> int -> Ephemeron.t -> int -> int -> unit
+val Ephemeron.get_data : Ephemeron.t -> Ephemeron.obj_t option
+val Ephemeron.get_data_copy : Ephemeron.t -> Ephemeron.obj_t option
+val Ephemeron.set_data : Ephemeron.t -> Ephemeron.obj_t -> unit
+val Ephemeron.unset_data : Ephemeron.t -> unit
+val Ephemeron.check_data : Ephemeron.t -> bool
+val Ephemeron.blit_data : Ephemeron.t -> Ephemeron.t -> unit
+val Ephemeron.max_ephe_length : int
