@@ -36,8 +36,7 @@ sealed interface Example {
 }
 
 data class Name(val name: String) : Example {
-    override fun toString() =
-        if (name == "*") "( * )" else if (name.any { !it.isLetter() }) "($name)" else name
+    override fun toString() = name
 
     override val names by lazy { setOf(name) }
 }

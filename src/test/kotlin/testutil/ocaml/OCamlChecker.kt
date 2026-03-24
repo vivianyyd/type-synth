@@ -5,7 +5,7 @@ import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlin.streams.toList
 
-data class TypeCheckResult(val isValid: Boolean, val errorMessage: String? = null)
+data class TypeCheckResult(val isValid: Boolean, val errorMessage: String? = null, val expression: String)
 
 /**
  * Type-checks OCaml expressions by compiling them individually.
@@ -20,7 +20,7 @@ class OCamlChecker(
 
     private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
 
-    private val desugarAtomsToDummies = listOf("Num" to "1", "Str" to "Dummy")
+    private val desugarAtomsToDummies = listOf("Num" to "1", "Str" to "\"s\"", "Char" to "\'a\'")
 
     private fun desugar(expr: String) =
         desugarAtomsToDummies.fold(expr) { acc, (from, to) -> acc.replace(from, to) }
@@ -46,13 +46,13 @@ class OCamlChecker(
 
             if (!exitCode) {
                 process.destroyForcibly()
-                return TypeCheckResult(false, "Compilation timeout")
+                return TypeCheckResult(false, "Compilation timeout", expr)
             }
 
             val isValid = process.exitValue() == 0
             val errorMsg = if (!isValid) output.trim() else null
 
-            return TypeCheckResult(isValid, errorMsg)
+            return TypeCheckResult(isValid, errorMsg, expr)
         } finally {
             // Clean up temp files
             tempFile.delete()

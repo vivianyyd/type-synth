@@ -13,9 +13,24 @@ import java.io.File
 import kotlin.test.Test
 
 class OCamlStdlibTest {
+    fun `split examples`() {
+        val path = join("src", "test", "input", "ocaml-stdlib")
+        val exs = File(join(path, "tmp"))
+        val posOut = File(join(path, "pos"))
+        val negOut = File(join(path, "neg"))
+
+        val checker = OCamlChecker()
+        val examples = exs.readText().lines().map { it.trim() }.filter { it.isNotEmpty() }
+        val results = checker.checkAllParallel(examples)
+        results.forEach {
+            val out = if (it.isValid) posOut else negOut
+            out.appendText(it.expression + System.lineSeparator())
+        }
+    }
+
     @Test
     fun `can reconstruct stdlib`() {
-        val dir = File(join("src", "test", "input", "ocaml-stdlib"))
+        val dir = File(join("src", "test", "input", "ocaml-stdlib", "testing"))
         val examples = loadExamples(dir)
         val parser = OcamlTypeParser()
         val oracleTypes = buildMap {

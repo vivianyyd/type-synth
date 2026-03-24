@@ -50,7 +50,12 @@ private fun SExpr.toSignedExample(): Pair<Boolean, Example> =
 
 fun SExpr.toExample(): Example =
     when (this) {
-        is SExpr.Atm -> Name(this.value)
+        is SExpr.Atm -> {
+            val name = this.value
+            val parenName =
+                if (name == "*") "( * )" else if (name.any { !it.isLetter() }) "($name)" else name
+            Name(parenName)
+        }
         is SExpr.Lst -> {
             require(this.elements.isNotEmpty())
             val apps = this.elements.map { it.toExample() }

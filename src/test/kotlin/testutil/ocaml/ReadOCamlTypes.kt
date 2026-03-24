@@ -213,7 +213,7 @@ class OcamlTypeParser {
         block
             .lineSequence()
             .map { it.trim() }
-            .filter { it.isNotEmpty() }
+            .filter { it.isNotEmpty() && !it.startsWith("//") }
             .forEach { line ->
                 val (name, type) = parseSignatureLine(line)
                 result[name] = type
