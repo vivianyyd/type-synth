@@ -24,6 +24,7 @@ class Logger(
     private val logStream =
         if (logToFile) PrintStream(File(logFilename).outputStream(), false) else System.out
     private val startTime = System.currentTimeMillis()
+    private var lastLog = startTime
 
     init {
         logStream.println(configuration)
@@ -31,6 +32,7 @@ class Logger(
     }
 
     fun log(message: String, level: Int = 0) {
+        lastLog = System.currentTimeMillis()
         if (level <= verbosity) {
             val time = if (logTimestamps) "[${LocalTime.now()}]" else ""
             val lvl = if (level > 0 && logVerbosity) " [$level]" else ""
@@ -63,6 +65,12 @@ class Logger(
         if (verbosity > 4) {
             if (value in counts) counts[value] = counts[value]!! + 1 else counts[value] = 1
         }
+        if (System.currentTimeMillis() - lastLog > 20 * 1000) log(
+            counts.entries.joinToString(
+                separator = "\n",
+                prefix = "Counts so far:\n"
+            )
+        )
     }
 
     fun finish() {

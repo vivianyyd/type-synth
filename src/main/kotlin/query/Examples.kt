@@ -1,5 +1,7 @@
 package query
 
+import util.lines
+
 sealed interface Example {
     val names: Set<String>
 
@@ -72,7 +74,7 @@ class Examples(pos: Collection<Example>, val neg: Collection<Example>) {
     val names: List<String> =
         pos.fold(setOf<String>()) { acc, ex -> acc + ex.names }.toList().sorted()
 
-    private val flatPos = flat(posNoSubexprs)
+    private val flatPos = flat(posWithSubexprs)
     private val flatNeg = flat(neg)
 
     fun flatPosNoSubexprs(name: String) = flatPos[name] ?: listOf()
@@ -80,4 +82,6 @@ class Examples(pos: Collection<Example>, val neg: Collection<Example>) {
     fun flatNeg(name: String) = flatNeg[name] ?: listOf()
 
     private fun flat(exs: Collection<Example>) = exs.map { it.flatten() }.groupBy { it.name }
+
+    override fun toString() = posWithSubexprs.lines() + "\n" + neg.lines()
 }

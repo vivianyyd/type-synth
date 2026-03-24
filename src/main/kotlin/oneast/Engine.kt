@@ -15,10 +15,10 @@ class Engine(
     private val negExamples = query.examples.neg.toMutableList()
 
     // ceiling division
-    private val numRounds = (names.size + config.namesPerRound - 1) / config.namesPerRound
     private val scheduled = mutableListOf<Set<String>>()
 
     init {
+        val numRounds = (names.size + config.namesPerRound - 1) / config.namesPerRound
         while (scheduled.size < numRounds) {
             scheduled.add(
                 Selector()

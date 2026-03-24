@@ -53,7 +53,7 @@ fun SExpr.toExample(): Example =
         is SExpr.Atm -> {
             val name = this.value
             val parenName =
-                if (name == "*") "( * )" else if (name.any { !it.isLetter() }) "($name)" else name
+                if (name == "*") "( * )" else if (name.all { !it.isLetter() }) "($name)" else name
             Name(parenName)
         }
         is SExpr.Lst -> {

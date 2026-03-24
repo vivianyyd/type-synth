@@ -20,6 +20,9 @@ class ParameterwiseDependencyAnalysis(
     val fixed = examples.names.associateWith { Array(arities[it]!!) { false } }
     val constrained = examples.names.associateWith { Array(arities[it]!!) { false } }
 
+    override fun toString(): String =
+        "Fixed: ${fixed.mapValues { it.value.contentToString() }}\tConstrained: ${constrained.mapValues { it.value.contentToString() }}"
+
     init {
         examples.names.forEach { name ->
             val arity = arities[name]!!
@@ -46,7 +49,7 @@ class ParameterwiseDependencyAnalysis(
 
             // we can never eliminate the case where the output is always [], so only try to compute
             // fixed input parameters
-            for (i in 1 until arity - 1) {
+            for (i in 1 until arity) { // TODO I CHANGED
                 // we can't enforce with hm types if an input param is only allowed to be nil,
                 // so assume that if the input parameter is a l[a] with fresh a, we see variation in
                 // what a is bound to.
@@ -70,6 +73,18 @@ class ParameterwiseDependencyAnalysis(
                         }
 
                 if (witnessPrefixes.all { exsSameTypeBeforeI ->
+                        //                        if (name == "pair" && i == 1) {
+                        //                            println(exsSameTypeBeforeI)
+                        //                            println("ith arg:
+                        // ${exsSameTypeBeforeI.first().args[i]}")
+                        //                            println(
+                        //                                oracle.flatEqual(
+                        //                                    FlatApp("pair", listOf(FlatApp("Num"))),
+                        //                                    FlatApp("pair", listOf(FlatApp("Num"))),
+                        //                                )
+                        //                            )
+                        //                        }
+
                         exsSameTypeBeforeI.all {
                             // for all examples with the same type prefix, the ith argument is always
                             // the same type
@@ -87,6 +102,7 @@ class ParameterwiseDependencyAnalysis(
             //                }
             //            }
         }
+        //        TODO()
     }
 
     fun mayHaveFresh(p: ParameterNode): Boolean = !fixed[p.f]!![p.i]
