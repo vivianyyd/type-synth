@@ -1,0 +1,5 @@
+not Num
+(&&) Num true
+(&&) true Num
+(||) Num false
+(||) true Num
