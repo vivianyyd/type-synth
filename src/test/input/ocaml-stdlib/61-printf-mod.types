@@ -5,7 +5,9 @@ val eprintf : ('a, out_channel, unit) format -> 'a
 val sprintf : ('a, unit, string) format -> 'a
 val bprintf : Buffer.t -> ('a, Buffer.t, unit) format -> 'a
 val ifprintf : 'b -> ('a, 'b, unit) format -> 'a
+val ibprintf : Buffer.t -> ('a, Buffer.t, unit) format -> 'a
 val kfprintf : (out_channel -> 'b) -> out_channel -> ('a, out_channel, unit, 'b) format4 -> 'a
 val ikfprintf : ('b -> 'c) -> 'b -> ('a, 'b, unit, 'c) format4 -> 'a
 val ksprintf : (string -> 'b) -> ('a, unit, string, 'b) format4 -> 'a
 val kbprintf : (Buffer.t -> 'b) -> Buffer.t -> ('a, Buffer.t, unit, 'b) format4 -> 'a
+val ikbprintf : (Buffer.t -> 'b) -> Buffer.t -> ('a, Buffer.t, unit, 'b) format4 -> 'a

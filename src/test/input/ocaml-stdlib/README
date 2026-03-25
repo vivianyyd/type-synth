@@ -72,8 +72,10 @@
 44-in-channel-mod | In_channel module | Requires open_flag type
 // type In_channel.t = in_channel
 // type In_channel.open_flag = Open_rdonly | Open_wronly | Open_append | Open_creat | Open_trunc | Open_excl | Open_binary | Open_text | Open_nonblock
+// Skipped: input_bigarray, really_input_bigarray (require Bigarray); fold_lines
 45-int-mod | Int module
 // type Int.t = int
+// Skipped: no nativeint conversion functions in Int module (use Nativeint.of_int / Nativeint.to_int)
 46-int32-mod | Int32 module
 // type Int32.t = int32
 47-int64-mod | Int64 module
@@ -108,6 +110,7 @@
 // type Printexc.raw_backtrace_slot
 // type Printexc.backtrace_slot = Unknown_location | Known_location of ...
 61-printf-mod | Printf module | Requires Buffer.t, format types
+// Skipped: deprecated kprintf (use ksprintf instead)
 62-queue-mod | Queue module | Requires Seq.t
 // type !'a Queue.t
 63-random-mod | Random module | Requires Int32.t, Nativeint.t, Int64.t
@@ -128,6 +131,7 @@
 // Skipped StdLabels: it is a collection of labeled modules (ArrayLabels, ListLabels, StringLabels)
 70-string-mod | String module | Requires Seq.t, Uchar.utf_decode, bytes
 // type String.t = string
+// Skipped: Binary decoding of integers section (get_uint8, get_int8, get_uint16_ne/be/le, get_int16_ne/be/le, get_int32_ne/be/le, get_int64_ne/be/le)
 // Skipped StringLabels: it is the same as String but with labeled arguments
 71-sys-mod | Sys module
 // type Sys.backend_type = Native | Bytecode | Other of string
@@ -142,6 +146,7 @@
 73-uchar-mod | Uchar module (Unicode characters)
 // type Uchar.t
 // type Uchar.utf_decode
+// Skipped: utf_8_decode_length_of_byte, max_utf_8_decode_length, utf_8_byte_length, utf_16_byte_length
 74-unit-mod | Unit module
 // type Unit.t = unit = ()
 75-weak-mod | Weak module (weak pointers and hash sets)

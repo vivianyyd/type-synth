@@ -52,3 +52,6 @@ val get_utf_16le_uchar : t -> int -> Uchar.utf_decode
 val is_valid_utf_16le : t -> bool
 val edit_distance : ?limit:int -> t -> t -> int
 val spellcheck : ?max_dist:(string -> int) -> ((string -> unit) -> unit) -> string -> string list
+// Skipped: Binary decoding of integers section (get_uint8, get_int8, get_uint16_ne/be/le, get_int16_ne/be/le, get_int32_ne/be/le, get_int64_ne/be/le)
+val hash : t -> int
+val seeded_hash : int -> t -> int
