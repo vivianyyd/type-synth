@@ -27,6 +27,7 @@ fun main() {
         """
         'a list -> 'b list -> int
         'a -> 'a
+        'a list -> 'a list -> 'a list
         """
             .trimIndent()
     println(parseTypeExpressions(types))
@@ -231,11 +232,12 @@ class OcamlTypeParser {
         val name = normalized.substring(0, colonIndex).trim()
         val typePart = normalized.substring(colonIndex + 1).trim()
 
-        val tokens = tokenize(typePart)
-        val variableContext = VariableContext()
-        val (type, remaining) = parseArrow(tokens, variableContext)
-        require(remaining.isEmpty()) { "Unparsed tokens: $remaining" }
-        return name to type
+        //        val tokens = tokenize(typePart)
+        //        val variableContext = VariableContext()
+        //        val (type, remaining) = parseArrow(tokens, variableContext)
+        //        require(remaining.isEmpty()) { "Unparsed tokens: $remaining" }
+        //        return name to type
+        return name to TypeParsingSession().parse(normalizeTypeLine(typePart))
     }
 
     private fun normalizeLine(line: String): String {

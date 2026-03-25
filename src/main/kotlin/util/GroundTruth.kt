@@ -16,10 +16,22 @@ class CheckingGroundTruthOracle(secret: Map<String, Type>) : GroundTruth, Oracle
 
     override fun equal(a: Example, b: Example): Boolean {
         val u = OneUnification(truth, listOf(a, b))
-        val ta = u.type(a)
-        val tb = u.type(b)
+        // TODO PARTIALLY APPLIED STUFF WILL BE DIFFERENT SINCE VARIABLE INSTANTIATIONS ARE
+        // DIFFERENT! NEED TO TONODE
+        //   ALSO TONODE IS REALLY BRITTLE SINCE IT'S SENSITIVE TO NAMING, NEED A DIFFERENT WAY...
+        val ta = u.type(a)?.toNode()
+        val tb = u.type(b)?.toNode()
         return ta != null && tb != null && ta == tb
     }
+
+    private fun ConstraintTy.toNode(): Type =
+        when (this) {
+            is ConstraintArrow -> Arrow(this.l.toNode(), this.r.toNode())
+            is ConstraintLabel -> NamedLabel(this.label, this.params.map { it.toNode() })
+            is ConstraintVariable -> Variable(this.v)
+            is InstantiationTy,
+            Bottom -> TypeHole() // TODO Idk if this is right
+        }
 
     override fun dummy(e: Example): Int = OneUnification(truth, listOf(e)).type(e).hashCode()
 }

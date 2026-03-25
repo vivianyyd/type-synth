@@ -34,6 +34,8 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
             is App ->
                 type(ex.fn)?.let { f ->
                     type(ex.arg)?.let { arg ->
+                        //                        println("$ex where ${ex.fn}: $f and ${ex.arg}:
+                        // $arg")
                         when (f) {
                             is ConstraintArrow -> unify(f.l, arg)?.let { applyBindings(f.r, it) }
                             is InstantiationTy -> {

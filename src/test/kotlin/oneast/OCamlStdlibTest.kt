@@ -13,13 +13,39 @@ import java.io.File
 import kotlin.test.Test
 
 class OCamlStdlibTest {
+    @Test
+    fun `min negexs`() {
+        val dir = File(join("src", "test", "input", "ocaml-stdlib", "testing"))
+        val examples = loadExamples(dir)
+
+        val parser = OcamlTypeParser()
+        val oracleTypes = buildMap {
+            dir.listFiles()
+                ?.filter { it.extension == "types" && it.isFile }
+                ?.forEach { file -> putAll(parser.parseSignatures(file.readText())) }
+        }
+        val oracle = CheckingGroundTruthOracle(oracleTypes)
+
+        examples.neg.forEach { ex ->
+            val negSubs = ex.subexprs().filter { it != ex && !oracle.valid(it) }
+            if (negSubs.isNotEmpty()) {
+                println("Not minimal: $ex")
+                println("Smaller:")
+                println(negSubs.joinToString(separator = "\n"))
+            }
+        }
+    }
+
+    // TODO add a sanity checker against both secrets and ocamlc
+
+    @Test
     fun `split examples`() {
         val path = join("src", "test", "input", "ocaml-stdlib")
         val exs = File(join(path, "tmp"))
         val posOut = File(join(path, "pos"))
         val negOut = File(join(path, "neg"))
 
-        val checker = OCamlChecker()
+        val checker = OCamlChecker(preamble = "open List")
         val examples = exs.readText().lines().map { it.trim() }.filter { it.isNotEmpty() }
         val results = checker.checkAllParallel(examples)
         results.forEach {
@@ -30,8 +56,48 @@ class OCamlStdlibTest {
 
     @Test
     fun `can reconstruct stdlib`() {
-        val dir = File(join("src", "test", "input", "ocaml-stdlib", "testing"))
+        val schedule =
+            listOf(
+//                listOf("Num", "Str", "true", "([])", "cons"),
+//                listOf("length", "is_empty"),
+//                listOf("false", "compare_lengths"),
+//                listOf("compare_length_with"),
+//                listOf("singleton"),
+//                listOf("hd"),
+//                listOf("tl"),
+//                listOf("nth"),
+//                listOf("rev"),
+//                listOf("append"),
+////                listOf("rev_append"),
+////                listOf("concat"),
+////                listOf("flatten"),
+////                listOf("mem"),
+////                listOf("memq"),
+////                listOf("take"),
+////                listOf("drop"),
+////                listOf("(@)"))
+                listOf("Num", "min_int", "true", "(+)", "false", "not"),
+                listOf("max_int", "succ", "pred"),
+                listOf("( * )"),
+                listOf("(-)"),
+                listOf("(/)"),
+                listOf("mod"),
+                listOf("abs"),
+                listOf("(~-)"),
+                listOf("(~+)"),
+                listOf("(&&)"),
+                listOf("(||)"),
+                listOf("Char", "int_of_char", "char_of_int")
+            )
+
+        val dir = File(join("src", "test", "input", "ocaml-stdlib", "primitive-operations-solved"))
         val examples = loadExamples(dir)
+        // because I am going crazy
+//        val examples = Examples(
+//            allexamples.posNoSubexprs.filter { schedule.flatten().containsAll(it.names) },
+//            allexamples.neg.filter { schedule.flatten().containsAll(it.names) },
+//        )
+
         val parser = OcamlTypeParser()
         val oracleTypes = buildMap {
             dir.listFiles()
