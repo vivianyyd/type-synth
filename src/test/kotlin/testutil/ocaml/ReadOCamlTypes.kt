@@ -263,19 +263,14 @@ class OcamlTypeParser {
         tokens: List<String>,
         ctx: VariableContext
     ): Pair<Type, List<String>> {
-        var (base, rest) = parseAtom(tokens, ctx)
-        val args = mutableListOf<Type>()
-        while (rest.isNotEmpty() && isAtomStart(rest[0])) {
-            val (arg, next) = parseAtom(rest, ctx)
-            args.add(arg)
-            rest = next
+        var (current, rest) = parseAtom(tokens, ctx)
+        // OCaml uses postfix type application: 'a list means list('a), not 'a applied to list.
+        while (rest.isNotEmpty() && rest[0].firstOrNull()?.isLetter() == true) {
+            val constructorName = rest[0]
+            rest = rest.drop(1)
+            current = NamedLabel(constructorId(constructorName), listOf(current))
         }
-        if (args.isNotEmpty()) {
-            val head =
-                base as? NamedLabel ?: error("Cannot apply arguments to non-constructor $base")
-            base = head.copy(params = head.params + args)
-        }
-        return base to rest
+        return current to rest
     }
 
     private fun parseAtom(tokens: List<String>, ctx: VariableContext): Pair<Type, List<String>> {
@@ -306,9 +301,6 @@ class OcamlTypeParser {
             .replace("->", " -> ")
             .split(Regex("\\s+"))
             .filter { it.isNotEmpty() }
-
-    private fun isAtomStart(token: String): Boolean =
-        token.startsWith("'") || token == "(" || token.firstOrNull()?.isLetter() == true
 
     private data class VariableContext(
         val ids: MutableMap<String, Int> = mutableMapOf(),
