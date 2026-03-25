@@ -148,4 +148,7 @@
 // type !'a Weak.t
 // Skipped BytesLabels: it is the same as Bytes but with labeled arguments
 // Skipped MoreLabels: it is a collection of labeled modules (Hashtbl, Map, Set with labels)
-// Not in OCaml 5.4 stdlib: Pqueue, Pair, Repr
+76-pair-mod | Pair module (new in 5.4)
+// type ('a, 'b) Pair.t = 'a * 'b
+77-repr-mod | Repr module - polymorphic/physical comparison (new in 5.4)
+78-pqueue-mod | Pqueue module (priority queues, new in 5.4) | Functor-based, all val entries are module-type signatures

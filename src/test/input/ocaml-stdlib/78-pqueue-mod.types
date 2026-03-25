@@ -1,0 +1,83 @@
+// Pqueue
+// Pqueue--OrderedType module type (input signature for MakeMin/MakeMax)
+// type OrderedType.t
+// val OrderedType.compare : t -> t -> int
+// Pqueue--Min module type (output signature of MakeMin)
+// type Min.t
+// type Min.elt
+// val Min.create : unit -> Min.t
+// val Min.length : Min.t -> int
+// val Min.is_empty : Min.t -> bool
+// val Min.add : Min.t -> Min.elt -> unit
+// val Min.add_iter : Min.t -> ((Min.elt -> unit) -> 'x -> unit) -> 'x -> unit
+// val Min.min_elt : Min.t -> Min.elt option
+// val Min.get_min_elt : Min.t -> Min.elt
+// val Min.pop_min : Min.t -> Min.elt option
+// val Min.remove_min : Min.t -> unit
+// val Min.clear : Min.t -> unit
+// val Min.copy : Min.t -> Min.t
+// val Min.of_array : Min.elt array -> Min.t
+// val Min.of_list : Min.elt list -> Min.t
+// val Min.of_iter : ((Min.elt -> unit) -> 'x -> unit) -> 'x -> Min.t
+// val Min.iter_unordered : (Min.elt -> unit) -> Min.t -> unit
+// val Min.fold_unordered : ('acc -> Min.elt -> 'acc) -> 'acc -> Min.t -> 'acc
+// Pqueue--Max module type (output signature of MakeMax)
+// type Max.t
+// type Max.elt
+// val Max.create : unit -> Max.t
+// val Max.length : Max.t -> int
+// val Max.is_empty : Max.t -> bool
+// val Max.add : Max.t -> Max.elt -> unit
+// val Max.add_iter : Max.t -> ((Max.elt -> unit) -> 'x -> unit) -> 'x -> unit
+// val Max.max_elt : Max.t -> Max.elt option
+// val Max.get_max_elt : Max.t -> Max.elt
+// val Max.pop_max : Max.t -> Max.elt option
+// val Max.remove_max : Max.t -> unit
+// val Max.clear : Max.t -> unit
+// val Max.copy : Max.t -> Max.t
+// val Max.of_array : Max.elt array -> Max.t
+// val Max.of_list : Max.elt list -> Max.t
+// val Max.of_iter : ((Max.elt -> unit) -> 'x -> unit) -> 'x -> Max.t
+// val Max.iter_unordered : (Max.elt -> unit) -> Max.t -> unit
+// val Max.fold_unordered : ('acc -> Max.elt -> 'acc) -> 'acc -> Max.t -> 'acc
+// Pqueue--OrderedPolyType module type (input signature for MakeMinPoly/MakeMaxPoly)
+// type 'a OrderedPolyType.t
+// val OrderedPolyType.compare : 'a OrderedPolyType.t -> 'b OrderedPolyType.t -> int
+// Pqueue--MinPoly module type (output signature of MakeMinPoly)
+// type 'a MinPoly.t
+// type 'a MinPoly.elt
+// val MinPoly.create : unit -> 'a MinPoly.t
+// val MinPoly.length : 'a MinPoly.t -> int
+// val MinPoly.is_empty : 'a MinPoly.t -> bool
+// val MinPoly.add : 'a MinPoly.t -> 'a MinPoly.elt -> unit
+// val MinPoly.add_iter : 'a MinPoly.t -> (('a MinPoly.elt -> unit) -> 'x -> unit) -> 'x -> unit
+// val MinPoly.min_elt : 'a MinPoly.t -> 'a MinPoly.elt option
+// val MinPoly.get_min_elt : 'a MinPoly.t -> 'a MinPoly.elt
+// val MinPoly.pop_min : 'a MinPoly.t -> 'a MinPoly.elt option
+// val MinPoly.remove_min : 'a MinPoly.t -> unit
+// val MinPoly.clear : 'a MinPoly.t -> unit
+// val MinPoly.copy : 'a MinPoly.t -> 'a MinPoly.t
+// val MinPoly.of_array : 'a MinPoly.elt array -> 'a MinPoly.t
+// val MinPoly.of_list : 'a MinPoly.elt list -> 'a MinPoly.t
+// val MinPoly.of_iter : (('a MinPoly.elt -> unit) -> 'x -> unit) -> 'x -> 'a MinPoly.t
+// val MinPoly.iter_unordered : ('a MinPoly.elt -> unit) -> 'a MinPoly.t -> unit
+// val MinPoly.fold_unordered : ('acc -> 'a MinPoly.elt -> 'acc) -> 'acc -> 'a MinPoly.t -> 'acc
+// Pqueue--MaxPoly module type (output signature of MakeMaxPoly)
+// type 'a MaxPoly.t
+// type 'a MaxPoly.elt
+// val MaxPoly.create : unit -> 'a MaxPoly.t
+// val MaxPoly.length : 'a MaxPoly.t -> int
+// val MaxPoly.is_empty : 'a MaxPoly.t -> bool
+// val MaxPoly.add : 'a MaxPoly.t -> 'a MaxPoly.elt -> unit
+// val MaxPoly.add_iter : 'a MaxPoly.t -> (('a MaxPoly.elt -> unit) -> 'x -> unit) -> 'x -> unit
+// val MaxPoly.max_elt : 'a MaxPoly.t -> 'a MaxPoly.elt option
+// val MaxPoly.get_max_elt : 'a MaxPoly.t -> 'a MaxPoly.elt
+// val MaxPoly.pop_max : 'a MaxPoly.t -> 'a MaxPoly.elt option
+// val MaxPoly.remove_max : 'a MaxPoly.t -> unit
+// val MaxPoly.clear : 'a MaxPoly.t -> unit
+// val MaxPoly.copy : 'a MaxPoly.t -> 'a MaxPoly.t
+// val MaxPoly.of_array : 'a MaxPoly.elt array -> 'a MaxPoly.t
+// val MaxPoly.of_list : 'a MaxPoly.elt list -> 'a MaxPoly.t
+// val MaxPoly.of_iter : (('a MaxPoly.elt -> unit) -> 'x -> unit) -> 'x -> 'a MaxPoly.t
+// val MaxPoly.iter_unordered : ('a MaxPoly.elt -> unit) -> 'a MaxPoly.t -> unit
+// val MaxPoly.fold_unordered : ('acc -> 'a MaxPoly.elt -> 'acc) -> 'acc -> 'a MaxPoly.t -> 'acc

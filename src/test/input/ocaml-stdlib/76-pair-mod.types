@@ -1,0 +1,13 @@
+// Pair
+// type ('a, 'b) t = 'a * 'b
+val make : 'a -> 'b -> 'a * 'b
+val fst : 'a * 'b -> 'a
+val snd : 'a * 'b -> 'b
+val swap : 'a * 'b -> 'b * 'a
+val fold : ('a -> 'b -> 'c) -> 'a * 'b -> 'c
+val map : ('a -> 'c) -> ('b -> 'd) -> 'a * 'b -> 'c * 'd
+val iter : ('a -> unit) -> ('b -> unit) -> 'a * 'b -> unit
+val map_fst : ('a -> 'c) -> 'a * 'b -> 'c * 'b
+val map_snd : ('b -> 'c) -> 'a * 'b -> 'a * 'c
+val equal : ('a -> 'a -> bool) -> ('b -> 'b -> bool) -> 'a * 'b -> 'a * 'b -> bool
+val compare : ('a -> 'a -> int) -> ('b -> 'b -> int) -> 'a * 'b -> 'a * 'b -> int

@@ -1,0 +1,6 @@
+// Repr
+val phys_equal : 'a -> 'a -> bool
+val equal : 'a -> 'a -> bool
+val compare : 'a -> 'a -> int
+val min : 'a -> 'a -> 'a
+val max : 'a -> 'a -> 'a
