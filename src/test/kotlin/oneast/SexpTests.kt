@@ -41,7 +41,7 @@ class SexpTests {
             searchStrategy = ::DFSEnumerator,
             sizeBound = 20,
             depthBound = 4,
-            namesPerRound = 10,
+            scheduleInfo = Auto(5),
             numSols = Solutions.NumSolutions(1)
         )
 

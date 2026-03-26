@@ -32,12 +32,22 @@ fun run(
     return solutions
 }
 
+sealed interface SchedulingInfo
+
+data class Auto(val namesPerRound: Int = 5) : SchedulingInfo {
+    override fun toString() = "Auto with $namesPerRound names per round"
+}
+
+data class CustomSchedule(val customSchedule: List<List<String>>) : SchedulingInfo {
+    override fun toString() = "Custom schedule: $customSchedule"
+}
+
 data class Configuration(
     val name: String,
     val searchStrategy: (Examples, Boolean, Boolean, Int, Int, Logger) -> SearchStrategy,
     val sizeBound: Int,
     val depthBound: Int,
-    val namesPerRound: Int,
+    val scheduleInfo: SchedulingInfo,
     val numSols: Solutions
 ) : Config {
     override fun toString(): String =
@@ -46,7 +56,7 @@ data class Configuration(
             "Search strategy: $searchStrategy",
             "Size bound: $sizeBound",
             "Depth bound: $depthBound",
-            "Names per round: $namesPerRound",
+            "Schedule: $scheduleInfo",
             "Searching for $numSols solutions"
         )
             .lines() + "\n=====\n"

@@ -15,30 +15,45 @@ class Engine(
     private val negExamples = query.examples.neg.toMutableList()
 
     // ceiling division
-    private val scheduled = mutableListOf<Set<String>>()
+    private val scheduled = mutableListOf<List<String>>()
 
     init {
-        val numRounds = (names.size + config.namesPerRound - 1) / config.namesPerRound
-        while (scheduled.size < numRounds) {
-            scheduled.add(
-                Selector()
-                    .select(
-                        // whether a name occurs in subexprs is good signal for its
-                        // importance.
-                        query.examples.posWithSubexprs,
-                        names,
-                        buildSet { scheduled.forEach { addAll(it) } },
-                        config.namesPerRound
+        when (val info = config.scheduleInfo) {
+            is CustomSchedule -> {
+                val scheduledNames = info.customSchedule.flatten()
+                val scheduledNamesSet = scheduledNames.toSet()
+                require(scheduledNames.size == scheduledNamesSet.size) {
+                    "Duplicate name in custom schedule"
+                }
+                require(scheduledNamesSet.containsAll(query.examples.names)) {
+                    "Schedule is missing names: ${query.examples.names.toSet() - scheduledNamesSet}"
+                }
+                scheduled.addAll(info.customSchedule)
+            }
+            is Auto -> {
+                val numRounds = (names.size + info.namesPerRound - 1) / info.namesPerRound
+                while (scheduled.size < numRounds) {
+                    scheduled.add(
+                        Selector()
+                            .select(
+                                // whether a name occurs in subexprs is good signal for its
+                                // importance.
+                                query.examples.posWithSubexprs,
+                                names,
+                                buildSet { scheduled.forEach { addAll(it) } },
+                                info.namesPerRound
+                            )
                     )
-            )
+                }
+            }
         }
     }
 
     /** Returns the next synthesis problem, or null if we are done. */
-    private fun buildNextQuery(state: SearchState): Pair<Examples, SearchState>? {
+    private fun buildNextQuery(state: SearchState, round: Int): Pair<Examples, SearchState>? {
         if (names.size == state.names.size) return null
 
-        val scheduledRound = scheduled[state.names.size / config.namesPerRound].toList()
+        val scheduledRound = scheduled[round]
         // TODO I think enumeration doesn't actually need the subexprs, so we should make a separate
         //   query type which contains only maximal examples so we don't waste so much space
         val oldSize = state.names.size
@@ -76,8 +91,8 @@ class Engine(
         return solver.solutions()
     }
 
-    private fun searchRec(state: SearchState): Sequence<SearchState> = sequence {
-        val nextQueryAndSeed = buildNextQuery(state)
+    private fun searchRec(state: SearchState, round: Int): Sequence<SearchState> = sequence {
+        val nextQueryAndSeed = buildNextQuery(state, round)
 
         if (nextQueryAndSeed == null) {
             yield(state)
@@ -94,7 +109,7 @@ class Engine(
                     .counterexample()
             if (ctrex == null) {
                 logger.log("Found no counterexamples")
-                yieldAll(searchRec(solution))
+                yieldAll(searchRec(solution, round + 1))
             } else {
                 logger.log("Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}")
                 if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
@@ -102,7 +117,7 @@ class Engine(
         }
     }
 
-    fun search(): Sequence<SearchState> = searchRec(SearchState.emptyState)
+    fun search(): Sequence<SearchState> = searchRec(SearchState.emptyState, round = 0)
 }
 
 /*
@@ -154,10 +169,10 @@ private class Selector {
         allNames: List<String>,
         fixed: Set<String>,
         k: Int,
-    ): Set<String> {
+    ): List<String> {
         val scorer = Scorer(examples)
         val available = allNames.filterNot { fixed.contains(it) }
-        return greedy(fixed, available, scorer, k)
+        return greedy(fixed, available, scorer, k).toList()
     }
 }
 
