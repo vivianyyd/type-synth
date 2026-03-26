@@ -31,7 +31,7 @@ class LinkDependencyAnalysis(
     private fun findEdges(name: String): List<Link> {
         val arity = arities[name]!!
         val nullary = arity != 0
-        val posExs = examples.flatPosNoSubexprs(name)
+        val posExs = examples.flatPos(name)
         val negExs = examples.flatNeg(name)
 
         // [argument index] to [[eqClasses of arg values] to [indices of corresponding positive

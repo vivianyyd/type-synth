@@ -129,7 +129,7 @@ fun topLevelVariablesConsistent(
                 .eqClasses { (_, p1), (_, p2) -> (p1 as ElabV).v == (p2 as ElabV).v }
                 .map { it.map { it.index } }
 
-        val posExs = examples.flatPosNoSubexprs(name)
+        val posExs = examples.flatPos(name)
         posExs.forEach {
             TODO(
                 "query can memoize witnesses for each parameter under arity assumption?" +

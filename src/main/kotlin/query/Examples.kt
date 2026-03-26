@@ -77,11 +77,11 @@ class Examples(pos: Collection<Example>, val neg: Collection<Example>) {
     private val flatPos = flat(posWithSubexprs)
     private val flatNeg = flat(neg)
 
-    fun flatPosNoSubexprs(name: String) = flatPos[name] ?: listOf()
+    fun flatPos(name: String) = flatPos[name] ?: listOf()
 
     fun flatNeg(name: String) = flatNeg[name] ?: listOf()
 
     private fun flat(exs: Collection<Example>) = exs.map { it.flatten() }.groupBy { it.name }
 
-    override fun toString() = posWithSubexprs.lines() + "\n" + neg.lines()
+    override fun toString() = "Pos\n" + posWithSubexprs.lines() + "\n" + "Neg\n" + neg.lines()
 }
