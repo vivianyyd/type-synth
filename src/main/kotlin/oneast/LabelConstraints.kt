@@ -106,8 +106,7 @@ class LabelConstraints(
         // TODO CVC query needs to ask whether it's SAT to carry over leq prev label arities and
         //   still satisfy dep constraints on new ones.
         //   If UNSAT, we need to resolve for arities of all labels that appear in types that
-        // contain
-        //   holes. Update labelArities and SearchState types.
+        //   contain holes. Update labelArities and SearchState types.
         s.labelArities.entries.forEach {}
     }
 
