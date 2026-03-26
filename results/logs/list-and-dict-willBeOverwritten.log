@@ -1,0 +1,362 @@
+list-and-dict
+Search strategy: fun `<init>`(query.Examples, kotlin.Boolean, kotlin.Boolean, kotlin.Int, kotlin.Int, util.Logger): oneast.searchstrategies.DFSEnumerator
+Size bound: 20
+Depth bound: 4
+Names per round: 5
+Searching for 1 solutions
+=====
+
+[02:14:15.304]	Current query: {({})=.L, put=_ -> _, Num=.L, true=.L, chain=_ -> _}
+[02:14:15.310]	BEG Depth 0 outlining [({}), put, Num, true, chain]
+[02:14:15.315]	BEG Outlines with label classes
+[02:14:15.316]	END Outlines with label classes : 1 ms
+[02:14:15.316]	Counts:
+
+[02:14:15.316]	Elapsed time: 420 ms
+[02:14:15.316]	BEG Solving for label arities
+[02:14:34.804]	END Solving for label arities : 19488 ms
+[02:14:34.804]	Counts:
+Total candidates=1456
+[02:14:34.804]	Elapsed time: 19908 ms
+[02:14:34.804]	END Depth 0 outlining [({}), put, Num, true, chain] : 19495 ms
+[02:14:34.804]	Counts:
+Total candidates=1456
+[02:14:34.804]	Elapsed time: 19908 ms
+[02:14:34.808]	Concrete seeds: 224
+{({})=L0[], put=L0[] -> V0 -> V0 -> V0, Num=L0[], true=L0[], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[], put=L0[] -> V0 -> V1 -> V0, Num=L0[], true=L0[], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> L0[_, _] -> V0}
+{({})=L0[], put=L0[] -> V0 -> L0[] -> V0, Num=L0[], true=L0[], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L0[_] -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L0[_] -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L0[_] -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[], put=L0[] -> V1 -> V0 -> V0, Num=L0[], true=L0[], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V0 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V0 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V0 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> L0[_, _] -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_] -> V0 -> V0}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_, _] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_] -> V1 -> V0}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_, _] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_, _] -> L0[_, _] -> V0}
+{({})=L0[], put=L0[] -> V1 -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[], put=L0[] -> L0[] -> V0 -> V0, Num=L0[], true=L0[], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L0[_] -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L0[_] -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> L0[_] -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[], put=L0[] -> L1[_] -> V1 -> V0, Num=L1[.], true=L1[.], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V1 -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V1 -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V1 -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[], put=L0[] -> L1[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[], put=L0[] -> V0 -> V0 -> V0, Num=L0[], true=L0[], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[], put=L0[] -> V0 -> V0 -> V0, Num=L0[], true=L0[], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[], put=L0[] -> V0 -> V1 -> V0, Num=L0[], true=L0[], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> V0 -> L0[_, _]}
+{({})=L0[], put=L0[] -> V0 -> V1 -> V0, Num=L0[], true=L0[], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> L0[_, _] -> L0[_, _]}
+{({})=L0[], put=L0[] -> V0 -> L0[] -> V0, Num=L0[], true=L0[], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> L0[_] -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[], put=L0[] -> V0 -> L0[] -> V0, Num=L0[], true=L0[], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> L0[_] -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[], put=L0[] -> V1 -> V0 -> V0, Num=L0[], true=L0[], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> V1 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V0 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> V0 -> L0[_, _]}
+{({})=L0[], put=L0[] -> V1 -> V0 -> V0, Num=L0[], true=L0[], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> V1 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V0 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> L0[_, _] -> L0[_, _]}
+{({})=L0[.], put=L0[_] -> V1 -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[.], put=L0[_] -> V1 -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[.], put=L0[_] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_, _] -> V0 -> L0[_, _]}
+{({})=L0[.], put=L0[_] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_, _] -> L0[_, _] -> L0[_, _]}
+{({})=L0[], put=L0[] -> V1 -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> V1 -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[.], put=L0[_] -> V1 -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[], put=L0[] -> V1 -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> V1 -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[.], put=L0[_] -> V1 -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[], put=L0[] -> L0[] -> V0 -> V0, Num=L0[], true=L0[], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> L0[_] -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[], put=L0[] -> L0[] -> V0 -> V0, Num=L0[], true=L0[], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> L0[_] -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[], put=L0[] -> L1[_] -> V1 -> V0, Num=L1[.], true=L1[.], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> L1[] -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[.], put=L0[_] -> L1[_] -> V1 -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[], put=L0[] -> L1[_] -> V1 -> V0, Num=L1[.], true=L1[.], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> L1[] -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[.], put=L0[_] -> L1[_] -> V1 -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[], put=L0[] -> L1[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[], put=L0[] -> L1[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L0[_] -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V0 -> V0, Num=L0[., .], true=L0[., .], chain=L0[_, _] -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_] -> V0}
+{({})=L0[., .], put=L0[_, _] -> V1 -> V2 -> V0, Num=L1[], true=L2[], chain=L0[_, _] -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L0[_] -> V0 -> V0, Num=L0[.], true=L0[.], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V1 -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V1 -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0}
+{({})=L0[], put=L0[] -> V0 -> V0 -> L0[], Num=L1[], true=L1[], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[], put=L0[] -> V0 -> V1 -> L0[], Num=L1[], true=L2[], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> L0[_], Num=L1[], true=L2[], chain=L0[_] -> V0 -> V0}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> L0[_, _], Num=L1[], true=L2[], chain=L0[_, _] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> L0[_], Num=L1[], true=L2[], chain=L0[_] -> V1 -> V0}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> L0[_, _], Num=L1[], true=L2[], chain=L0[_, _] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> L0[_], Num=L1[], true=L2[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> L0[_, _], Num=L1[], true=L2[], chain=L0[_, _] -> L0[_, _] -> V0}
+{({})=L0[], put=L0[] -> V0 -> L1[] -> L0[], Num=L1[], true=L1[], chain=L0[] -> V0 -> V0}
+{({})=L0[], put=L0[] -> V0 -> L1[_] -> L0[], Num=L1[.], true=L1[.], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[], put=L0[] -> L1[] -> V0 -> L0[], Num=L1[], true=L1[], chain=L0[] -> V0 -> V0}
+{({})=L0[], put=L0[] -> L1[_] -> V0 -> L0[], Num=L1[.], true=L1[.], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0 -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0 -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0 -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[], put=L0[] -> L1[] -> L1[] -> L0[], Num=L1[], true=L1[], chain=L0[] -> V0 -> V0}
+{({})=L0[], put=L0[] -> L1[_] -> L1[_] -> L0[], Num=L1[.], true=L1[.], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[], put=L0[] -> V0 -> V0 -> L0[], Num=L1[], true=L1[], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[], put=L0[] -> V0 -> V0 -> L0[], Num=L1[], true=L1[], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[], put=L0[] -> V0 -> V1 -> L0[], Num=L1[], true=L2[], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> L0[_], Num=L1[], true=L2[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> L0[_, _], Num=L1[], true=L2[], chain=L0[_, _] -> V0 -> L0[_, _]}
+{({})=L0[], put=L0[] -> V0 -> V1 -> L0[], Num=L1[], true=L2[], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> L0[_], Num=L1[], true=L2[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> L0[_, _], Num=L1[], true=L2[], chain=L0[_, _] -> L0[_, _] -> L0[_, _]}
+{({})=L0[], put=L0[] -> V0 -> L1[] -> L0[], Num=L1[], true=L1[], chain=L0[] -> V0 -> L0[]}
+{({})=L0[], put=L0[] -> V0 -> L1[_] -> L0[], Num=L1[.], true=L1[.], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[.], put=L0[_] -> V0 -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[], put=L0[] -> V0 -> L1[] -> L0[], Num=L1[], true=L1[], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[], put=L0[] -> V0 -> L1[_] -> L0[], Num=L1[.], true=L1[.], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> V0 -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[.], put=L0[_] -> V0 -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[], put=L0[] -> L1[] -> V0 -> L0[], Num=L1[], true=L1[], chain=L0[] -> V0 -> L0[]}
+{({})=L0[], put=L0[] -> L1[_] -> V0 -> L0[], Num=L1[.], true=L1[.], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> L1[] -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0 -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[], put=L0[] -> L1[] -> V0 -> L0[], Num=L1[], true=L1[], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[], put=L0[] -> L1[_] -> V0 -> L0[], Num=L1[.], true=L1[.], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> L1[] -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0 -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[], put=L0[] -> L1[] -> L1[] -> L0[], Num=L1[], true=L1[], chain=L0[] -> V0 -> L0[]}
+{({})=L0[], put=L0[] -> L1[_] -> L1[_] -> L0[], Num=L1[.], true=L1[.], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[], put=L0[] -> L1[] -> L1[] -> L0[], Num=L1[], true=L1[], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[], put=L0[] -> L1[_] -> L1[_] -> L0[], Num=L1[.], true=L1[.], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[.], put=L0[_] -> V0 -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> L0[_], Num=L1[], true=L2[], chain=L0[_] -> V0}
+{({})=L0[., .], put=L0[_, _] -> V0 -> V1 -> L0[_, _], Num=L1[], true=L2[], chain=L0[_, _] -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V0 -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V0 -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0 -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> L1[] -> L0[_], Num=L1[], true=L1[], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> L1[_] -> L0[_], Num=L1[.], true=L1[.], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V0, Num=L1[], true=L2[], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V0, Num=L1[], true=L2[], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V0, Num=L1[], true=L2[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[], put=L0[] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V1 -> V0, Num=L1[], true=L2[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[.], put=L0[_] -> V1 -> V0, Num=L1[], true=L2[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[], put=L0[] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[] -> V0 -> L0[]}
+{({})=L0[.], put=L0[_] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[], put=L0[] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[] -> L0[] -> L0[]}
+{({})=L0[.], put=L0[_] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> L0[_] -> L0[_]}
+{({})=L0[.], put=L0[_] -> V1 -> V0, Num=L1[], true=L2[], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[] -> V0, Num=L1[], true=L1[], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> L1[_] -> V0, Num=L1[.], true=L1[.], chain=L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V0, Num=L1[], true=L2[], chain=L0[_] -> V0 -> V0}
+{({})=L0[.], put=L0[_] -> V0, Num=L1[], true=L2[], chain=L0[_] -> V1 -> V0}
+{({})=L0[.], put=L0[_] -> V0, Num=L1[], true=L2[], chain=L0[_] -> L0[_] -> V0}
+{({})=L0[.], put=L0[_] -> V0, Num=L1[], true=L2[], chain=L0[_] -> V0 -> L0[_]}
+{({})=L0[.], put=L0[_] -> V0, Num=L1[], true=L2[], chain=L0[_] -> L0[_] -> L0[_]}
+[02:14:34.808]	BEG Depth 1 concretizing [({}), put, Num, true, chain]
+[02:14:34.808]	BEG Size 1 concretizing [({}), put, Num, true, chain]
+[02:14:34.904]	END Size 1 concretizing [({}), put, Num, true, chain] : 96 ms
+[02:14:34.904]	Counts:
+Total candidates=1492
+Seeds=224
+[02:14:34.904]	Elapsed time: 20008 ms
+[02:14:34.904]	BEG Size 2 concretizing [({}), put, Num, true, chain]
+[02:14:35.106]	END Size 2 concretizing [({}), put, Num, true, chain] : 202 ms
+[02:14:35.106]	Counts:
+Total candidates=1794
+Seeds=448
+[02:14:35.106]	Elapsed time: 20210 ms
+[02:14:35.106]	BEG Size 3 concretizing [({}), put, Num, true, chain]
+[02:14:35.698]	END Size 3 concretizing [({}), put, Num, true, chain] : 592 ms
+[02:14:35.699]	Counts:
+Total candidates=3055
+Seeds=672
+[02:14:35.699]	Elapsed time: 20803 ms
+[02:14:35.699]	BEG Size 4 concretizing [({}), put, Num, true, chain]
+[02:14:37.298]	END Size 4 concretizing [({}), put, Num, true, chain] : 1599 ms
+[02:14:37.298]	Counts:
+Total candidates=6829
+Seeds=896
+[02:14:37.298]	Elapsed time: 22402 ms
+[02:14:37.298]	BEG Size 5 concretizing [({}), put, Num, true, chain]
+[02:14:38.991]	END Size 5 concretizing [({}), put, Num, true, chain] : 1693 ms
+[02:14:38.991]	Counts:
+Total candidates=11961
+Seeds=1120
+[02:14:38.991]	Elapsed time: 24095 ms
+[02:14:38.991]	BEG Size 6 concretizing [({}), put, Num, true, chain]
+[02:14:44.283]	END Size 6 concretizing [({}), put, Num, true, chain] : 5292 ms
+[02:14:44.283]	Counts:
+Total candidates=26873
+Seeds=1344
+[02:14:44.283]	Elapsed time: 29387 ms
+[02:14:44.283]	BEG Size 7 concretizing [({}), put, Num, true, chain]
+[02:14:50.295]	END Size 7 concretizing [({}), put, Num, true, chain] : 6012 ms
+[02:14:50.295]	Counts:
+Total candidates=42014
+Seeds=1568
+[02:14:50.295]	Elapsed time: 35399 ms
+[02:14:50.295]	BEG Size 8 concretizing [({}), put, Num, true, chain]
+[02:15:10.296]	Counts so far:
+Total candidates=83426
+Seeds=1730
+[02:15:11.388]	END Size 8 concretizing [({}), put, Num, true, chain] : 21093 ms
+[02:15:11.388]	Counts:
+Total candidates=86314
+Seeds=1792
+[02:15:11.388]	Elapsed time: 56492 ms
+[02:15:11.388]	BEG Size 9 concretizing [({}), put, Num, true, chain]
+[02:15:30.582]	END Size 9 concretizing [({}), put, Num, true, chain] : 19194 ms
+[02:15:30.582]	Counts:
+Total candidates=130614
+Seeds=2016
+[02:15:30.582]	Elapsed time: 75686 ms
+[02:15:30.582]	BEG Size 10 concretizing [({}), put, Num, true, chain]
+[02:15:50.359]	Looking for counterexamples for potential solution {({})=L0[V0, V1], put=L0[V0, V1] -> V0 -> V1 -> L0[V0, V1], Num=L1[], true=L2[], chain=L0[V0, V1] -> L0[V1, V2] -> L0[V0, V2]}
+[02:15:50.365]	Found no counterexamples
+[02:15:50.366]	Current query: {({})=L0[V0, V1], put=L0[V0, V1] -> V0 -> V1 -> L0[V0, V1], Num=L1[], true=L2[], chain=L0[V0, V1] -> L0[V1, V2] -> L0[V0, V2], cons=_ -> _, nil=.L}
+[02:15:50.366]	BEG Depth 0 outlining [({}), put, Num, true, chain, cons, nil]
+[02:15:50.367]	BEG Outlines with label classes
+[02:15:50.367]	END Outlines with label classes : 0 ms
+[02:15:50.367]	Counts:
+Total candidates=174621
+Seeds=2181
+[02:15:50.367]	Elapsed time: 95471 ms
+[02:15:50.367]	BEG Solving for label arities
+[02:15:50.833]	END Solving for label arities : 466 ms
+[02:15:50.833]	Counts:
+Total candidates=174649
+Seeds=2181
+[02:15:50.833]	Elapsed time: 95937 ms
+[02:15:50.833]	END Depth 0 outlining [({}), put, Num, true, chain, cons, nil] : 467 ms
+[02:15:50.833]	Counts:
+Total candidates=174649
+Seeds=2181
+[02:15:50.833]	Elapsed time: 95937 ms
+[02:15:50.833]	Concrete seeds: 9
+{({})=L0[], put=L0[] -> V0 -> V1 -> L0[], Num=L1[], true=L2[], chain=L0[] -> L0[] -> L0[], cons=V1 -> L3[_] -> V0, nil=L3[.]}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> L0[_], Num=L1[], true=L2[], chain=L0[_] -> L0[_] -> L0[_], cons=V1 -> L3[_] -> V0, nil=L3[.]}
+{({})=L0[V0, V1], put=L0[V0, V1] -> V0 -> V1 -> L0[V0, V1], Num=L1[], true=L2[], chain=L0[V0, V1] -> L0[V1, V2] -> L0[V0, V2], cons=V1 -> L3[_] -> V0, nil=L3[.]}
+{({})=L0[], put=L0[] -> V0 -> V1 -> L0[], Num=L1[], true=L2[], chain=L0[] -> L0[] -> L0[], cons=V0 -> L3[] -> L3[], nil=L3[]}
+{({})=L0[], put=L0[] -> V0 -> V1 -> L0[], Num=L1[], true=L2[], chain=L0[] -> L0[] -> L0[], cons=V0 -> L3[_] -> L3[_], nil=L3[.]}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> L0[_], Num=L1[], true=L2[], chain=L0[_] -> L0[_] -> L0[_], cons=V0 -> L3[] -> L3[], nil=L3[]}
+{({})=L0[.], put=L0[_] -> V0 -> V1 -> L0[_], Num=L1[], true=L2[], chain=L0[_] -> L0[_] -> L0[_], cons=V0 -> L3[_] -> L3[_], nil=L3[.]}
+{({})=L0[V0, V1], put=L0[V0, V1] -> V0 -> V1 -> L0[V0, V1], Num=L1[], true=L2[], chain=L0[V0, V1] -> L0[V1, V2] -> L0[V0, V2], cons=V0 -> L3[] -> L3[], nil=L3[]}
+{({})=L0[V0, V1], put=L0[V0, V1] -> V0 -> V1 -> L0[V0, V1], Num=L1[], true=L2[], chain=L0[V0, V1] -> L0[V1, V2] -> L0[V0, V2], cons=V0 -> L3[_] -> L3[_], nil=L3[.]}
+[02:15:50.833]	BEG Depth 1 concretizing [({}), put, Num, true, chain, cons, nil]
+[02:15:50.833]	BEG Size 1 concretizing [({}), put, Num, true, chain, cons, nil]
+[02:15:50.838]	END Size 1 concretizing [({}), put, Num, true, chain, cons, nil] : 5 ms
+[02:15:50.838]	Counts:
+Total candidates=174655
+Seeds=2190
+[02:15:50.839]	Elapsed time: 95943 ms
+[02:15:50.839]	BEG Size 2 concretizing [({}), put, Num, true, chain, cons, nil]
+[02:15:50.851]	Looking for counterexamples for potential solution {({})=L0[V0, V1], put=L0[V0, V1] -> V0 -> V1 -> L0[V0, V1], Num=L1[], true=L2[], chain=L0[V0, V1] -> L0[V1, V2] -> L0[V0, V2], cons=V0 -> L3[V0] -> L3[V0], nil=L3[V0]}
+[02:15:50.852]	Found no counterexamples
+[02:15:50.853]	SOLUTION: {({})=L0[V0, V1], put=L0[V0, V1] -> V0 -> V1 -> L0[V0, V1], Num=L1[], true=L2[], chain=L0[V0, V1] -> L0[V1, V2] -> L0[V0, V2], cons=V0 -> L3[V0] -> L3[V0], nil=L3[V0]}
+[02:15:50.853]	END Size 2 concretizing [({}), put, Num, true, chain, cons, nil] : 14 ms
+[02:15:50.853]	Elapsed time: 95957 ms
+[02:15:50.853]	END Depth 1 concretizing [({}), put, Num, true, chain, cons, nil] : 20 ms
+[02:15:50.853]	Elapsed time: 95957 ms
+[02:15:50.853]	END Size 10 concretizing [({}), put, Num, true, chain] : 20271 ms
+[02:15:50.853]	Elapsed time: 95957 ms
+[02:15:50.853]	END Depth 1 concretizing [({}), put, Num, true, chain] : 76045 ms
+[02:15:50.853]	Elapsed time: 95957 ms
+[02:15:50.853]	Counts:
+Total candidates=174674
+Seeds=2199
+[02:15:50.853]	Total time: 95957 ms

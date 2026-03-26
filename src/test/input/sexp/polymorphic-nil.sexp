@@ -2,9 +2,9 @@
 
 (+ (cons Num (cons Num nil)))
 (+ (cons nil (cons nil nil)))
-(- (cons nil Num))
 (+ (cons (cons Num nil) nil))
 (+ (cons true (cons true nil)))
+(- (cons nil Num))
 (- (cons nil true))
 (- (cons Num (cons true nil)))
 (- (cons true (cons Num nil)))
