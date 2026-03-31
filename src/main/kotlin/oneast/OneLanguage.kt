@@ -18,6 +18,19 @@ class SearchState(
         val emptyState = SearchState(mapOf(), listOf(), mapOf())
     }
 
+    override fun equals(other: Any?): Boolean =
+        other is SearchState &&
+                other.names == names &&
+                other.types == types &&
+                other.labelArities == labelArities
+
+    override fun hashCode(): Int {
+        var result = names.hashCode()
+        result = 31 * result + types.hashCode()
+        result = 31 * result + labelArities.hashCode()
+        return result
+    }
+
     val id = nextId++
 
     fun fnArities(): Map<String, Int> = names.mapValues { (_, i) -> types[i].fnArity() }
