@@ -18,12 +18,11 @@ data class TypeCheckResult(
  * @param opens List of modules to open in the preamble (e.g., ["Stdlib", "Base"])
  */
 class OCamlChecker(
-    preamble: String = "",
     private val packages: List<String> = emptyList(),
     private val opens: List<String> = listOf("Stdlib")
 ) {
 
-    private val preamble: String = preamble + "\n" + opens.joinToString("\n") { "open $it" } + "\n"
+    private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
 
     private val desugarAtomsToDummies = listOf("Num" to "1", "Str" to "\"s\"", "Char" to "\'a\'")
 

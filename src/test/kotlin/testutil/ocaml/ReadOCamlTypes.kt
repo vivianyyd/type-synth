@@ -27,7 +27,6 @@ fun main() {
         """
         'a list -> 'b list -> int
         'a -> 'a
-        'a list -> 'a list -> 'a list
         """
             .trimIndent()
     println(parseTypeExpressions(types))

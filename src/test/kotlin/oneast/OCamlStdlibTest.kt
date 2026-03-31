@@ -45,7 +45,7 @@ class OCamlStdlibTest {
         val posOut = File(join(path, "pos"))
         val negOut = File(join(path, "neg"))
 
-        val checker = OCamlChecker(preamble = "open List")
+        val checker = OCamlChecker(opens = listOf("Stdlib", "List"))
         val examples = exs.readText().lines().map { it.trim() }.filter { it.isNotEmpty() }
         val results = checker.checkAllParallel(examples)
         results.forEach {
@@ -58,24 +58,24 @@ class OCamlStdlibTest {
     fun `can reconstruct stdlib`() {
         val schedule =
             listOf(
-//                listOf("Num", "Str", "true", "([])", "cons"),
-//                listOf("length", "is_empty"),
-//                listOf("false", "compare_lengths"),
-//                listOf("compare_length_with"),
-//                listOf("singleton"),
-//                listOf("hd"),
-//                listOf("tl"),
-//                listOf("nth"),
-//                listOf("rev"),
-//                listOf("append"),
-////                listOf("rev_append"),
-////                listOf("concat"),
-////                listOf("flatten"),
-////                listOf("mem"),
-////                listOf("memq"),
-////                listOf("take"),
-////                listOf("drop"),
-////                listOf("(@)"))
+                //                listOf("Num", "Str", "true", "([])", "cons"),
+                //                listOf("length", "is_empty"),
+                //                listOf("false", "compare_lengths"),
+                //                listOf("compare_length_with"),
+                //                listOf("singleton"),
+                //                listOf("hd"),
+                //                listOf("tl"),
+                //                listOf("nth"),
+                //                listOf("rev"),
+                //                listOf("append"),
+                ////                listOf("rev_append"),
+                ////                listOf("concat"),
+                ////                listOf("flatten"),
+                ////                listOf("mem"),
+                ////                listOf("memq"),
+                ////                listOf("take"),
+                ////                listOf("drop"),
+                ////                listOf("(@)"))
                 listOf("Num", "min_int", "true", "(+)", "false", "not"),
                 listOf("max_int", "succ", "pred"),
                 listOf("( * )"),
@@ -93,10 +93,10 @@ class OCamlStdlibTest {
         val dir = File(join("src", "test", "input", "ocaml-stdlib", "primitive-operations-solved"))
         val examples = loadExamples(dir)
         // because I am going crazy
-//        val examples = Examples(
-//            allexamples.posNoSubexprs.filter { schedule.flatten().containsAll(it.names) },
-//            allexamples.neg.filter { schedule.flatten().containsAll(it.names) },
-//        )
+        //        val examples = Examples(
+        //            allexamples.posNoSubexprs.filter { schedule.flatten().containsAll(it.names) },
+        //            allexamples.neg.filter { schedule.flatten().containsAll(it.names) },
+        //        )
 
         val parser = OcamlTypeParser()
         val oracleTypes = buildMap {
