@@ -20,6 +20,8 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
     // before they are used to compute types
     val ok = exs.all { type(it) != null }
 
+    val passedWithNoConstraints = ok && holeConstraints.isEmpty()
+
     fun holeEquals(hole: THole): List<ConstraintTy> = holeEquals(hole.id)
 
     private fun holeEquals(hole: Int): List<ConstraintTy> =

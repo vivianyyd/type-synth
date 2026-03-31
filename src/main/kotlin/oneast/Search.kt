@@ -2,7 +2,6 @@ package oneast
 
 import dependencyanalysis.ParameterwiseDependencyAnalysis
 import query.Examples
-import query.Name
 import util.*
 import java.util.stream.Collectors
 import java.util.stream.StreamSupport
@@ -109,6 +108,9 @@ class Search(
                     sizeBound = size,
                     depthBound = depth,
                 )
+                    .filter { s ->
+                        examples.neg.all { !OneUnification(s, listOf(it)).passedWithNoConstraints }
+                    }
                     .toList()
             }
 
@@ -156,9 +158,10 @@ class Search(
                                 false)
                         }
                     }
+                    .filter { it.types.all { !it.invalid() } }
                     .collect(Collectors.toList())
             }
-        return resolvedLabelArities.filter { it.types.all { !it.invalid() } }
+        return resolvedLabelArities
     }
 
     private fun concretizationSearch(
@@ -170,6 +173,7 @@ class Search(
         // We start by searching for the functions, and try to deduce the nullaries from them.
         val candidatesNullariesDeduced =
             seeds.asSequence().flatMap {
+                logger.count("Seeds")
                 allCandidates(
                     it,
                     emitLabelBlanks = false,
@@ -251,9 +255,12 @@ class Search(
             if (seeds.isEmpty()) continue
             logger.log(seeds.countedLines("Concrete seeds"))
 
+            val maxMinSize = seeds.maxOf { it.types.sumOf { it.numFillableHoles() } }
+            logger.log("Max min size: $maxMinSize")
+
             for (depth in 1..config.depthBound) {
                 logger.start("Depth $depth concretizing $names")
-                for (size in 1..config.sizeBound) {
+                for (size in maxMinSize..config.sizeBound) {
                     logger.start("Size $size concretizing $names")
                     val sols = concretizationSearch(seeds, size, depth).iterator()
                     yieldAll(sols)
