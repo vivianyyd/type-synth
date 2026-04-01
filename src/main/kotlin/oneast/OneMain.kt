@@ -47,7 +47,7 @@ data class Configuration(
     val searchStrategy: (Examples, Boolean, Boolean, Int, Int, Logger) -> SearchStrategy,
     val sizeBound: Int,
     val depthBound: Int,
-    val scheduleInfo: SchedulingInfo,
+    val scheduleInfo: SchedulingInfo = Auto(5),
     val numSols: Solutions
 ) : Config {
     override fun toString(): String =

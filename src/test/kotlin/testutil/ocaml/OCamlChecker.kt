@@ -1,11 +1,17 @@
 package testutil.ocaml
 
+import query.Example
+import util.GroundTruth
 import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlin.streams.toList
 
-data class TypeCheckResult(val isValid: Boolean, val errorMessage: String? = null, val expression: String)
+data class TypeCheckResult(
+    val isValid: Boolean,
+    val errorMessage: String? = null,
+    val expression: String
+)
 
 /**
  * Type-checks OCaml expressions by compiling them individually.
@@ -16,7 +22,8 @@ data class TypeCheckResult(val isValid: Boolean, val errorMessage: String? = nul
 class OCamlChecker(
     private val packages: List<String> = emptyList(),
     private val opens: List<String> = listOf("Stdlib")
-) {
+) : GroundTruth {
+    override fun valid(example: Example): Boolean = isValid(example.toString()).isValid
 
     private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
 

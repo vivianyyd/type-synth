@@ -1,39 +1,36 @@
 package oneast
 
 import oneast.searchstrategies.DFSEnumerator
+import query.Examples
 import query.Query
 import testutil.loadExamples
+import testutil.loadSchedule
 import testutil.ocaml.OCamlChecker
 import testutil.ocaml.OcamlTypeParser
 import util.CheckingGroundTruthOracle
 import util.Logger
-import util.io.cvc.clearCVC
 import util.join
 import java.io.File
 import kotlin.test.Test
 
 class OCamlStdlibTest {
-    fun `split examples`() {
-        val path = join("src", "test", "input", "ocaml-stdlib")
-        val exs = File(join(path, "tmp"))
-        val posOut = File(join(path, "pos"))
-        val negOut = File(join(path, "neg"))
-
-        val checker = OCamlChecker()
-        val examples = exs.readText().lines().map { it.trim() }.filter { it.isNotEmpty() }
-        val results = checker.checkAllParallel(examples)
-        results.forEach {
-            val out = if (it.isValid) posOut else negOut
-            out.appendText(it.expression + System.lineSeparator())
-        }
-    }
+    private fun filterBySchedule(examples: Examples, schedule: CustomSchedule) =
+        Examples(
+            examples.posNoSubexprs.filter {
+                schedule.customSchedule.flatten().containsAll(it.names)
+            },
+            examples.neg.filter { schedule.customSchedule.flatten().containsAll(it.names) },
+        )
 
     @Test
     fun `can reconstruct stdlib`() {
-        val dir = File(join("src", "test", "input", "ocaml-stdlib", "testing"))
+        val path = join("src", "test", "input", "ocaml-stdlib", "primitive-operations-solved")
+        val dir = File(path)
         val examples = loadExamples(dir)
-        val parser = OcamlTypeParser()
+        val schedule = loadSchedule(File(join(path, "schedule")))
+
         val oracleTypes = buildMap {
+            val parser = OcamlTypeParser()
             dir.listFiles()
                 ?.filter { it.extension == "types" && it.isFile }
                 ?.forEach { file -> putAll(parser.parseSignatures(file.readText())) }
@@ -47,7 +44,7 @@ class OCamlStdlibTest {
                 searchStrategy = ::DFSEnumerator,
                 sizeBound = 20,
                 depthBound = 4,
-                scheduleInfo = Auto(5),
+                scheduleInfo = schedule,
                 numSols = Solutions.NumSolutions(1)
             )
 
@@ -59,14 +56,6 @@ class OCamlStdlibTest {
                 verbosity = 5
             )
 
-        clearCVC() // TODO This should really be done by the engine or someone else
-        val engine =
-            Engine(
-                query, { e -> OCamlChecker().isValid(e.toString()).isValid }, configuration, logger
-            )
-        // TODO oracle should be in query, numsols in config
-
-        engine.search().take(1).forEach { logger.log("FIRST SOLUTION: ${it.asMap()}") }
-        logger.finish()
+        assert(run(query, OCamlChecker(), configuration, logger).isNotEmpty())
     }
 }

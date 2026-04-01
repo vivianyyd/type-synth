@@ -37,7 +37,7 @@ fun loadExamples(dir: File): Examples {
  */
 fun loadQueryFromFile(name: String): Query {
     val testPath = join("src", "test", "input", "sexp", "$name.sexp")
-    val lines = File(testPath).readText().split('\n')
+    val lines = File(testPath).readLines()
     val (types, exs) = lines.first() to lines.drop(1)
 
     return Query(

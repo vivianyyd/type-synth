@@ -1,0 +1,12 @@
+Num, min_int, true, (+), false, not
+max_int, succ, pred
+( * )
+(-)
+(/)
+mod
+abs
+(~-)
+(~+)
+(&&)
+(||)
+Char, int_of_char, char_of_int

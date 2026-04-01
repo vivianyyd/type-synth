@@ -1,0 +1,18 @@
+Num, Str, true, ([]), cons
+length, is_empty
+false, compare_lengths
+compare_length_with
+singleton
+hd
+tl
+nth
+rev
+append
+// rev_append
+// concat
+// flatten
+// mem
+// memq
+// take
+// drop
+// (@)
