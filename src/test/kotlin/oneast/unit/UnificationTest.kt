@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import query.App
 import query.Example
 import query.Name
-import util.io.parseTest
+import testutil.loadQueryFromFile
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -43,7 +43,7 @@ class UnificationTest {
 
     @Test
     fun `id inc`() {
-        val examples = parseTest("id-inc").examples
+        val examples = loadQueryFromFile("id-inc").examples
         // {id=_ -> V0, inc=_ -> _, n=.L} ought to pass the positive example
         // (id inc) n
         val context =

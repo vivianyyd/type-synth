@@ -2,18 +2,19 @@ package core
 
 import core.enumerate.EnumeratorTag
 import core.unification.UnificationTag
-import data.ConsTest
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import testutil.loadQueryFromFile
 import util.Configuration
 import util.Logger
 
 class CoreTest {
     @Test
     fun `run completes with simple configuration`() {
+        val testFromFile = loadQueryFromFile("dictchain")
+
         val configuration =
             Configuration(
-                query = ConsTest,
+                query = testFromFile,
                 runCVC = true,
                 enumeratorTag = EnumeratorTag.DFSPriority,
                 unificationTag = UnificationTag.Eager,
@@ -22,10 +23,14 @@ class CoreTest {
                 depthBound = 3
             )
 
-        val logger = Logger(configuration = configuration, logToFile = false, verbosity = 0)
+        val logger =
+            Logger(
+                configuration = configuration,
+                logFilename = "tmp.log",
+                logToFile = true,
+                verbosity = 5
+            )
 
         run(configuration, logger)
-
-        assertTrue(true) // if run returns without exception, the test passes
     }
 }

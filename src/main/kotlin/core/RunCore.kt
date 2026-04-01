@@ -1,41 +1,16 @@
 package core
 
-import core.enumerate.EnumeratorTag
 import core.enumerate.enumerator
 import core.enumerate.solutions
 import core.languages.*
-import core.unification.UnificationTag
 import core.unification.unification
 import query.App
 import query.Name
 import util.Configuration
 import util.Logger
 import util.io.cvc.clearCVC
-import util.io.parseTest
 import util.lazyCartesianProduct
 import util.time
-
-fun main() {
-    val testFromFile = parseTest("dictchain")
-
-    val configuration =
-        Configuration(
-            query = testFromFile,
-            runCVC = true,
-            enumeratorTag = EnumeratorTag.DFSPriority,
-            unificationTag = UnificationTag.Eager,
-            finalRoundSketches = true,
-            sizeBound = 20,
-            depthBound = 4
-        )
-
-    val logger =
-        Logger(
-            configuration = configuration, logFilename = "tmp.log", logToFile = true, verbosity = 5
-        )
-
-    run(configuration, logger)
-}
 
 fun run(configuration: Configuration, logger: Logger) {
     if (configuration.runCVC) clearCVC()

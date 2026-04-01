@@ -2,9 +2,9 @@ package data
 
 import query.AbstractQuery
 import query.Examples
+import testutil.signedExample
+import testutil.signedExamplesFromStrings
 import util.ScrappyNewOracle
-import util.io.signedExample
-import util.io.signedExamplesFromStrings
 
 object ConsTest : AbstractQuery() {
     private val intExamples =

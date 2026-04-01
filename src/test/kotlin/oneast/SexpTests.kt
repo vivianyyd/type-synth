@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import testutil.loadQueryFromFile
 import util.GroundTruth
 import util.Logger
-import util.io.parseTest
 
 class SexpTests {
     companion object {
@@ -52,7 +52,7 @@ class SexpTests {
     @ParameterizedTest
     @MethodSource("testNames")
     fun `validate tests`(name: String) {
-        val query = parseTest(name)
+        val query = loadQueryFromFile(name)
         query.examples.posNoSubexprs.forEach {
             assert(query.oracle.valid(it)) { "Bad positive example: $it" }
         }
@@ -64,7 +64,7 @@ class SexpTests {
     @ParameterizedTest
     @MethodSource("testNames")
     fun test(testName: String) {
-        val query = parseTest(testName)
+        val query = loadQueryFromFile(testName)
         val languageGroundTruth: GroundTruth = query.oracle
         val configuration = defaultConfig(testName)
         val logger = defaultLogger(configuration)

@@ -2,8 +2,10 @@ package products
 
 import products.types.*
 import products.types.Function
-import query.*
-import util.io.parseSExpr
+import query.App
+import query.Example
+import query.Examples
+import query.Name
 import util.reflexiveNaryProduct
 import java.util.*
 
@@ -177,34 +179,4 @@ class ExampleGenerator(
         // for that error type for that fn name already! actually we want >5 of them for that
         // parameter of that fn. if fn has 5 params we want few examples of each being wrong
     }
-}
-
-fun main() {
-    //    val groundTruth = listOf("(i)", "(b)", "(-> a (-> (l a) (l a)))")
-    val groundTruth =
-        listOf(
-            "(i)",
-            "(b)",
-            "(d (i) (b))",
-            "(d (b) (i))",
-            "(d (i) (i))",
-            "(d (b) (b))",
-            "(-> (d k v) (-> k (-> v (d k v))))"
-        )
-
-    val (query, context) =
-        ExampleGenerator(2, 2, 200, groundTruth.map { parseSExpr(it).toType() to null }).examples()
-    println(context.toList().joinToString(separator = "\n"))
-    println("Positive examples:")
-    println(query.posWithSubexprs.size)
-    println(printInvertDummies(query.posWithSubexprs.map { it.flatten() }, context))
-    println(query.neg.size)
-}
-
-fun printInvertDummies(exs: Collection<FlatApp>, context: Assignment): String {
-    fun replaceDummiesWithTypeString(app: FlatApp): FlatApp =
-        FlatApp(
-            if (app.args.isEmpty()) "${context[app.name]}" else "(${context[app.name]}). ",
-            app.args.map { replaceDummiesWithTypeString(it) })
-    return exs.map { replaceDummiesWithTypeString(it) }.joinToString(separator = "\n")
 }

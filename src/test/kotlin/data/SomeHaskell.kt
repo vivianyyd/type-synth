@@ -1,11 +1,11 @@
 package data
 
-import fixtures.haskell.parseHaskellTypes
 import query.AbstractQuery
 import query.Examples
+import testutil.haskell.parseHaskellTypes
+import testutil.parseSExpr
+import testutil.toExample
 import util.CheckingGroundTruthOracle
-import util.io.parseSExpr
-import util.io.toExample
 
 object SomeHaskell : AbstractQuery() {
     val groundTruth =

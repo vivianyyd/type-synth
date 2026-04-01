@@ -1,7 +1,7 @@
+import testutil.signedExamplesFromStrings
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import util.io.signedExamplesFromStrings
 
 class ExamplesTemplateTest {
     @Test

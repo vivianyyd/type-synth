@@ -1,8 +1,5 @@
 package products.stc
 
-import util.io.SExpr
-import util.io.parseSExpr
-
 fun Map<String, SymTypeC>.toSExpr() =
     SExpr.Lst(this.entries.map { SExpr.Lst(listOf(SExpr.Atm(it.key), it.value.toSExpr())) })
 

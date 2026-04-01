@@ -1,4 +1,4 @@
-package fixtures.haskell
+package testutil.haskell
 
 import oneast.Arrow
 import oneast.NamedLabel
@@ -227,7 +227,6 @@ fun parseType(t: String): HType {
     TODO()
 }
 
-
 // Example usage
 fun main() {
     val examples =
@@ -238,7 +237,6 @@ fun main() {
             "HasCallStack => (a -> a -> a) -> [a] -> a",
             "[Either a b] -> [b]",
             "[Maybe a] -> [a]",
-            "Either (Either a b) b"
-        )
+            "Either (Either a b) b")
     examples.forEach { println(parse(it)) }
 }

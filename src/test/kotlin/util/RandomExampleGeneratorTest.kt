@@ -1,7 +1,7 @@
 package util
 
 import org.junit.jupiter.api.Test
-import util.io.parseSExpr
+import testutil.parseSExpr
 import kotlin.test.assertEquals
 
 class RandomExampleGeneratorTest {

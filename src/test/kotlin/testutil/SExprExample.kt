@@ -1,26 +1,9 @@
-package util.io
+package testutil
 
-import query.*
-import util.io.generatedexamples.readExamples
-
-fun signedSexpsFromExamples(exs: Collection<Example>, pos: Boolean): Collection<SExpr> =
-    exs.map { SExpr.Lst(listOf(SExpr.Atm(if (pos) "+" else "-"), it.flatten().toSExpr())) }
-
-private fun FlatApp.toSExpr(): SExpr =
-    if (this.args.isEmpty()) SExpr.Atm(name)
-    else SExpr.Lst(listOf(SExpr.Atm(name)) + args.map { it.toSExpr() })
-
-/**
- * Parses test where [name] is the extensionless name of a file containing a ground truth type
- * assignment as SExps in the first line followed by SExps of examples labeled with +/-.
- */
-fun parseTest(name: String): Query {
-    val exs = readExamples(name)
-    return Query(
-        signedExamplesFromStrings(exs.second.filter { it.isNotBlank() }),
-        oracleFromAssignment(exs.first)
-    )
-}
+import query.App
+import query.Example
+import query.Examples
+import query.Name
 
 /** Parses a collection of SExpr strings for *signed* examples (marked + or -). */
 fun signedExamplesFromStrings(sexps: Collection<String>): Examples {
