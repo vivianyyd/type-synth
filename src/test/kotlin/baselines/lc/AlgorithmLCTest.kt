@@ -300,6 +300,67 @@ class AlgorithmLCTest {
     }
 
     // =============================================================
+    // 3b. STANDALONE RANK-2 INFERENCE
+    //
+    // These tests exercise the hardest case: inferring a rank-2 type
+    // for a standalone function whose parameter is used polymorphically.
+    // This requires semi-unification with proper redex-I freshening.
+    // =============================================================
+    @Nested
+    inner class StandaloneRank2 {
+
+        @Test
+        fun `standalone function using param polymorphically`() {
+            // λf. pair (f zero) (f true_)
+            //
+            // f is used at two different types (Int and Bool), so it needs
+            // a polymorphic type (∀a. a → ?). The multi-use labelling marks
+            // λf as λ², and semi-unification finds the principal rank-2 type.
+            val env = mapOf(
+                "zero" to Type.Var("Int"),
+                "true_" to Type.Var("Bool")
+            )
+            val term = lam("f", app(v("pair"),
+                app(v("f"), v("zero")),
+                app(v("f"), v("true_"))))
+            val ty = inferOk(term, env)
+            // Should be an arrow type: f_type → result
+            val (fType, _) = assertArrow(ty)
+            // f_type should be polymorphic (contain ∀ somewhere) since f is
+            // used at multiple types.
+            assertTrue(
+                containsForall(fType),
+                "f's inferred type should be polymorphic (contain ∀), got: $fType"
+            )
+        }
+
+        private fun containsForall(t: Type): Boolean = when (t) {
+            is Type.Forall -> true
+            is Type.Arrow -> containsForall(t.domain) || containsForall(t.codomain)
+            is Type.Var -> false
+        }
+
+        @Test
+        fun `function wrapped in outer application also infers polymorphic type`() {
+            // (λg. g) (λf. pair (f zero) (f true_))
+            // After β: λf. pair (f zero) (f true_)
+            // Same as the above — should still succeed with rank-2 type.
+            val env = mapOf(
+                "zero" to Type.Var("Int"),
+                "true_" to Type.Var("Bool")
+            )
+            val term = app(
+                lam("g", v("g")),
+                lam("f", app(v("pair"),
+                    app(v("f"), v("zero")),
+                    app(v("f"), v("true_"))))
+            )
+            val ty = inferOk(term, env)
+            assertNotNull(ty)
+        }
+    }
+
+    // =============================================================
     // 4. TYPE ENVIRONMENT
     // =============================================================
     @Nested

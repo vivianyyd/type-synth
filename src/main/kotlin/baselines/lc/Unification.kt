@@ -3,89 +3,82 @@ package baselines.lc
 /**
  * Robinson's unification algorithm for types.
  *
- * Used by the R-ASUP solver for redex-II reductions and for solving equalities.
- * Standard first-order unification over the type algebra (variables + →).
+ * Conventions:
+ *   - A Type.Var whose name starts with an uppercase letter (e.g., "Int", "Bool")
+ *     is treated as a TYPE CONSTANT — it only unifies with itself.
+ *   - A Type.Var whose name contains '_' is an INTERNAL (generated) variable.
+ *     These are preferentially bound over user-named variables.
+ *   - A Type.Var whose name is lowercase (e.g., "a", "b") is a regular type variable.
  */
 object Unification {
 
-    /**
-     * Compute the most general unifier (MGU) of two types.
-     *
-     * @return the MGU substitution, or null if the types cannot be unified
-     *         (occurs check failure or constructor mismatch)
-     */
-    fun unify(t1: Type, t2: Type): Substitution? {
-        return unifyAccum(listOf(t1 to t2), Substitution.empty)
-    }
+    fun unify(t1: Type, t2: Type): Substitution? =
+        unifyAccum(listOf(t1 to t2), Substitution.empty)
 
-    /**
-     * Accumulating unification: process a worklist of pairs to unify.
-     */
     private fun unifyAccum(
         worklist: List<Pair<Type, Type>>,
         currentSubst: Substitution
     ): Substitution? {
         if (worklist.isEmpty()) return currentSubst
-
         val (t1Raw, t2Raw) = worklist.first()
         val rest = worklist.drop(1)
-
-        // Apply current substitution to both sides
         val t1 = currentSubst.apply(t1Raw)
         val t2 = currentSubst.apply(t2Raw)
 
         return when {
-            // Same type — skip
             t1 == t2 -> unifyAccum(rest, currentSubst)
 
-            // At least one variable: bind the "more internal" one.
-            // Prefer binding generated variables (contain '_') over user/env variables.
+            // Two variables: bind internal before user, never bind two constants together
             t1 is Type.Var && t2 is Type.Var -> {
-                val bindLeft = isInternal(t1.name) || !isInternal(t2.name)
-                val (bound, target) = if (bindLeft) t1.name to t2 else t2.name to t1
-                val newSubst = Substitution(mapOf(bound to target))
-                unifyAccum(rest, newSubst.compose(currentSubst))
+                val t1Const = isConstant(t1.name)
+                val t2Const = isConstant(t2.name)
+                when {
+                    t1Const && t2Const -> null // two distinct constants
+                    t1Const -> bind(t2.name, t1, rest, currentSubst)
+                    t2Const -> bind(t1.name, t2, rest, currentSubst)
+                    isInternal(t1.name) -> bind(t1.name, t2, rest, currentSubst)
+                    isInternal(t2.name) -> bind(t2.name, t1, rest, currentSubst)
+                    else -> bind(t1.name, t2, rest, currentSubst)
+                }
             }
 
-            // Variable on the left: bind it
+            // Variable on one side — bind it (unless it's a constant vs compound)
             t1 is Type.Var -> {
-                if (occursIn(t1.name, t2)) null // occurs check
-                else {
-                    val newSubst = Substitution(mapOf(t1.name to t2))
-                    unifyAccum(rest, newSubst.compose(currentSubst))
-                }
+                if (isConstant(t1.name)) null  // constant can't be an arrow
+                else if (occursIn(t1.name, t2)) null
+                else bind(t1.name, t2, rest, currentSubst)
             }
 
-            // Variable on the right: bind it
             t2 is Type.Var -> {
-                if (occursIn(t2.name, t1)) null // occurs check
-                else {
-                    val newSubst = Substitution(mapOf(t2.name to t1))
-                    unifyAccum(rest, newSubst.compose(currentSubst))
-                }
+                if (isConstant(t2.name)) null
+                else if (occursIn(t2.name, t1)) null
+                else bind(t2.name, t1, rest, currentSubst)
             }
 
-            // Arrow on both sides: decompose
-            t1 is Type.Arrow && t2 is Type.Arrow -> {
-                unifyAccum(
-                    listOf(t1.domain to t2.domain, t1.codomain to t2.codomain) + rest,
-                    currentSubst
-                )
-            }
+            t1 is Type.Arrow && t2 is Type.Arrow -> unifyAccum(
+                listOf(t1.domain to t2.domain, t1.codomain to t2.codomain) + rest,
+                currentSubst
+            )
 
-            // Forall: for first-order unification purposes, we treat ∀ types
-            // by stripping quantifiers (since in R-ASUP, specializable variables
-            // can be replaced by polytypes — but the unification itself is first-order)
-            // This case shouldn't normally arise in the core algorithm.
-            else -> null // Type mismatch
+            else -> null
         }
     }
 
-    /**
-     * Occurs check: does variable [name] appear free in [type]?
-     */
-    /** Internal (generated) variable names contain '_'. User/env names don't. */
-    private fun isInternal(name: String): Boolean = '_' in name
+    private fun bind(
+        name: String, target: Type,
+        rest: List<Pair<Type, Type>>, currentSubst: Substitution
+    ): Substitution? {
+        if (occursIn(name, target)) return null
+        val newSubst = Substitution(mapOf(name to target))
+        return unifyAccum(rest, newSubst.compose(currentSubst))
+    }
+
+    /** Internal (generated) variable names contain '_'. */
+    internal fun isInternal(name: String): Boolean = '_' in name
+
+    /** Type constants start with uppercase (e.g., "Int", "Bool", "Nat"). */
+    internal fun isConstant(name: String): Boolean =
+        name.isNotEmpty() && name[0].isUpperCase() && '_' !in name
 
     fun occursIn(name: String, type: Type): Boolean = when (type) {
         is Type.Var -> type.name == name

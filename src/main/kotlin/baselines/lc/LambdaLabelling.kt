@@ -5,24 +5,21 @@ package baselines.lc
  *
  * Labels each abstraction as λ¹, λ², or λ³:
  *   - λ¹: argument has been supplied (directly applied)
- *   - λ²: argument not supplied, appears inside an argument subtree
- *   - λ³: any other abstraction (standalone, monomorphic without annotation)
+ *   - λ²: polymorphic — argument not supplied, parameter needs polymorphic type
+ *   - λ³: any other abstraction (monomorphic)
  *
- * Formula: lbl(M N, X, S) = lbl(M, X, S)  lbl(N, X, S ∪ act(N))
- *
- * When descending into an argument N, S is augmented with act(N) so that
- * any unmatched λ inside the argument gets λ². This handles the common
- * case: g (λx. x) where λx needs to be polymorphic if g expects ∀a.a→a.
- *
- * For standalone functions like λf. pair (f 1) (f true), f needs a user
- * annotation to be treated polymorphically (this matches the paper's
- * algorithm which requires annotations for top-level rank-2 parameters).
+ * The paper's formula propagates S to identify λs INSIDE arguments.
+ * We also extend: a parameter that appears MULTIPLE TIMES in its body
+ * may need polymorphism (each occurrence could be used at a different type),
+ * so we conservatively mark such abstractions λ². This is safe because the
+ * semi-unification solver collapses polymorphism to monomorphism when possible.
  */
 object LambdaLabelling {
 
     fun label(term: Term): LabeledTerm {
         val active = activeVars(term)
-        return lbl(term, active, emptySet())
+        val multiUse = multipleUseVars(term)
+        return lbl(term, active, multiUse)
     }
 
     /**
@@ -45,7 +42,45 @@ object LambdaLabelling {
     }
 
     /**
-     * Label the term. S is augmented when entering argument positions.
+     * Identify bound variables whose parameter is USED 2+ times in the body.
+     * Such variables may need polymorphic typing (since different occurrences
+     * could be used at different types).
+     */
+    internal fun multipleUseVars(term: Term): Set<String> {
+        val result = mutableSetOf<String>()
+        findMultiUseAbs(term, result)
+        return result
+    }
+
+    private fun findMultiUseAbs(term: Term, result: MutableSet<String>) {
+        when (term) {
+            is Term.Var -> { }
+            is Term.Abs -> {
+                val useCount = countOccurrences(term.body, term.param)
+                if (useCount >= 2) result.add(term.param)
+                findMultiUseAbs(term.body, result)
+            }
+            is Term.App -> {
+                findMultiUseAbs(term.func, result)
+                findMultiUseAbs(term.arg, result)
+            }
+            is Term.TypeAbs -> findMultiUseAbs(term.body, result)
+            is Term.TypeApp -> findMultiUseAbs(term.term, result)
+        }
+    }
+
+    private fun countOccurrences(term: Term, name: String): Int = when (term) {
+        is Term.Var -> if (term.name == name) 1 else 0
+        is Term.Abs -> if (term.param == name) 0 else countOccurrences(term.body, name)
+        is Term.App -> countOccurrences(term.func, name) + countOccurrences(term.arg, name)
+        is Term.TypeAbs -> countOccurrences(term.body, name)
+        is Term.TypeApp -> countOccurrences(term.term, name)
+    }
+
+    /**
+     * Label the term. S (eligibility for λ²) is:
+     *   - Initially: the set of multi-use bound variables (global)
+     *   - When entering an argument N: augmented with act(N) (per paper)
      */
     internal fun lbl(term: Term, active: Set<String>, s: Set<String>): LabeledTerm = when (term) {
         is Term.Var -> LabeledTerm.Var(term.name)

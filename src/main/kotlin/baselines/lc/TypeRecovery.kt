@@ -37,20 +37,25 @@ object TypeRecovery {
 
     /**
      * Walk the arrow chain of [type], matching each arrow's domain to the
-     * corresponding parameter. For λ² parameters, quantify the domain.
+     * corresponding parameter. For λ² parameters, quantify over type variables
+     * that appear ONLY in that parameter's domain (not in any other param type
+     * or in the body).
      */
     private fun addQuantifiers(type: Type, params: List<ParamInfo>, index: Int): Type {
         if (index >= params.size) return type
         if (type !is Type.Arrow) return type
 
         val param = params[index]
-        val restType = addQuantifiers(type.codomain, params, index + 1)
+
+        // Collect free vars from ALL other parts of the type:
+        // - previous param types (their domains, via the arrow chain above)
+        // - later params' domains and the final body
+        val otherFreeVars = freeVarsOutsidePosition(type, index, params.size)
 
         val domain = if (param.isSpecializable) {
-            // Quantify over type variables in the domain that don't appear in the codomain
+            // Quantify only variables that appear in THIS domain but NOWHERE else
             val domainFreeVars = type.domain.freeVars()
-            val codomainFreeVars = restType.freeVars()
-            val toQuantify = domainFreeVars - codomainFreeVars
+            val toQuantify = domainFreeVars - otherFreeVars
 
             var quantifiedDomain = type.domain
             for (v in toQuantify.sorted()) {
@@ -61,7 +66,30 @@ object TypeRecovery {
             type.domain
         }
 
+        val restType = addQuantifiers(type.codomain, params, index + 1)
         return Type.Arrow(domain, restType)
+    }
+
+    /**
+     * Collect free variables from all domain positions EXCEPT the one at [targetIndex],
+     * plus the final body type. Used to determine what can be safely quantified.
+     */
+    private fun freeVarsOutsidePosition(
+        type: Type, targetIndex: Int, totalParams: Int
+    ): Set<String> {
+        val result = mutableSetOf<String>()
+        var current = type
+        var i = 0
+        while (current is Type.Arrow && i < totalParams) {
+            if (i != targetIndex) {
+                result.addAll(current.domain.freeVars())
+            }
+            current = current.codomain
+            i++
+        }
+        // Add free vars from the body (whatever's left after walking past all params)
+        result.addAll(current.freeVars())
+        return result
     }
 
     data class ParamInfo(
