@@ -238,9 +238,7 @@ class AlgorithmLCTest {
         @Test
         fun `polymorphic function applied to arrow-typed and base-typed args`() {
             // (λf. pair (f succ) (f zero)) (λx. x)
-            // f : ∀a. a → a; f succ : Int→Int; f zero : Int
-            // Note: this requires succ and zero to have compatible types
-            // since each copy of identity unifies its param with the arg.
+            // f : ∀a. a → a; f succ : Nat; f zero : Nat
             val env = mapOf(
                 "succ" to Type.Var("Nat"),
                 "zero" to Type.Var("Nat")
@@ -251,6 +249,39 @@ class AlgorithmLCTest {
             )
             val ty = inferOk(term, env)
             assertNotNull(ty)
+        }
+
+        @Test
+        fun `polymorphic identity applied to itself - rank-2 self-application`() {
+            // (λf. f f) (λx. x)
+            //
+            // This is the canonical rank-2 test: f has type ∀a. a → a,
+            // so f f is valid — the outer f is instantiated at (∀a.a→a)→(∀a.a→a),
+            // and the inner f is used as its argument.
+            //
+            // After β-reduction: (λx₁. x₁) (λx₂. x₂)
+            // Both copies are independently typed λ²-abstractions.
+            // Result: (λx₂. x₂) which has type a → a.
+            val term = app(lam("f", app(v("f"), v("f"))), lam("x", v("x")))
+            val ty = inferOk(term)
+            val (dom, cod) = assertArrow(ty)
+            assertEquals(dom, cod, "Should be a → a")
+        }
+
+        @Test
+        fun `polymorphic identity applied to different-typed free vars`() {
+            // (λf. pair (f n) (f b)) (λx. x)
+            // where n : Int, b : Bool
+            // f : ∀a. a → a is applied at type Int and type Bool.
+            // After β: pair ((λx₁.x₁) n) ((λx₂.x₂) b)
+            // Result involves both Int and Bool.
+            val env = mapOf("n" to Type.Var("Int"), "b" to Type.Var("Bool"))
+            val term = app(
+                lam("f", app(v("pair"), app(v("f"), v("n")), app(v("f"), v("b")))),
+                lam("x", v("x"))
+            )
+            val ty = inferOk(term, env)
+            assertNotNull(ty, "Should succeed — this is the classic rank-2 use case")
         }
 
         @Test

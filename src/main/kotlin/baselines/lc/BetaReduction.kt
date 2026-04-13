@@ -47,8 +47,10 @@ object BetaReduction {
             val func = term.func
             if (func is LabeledTerm.Abs && func.label == AbstractionLabel.RANK1) {
                 // λ¹-redex: (λ¹x.M) N → M[x := N]
-                val freshArg = alphaRename(term.arg)
-                substitute(func.body, func.param, freshArg)
+                // Each occurrence of the parameter in the body gets a FRESH
+                // alpha-renamed copy of the argument, so that duplicated
+                // polymorphic arguments get independent type variables.
+                substituteWithFreshCopies(func.body, func.param, term.arg)
             } else {
                 // Not a λ¹-redex at this level; try reducing inside
                 LabeledTerm.App(reduceOnce(term.func), reduceOnce(term.arg))
@@ -68,6 +70,30 @@ object BetaReduction {
             LabeledTerm.Abs(newName, alphaRename(renamedBody), term.label, term.annotation)
         }
         is LabeledTerm.App -> LabeledTerm.App(alphaRename(term.func), alphaRename(term.arg))
+    }
+
+    /**
+     * Substitute [param] in [body], creating a FRESH alpha-renamed copy of [template]
+     * at each occurrence. This ensures that when a polymorphic argument is duplicated
+     * (e.g., f used twice in (λf. f f)), each copy gets independent bound variable names.
+     */
+    internal fun substituteWithFreshCopies(
+        body: LabeledTerm, param: String, template: LabeledTerm
+    ): LabeledTerm = when (body) {
+        is LabeledTerm.Var ->
+            if (body.name == param) alphaRename(template) else body
+        is LabeledTerm.Abs -> {
+            if (body.param == param) body
+            else LabeledTerm.Abs(
+                body.param,
+                substituteWithFreshCopies(body.body, param, template),
+                body.label, body.annotation
+            )
+        }
+        is LabeledTerm.App -> LabeledTerm.App(
+            substituteWithFreshCopies(body.func, param, template),
+            substituteWithFreshCopies(body.arg, param, template)
+        )
     }
 
     /**
