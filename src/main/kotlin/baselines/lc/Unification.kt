@@ -38,6 +38,15 @@ object Unification {
             // Same type — skip
             t1 == t2 -> unifyAccum(rest, currentSubst)
 
+            // At least one variable: bind the "more internal" one.
+            // Prefer binding generated variables (contain '_') over user/env variables.
+            t1 is Type.Var && t2 is Type.Var -> {
+                val bindLeft = isInternal(t1.name) || !isInternal(t2.name)
+                val (bound, target) = if (bindLeft) t1.name to t2 else t2.name to t1
+                val newSubst = Substitution(mapOf(bound to target))
+                unifyAccum(rest, newSubst.compose(currentSubst))
+            }
+
             // Variable on the left: bind it
             t1 is Type.Var -> {
                 if (occursIn(t1.name, t2)) null // occurs check
@@ -75,6 +84,9 @@ object Unification {
     /**
      * Occurs check: does variable [name] appear free in [type]?
      */
+    /** Internal (generated) variable names contain '_'. User/env names don't. */
+    private fun isInternal(name: String): Boolean = '_' in name
+
     fun occursIn(name: String, type: Type): Boolean = when (type) {
         is Type.Var -> type.name == name
         is Type.Arrow -> occursIn(name, type.domain) || occursIn(name, type.codomain)
