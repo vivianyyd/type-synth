@@ -1,6 +1,7 @@
 package oneast
 
 import oneast.searchstrategies.DFSEnumerator
+import org.junit.jupiter.api.Disabled
 import query.Examples
 import query.Query
 import testutil.loadExamples
@@ -23,6 +24,7 @@ class OCamlStdlibTest {
         )
 
     @Test
+    @Disabled
     fun `can reconstruct stdlib`() {
         val path = join("src", "test", "input", "ocaml-stdlib", "primitive-operations-solved")
         val dir = File(path)

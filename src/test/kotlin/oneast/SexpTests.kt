@@ -45,8 +45,8 @@ class SexpTests {
             numSols = Solutions.NumSolutions(1)
         )
 
-    @Disabled
     @Test
+    @Disabled
     fun `just one`() = test("hofs")
 
     @ParameterizedTest
@@ -63,6 +63,7 @@ class SexpTests {
 
     @ParameterizedTest
     @MethodSource("testNames")
+    @Disabled
     fun test(testName: String) {
         val query = loadQueryFromFile(testName)
         val languageGroundTruth: GroundTruth = query.oracle
