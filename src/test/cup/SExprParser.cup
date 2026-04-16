@@ -1,0 +1,37 @@
+package testutil.parser;
+
+import java.util.ArrayList;
+import testutil.SExpr;
+
+parser code {:
+    @Override
+    public void report_error(String message, Object info) {
+        throw new IllegalArgumentException(message);
+    }
+
+    @Override
+    public void report_fatal_error(String message, Object info) throws Exception {
+        throw new IllegalArgumentException(message);
+    }
+:};
+
+terminal String ATOM;
+terminal LPAREN, RPAREN;
+
+non terminal SExpr root;
+non terminal SExpr sexpr;
+non terminal ArrayList<SExpr> elements;
+
+start with root;
+
+root ::= sexpr:s                    {: RESULT = s; :};
+
+sexpr ::=
+      ATOM:a                        {: RESULT = new SExpr.Atm(a); :}
+    | LPAREN elements:els RPAREN    {: RESULT = new SExpr.Lst(els); :}
+    ;
+
+elements ::=
+      /* empty */                   {: RESULT = new ArrayList<SExpr>(); :}
+    | elements:els sexpr:s          {: els.add(s); RESULT = els; :}
+    ;

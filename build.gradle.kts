@@ -19,6 +19,13 @@ repositories {
     mavenCentral()
 }
 
+val cupVersion = "11b-20160615-1"
+val jflexVersion = "1.9.1"
+
+configurations {
+    create("cup")
+    create("jflex")
+}
 
 dependencies {
     implementation(kotlin("reflect"))
@@ -30,6 +37,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.3")
+    testImplementation("com.github.vbmacher:java-cup-runtime:$cupVersion")
+
+    add("cup", "com.github.vbmacher:java-cup:$cupVersion")
+    add("jflex", "de.jflex:jflex:$jflexVersion")
 }
 
 
@@ -55,3 +66,51 @@ tasks.register<JavaExec>("runGeneratePrompt") {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("GeneratePromptKt")
 }
+
+val generatedParserDir = layout.buildDirectory.dir("generated/sexpr")
+
+sourceSets {
+    named("test") {
+        java.srcDir(generatedParserDir)
+    }
+}
+
+val generateSExprLexer by
+    tasks.registering(JavaExec::class) {
+        group = "code generation"
+        description = "Generate the S-expression lexer with JFlex"
+        val flexFile = file("src/test/jflex/SExprLexer.flex")
+        inputs.file(flexFile)
+        outputs.dir(generatedParserDir)
+        classpath = configurations["jflex"]
+        mainClass.set("jflex.Main")
+        args("--encoding", "UTF-8", "-d", generatedParserDir.get().asFile.absolutePath, flexFile)
+    }
+
+val generateSExprParser by
+    tasks.registering(JavaExec::class) {
+        group = "code generation"
+        description = "Generate the S-expression parser with CUP"
+        val cupFile = file("src/test/cup/SExprParser.cup")
+        inputs.file(cupFile)
+        outputs.dir(generatedParserDir)
+        classpath = configurations["cup"]
+        mainClass.set("java_cup.Main")
+        args(
+            "-destdir",
+            generatedParserDir.get().asFile.absolutePath,
+            "-parser",
+            "SExprCupParser",
+            "-symbols",
+            "SExprSymbols",
+            cupFile
+        )
+    }
+
+tasks.withType<JavaCompile>().matching { it.name.contains("Test") }.configureEach {
+    dependsOn(generateSExprLexer, generateSExprParser)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
+    .matching { it.name.contains("Test") }
+    .configureEach { dependsOn(generateSExprLexer, generateSExprParser) }

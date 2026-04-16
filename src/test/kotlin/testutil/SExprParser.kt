@@ -1,5 +1,9 @@
 package testutil
 
+import java.io.StringReader
+import testutil.parser.SExprCupParser
+import testutil.parser.SExprLexer
+
 fun parseSExpr(s: String) = SExprParser(s).parse()
 
 sealed class SExpr {
@@ -13,59 +17,13 @@ sealed class SExpr {
 }
 
 private class SExprParser(private val input: String) {
-    private var position = 0
-
-    fun parse(): SExpr {
-        skipWhitespace()
-        return when {
-            currentChar() == '(' -> parseList()
-            else -> parseAtom()
+    fun parse(): SExpr =
+        try {
+            val parser = SExprCupParser(SExprLexer(StringReader(input)))
+            val result = parser.parse().value
+            result as? SExpr
+                ?: throw IllegalStateException("Parser produced unexpected result: $result")
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Failed to parse S-expression: ${e.message}", e)
         }
-    }
-
-    private fun parseList(): SExpr.Lst {
-        consumeChar('(')
-        val elements = mutableListOf<SExpr>()
-        while (true) {
-            skipWhitespace()
-            if (currentChar() == ')') break
-            elements.add(parse())
-        }
-        consumeChar(')')
-        return SExpr.Lst(elements)
-    }
-
-    private fun parseAtom(): SExpr.Atm {
-        val start = position
-        while (position < input.length && !isDelimiter(currentChar())) {
-            position++
-        }
-        if (start == position)
-            throw IllegalArgumentException("Unexpected character at position $position")
-        return SExpr.Atm(input.substring(start, position))
-    }
-
-    private fun skipWhitespace() {
-        while (position < input.length && input[position].isWhitespace()) {
-            position++
-        }
-    }
-
-    private fun isDelimiter(ch: Char): Boolean {
-        return ch.isWhitespace() || ch == '(' || ch == ')'
-    }
-
-    private fun currentChar(): Char {
-        if (position >= input.length) throw IllegalArgumentException("Unexpected end of input")
-        return input[position]
-    }
-
-    private fun consumeChar(expected: Char) {
-        if (currentChar() != expected) {
-            throw IllegalArgumentException(
-                "Expected '$expected' but found '${currentChar()}' at position $position"
-            )
-        }
-        position++
-    }
 }
