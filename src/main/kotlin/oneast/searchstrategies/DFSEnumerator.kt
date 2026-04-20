@@ -57,12 +57,6 @@ class DFSEnumerator(
                 logger.count("Total candidates")
                 it.numFillableHoles() to c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) }
             }
-            .filterNot { (_, it) ->
-                // Importantly, this pruning is sound even when we perform it on outlines (before
-                // label arities are computed and holes inserted accordingly). That's because when
-                // we are generating outlines, labels are considered blanks
-                it.types[iToFill].invalid()
-            }
             .flatMap { (introducedHoles, newCandidate) ->
                 val u = posUnification(newCandidate)
                 if (u.ok)

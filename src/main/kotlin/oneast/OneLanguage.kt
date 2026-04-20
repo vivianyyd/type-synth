@@ -111,6 +111,10 @@ sealed interface Type {
      * enumerate Variables if the hole is a root, so we skip that check here. This is obviously not
      * true for any subterm of a type so idk maybe there should be some extra class somewhere but
      * whatever
+     *
+     * Correction 4/20/26: Actually, we do want to support having fresh variables in the output, for
+     * example for functions on_exit: unit -> 'a and Left: 'a -> Either 'a 'b. As consequence, we no
+     * longer call this
      */
     fun invalid() = noHoles() && freshVariableInOutput()
 

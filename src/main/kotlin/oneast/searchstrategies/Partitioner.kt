@@ -110,9 +110,8 @@ class Partitioner(
                 // Importantly, this pruning is sound even when we perform it on outlines (before
                 // label arities are computed and holes inserted accordingly). That's because when
                 // we are generating outlines, labels are considered blanks
-                it.types[iToFill].invalid() ||
-                        (it.types[iToFill] is Arrow &&
-                                it.types[iToFill].blanks().isNotEmpty()) // unsuccessful ff
+                (it.types[iToFill] is Arrow &&
+                        it.types[iToFill].blanks().isNotEmpty()) // unsuccessful ff
             }
             .flatMap { newCandidate ->
                 val u = posUnification(newCandidate)

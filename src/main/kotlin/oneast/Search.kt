@@ -158,7 +158,6 @@ class Search(
                                 false)
                         }
                     }
-                    .filter { it.types.all { !it.invalid() } }
                     .collect(Collectors.toList())
             }
         return resolvedLabelArities
