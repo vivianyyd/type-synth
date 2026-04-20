@@ -13,6 +13,9 @@ abstract class SearchStrategy(private val examples: Examples) {
 
     protected fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
+    protected fun failsNegexWithNoHoleConstraints(s: SearchState) =
+        examples.neg.any { OneUnification(s, listOf(it)).passedWithNoConstraints }
+
     //    protected fun fastForward(candidate: SearchState): Sequence<SearchState> {
     //        var curr = candidate
     //        do {
