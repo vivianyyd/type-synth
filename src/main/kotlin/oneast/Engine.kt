@@ -46,6 +46,7 @@ class Engine(
                     )
                 }
             }
+            is SingleRound -> scheduled.add(query.examples.names)
         }
     }
 

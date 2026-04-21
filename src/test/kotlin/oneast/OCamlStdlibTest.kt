@@ -53,7 +53,7 @@ class OCamlStdlibTest {
         val logger =
             Logger(
                 configuration = configuration,
-                logFilename = "tmp.log",
+                logFilename = "ocaml-willBeOverwritten.log",
                 logToFile = true,
                 verbosity = 5
             )

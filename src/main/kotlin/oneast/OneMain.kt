@@ -34,6 +34,10 @@ fun run(
 
 sealed interface SchedulingInfo
 
+object SingleRound : SchedulingInfo {
+    override fun toString() = "Single round"
+}
+
 data class Auto(val namesPerRound: Int = 5) : SchedulingInfo {
     override fun toString() = "Auto with $namesPerRound names per round"
 }

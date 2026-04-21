@@ -41,7 +41,7 @@ class SexpTests {
             searchStrategy = ::DFSEnumerator,
             sizeBound = 20,
             depthBound = 4,
-            scheduleInfo = Auto(5),
+            scheduleInfo = SingleRound,
             numSols = Solutions.NumSolutions(1)
         )
 
@@ -63,7 +63,7 @@ class SexpTests {
 
     @ParameterizedTest
     @MethodSource("testNames")
-    @Disabled
+//    @Disabled
     fun test(testName: String) {
         val query = loadQueryFromFile(testName)
         val languageGroundTruth: GroundTruth = query.oracle
