@@ -107,10 +107,42 @@ val generateSExprParser by
         )
     }
 
+val generateOCamlExprLexer by
+    tasks.registering(JavaExec::class) {
+        group = "code generation"
+        description = "Generate the OCaml expression lexer with JFlex"
+        val flexFile = file("src/test/jflex/OCamlExprLexer.flex")
+        inputs.file(flexFile)
+        outputs.dir(generatedParserDir)
+        classpath = configurations["jflex"]
+        mainClass.set("jflex.Main")
+        args("--encoding", "UTF-8", "-d", generatedParserDir.get().asFile.absolutePath, flexFile)
+    }
+
+val generateOCamlExprParser by
+    tasks.registering(JavaExec::class) {
+        group = "code generation"
+        description = "Generate the OCaml expression parser with CUP"
+        val cupFile = file("src/test/cup/OCamlExprParser.cup")
+        inputs.file(cupFile)
+        outputs.dir(generatedParserDir)
+        classpath = configurations["cup"]
+        mainClass.set("java_cup.Main")
+        args(
+            "-destdir",
+            generatedParserDir.get().asFile.absolutePath,
+            "-parser",
+            "OCamlExprCupParser",
+            "-symbols",
+            "OCamlExprSymbols",
+            cupFile
+        )
+    }
+
 tasks.withType<JavaCompile>().matching { it.name.contains("Test") }.configureEach {
-    dependsOn(generateSExprLexer, generateSExprParser)
+    dependsOn(generateSExprLexer, generateSExprParser, generateOCamlExprLexer, generateOCamlExprParser)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
     .matching { it.name.contains("Test") }
-    .configureEach { dependsOn(generateSExprLexer, generateSExprParser) }
+    .configureEach { dependsOn(generateSExprLexer, generateSExprParser, generateOCamlExprLexer, generateOCamlExprParser) }
