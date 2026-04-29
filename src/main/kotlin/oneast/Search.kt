@@ -158,6 +158,7 @@ class Search(
                                 false)
                         }
                     }
+                    .filter { s -> examples.neg.all { !OneUnification(s, listOf(it)).passedWithNoConstraints } }
                     .collect(Collectors.toList())
             }
         return resolvedLabelArities

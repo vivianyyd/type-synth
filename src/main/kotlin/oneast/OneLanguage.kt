@@ -453,7 +453,9 @@ class TypeHole : THole() {
         //                            )
         //                        )
         return constructorTypes +
-            variableExps +
+                (if (unification.holeEquals(this)
+                        .none { it is InstantiationTy } && constructorTypes.isNotEmpty()
+                ) listOf() else variableExps) +
                 listOfNotNull(Blank(labelOnly = true).takeIf { emitLabelBlanks })
     }
 
