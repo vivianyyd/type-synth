@@ -1,5 +1,5 @@
 // Grouped tokens
-//val Str : string
+val Str : string
 val Num : int
 val Char: char
 

@@ -1,32 +1,70 @@
-TODO make our own syntactic sugar for :: and pair literals. force the LLM to only use our cons and pair constructors instead of list literals or pair literals. what about records? let cons h t = h :: t
+Task:
 
+For each file that ends in .types in the directory src/test/input/ocaml-stdlib, perform the following task.
+Write many small examples of OCaml expressions that use the functions provided.
+Place the output in a file which has the same file prefix, but ends with the extension .exs.
+For any given .types file, you should try your ABSOLUTE BEST to use ONLY the functions in that file in your
+examples while still producing expressive examples, which I will describe further below. 
+The ONLY primitives you may use are in the file 0-basics.types.
+You should include a comment at the top of the file that names the .types files that contain type declarations for
+ALL dependencies (functions mentioned) for the examples you write. This includes the .types file that the current
+example file is named after, as well as any others - for instance, when generating examples for 12-list.types,
+you will probably want to use functions defined in 50-list-mod.types and primitives in 0-basics.types. 
+However, you probably do NOT need any other functions.
+You should include BOTH examples which are and aren't valid.
 
-Write a bunch of small examples of OCaml expressions that use the following functions:
-They may ONLY be function applications with prefix notation. You should surround each example in parentheses.
-You should include BOTH examples which do, and DON'T typecheck. That is, some things can have type errors. It's ideal if those negative examples have nontrivial type errors, like instead of trying to apply something that's not a function to an argument (trivial), try to deconstruct something that's not a pair.
-You may only use the names/functions which appear in the function declarations provided.
+===
+
+Rules:
+They may ONLY be function applications with prefix notation, and anonymous functions such as (fun x -> x + 1).
+Anonymous functions may be used ONLY when passed as arguments to other functions.
+Anonymous functions MUST have unique parameter names.
+You may NOT use let-bindings.
+All your examples should be function application at the top-level.
+You should surround each example in parentheses.
+You may ONLY use the names/functions which appear in the function declarations provided.
 Each example should be separated by a newline.
-Instead of int literals or string literals or character literals or float literals, use the keywords Num, Str, Char, Flt. You can still use normal boolean literals. Do not use any other literals that require special parsing. That includes pairs, lists, and arrays. If you can think of other literals you would WANT to use in examples, note it in a TODO somewhere visible, like in the README.
-If you want to construct a list, you must do so by calling a custom function of mine:
+
+Instead of unit, integer, string, char, or float literals, you must use the keywords Unit, Num, Str, Char, Flt.
+You can still use normal boolean literals.
+DO NOT use any other literals that require special parsing. NO RECORDS.
+You CANNOT use pair, list, nor array literals, except for the empty list []. This is the only list literal you may use.
+You must construct lists using only
 val cons : 'a -> 'a list -> 'a list
-You may use the empty list literal []. This is the only list literal you may use. You must otherwise call cons with prefix notation.
+and the empty list.
 If you want to construct an array, you must use Array.make.
-If you want to construct a pair, you must use a custom function of mine:
-val pair: 'a -> 'b -> ('a * 'b)
-Although you are allowed to use lists pairs and arrays, you should avoid them as often as you can in favor of simpler values like Num, Str, true, false when you can.
+If you want to construct a pair, you must use Pair.make:
+Although you are allowed to use lists pairs and arrays, you should avoid them as often as you can in favor of
+simpler values like Num, Str, true, false when you can, that is, whenever the functions in the examples aren't
+specifically about lists/pairs/arrays.
 
-For each parameter of each function, we want at least 2 positive examples that demonstrate the full flexibility of values it can take in. That is, if it's a type parameter, we want to witness values of different types passed as inputs. If it's a type constructor with a parameter inside, for example, a function that takes any list or any pair, we want to witness different list contents or different combinations of paired types. Or, if a function takes two elements each of arbitrary type, like 'a -> 'b -> 'a, we want to have an example that really shows they can be different types.
-For each parameter, we also want at least 2 negative examples. We want negative examples to be nontrivial - for instance, if there is a type constraint from some type variable being shared between two parameters, we want to witness that type constraint being broken. For example, suppose some function takes two lists of the same element type. A good negative example for that function might be passing two lists of different element types. We could also have an example where for either one of the arguments, some non-list value is passed.
-We want negative examples to be MINIMAL - that is, we want negative examples where all strict subexpressions are valid. For instance, OCaml has partial application/currying; if we have an example fails due to the second argument, we shouldn't write a negative example that also includes a third argument.
-We don't want any negative examples that fail simply due to runtime errors. In fact, it's okay to include examples that will fail at runtime, as long as they will compile with no problems.
-We also want examples that show constraints on the output types of each function. For instance, we can use the output by passing it to a different function that also restricts its inputs in some way. For example, to show that the output of some function is always an int, we can have an example that passes that output to succ or (+), or pass it to (=) where the other input is Num.
-As an non-example, it's NOT useful to pass the output of (=) to a function that takes an 'a if our goal is to show that the output is a boolean.
+===
 
-For higher-order functions, try your best to keep the examples simple. For instance, if we want an example for function composition/piping, we could use an arithmetic or boolean operation, or a simple string conversion function instead of constructing our own function using a let binding.
-Do not use any anonymous/lambda functions. If you must declare a function, put it in a let binding.
+Quality requirements:
+Your goal is to show different ways functions can be applied and composed.
+For example, if a function is polymorphic, there should be multiple examples showing how its arguments may vary.
+If there are constraints on the arguments, for example two arguments must have the same type, you should try to
+show that by writing examples that are invalid due to violating those constraints. Another example of a good invalid
+expression is trying to call cons onto something that is not a list. Another example of a good invalid expression
+is passing two lists of different element types to a function that expects lists of the same type.
+There is no need to label which examples are valid or invalid, simply provide the examples.
 
-Some examples of what the examples should look like are below.
-(cons Num (cons Num nil))
-(cons nil (cons nil nil))
-(cons nil true)
-(cons Num (cons true nil))
+For each parameter of each function, we want at least 2 positive examples that demonstrate the full flexibility of
+values it can use. That is, if it's a type parameter, we want to witness values of different types passed as inputs.
+If it's a type constructor with a parameter inside, for example, a function that takes any list or any pair, we want
+to witness different list contents or different combinations of paired types.
+Or, if a function takes two elements each of arbitrary type, like 'a -> 'b -> 'a, we want to have an example that
+shows they can be different types.
+
+We want invalid expressions to be MINIMAL, that is, all subexpressions are valid.
+For instance, OCaml has partial application/currying; if our example calls a function where the first argument is
+invalid, we should stop right there instead of including any arguments after the first one.
+
+We also want examples that show off constraints on the outputs of each function.
+For instance, we can use the output by passing it to a different function that also restricts its inputs in some way.
+For example, to show that the output of some function is always an int, we can have an example that passes that output
+to succ or (+), or pass it to (=) where the other input is Num.
+
+For higher-order functions, try your best to keep the examples simple.
+For instance, it often suffices to pass existing functions as inputs rather than writing an anonymous function.
+
