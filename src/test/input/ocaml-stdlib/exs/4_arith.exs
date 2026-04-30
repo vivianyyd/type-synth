@@ -1,0 +1,71 @@
+// 0_basics.types, 4_arith.types
+
+(succ Num)
+(pred Num)
+((~-) Num)
+((~+) Num)
+
+((+) Num Num)
+((-) Num Num)
+(( * ) Num Num)
+((/) Num Num)
+(mod Num Num)
+(abs Num)
+
+(succ max_int)
+(pred min_int)
+(succ (pred Num))
+(pred (succ Num))
+(abs ((~-) Num))
+((~-) (abs Num))
+((+) (abs Num) Num)
+(( * ) (succ Num) (pred Num))
+(mod (abs Num) Num)
+((-) ((+) Num Num) Num)
+((/) (( * ) Num Num) Num)
+
+(succ (succ (succ Num)))
+
+((~-) Str)
+((+) Num Str)
+(( * ) Num true)
+(abs Str)
+(mod Num Flt)
+
+// succ/pred/abs/~- return int: chain them
+(succ (succ (succ (succ Num))))
+(pred (pred (pred Num)))
+(abs (abs (abs Num)))
+((~-) ((~-) Num))
+(succ (abs (pred Num)))
+(pred (succ (abs Num)))
+(abs ((+) (succ Num) (pred Num)))
+((~-) (abs ((-) Num Num)))
+
+// + - * / mod return int: use as arguments to more arithmetic
+(succ ((+) Num Num))
+(pred ((-) Num Num))
+(abs (( * ) Num Num))
+((~-) ((/) Num Num))
+(succ (mod Num Num))
+((+) (succ Num) (pred Num))
+((+) (abs Num) (abs Num))
+((-) (( * ) Num Num) (( * ) Num Num))
+(( * ) (succ Num) (succ Num))
+((/) (abs Num) (succ Num))
+(mod (abs ((+) Num Num)) (succ Num))
+((+) ((+) Num Num) ((+) Num Num))
+(( * ) ((+) Num Num) ((-) Num Num))
+((-) (( * ) (succ Num) Num) (pred Num))
+(abs (mod ((-) Num Num) (succ Num)))
+
+// show outputs are ints by passing to functions expecting int
+(succ max_int)
+(pred min_int)
+((+) max_int Num)
+((-) Num min_int)
+(abs ((-) max_int min_int))
+
+// invalid chaining
+(succ ((+) Num Str))
+(abs (( * ) true Num))

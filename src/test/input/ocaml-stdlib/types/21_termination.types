@@ -1,0 +1,2 @@
+val exit : int -> 'a // TODO skipped since can't do fresh var RHS
+val at_exit : (unit -> unit) -> unit
