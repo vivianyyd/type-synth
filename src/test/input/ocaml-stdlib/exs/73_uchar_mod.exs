@@ -1,152 +1,152 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 8_char.types, 73_uchar_mod.types
 
 // Constants: min, max, bom, rep (all Uchar.t)
-min
-max
-bom
-rep
+Uchar.min
+Uchar.max
+Uchar.bom
+Uchar.rep
 
 // succ, pred: t -> t
-(succ min)
-(pred max)
-(succ bom)
-(pred bom)
+(Uchar.succ Uchar.min)
+(Uchar.pred Uchar.max)
+(Uchar.succ Uchar.bom)
+(Uchar.pred Uchar.bom)
 
 // of_int: int -> t
-(of_int Num)
+(Uchar.of_int Num)
 
 // to_int: t -> int
-(to_int min)
-(to_int max)
-(to_int (of_int Num))
+(Uchar.to_int Uchar.min)
+(Uchar.to_int Uchar.max)
+(Uchar.to_int (Uchar.of_int Num))
 
 // is_valid: int -> bool
-(is_valid Num)
-(is_valid (to_int min))
+(Uchar.is_valid Num)
+(Uchar.is_valid (Uchar.to_int Uchar.min))
 
 // is_char: t -> bool
-(is_char min)
-(is_char (of_int Num))
-(is_char bom)
+(Uchar.is_char Uchar.min)
+(Uchar.is_char (Uchar.of_int Num))
+(Uchar.is_char Uchar.bom)
 
 // of_char: char -> t
-(of_char Char)
+(Uchar.of_char Char)
 
 // to_char: t -> char
-(to_char (of_char Char))
-(to_char min)
+(Uchar.to_char (Uchar.of_char Char))
+(Uchar.to_char Uchar.min)
 
 // equal: t -> t -> bool
-(equal min max)
-(equal bom rep)
-(equal (of_int Num) (of_int Num))
-(equal (of_char Char) (of_char Char))
+(Uchar.equal Uchar.min Uchar.max)
+(Uchar.equal Uchar.bom Uchar.rep)
+(Uchar.equal (Uchar.of_int Num) (Uchar.of_int Num))
+(Uchar.equal (Uchar.of_char Char) (Uchar.of_char Char))
 
 // compare: t -> t -> int
-(compare min max)
-(compare (of_int Num) (of_int Num))
+(Uchar.compare Uchar.min Uchar.max)
+(Uchar.compare (Uchar.of_int Num) (Uchar.of_int Num))
 
 // hash: t -> int
-(hash min)
-(hash (of_int Num))
+(Uchar.hash Uchar.min)
+(Uchar.hash (Uchar.of_int Num))
 
 // seeded_hash: int -> t -> int
-(seeded_hash Num min)
-(seeded_hash Num (of_int Num))
+(Uchar.seeded_hash Num Uchar.min)
+(Uchar.seeded_hash Num (Uchar.of_int Num))
 
 // utf_decode: int -> t -> utf_decode
-(utf_decode Num min)
-(utf_decode Num (of_int Num))
-(utf_decode Num (of_char Char))
+(Uchar.utf_decode Num Uchar.min)
+(Uchar.utf_decode Num (Uchar.of_int Num))
+(Uchar.utf_decode Num (Uchar.of_char Char))
 
 // utf_decode_invalid: int -> utf_decode
-(utf_decode_invalid Num)
+(Uchar.utf_decode_invalid Num)
 
 // utf_decode_is_valid: utf_decode -> bool
-(utf_decode_is_valid (utf_decode Num min))
-(utf_decode_is_valid (utf_decode_invalid Num))
+(Uchar.utf_decode_is_valid (Uchar.utf_decode Num Uchar.min))
+(Uchar.utf_decode_is_valid (Uchar.utf_decode_invalid Num))
 
 // utf_decode_uchar: utf_decode -> t
-(utf_decode_uchar (utf_decode Num min))
-(utf_decode_uchar (utf_decode Num (of_int Num)))
+(Uchar.utf_decode_uchar (Uchar.utf_decode Num Uchar.min))
+(Uchar.utf_decode_uchar (Uchar.utf_decode Num (Uchar.of_int Num)))
 
 // utf_decode_length: utf_decode -> int
-(utf_decode_length (utf_decode Num min))
-(utf_decode_length (utf_decode_invalid Num))
+(Uchar.utf_decode_length (Uchar.utf_decode Num Uchar.min))
+(Uchar.utf_decode_length (Uchar.utf_decode_invalid Num))
 
 // Chaining: of_int returns t — use in succ, pred, equal, compare, hash, to_int
-(succ (of_int Num))
-(pred (of_int Num))
-(to_int (of_int Num))
-(is_char (of_int Num))
-(equal (of_int Num) min)
-(compare (of_int Num) max)
-(hash (of_int Num))
-(utf_decode Num (of_int Num))
+(Uchar.succ (Uchar.of_int Num))
+(Uchar.pred (Uchar.of_int Num))
+(Uchar.to_int (Uchar.of_int Num))
+(Uchar.is_char (Uchar.of_int Num))
+(Uchar.equal (Uchar.of_int Num) Uchar.min)
+(Uchar.compare (Uchar.of_int Num) Uchar.max)
+(Uchar.hash (Uchar.of_int Num))
+(Uchar.utf_decode Num (Uchar.of_int Num))
 
 // to_int returns int — use in arithmetic and is_valid
-(= (to_int min) Num)
-(succ (to_int min))
-(< (to_int min) (to_int max))
-(+ (to_int min) (to_int max))
-(is_valid (to_int min))
-(is_valid (to_int (of_int Num)))
-(of_int (to_int min))
-(of_int (succ (to_int min)))
+((=) (Uchar.to_int Uchar.min) Num)
+(Uchar.succ (Uchar.to_int Uchar.min))
+((<) (Uchar.to_int Uchar.min) (Uchar.to_int Uchar.max))
+((+) (Uchar.to_int Uchar.min) (Uchar.to_int Uchar.max))
+(Uchar.is_valid (Uchar.to_int Uchar.min))
+(Uchar.is_valid (Uchar.to_int (Uchar.of_int Num)))
+(Uchar.of_int (Uchar.to_int Uchar.min))
+(Uchar.of_int (Uchar.succ (Uchar.to_int Uchar.min)))
 
 // succ/pred return t — chain again
-(to_int (succ min))
-(equal (succ min) (succ min))
-(compare (succ min) (pred max))
-(hash (succ min))
-(is_char (succ min))
+(Uchar.to_int (Uchar.succ Uchar.min))
+(Uchar.equal (Uchar.succ Uchar.min) (Uchar.succ Uchar.min))
+(Uchar.compare (Uchar.succ Uchar.min) (Uchar.pred Uchar.max))
+(Uchar.hash (Uchar.succ Uchar.min))
+(Uchar.is_char (Uchar.succ Uchar.min))
 
 // of_char returns t — chain
-(to_int (of_char Char))
-(is_char (of_char Char))
-(equal (of_char Char) (of_char Char))
-(to_char (of_char Char))
+(Uchar.to_int (Uchar.of_char Char))
+(Uchar.is_char (Uchar.of_char Char))
+(Uchar.equal (Uchar.of_char Char) (Uchar.of_char Char))
+(Uchar.to_char (Uchar.of_char Char))
 
 // equal returns bool
-(= (equal min max) false)
-(not (equal min max))
-(&& (equal min min) (equal max max))
-(|| (equal min max) (is_char min))
+((=) (Uchar.equal Uchar.min Uchar.max) false)
+(not (Uchar.equal Uchar.min Uchar.max))
+((&&) (Uchar.equal Uchar.min Uchar.min) (Uchar.equal Uchar.max Uchar.max))
+((||) (Uchar.equal Uchar.min Uchar.max) (Uchar.is_char Uchar.min))
 
 // compare returns int
-(= (compare min max) Num)
-(succ (compare min max))
-(< (compare min max) (compare max min))
+((=) (Uchar.compare Uchar.min Uchar.max) Num)
+(Uchar.succ (Uchar.compare Uchar.min Uchar.max))
+((<) (Uchar.compare Uchar.min Uchar.max) (Uchar.compare Uchar.max Uchar.min))
 
 // hash/seeded_hash return int
-(= (hash min) Num)
-(succ (hash min))
-(seeded_hash (hash min) max)
-(= (seeded_hash Num min) Num)
+((=) (Uchar.hash Uchar.min) Num)
+(Uchar.succ (Uchar.hash Uchar.min))
+(Uchar.seeded_hash (Uchar.hash Uchar.min) Uchar.max)
+((=) (Uchar.seeded_hash Num Uchar.min) Num)
 
 // utf_decode_is_valid returns bool
-(= (utf_decode_is_valid (utf_decode Num min)) true)
-(not (utf_decode_is_valid (utf_decode_invalid Num)))
+((=) (Uchar.utf_decode_is_valid (Uchar.utf_decode Num Uchar.min)) true)
+(not (Uchar.utf_decode_is_valid (Uchar.utf_decode_invalid Num)))
 
 // utf_decode_length returns int
-(= (utf_decode_length (utf_decode Num min)) Num)
-(succ (utf_decode_length (utf_decode Num min)))
+((=) (Uchar.utf_decode_length (Uchar.utf_decode Num Uchar.min)) Num)
+(Uchar.succ (Uchar.utf_decode_length (Uchar.utf_decode Num Uchar.min)))
 
 // utf_decode_uchar returns t — chain into t ops
-(to_int (utf_decode_uchar (utf_decode Num min)))
-(is_char (utf_decode_uchar (utf_decode Num min)))
-(equal (utf_decode_uchar (utf_decode Num min)) min)
+(Uchar.to_int (Uchar.utf_decode_uchar (Uchar.utf_decode Num Uchar.min)))
+(Uchar.is_char (Uchar.utf_decode_uchar (Uchar.utf_decode Num Uchar.min)))
+(Uchar.equal (Uchar.utf_decode_uchar (Uchar.utf_decode Num Uchar.min)) Uchar.min)
 
 // Invalid
-(succ Num)
-(of_int Char)
-(to_int Num)
-(is_char Num)
-(is_char Char)
-(equal Num min)
-(equal min Num)
-(utf_decode Num Num)
-(utf_decode_is_valid Num)
-(utf_decode_uchar Num)
-(not (to_int min))
-(succ (equal min max))
+(Uchar.succ Num)
+(Uchar.of_int Char)
+(Uchar.to_int Num)
+(Uchar.is_char Num)
+(Uchar.is_char Char)
+(Uchar.equal Num Uchar.min)
+(Uchar.equal Uchar.min Num)
+(Uchar.utf_decode Num Num)
+(Uchar.utf_decode_is_valid Num)
+(Uchar.utf_decode_uchar Num)
+(not (Uchar.to_int Uchar.min))
+(Uchar.succ (Uchar.equal Uchar.min Uchar.max))

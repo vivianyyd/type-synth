@@ -1,46 +1,46 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 13_io.types, 52_marshal_mod.types
 
 // to_string: 'a -> extern_flags list -> string
-(to_string Num [])
-(to_string Str [])
-(to_string true [])
-(to_string Char [])
+(Marshal.to_string Num [])
+(Marshal.to_string Str [])
+(Marshal.to_string true [])
+(Marshal.to_string Char [])
 
 // from_string: string -> int -> 'a  (polymorphic output)
-(from_string Str Num)
+(Marshal.from_string Str Num)
 
 // from_channel: in_channel -> 'a  (polymorphic output)
-(from_channel stdin)
+(Marshal.from_channel stdin)
 
 // header_size: int constant
-header_size
+Marshal.header_size
 
 // data_size, total_size: bytes -> int -> int
-(data_size (Bytes.make Num Char) Num)
-(total_size (Bytes.make Num Char) Num)
+(Marshal.data_size (Bytes.make Num Char) Num)
+(Marshal.total_size (Bytes.make Num Char) Num)
 
 // Chaining: to_string returns string — use in string ops
-(= (to_string Num []) Str)
-(^ (to_string Num []) Str)
-(^ (to_string Str []) (to_string Num []))
-(from_string (to_string Num []) Num)
+((=) (Marshal.to_string Num []) Str)
+((^) (Marshal.to_string Num []) Str)
+((^) (Marshal.to_string Str []) (Marshal.to_string Num []))
+(Marshal.from_string (Marshal.to_string Num []) Num)
 
 // header_size is int — use in arithmetic
-(= header_size Num)
-(succ header_size)
-(+ header_size Num)
-(data_size (Bytes.make Num Char) header_size)
-(total_size (Bytes.make Num Char) header_size)
+((=) Marshal.header_size Num)
+(succ Marshal.header_size)
+((+) Marshal.header_size Num)
+(Marshal.data_size (Bytes.make Num Char) Marshal.header_size)
+(Marshal.total_size (Bytes.make Num Char) Marshal.header_size)
 
 // data_size / total_size return int
-(= (data_size (Bytes.make Num Char) Num) Num)
-(succ (data_size (Bytes.make Num Char) Num))
-(< (data_size (Bytes.make Num Char) Num) (total_size (Bytes.make Num Char) Num))
-(total_size (Bytes.make Num Char) (data_size (Bytes.make Num Char) Num))
+((=) (Marshal.data_size (Bytes.make Num Char) Num) Num)
+(succ (Marshal.data_size (Bytes.make Num Char) Num))
+((<) (Marshal.data_size (Bytes.make Num Char) Num) (Marshal.total_size (Bytes.make Num Char) Num))
+(Marshal.total_size (Bytes.make Num Char) (Marshal.data_size (Bytes.make Num Char) Num))
 
 // Invalid: wrong output types used in wrong contexts
-(succ (to_string Num []))
-(not (to_string Num []))
-(^ header_size Str)
-(not (data_size (Bytes.make Num Char) Num))
-(to_string Num Num)
+(succ (Marshal.to_string Num []))
+(not (Marshal.to_string Num []))
+((^) Marshal.header_size Str)
+(not (Marshal.data_size (Bytes.make Num Char) Num))
+(Marshal.to_string Num Num)

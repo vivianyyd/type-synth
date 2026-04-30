@@ -51,13 +51,13 @@
 (set_binary_mode_out (open_out Str) true)
 
 // pos_out/out_channel_length return int: use in output operations
-(= (pos_out stdout) Num)
-(= (out_channel_length stdout) Num)
+((=) (pos_out stdout) Num)
+((=) (out_channel_length stdout) Num)
 (output_byte stdout (pos_out stdout))
 (seek_out stdout (pos_out stdout))
 (output_binary_int stdout (out_channel_length stdout))
-(= (pos_out (open_out Str)) Num)
-(< (pos_out stdout) (out_channel_length stdout))
+((=) (pos_out (open_out Str)) Num)
+((<) (pos_out stdout) (out_channel_length stdout))
 
 // chain: open, write, query position
 (seek_out (open_out Str) (pos_out stdout))

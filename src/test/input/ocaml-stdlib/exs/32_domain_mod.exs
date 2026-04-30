@@ -1,70 +1,70 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 14_stdout.types, 16_stdin.types, 32_domain_mod.types
 
 // spawn: (unit -> 'a) -> 'a t
-(spawn print_newline)
-(spawn read_line)
-(spawn read_int)
-(spawn flush_all)
-(spawn (fun u1 -> print_newline u1))
-(spawn (fun u2 -> read_line u2))
+(Domain.spawn print_newline)
+(Domain.spawn read_line)
+(Domain.spawn read_int)
+(Domain.spawn flush_all)
+(Domain.spawn (fun u1 -> print_newline u1))
+(Domain.spawn (fun u2 -> read_line u2))
 
 // join: 'a t -> 'a
-(join (spawn print_newline))
-(join (spawn read_line))
-(join (spawn read_int))
+(Domain.join (Domain.spawn print_newline))
+(Domain.join (Domain.spawn read_line))
+(Domain.join (Domain.spawn read_int))
 
 // Predicates and counters
-(is_main_domain Unit)
-(recommended_domain_count Unit)
-(self_index Unit)
-(cpu_relax Unit)
+(Domain.is_main_domain Unit)
+(Domain.recommended_domain_count Unit)
+(Domain.self_index Unit)
+(Domain.cpu_relax Unit)
 
 // self: unit -> id
-(self Unit)
+(Domain.self Unit)
 
 // get_id: 'a t -> id
-(get_id (spawn print_newline))
-(get_id (spawn read_line))
+(Domain.get_id (Domain.spawn print_newline))
+(Domain.get_id (Domain.spawn read_line))
 
 // before_first_spawn and at_exit: (unit -> unit) -> unit
-(before_first_spawn print_newline)
-(before_first_spawn flush_all)
-(at_exit print_newline)
-(at_exit flush_all)
+(Domain.before_first_spawn print_newline)
+(Domain.before_first_spawn flush_all)
+(Domain.at_exit print_newline)
+(Domain.at_exit flush_all)
 
 // Chaining: join extracts the value from the domain
-(= (join (spawn read_line)) Str)
-(= (join (spawn read_int)) Num)
-(= (join (spawn is_main_domain)) true)
-(succ (join (spawn read_int)))
-(+ (join (spawn read_int)) Num)
-(^ (join (spawn read_line)) Str)
+((=) (Domain.join (Domain.spawn read_line)) Str)
+((=) (Domain.join (Domain.spawn read_int)) Num)
+((=) (Domain.join (Domain.spawn Domain.is_main_domain)) true)
+(succ (Domain.join (Domain.spawn read_int)))
+((+) (Domain.join (Domain.spawn read_int)) Num)
+((^) (Domain.join (Domain.spawn read_line)) Str)
 
 // recommended_domain_count/self_index return int
-(= (recommended_domain_count Unit) Num)
-(= (self_index Unit) Num)
-(succ (recommended_domain_count Unit))
-(< (self_index Unit) (recommended_domain_count Unit))
+((=) (Domain.recommended_domain_count Unit) Num)
+((=) (Domain.self_index Unit) Num)
+(succ (Domain.recommended_domain_count Unit))
+((<) (Domain.self_index Unit) (Domain.recommended_domain_count Unit))
 
 // get_id / self return id: compare them
-(= (self Unit) (self Unit))
-(= (get_id (spawn print_newline)) (self Unit))
+((=) (Domain.self Unit) (Domain.self Unit))
+((=) (Domain.get_id (Domain.spawn print_newline)) (Domain.self Unit))
 
 // is_main_domain returns bool
-(= (is_main_domain Unit) true)
+((=) (Domain.is_main_domain Unit) true)
 
 // DLS functions
-(DLS.new_key print_newline)
-(DLS.new_key read_line)
-(DLS.get (DLS.new_key print_newline))
-(DLS.get (DLS.new_key read_line))
-(DLS.set (DLS.new_key read_line) Str)
-(= (DLS.get (DLS.new_key read_line)) Str)
-(^ (DLS.get (DLS.new_key read_line)) Str)
+(Domain.DLS.new_key print_newline)
+(Domain.DLS.new_key read_line)
+(Domain.DLS.get (Domain.DLS.new_key print_newline))
+(Domain.DLS.get (Domain.DLS.new_key read_line))
+(Domain.DLS.set (Domain.DLS.new_key read_line) Str)
+((=) (Domain.DLS.get (Domain.DLS.new_key read_line)) Str)
+((^) (Domain.DLS.get (Domain.DLS.new_key read_line)) Str)
 
 // Invalid
-(join Num)
-(spawn Num)
-(get_id Num)
-(before_first_spawn print_int)
-(at_exit succ)
+(Domain.join Num)
+(Domain.spawn Num)
+(Domain.get_id Num)
+(Domain.before_first_spawn print_int)
+(Domain.at_exit succ)

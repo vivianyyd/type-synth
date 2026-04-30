@@ -1,11 +1,11 @@
 // 0_basics.types, 27_callback_mod.types
 
 // register: string -> 'a -> unit (polymorphic in second argument)
-(register Str Num)
-(register Str Str)
-(register Str true)
-(register Str false)
+(Callback.register Str Num)
+(Callback.register Str Str)
+(Callback.register Str true)
+(Callback.register Str false)
 
 // Invalid
-(register Num Str)
-(register true Num)
+(Callback.register Num Str)
+(Callback.register true Num)

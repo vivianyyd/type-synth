@@ -16,19 +16,19 @@
 (fst (Pair.make (fst (Pair.make Num Str)) Char))
 (snd (Pair.make Num (snd (Pair.make Str true))))
 
-(= (fst (Pair.make Num Str)) Num)
-(= (snd (Pair.make Num Str)) Str)
+((=) (fst (Pair.make Num Str)) Num)
+((=) (snd (Pair.make Num Str)) Str)
 
 (fst Num)
 (snd Str)
 (fst true)
 
 // fst returns the first component type: use in further calls
-(= (fst (Pair.make Num Str)) Num)
-(= (fst (Pair.make Str Num)) Str)
-(= (fst (Pair.make true Char)) true)
-(= (snd (Pair.make Num Str)) Str)
-(= (snd (Pair.make Str true)) true)
+((=) (fst (Pair.make Num Str)) Num)
+((=) (fst (Pair.make Str Num)) Str)
+((=) (fst (Pair.make true Char)) true)
+((=) (snd (Pair.make Num Str)) Str)
+((=) (snd (Pair.make Str true)) true)
 
 // Use fst/snd output to build new pairs
 (Pair.make (fst (Pair.make Num Str)) (fst (Pair.make Str Num)))
@@ -48,6 +48,6 @@
 (snd (fst (Pair.make (Pair.make Num Str) true)))
 
 // invalid: fst/snd output used at wrong type
-(= (fst (Pair.make Num Str)) Str)
-(= (snd (Pair.make Num Str)) Num)
+((=) (fst (Pair.make Num Str)) Str)
+((=) (snd (Pair.make Num Str)) Num)
 (fst (Pair.make Num Str) Char)

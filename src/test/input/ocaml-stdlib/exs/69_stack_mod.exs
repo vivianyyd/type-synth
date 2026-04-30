@@ -1,83 +1,83 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 9_unit.types, 14_stdout.types, 69_stack_mod.types
 
 // create: unit -> 'a t
-(create Unit)
+(Stack.create Unit)
 
 // push: 'a -> 'a t -> unit
-(push Num (create Unit))
-(push Str (create Unit))
-(push true (create Unit))
+(Stack.push Num (Stack.create Unit))
+(Stack.push Str (Stack.create Unit))
+(Stack.push true (Stack.create Unit))
 
 // pop: 'a t -> 'a
-(pop (create Unit))
+(Stack.pop (Stack.create Unit))
 
 // pop_opt: 'a t -> 'a option
-(pop_opt (create Unit))
+(Stack.pop_opt (Stack.create Unit))
 
 // drop: 'a t -> unit
-(drop (create Unit))
+(Stack.drop (Stack.create Unit))
 
 // top: 'a t -> 'a
-(top (create Unit))
+(Stack.top (Stack.create Unit))
 
 // top_opt: 'a t -> 'a option
-(top_opt (create Unit))
+(Stack.top_opt (Stack.create Unit))
 
 // clear: 'a t -> unit
-(clear (create Unit))
+(Stack.clear (Stack.create Unit))
 
 // copy: 'a t -> 'a t
-(copy (create Unit))
+(Stack.copy (Stack.create Unit))
 
 // is_empty: 'a t -> bool
-(is_empty (create Unit))
+(Stack.is_empty (Stack.create Unit))
 
 // length: 'a t -> int
-(length (create Unit))
+(Stack.length (Stack.create Unit))
 
 // iter: ('a -> unit) -> 'a t -> unit
-(iter ignore (create Unit))
-(iter print_int (create Unit))
-(iter print_string (create Unit))
+(Stack.iter ignore (Stack.create Unit))
+(Stack.iter print_int (Stack.create Unit))
+(Stack.iter print_string (Stack.create Unit))
 
 // fold: ('acc -> 'a -> 'acc) -> 'acc -> 'a t -> 'acc
-(fold (+) Num (create Unit))
-(fold (^) Str (create Unit))
+(Stack.fold (+) Num (Stack.create Unit))
+(Stack.fold (^) Str (Stack.create Unit))
 
 // Chaining: copy returns stack — use same ops
-(length (copy (create Unit)))
-(is_empty (copy (create Unit)))
-(top (copy (create Unit)))
-(pop (copy (create Unit)))
+(Stack.length (Stack.copy (Stack.create Unit)))
+(Stack.is_empty (Stack.copy (Stack.create Unit)))
+(Stack.top (Stack.copy (Stack.create Unit)))
+(Stack.pop (Stack.copy (Stack.create Unit)))
 
 // length returns int
-(= (length (create Unit)) Num)
-(succ (length (create Unit)))
-(< (length (create Unit)) Num)
-(= (length (copy (create Unit))) (length (create Unit)))
+((=) (Stack.length (Stack.create Unit)) Num)
+(succ (Stack.length (Stack.create Unit)))
+((<) (Stack.length (Stack.create Unit)) Num)
+((=) (Stack.length (Stack.copy (Stack.create Unit))) (Stack.length (Stack.create Unit)))
 
 // is_empty returns bool
-(= (is_empty (create Unit)) true)
-(not (is_empty (create Unit)))
-(&& (is_empty (create Unit)) (is_empty (create Unit)))
+((=) (Stack.is_empty (Stack.create Unit)) true)
+(not (Stack.is_empty (Stack.create Unit)))
+((&&) (Stack.is_empty (Stack.create Unit)) (Stack.is_empty (Stack.create Unit)))
 
 // pop/top return element type
-(= (pop (create Unit)) Num)
-(succ (pop (create Unit)))
-(push (pop (copy (create Unit))) (create Unit))
-(= (top (create Unit)) (pop (create Unit)))
+((=) (Stack.pop (Stack.create Unit)) Num)
+(succ (Stack.pop (Stack.create Unit)))
+(Stack.push (Stack.pop (Stack.copy (Stack.create Unit))) (Stack.create Unit))
+((=) (Stack.top (Stack.create Unit)) (Stack.pop (Stack.create Unit)))
 
 // fold returns accumulator
-(= (fold (+) Num (create Unit)) Num)
-(succ (fold (+) Num (create Unit)))
-(< (fold (+) Num (create Unit)) Num)
-(fold (+) (fold (+) Num (create Unit)) (create Unit))
+((=) (Stack.fold (+) Num (Stack.create Unit)) Num)
+(succ (Stack.fold (+) Num (Stack.create Unit)))
+((<) (Stack.fold (+) Num (Stack.create Unit)) Num)
+(Stack.fold (+) (Stack.fold (+) Num (Stack.create Unit)) (Stack.create Unit))
 
 // Invalid
-(succ (is_empty (create Unit)))
-(not (length (create Unit)))
-(push Num (length (create Unit)))
-(length Num)
-(is_empty Str)
-(pop Num)
-(fold (+) Str (create Unit))
+(succ (Stack.is_empty (Stack.create Unit)))
+(not (Stack.length (Stack.create Unit)))
+(Stack.push Num (Stack.length (Stack.create Unit)))
+(Stack.length Num)
+(Stack.is_empty Str)
+(Stack.pop Num)
+(Stack.fold (+) Str (Stack.create Unit))

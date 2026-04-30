@@ -1,174 +1,174 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 8_char.types, 10_strconv.types, 70_string_mod.types
 
 // make: int -> char -> string
-(make Num Char)
+(String.make Num Char)
 
 // empty: string constant
-empty
+String.empty
 
 // length: string -> int
-(length Str)
-(length empty)
-(length (make Num Char))
+(String.length Str)
+(String.length String.empty)
+(String.length (String.make Num Char))
 
 // get: string -> int -> char
-(get Str Num)
-(get (make Num Char) Num)
+(String.get Str Num)
+(String.get (String.make Num Char) Num)
 
 // of_bytes, to_bytes
-(of_bytes (Bytes.make Num Char))
-(to_bytes Str)
+(String.of_bytes (Bytes.make Num Char))
+(String.to_bytes Str)
 
 // concat: string -> string list -> string
-(concat Str (cons Str []))
-(concat empty (cons Str []))
+(String.concat Str (cons Str []))
+(String.concat String.empty (cons Str []))
 
 // cat: string -> string -> string
-(cat Str Str)
-(cat empty Str)
-(cat Str empty)
+(String.cat Str Str)
+(String.cat String.empty Str)
+(String.cat Str String.empty)
 
 // equal: t -> t -> bool
-(equal Str Str)
-(equal empty Str)
+(String.equal Str Str)
+(String.equal String.empty Str)
 
 // compare: t -> t -> int
-(compare Str Str)
-(compare empty Str)
+(String.compare Str Str)
+(String.compare String.empty Str)
 
 // contains: string -> char -> bool
-(contains Str Char)
-(contains (make Num Char) Char)
+(String.contains Str Char)
+(String.contains (String.make Num Char) Char)
 
 // sub: string -> int -> int -> string
-(sub Str Num Num)
-(sub (make Num Char) Num Num)
+(String.sub Str Num Num)
+(String.sub (String.make Num Char) Num Num)
 
 // split_on_char: char -> string -> string list
-(split_on_char Char Str)
-(split_on_char Char (make Num Char))
+(String.split_on_char Char Str)
+(String.split_on_char Char (String.make Num Char))
 
 // map: (char -> char) -> string -> string
-(map (fun c1 -> (chr (succ (code c1)))) Str)
+(String.map (fun c1 -> (chr (succ (code c1)))) Str)
 
 // fold_left: ('acc -> char -> 'acc) -> 'acc -> string -> 'acc
-(fold_left (fun acc1 c2 -> acc1) Str Str)
+(String.fold_left (fun acc1 c2 -> acc1) Str Str)
 
 // for_all, exists: (char -> bool) -> string -> bool
-(for_all (fun c3 -> (= c3 Char)) Str)
-(exists (fun c4 -> (= c4 Char)) Str)
+(String.for_all (fun c3 -> ((=) c3 Char)) Str)
+(String.exists (fun c4 -> ((=) c4 Char)) Str)
 
 // trim, escaped, uppercase_ascii, lowercase_ascii, capitalize_ascii, uncapitalize_ascii
-(trim Str)
-(escaped Str)
-(uppercase_ascii Str)
-(lowercase_ascii Str)
-(capitalize_ascii Str)
-(uncapitalize_ascii Str)
+(String.trim Str)
+(String.escaped Str)
+(String.uppercase_ascii Str)
+(String.lowercase_ascii Str)
+(String.capitalize_ascii Str)
+(String.uncapitalize_ascii Str)
 
 // index, rindex: string -> char -> int
-(index Str Char)
-(rindex Str Char)
+(String.index Str Char)
+(String.rindex Str Char)
 
 // index_opt, rindex_opt: string -> char -> int option
-(index_opt Str Char)
-(rindex_opt Str Char)
+(String.index_opt Str Char)
+(String.rindex_opt Str Char)
 
 // index_from, rindex_from: string -> int -> char -> int
-(index_from Str Num Char)
-(rindex_from Str Num Char)
+(String.index_from Str Num Char)
+(String.rindex_from Str Num Char)
 
 // starts_with, ends_with: prefix/suffix:string -> string -> bool
-(starts_with Str Str)
-(ends_with Str Str)
+(String.starts_with Str Str)
+(String.ends_with Str Str)
 
 // hash: t -> int
-(hash Str)
-(hash empty)
+(String.hash Str)
+(String.hash String.empty)
 
 // seeded_hash: int -> t -> int
-(seeded_hash Num Str)
+(String.seeded_hash Num Str)
 
 // is_valid_utf_8: t -> bool
-(is_valid_utf_8 Str)
+(String.is_valid_utf_8 Str)
 
 // edit_distance: t -> t -> int
-(edit_distance Str Str)
+(String.edit_distance Str Str)
 
 // Chaining: make/cat/sub/trim return string — chain into more string ops
-(length (make Num Char))
-(length (cat Str Str))
-(length (sub Str Num Num))
-(length (trim Str))
-(length (uppercase_ascii Str))
-(get (make Num Char) Num)
-(get (cat Str Str) Num)
-(index (cat Str Str) Char)
-(contains (uppercase_ascii Str) Char)
-(equal (trim Str) Str)
-(cat (trim Str) (escaped Str))
-(cat (uppercase_ascii Str) (lowercase_ascii Str))
-(sub (cat Str Str) Num (length Str))
-(sub (trim Str) Num (length (trim Str)))
-(hash (cat Str Str))
-(hash (uppercase_ascii Str))
+(String.length (String.make Num Char))
+(String.length (String.cat Str Str))
+(String.length (String.sub Str Num Num))
+(String.length (String.trim Str))
+(String.length (String.uppercase_ascii Str))
+(String.get (String.make Num Char) Num)
+(String.get (String.cat Str Str) Num)
+(String.index (String.cat Str Str) Char)
+(String.contains (String.uppercase_ascii Str) Char)
+(String.equal (String.trim Str) Str)
+(String.cat (String.trim Str) (String.escaped Str))
+(String.cat (String.uppercase_ascii Str) (String.lowercase_ascii Str))
+(String.sub (String.cat Str Str) Num (String.length Str))
+(String.sub (String.trim Str) Num (String.length (String.trim Str)))
+(String.hash (String.cat Str Str))
+(String.hash (String.uppercase_ascii Str))
 
 // length returns int — use in sub, get, seeded_hash, etc.
-(= (length Str) Num)
-(succ (length Str))
-(< (length Str) Num)
-(get Str (length Str))
-(sub Str Num (length Str))
-(seeded_hash (length Str) Str)
-(index_from Str (length Str) Char)
-(= (length (cat Str Str)) Num)
-(< (length Str) (length (cat Str Str)))
+((=) (String.length Str) Num)
+(succ (String.length Str))
+((<) (String.length Str) Num)
+(String.get Str (String.length Str))
+(String.sub Str Num (String.length Str))
+(String.seeded_hash (String.length Str) Str)
+(String.index_from Str (String.length Str) Char)
+((=) (String.length (String.cat Str Str)) Num)
+((<) (String.length Str) (String.length (String.cat Str Str)))
 
 // equal returns bool
-(= (equal Str Str) true)
-(not (equal Str Str))
-(&& (equal Str Str) (equal empty empty))
-(|| (equal Str Str) (contains Str Char))
+((=) (String.equal Str Str) true)
+(not (String.equal Str Str))
+((&&) (String.equal Str Str) (String.equal String.empty String.empty))
+((||) (String.equal Str Str) (String.contains Str Char))
 
 // compare returns int
-(= (compare Str Str) Num)
-(succ (compare Str Str))
-(< (compare Str Str) Num)
+((=) (String.compare Str Str) Num)
+(succ (String.compare Str Str))
+((<) (String.compare Str Str) Num)
 
 // contains/for_all/exists/starts_with/ends_with return bool
-(= (contains Str Char) true)
-(not (contains Str Char))
-(not (for_all (fun c5 -> (= c5 Char)) Str))
-(&& (contains Str Char) (exists (fun c6 -> (= c6 Char)) Str))
-(not (starts_with Str Str))
-(not (ends_with Str Str))
+((=) (String.contains Str Char) true)
+(not (String.contains Str Char))
+(not (String.for_all (fun c5 -> ((=) c5 Char)) Str))
+((&&) (String.contains Str Char) (String.exists (fun c6 -> ((=) c6 Char)) Str))
+(not (String.starts_with Str Str))
+(not (String.ends_with Str Str))
 
 // index/rindex return int — use in sub, get
-(= (index Str Char) Num)
-(succ (index Str Char))
-(get Str (index Str Char))
-(sub Str (index Str Char) Num)
-(sub Str Num (rindex Str Char))
+((=) (String.index Str Char) Num)
+(succ (String.index Str Char))
+(String.get Str (String.index Str Char))
+(String.sub Str (String.index Str Char) Num)
+(String.sub Str Num (String.rindex Str Char))
 
 // hash/seeded_hash return int
-(= (hash Str) Num)
-(succ (hash Str))
-(seeded_hash (hash Str) Str)
-(= (seeded_hash Num Str) Num)
+((=) (String.hash Str) Num)
+(succ (String.hash Str))
+(String.seeded_hash (String.hash Str) Str)
+((=) (String.seeded_hash Num Str) Num)
 
 // split_on_char returns string list
-(@ (split_on_char Char Str) (cons Str []))
+((@) (String.split_on_char Char Str) (cons Str []))
 
 // Invalid
-(length Num)
-(length Char)
-(get Num Num)
-(get Str Str)
-(cat Num Str)
-(cat Str Num)
-(equal Str Num)
-(contains Str Num)
-(sub Str Char Num)
-(hash Num)
-(succ (equal Str Str))
-(not (length Str))
+(String.length Num)
+(String.length Char)
+(String.get Num Num)
+(String.get Str Str)
+(String.cat Num Str)
+(String.cat Str Num)
+(String.equal Str Num)
+(String.contains Str Num)
+(String.sub Str Char Num)
+(String.hash Num)
+(succ (String.equal Str Str))
+(not (String.length Str))

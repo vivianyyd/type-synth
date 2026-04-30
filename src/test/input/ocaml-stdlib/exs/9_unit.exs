@@ -7,8 +7,8 @@
 (ignore Char)
 (ignore Unit)
 (ignore (succ Num))
-(ignore (+ Num Num))
-(ignore (^ Str Str))
+(ignore ((+) Num Num))
+(ignore ((^) Str Str))
 (ignore (ignore Num))
 
 // ignore returns unit: unit can be passed to ignore again

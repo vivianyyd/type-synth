@@ -1,166 +1,166 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 9_unit.types, 10_strconv.types, 12_list.types, 14_stdout.types, 67_seq_mod.types
 
 // empty: 'a t constant
-empty
+Seq.empty
 
 // return, singleton: 'a -> 'a t
-(return Num)
-(return Str)
-(singleton Num)
-(singleton Str)
+(Seq.return Num)
+(Seq.return Str)
+(Seq.singleton Num)
+(Seq.singleton Str)
 
 // cons: 'a -> 'a t -> 'a t
-(cons Num empty)
-(cons Str empty)
-(cons Num (return Num))
-(cons Str (singleton Str))
+(Seq.cons Num Seq.empty)
+(Seq.cons Str Seq.empty)
+(Seq.cons Num (Seq.return Num))
+(Seq.cons Str (Seq.singleton Str))
 
 // repeat: 'a -> 'a t
-(repeat Num)
-(repeat Str)
+(Seq.repeat Num)
+(Seq.repeat Str)
 
 // ints: int -> int t
-(ints Num)
+(Seq.ints Num)
 
 // is_empty: 'a t -> bool
-(is_empty empty)
-(is_empty (return Num))
-(is_empty (ints Num))
+(Seq.is_empty Seq.empty)
+(Seq.is_empty (Seq.return Num))
+(Seq.is_empty (Seq.ints Num))
 
 // length: 'a t -> int
-(length (return Num))
-(length empty)
+(Seq.length (Seq.return Num))
+(Seq.length Seq.empty)
 
 // iter: ('a -> unit) -> 'a t -> unit
-(iter ignore (return Num))
-(iter print_int (return Num))
-(iter print_string (return Str))
+(Seq.iter ignore (Seq.return Num))
+(Seq.iter print_int (Seq.return Num))
+(Seq.iter print_string (Seq.return Str))
 
 // fold_left: ('acc -> 'a -> 'acc) -> 'acc -> 'a t -> 'acc
-(fold_left (+) Num (return Num))
-(fold_left (^) Str (return Str))
-(fold_left (+) Num (ints Num))
+(Seq.fold_left (+) Num (Seq.return Num))
+(Seq.fold_left (^) Str (Seq.return Str))
+(Seq.fold_left (+) Num (Seq.ints Num))
 
 // for_all: ('a -> bool) -> 'a t -> bool
-(for_all (fun x1 -> (= x1 Num)) (return Num))
-(for_all (fun x2 -> (= x2 Str)) (return Str))
+(Seq.for_all (fun x1 -> ((=) x1 Num)) (Seq.return Num))
+(Seq.for_all (fun x2 -> ((=) x2 Str)) (Seq.return Str))
 
 // exists: ('a -> bool) -> 'a t -> bool
-(exists (fun x3 -> (= x3 Num)) (return Num))
+(Seq.exists (fun x3 -> ((=) x3 Num)) (Seq.return Num))
 
 // find: ('a -> bool) -> 'a t -> 'a option
-(find (fun x4 -> (= x4 Num)) (return Num))
+(Seq.find (fun x4 -> ((=) x4 Num)) (Seq.return Num))
 
 // find_index: ('a -> bool) -> 'a t -> int option
-(find_index (fun x5 -> (= x5 Num)) (return Num))
+(Seq.find_index (fun x5 -> ((=) x5 Num)) (Seq.return Num))
 
 // map: ('a -> 'b) -> 'a t -> 'b t
-(map succ (return Num))
-(map not (return true))
-(map string_of_int (return Num))
-(map string_of_int (ints Num))
+(Seq.map succ (Seq.return Num))
+(Seq.map not (Seq.return true))
+(Seq.map string_of_int (Seq.return Num))
+(Seq.map string_of_int (Seq.ints Num))
 
 // filter: ('a -> bool) -> 'a t -> 'a t
-(filter (fun x6 -> (= x6 Num)) (return Num))
-(filter (fun x7 -> (= x7 Str)) (return Str))
+(Seq.filter (fun x6 -> ((=) x6 Num)) (Seq.return Num))
+(Seq.filter (fun x7 -> ((=) x7 Str)) (Seq.return Str))
 
 // take: int -> 'a t -> 'a t
-(take Num (return Num))
-(take Num (ints Num))
-(take Num (repeat Str))
+(Seq.take Num (Seq.return Num))
+(Seq.take Num (Seq.ints Num))
+(Seq.take Num (Seq.repeat Str))
 
 // drop: int -> 'a t -> 'a t
-(drop Num (return Num))
-(drop Num (ints Num))
+(Seq.drop Num (Seq.return Num))
+(Seq.drop Num (Seq.ints Num))
 
 // append: 'a t -> 'a t -> 'a t
-(append (return Num) (return Num))
-(append (ints Num) (return Num))
-(append empty (return Str))
+(Seq.append (Seq.return Num) (Seq.return Num))
+(Seq.append (Seq.ints Num) (Seq.return Num))
+(Seq.append Seq.empty (Seq.return Str))
 
 // memoize, once: 'a t -> 'a t
-(memoize (return Num))
-(memoize (ints Num))
-(once (return Num))
+(Seq.memoize (Seq.return Num))
+(Seq.memoize (Seq.ints Num))
+(Seq.once (Seq.return Num))
 
 // of_list: 'a list -> 'a t
-(of_list (cons Num []))
-(of_list (cons Str []))
+(Seq.of_list (Seq.cons Num []))
+(Seq.of_list (Seq.cons Str []))
 
 // to_list: 'a t -> 'a list
-(to_list (return Num))
-(to_list (return Str))
-(to_list empty)
+(Seq.to_list (Seq.return Num))
+(Seq.to_list (Seq.return Str))
+(Seq.to_list Seq.empty)
 
 // of_array: 'a array -> 'a t
-(of_array (Array.make Num Num))
-(of_array (Array.make Num Str))
+(Seq.of_array (Array.make Num Num))
+(Seq.of_array (Array.make Num Str))
 
 // to_array: 'a t -> 'a array
-(to_array (return Num))
-(to_array (return Str))
+(Seq.to_array (Seq.return Num))
+(Seq.to_array (Seq.return Str))
 
 // equal: ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
-(equal (=) (return Num) (return Num))
-(equal (=) (return Str) (return Str))
+(Seq.equal (=) (Seq.return Num) (Seq.return Num))
+(Seq.equal (=) (Seq.return Str) (Seq.return Str))
 
 // compare: ('a -> 'b -> int) -> 'a t -> 'b t -> int
-(compare compare (return Num) (return Num))
+(Seq.compare Seq.compare (Seq.return Num) (Seq.return Num))
 
 // Chaining: return/singleton produce seq — chain into map, filter, fold_left, etc.
-(map succ (map pred (return Num)))
-(fold_left (+) Num (map succ (return Num)))
-(length (map succ (return Num)))
-(is_empty (map succ empty))
-(to_list (map succ (return Num)))
-(to_list (filter (fun x8 -> (= x8 Num)) (return Num)))
-(to_list (take Num (ints Num)))
-(to_list (append (return Num) (return Num)))
-(length (take Num (ints Num)))
+(Seq.map succ (Seq.map pred (Seq.return Num)))
+(Seq.fold_left (+) Num (Seq.map succ (Seq.return Num)))
+(Seq.length (Seq.map succ (Seq.return Num)))
+(Seq.is_empty (Seq.map succ Seq.empty))
+(Seq.to_list (Seq.map succ (Seq.return Num)))
+(Seq.to_list (Seq.filter (fun x8 -> ((=) x8 Num)) (Seq.return Num)))
+(Seq.to_list (Seq.take Num (Seq.ints Num)))
+(Seq.to_list (Seq.append (Seq.return Num) (Seq.return Num)))
+(Seq.length (Seq.take Num (Seq.ints Num)))
 
 // map returns seq — inspect it
-(is_empty (map succ (return Num)))
-(length (map string_of_int (return Num)))
-(to_list (map string_of_int (return Num)))
-(fold_left (^) Str (map string_of_int (return Num)))
+(Seq.is_empty (Seq.map succ (Seq.return Num)))
+(Seq.length (Seq.map string_of_int (Seq.return Num)))
+(Seq.to_list (Seq.map string_of_int (Seq.return Num)))
+(Seq.fold_left (^) Str (Seq.map string_of_int (Seq.return Num)))
 
 // fold_left returns accumulator
-(= (fold_left (+) Num (return Num)) Num)
-(succ (fold_left (+) Num (return Num)))
-(fold_left (+) (fold_left (+) Num (return Num)) (ints Num))
+((=) (Seq.fold_left (+) Num (Seq.return Num)) Num)
+(succ (Seq.fold_left (+) Num (Seq.return Num)))
+(Seq.fold_left (+) (Seq.fold_left (+) Num (Seq.return Num)) (Seq.ints Num))
 
 // is_empty returns bool
-(= (is_empty empty) true)
-(not (is_empty (return Num)))
-(&& (is_empty empty) (is_empty empty))
+((=) (Seq.is_empty Seq.empty) true)
+(not (Seq.is_empty (Seq.return Num)))
+((&&) (Seq.is_empty Seq.empty) (Seq.is_empty Seq.empty))
 
 // length returns int
-(= (length (return Num)) Num)
-(succ (length (return Num)))
-(take (length (return Num)) (ints Num))
+((=) (Seq.length (Seq.return Num)) Num)
+(succ (Seq.length (Seq.return Num)))
+(Seq.take (Seq.length (Seq.return Num)) (Seq.ints Num))
 
 // equal returns bool
-(= (equal (=) (return Num) (return Num)) true)
-(not (equal (=) (return Num) (return Num)))
-(&& (equal (=) (return Num) (return Num)) (is_empty empty))
+((=) (Seq.equal (=) (Seq.return Num) (Seq.return Num)) true)
+(not (Seq.equal (=) (Seq.return Num) (Seq.return Num)))
+((&&) (Seq.equal (=) (Seq.return Num) (Seq.return Num)) (Seq.is_empty Seq.empty))
 
 // compare returns int
-(= (compare compare (return Num) (return Num)) Num)
-(succ (compare compare (return Num) (return Num)))
+((=) (Seq.compare Seq.compare (Seq.return Num) (Seq.return Num)) Num)
+(succ (Seq.compare Seq.compare (Seq.return Num) (Seq.return Num)))
 
 // to_list returns list
-(@ (to_list (return Num)) (cons Num []))
+((@) (Seq.to_list (Seq.return Num)) (Seq.cons Num []))
 
 // ints returns int seq — chain
-(fold_left (+) Num (take Num (ints Num)))
-(map succ (ints Num))
-(to_list (take Num (ints Num)))
+(Seq.fold_left (+) Num (Seq.take Num (Seq.ints Num)))
+(Seq.map succ (Seq.ints Num))
+(Seq.to_list (Seq.take Num (Seq.ints Num)))
 
 // Invalid
-(succ (is_empty empty))
-(not (length (return Num)))
-(map not (return Num))
-(map succ (return Str))
-(fold_left (+) Str (return Num))
-(append (return Num) (return Str))
-(equal (=) (return Num) (return Str))
+(succ (Seq.is_empty Seq.empty))
+(not (Seq.length (Seq.return Num)))
+(Seq.map not (Seq.return Num))
+(Seq.map succ (Seq.return Str))
+(Seq.fold_left (+) Str (Seq.return Num))
+(Seq.append (Seq.return Num) (Seq.return Str))
+(Seq.equal (=) (Seq.return Num) (Seq.return Str))

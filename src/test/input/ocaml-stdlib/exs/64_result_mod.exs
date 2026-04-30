@@ -1,153 +1,153 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 57_option_mod.types, 64_result_mod.types
 
 // ok: 'a -> ('a, 'e) result
-(ok Num)
-(ok Str)
-(ok true)
+(Result.ok Num)
+(Result.ok Str)
+(Result.ok true)
 
 // error: 'e -> ('a, 'e) result
-(error Str)
-(error Num)
+(Result.error Str)
+(Result.error Num)
 
 // get_ok: ('a, 'e) result -> 'a
-(get_ok (ok Num))
-(get_ok (ok Str))
+(Result.get_ok (Result.ok Num))
+(Result.get_ok (Result.ok Str))
 
 // get_error: ('a, 'e) result -> 'e
-(get_error (error Str))
-(get_error (error Num))
+(Result.get_error (Result.error Str))
+(Result.get_error (Result.error Num))
 
 // value: ('a, 'e) result -> default:'a -> 'a
-(value (ok Num) Num)
-(value (ok Str) Str)
-(value (error Str) Num)
-(value (error Num) Str)
+(Result.value (Result.ok Num) Num)
+(Result.value (Result.ok Str) Str)
+(Result.value (Result.error Str) Num)
+(Result.value (Result.error Num) Str)
 
 // is_ok, is_error: ('a, 'e) result -> bool
-(is_ok (ok Num))
-(is_ok (error Str))
-(is_error (error Str))
-(is_error (ok Num))
+(Result.is_ok (Result.ok Num))
+(Result.is_ok (Result.error Str))
+(Result.is_error (Result.error Str))
+(Result.is_error (Result.ok Num))
 
 // map: ('a -> 'b) -> ('a, 'e) result -> ('b, 'e) result
-(map succ (ok Num))
-(map not (ok true))
-(map string_of_int (ok Num))
-(map succ (error Str))
+(Result.map succ (Result.ok Num))
+(Result.map not (Result.ok true))
+(Result.map string_of_int (Result.ok Num))
+(Result.map succ (Result.error Str))
 
 // map_error: ('e -> 'f) -> ('a, 'e) result -> ('a, 'f) result
-(map_error string_of_int (error Num))
-(map_error succ (error Num))
+(Result.map_error string_of_int (Result.error Num))
+(Result.map_error succ (Result.error Num))
 
 // bind: ('a, 'e) result -> ('a -> ('b, 'e) result) -> ('b, 'e) result
-(bind (ok Num) (fun x1 -> (ok (succ x1))))
-(bind (ok Str) (fun x2 -> (ok (^ x2 Str))))
-(bind (error Str) (fun x3 -> (ok x3)))
+(Result.bind (Result.ok Num) (fun x1 -> (Result.ok (succ x1))))
+(Result.bind (Result.ok Str) (fun x2 -> (Result.ok ((^) x2 Str))))
+(Result.bind (Result.error Str) (fun x3 -> (Result.ok x3)))
 
 // join: (('a, 'e) result, 'e) result -> ('a, 'e) result
-(join (ok (ok Num)))
-(join (ok (error Str)))
-(join (error Str))
+(Result.join (Result.ok (Result.ok Num)))
+(Result.join (Result.ok (Result.error Str)))
+(Result.join (Result.error Str))
 
 // retract: ('a, 'a) result -> 'a
-(retract (ok Num))
-(retract (error Num))
-(retract (ok Str))
-(retract (error Str))
+(Result.retract (Result.ok Num))
+(Result.retract (Result.error Num))
+(Result.retract (Result.ok Str))
+(Result.retract (Result.error Str))
 
 // iter: ('a -> unit) -> ('a, 'e) result -> unit
-(iter ignore (ok Num))
-(iter print_int (ok Num))
-(iter print_string (ok Str))
+(Result.iter ignore (Result.ok Num))
+(Result.iter print_int (Result.ok Num))
+(Result.iter print_string (Result.ok Str))
 
 // iter_error: ('e -> unit) -> ('a, 'e) result -> unit
-(iter_error ignore (error Str))
-(iter_error print_string (error Str))
+(Result.iter_error ignore (Result.error Str))
+(Result.iter_error print_string (Result.error Str))
 
 // equal, compare
-(equal (=) (=) (ok Num) (ok Num))
-(equal (=) (=) (ok Str) (ok Str))
-(compare compare compare (ok Num) (ok Num))
+(Result.equal (=) (=) (Result.ok Num) (Result.ok Num))
+(Result.equal (=) (=) (Result.ok Str) (Result.ok Str))
+(Result.compare Result.compare Result.compare (Result.ok Num) (Result.ok Num))
 
 // to_option: ('a, 'e) result -> 'a option
-(to_option (ok Num))
-(to_option (ok Str))
-(to_option (error Str))
+(Result.to_option (Result.ok Num))
+(Result.to_option (Result.ok Str))
+(Result.to_option (Result.error Str))
 
 // to_list: ('a, 'e) result -> 'a list
-(to_list (ok Num))
-(to_list (error Str))
+(Result.to_list (Result.ok Num))
+(Result.to_list (Result.error Str))
 
 // Chaining: get_ok returns the ok type
-(= (get_ok (ok Num)) Num)
-(succ (get_ok (ok Num)))
-(^ (get_ok (ok Str)) Str)
-(not (get_ok (ok true)))
-(ok (get_ok (ok Num)))
-(map succ (ok (get_ok (ok Num))))
+((=) (Result.get_ok (Result.ok Num)) Num)
+(succ (Result.get_ok (Result.ok Num)))
+((^) (Result.get_ok (Result.ok Str)) Str)
+(not (Result.get_ok (Result.ok true)))
+(Result.ok (Result.get_ok (Result.ok Num)))
+(Result.map succ (Result.ok (Result.get_ok (Result.ok Num))))
 
 // get_error returns the error type
-(= (get_error (error Str)) Str)
-(^ (get_error (error Str)) Str)
-(error (get_error (error Str)))
+((=) (Result.get_error (Result.error Str)) Str)
+((^) (Result.get_error (Result.error Str)) Str)
+(Result.error (Result.get_error (Result.error Str)))
 
 // value returns the ok type
-(= (value (ok Num) Num) Num)
-(succ (value (ok Num) Num))
-(value (ok (value (ok Num) Num)) Num)
+((=) (Result.value (Result.ok Num) Num) Num)
+(succ (Result.value (Result.ok Num) Num))
+(Result.value (Result.ok (Result.value (Result.ok Num) Num)) Num)
 
 // retract returns the wrapped type
-(= (retract (ok Num)) Num)
-(succ (retract (ok Num)))
-(= (retract (error Num)) Num)
-(= (retract (ok Str)) Str)
-(^ (retract (ok Str)) Str)
-(= (retract (ok Num)) (retract (error Num)))
+((=) (Result.retract (Result.ok Num)) Num)
+(succ (Result.retract (Result.ok Num)))
+((=) (Result.retract (Result.error Num)) Num)
+((=) (Result.retract (Result.ok Str)) Str)
+((^) (Result.retract (Result.ok Str)) Str)
+((=) (Result.retract (Result.ok Num)) (Result.retract (Result.error Num)))
 
 // map returns result — chain into get_ok, is_ok, etc.
-(get_ok (map succ (ok Num)))
-(is_ok (map succ (ok Num)))
-(is_error (map succ (error Str)))
-(= (get_ok (map succ (ok Num))) Num)
-(succ (get_ok (map succ (ok Num))))
-(map succ (map pred (ok Num)))
-(get_ok (map succ (map pred (ok Num))))
+(Result.get_ok (Result.map succ (Result.ok Num)))
+(Result.is_ok (Result.map succ (Result.ok Num)))
+(Result.is_error (Result.map succ (Result.error Str)))
+((=) (Result.get_ok (Result.map succ (Result.ok Num))) Num)
+(succ (Result.get_ok (Result.map succ (Result.ok Num))))
+(Result.map succ (Result.map pred (Result.ok Num)))
+(Result.get_ok (Result.map succ (Result.map pred (Result.ok Num))))
 
 // bind returns result
-(get_ok (bind (ok Num) (fun x4 -> (ok (succ x4)))))
-(is_ok (bind (ok Num) (fun x5 -> (ok x5))))
-(is_error (bind (error Str) (fun x6 -> (ok x6))))
+(Result.get_ok (Result.bind (Result.ok Num) (fun x4 -> (Result.ok (succ x4)))))
+(Result.is_ok (Result.bind (Result.ok Num) (fun x5 -> (Result.ok x5))))
+(Result.is_error (Result.bind (Result.error Str) (fun x6 -> (Result.ok x6))))
 
 // is_ok / is_error return bool
-(= (is_ok (ok Num)) true)
-(= (is_error (error Str)) true)
-(not (is_ok (error Str)))
-(not (is_error (ok Num)))
-(&& (is_ok (ok Num)) (is_ok (ok Str)))
-(|| (is_error (error Num)) (is_ok (ok Num)))
+((=) (Result.is_ok (Result.ok Num)) true)
+((=) (Result.is_error (Result.error Str)) true)
+(not (Result.is_ok (Result.error Str)))
+(not (Result.is_error (Result.ok Num)))
+((&&) (Result.is_ok (Result.ok Num)) (Result.is_ok (Result.ok Str)))
+((||) (Result.is_error (Result.error Num)) (Result.is_ok (Result.ok Num)))
 
 // equal returns bool
-(= (equal (=) (=) (ok Num) (ok Num)) true)
-(not (equal (=) (=) (ok Num) (error Str)))
+((=) (Result.equal (=) (=) (Result.ok Num) (Result.ok Num)) true)
+(not (Result.equal (=) (=) (Result.ok Num) (Result.error Str)))
 
 // compare returns int
-(= (compare compare compare (ok Num) (ok Num)) Num)
-(succ (compare compare compare (ok Num) (ok Num)))
+((=) (Result.compare Result.compare Result.compare (Result.ok Num) (Result.ok Num)) Num)
+(succ (Result.compare Result.compare Result.compare (Result.ok Num) (Result.ok Num)))
 
 // to_option — chain into option ops
-(is_some (to_option (ok Num)))
-(is_none (to_option (error Str)))
+(Option.is_some (Result.to_option (Result.ok Num)))
+(Option.is_none (Result.to_option (Result.error Str)))
 
 // Invalid
-(succ (ok Num))
-(not (ok true))
-(^ (ok Str) Str)
-(succ (error Str))
-(is_ok Num)
-(is_error Str)
-(get_ok (error Str))
-(succ (is_ok (ok Num)))
-(not (get_ok (ok Num)))
-(= (get_ok (ok Num)) (get_ok (ok Str)))
-(map not (ok Num))
-(retract (ok Num))
+(succ (Result.ok Num))
+(not (Result.ok true))
+((^) (Result.ok Str) Str)
+(succ (Result.error Str))
+(Result.is_ok Num)
+(Result.is_error Str)
+(Result.get_ok (Result.error Str))
+(succ (Result.is_ok (Result.ok Num)))
+(not (Result.get_ok (Result.ok Num)))
+((=) (Result.get_ok (Result.ok Num)) (Result.get_ok (Result.ok Str)))
+(Result.map not (Result.ok Num))
+(Result.retract (Result.ok Num))

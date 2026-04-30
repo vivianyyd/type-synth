@@ -17,9 +17,9 @@
 (float_of_string (string_of_float Flt))
 (bool_of_string (string_of_bool true))
 
-(= (string_of_bool true) Str)
-(= (string_of_int Num) Str)
-(= (string_of_float Flt) Str)
+((=) (string_of_bool true) Str)
+((=) (string_of_int Num) Str)
+((=) (string_of_float Flt) Str)
 
 (string_of_bool Num)
 (string_of_int Str)
@@ -36,8 +36,8 @@
 (int_of_string_opt (string_of_int Num))
 (float_of_string_opt (string_of_float Flt))
 (bool_of_string_opt (string_of_bool true))
-(= (string_of_int (int_of_string Str)) Str)
-(= (string_of_float (float_of_string Str)) Str)
+((=) (string_of_int (int_of_string Str)) Str)
+((=) (string_of_float (float_of_string Str)) Str)
 
 // *_of_string returns int/float/bool: feed into further conversions
 (string_of_int (int_of_string Str))
@@ -45,11 +45,11 @@
 (string_of_bool (bool_of_string Str))
 
 // output of one conversion is the right type for another conversion
-(= (int_of_string (string_of_int Num)) Num)
-(= (float_of_string (string_of_float Flt)) Flt)
-(= (bool_of_string (string_of_bool true)) true)
-(= (int_of_string Str) (int_of_string Str))
-(= (string_of_int Num) (string_of_int Num))
+((=) (int_of_string (string_of_int Num)) Num)
+((=) (float_of_string (string_of_float Flt)) Flt)
+((=) (bool_of_string (string_of_bool true)) true)
+((=) (int_of_string Str) (int_of_string Str))
+((=) (string_of_int Num) (string_of_int Num))
 
 // invalid cross-type chaining
 (int_of_string (string_of_bool true))

@@ -17,7 +17,7 @@
 
 (succ (land Num Num))
 (abs (lnot Num))
-(+ (land Num Num) (lor Num Num))
+((+) (land Num Num) (lor Num Num))
 
 (land Num Str)
 (lsl Str Num)
@@ -44,16 +44,16 @@
 // bitwise output is int: use in arithmetic
 (succ (land Num Num))
 (pred (lor Num Num))
-(+ (land Num Num) (lor Num Num))
-(- (lsl Num Num) (lsr Num Num))
-( * (land Num Num) Num)
+((+) (land Num Num) (lor Num Num))
+((-) (lsl Num Num) (lsr Num Num))
+(( * ) (land Num Num) Num)
 (abs (lnot Num))
 (mod (land Num Num) (succ Num))
 
 // arithmetic output is int: use in bitwise
 (land (succ Num) Num)
 (lor Num (abs Num))
-(lxor (+ Num Num) (- Num Num))
+(lxor ((+) Num Num) ((-) Num Num))
 (lsl (abs Num) Num)
 (lnot (succ (succ Num)))
 

@@ -1,125 +1,125 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 55_obj_mod.types
 
 // repr: 'a -> t  (box any value as an Obj.t)
-(repr Num)
-(repr Str)
-(repr true)
-(repr Char)
+(Obj.repr Num)
+(Obj.repr Str)
+(Obj.repr true)
+(Obj.repr Char)
 
 // obj: t -> 'a  (unbox; result is polymorphic)
-(obj (repr Num))
-(obj (repr Str))
+(Obj.obj (Obj.repr Num))
+(Obj.obj (Obj.repr Str))
 
 // magic: 'a -> 'b  (unsafe cast)
-(magic Num)
-(magic Str)
-(magic true)
+(Obj.magic Num)
+(Obj.magic Str)
+(Obj.magic true)
 
 // Predicates: t -> bool
-(is_block (repr Num))
-(is_block (repr Str))
-(is_int (repr Num))
-(is_int (repr true))
+(Obj.is_block (Obj.repr Num))
+(Obj.is_block (Obj.repr Str))
+(Obj.is_int (Obj.repr Num))
+(Obj.is_int (Obj.repr true))
 
 // tag, size, reachable_words: t -> int
-(tag (repr Num))
-(tag (repr Str))
-(size (repr Str))
-(size (repr (cons Num [])))
-(reachable_words (repr Str))
+(Obj.tag (Obj.repr Num))
+(Obj.tag (Obj.repr Str))
+(Obj.size (Obj.repr Str))
+(Obj.size (Obj.repr (cons Num [])))
+(Obj.reachable_words (Obj.repr Str))
 
 // field: t -> int -> t
-(field (repr Str) Num)
-(field (repr (cons Num [])) Num)
+(Obj.field (Obj.repr Str) Num)
+(Obj.field (Obj.repr (cons Num [])) Num)
 
 // double_field: t -> int -> float
-(double_field (repr Flt) Num)
+(Obj.double_field (Obj.repr Flt) Num)
 
 // new_block: int -> int -> t
-(new_block Num Num)
+(Obj.new_block Num Num)
 
 // dup: t -> t
-(dup (repr Str))
-(dup (repr Num))
-(dup (new_block Num Num))
+(Obj.dup (Obj.repr Str))
+(Obj.dup (Obj.repr Num))
+(Obj.dup (Obj.new_block Num Num))
 
 // with_tag: int -> t -> t
-(with_tag Num (repr Str))
-(with_tag (tag (repr Str)) (repr Str))
+(Obj.with_tag Num (Obj.repr Str))
+(Obj.with_tag (Obj.tag (Obj.repr Str)) (Obj.repr Str))
 
 // Integer tag constants
-first_non_constant_constructor_tag
-last_non_constant_constructor_tag
-string_tag
-double_tag
-closure_tag
-object_tag
+Obj.first_non_constant_constructor_tag
+Obj.last_non_constant_constructor_tag
+Obj.string_tag
+Obj.double_tag
+Obj.closure_tag
+Obj.object_tag
 
 // Chaining: repr returns Obj.t — use in all Obj ops
-(is_block (repr Num))
-(is_int (repr Num))
-(tag (repr Str))
-(size (repr Str))
-(dup (repr Num))
-(field (repr Str) Num)
-(with_tag string_tag (repr Str))
+(Obj.is_block (Obj.repr Num))
+(Obj.is_int (Obj.repr Num))
+(Obj.tag (Obj.repr Str))
+(Obj.size (Obj.repr Str))
+(Obj.dup (Obj.repr Num))
+(Obj.field (Obj.repr Str) Num)
+(Obj.with_tag Obj.string_tag (Obj.repr Str))
 
 // tag returns int — use in arithmetic and as argument to with_tag
-(= (tag (repr Str)) Num)
-(succ (tag (repr Str)))
-(< (tag (repr Str)) string_tag)
-(= (tag (repr Str)) string_tag)
-(with_tag (tag (repr Num)) (repr Num))
-(with_tag (succ (tag (repr Str))) (repr Str))
+((=) (Obj.tag (Obj.repr Str)) Num)
+(succ (Obj.tag (Obj.repr Str)))
+((<) (Obj.tag (Obj.repr Str)) Obj.string_tag)
+((=) (Obj.tag (Obj.repr Str)) Obj.string_tag)
+(Obj.with_tag (Obj.tag (Obj.repr Num)) (Obj.repr Num))
+(Obj.with_tag (succ (Obj.tag (Obj.repr Str))) (Obj.repr Str))
 
 // size / reachable_words return int
-(= (size (repr Str)) Num)
-(succ (size (repr (cons Num []))))
-(< (size (repr Num)) (size (repr Str)))
-(field (repr Str) (size (repr Str)))
+((=) (Obj.size (Obj.repr Str)) Num)
+(succ (Obj.size (Obj.repr (cons Num []))))
+((<) (Obj.size (Obj.repr Num)) (Obj.size (Obj.repr Str)))
+(Obj.field (Obj.repr Str) (Obj.size (Obj.repr Str)))
 
 // double_field returns float
-(+. (double_field (repr Flt) Num) Flt)
-(= (double_field (repr Flt) Num) Flt)
+((+.) (Obj.double_field (Obj.repr Flt) Num) Flt)
+((=) (Obj.double_field (Obj.repr Flt) Num) Flt)
 
 // is_block / is_int return bool
-(= (is_block (repr Str)) true)
-(= (is_int (repr Num)) true)
-(not (is_block (repr Num)))
-(not (is_int (repr Str)))
+((=) (Obj.is_block (Obj.repr Str)) true)
+((=) (Obj.is_int (Obj.repr Num)) true)
+(not (Obj.is_block (Obj.repr Num)))
+(not (Obj.is_int (Obj.repr Str)))
 
 // field returns Obj.t — chain into more obj ops
-(tag (field (repr Str) Num))
-(is_block (field (repr Str) Num))
-(dup (field (repr Str) Num))
+(Obj.tag (Obj.field (Obj.repr Str) Num))
+(Obj.is_block (Obj.field (Obj.repr Str) Num))
+(Obj.dup (Obj.field (Obj.repr Str) Num))
 
 // dup returns Obj.t — chain
-(tag (dup (repr Str)))
-(is_int (dup (repr Num)))
+(Obj.tag (Obj.dup (Obj.repr Str)))
+(Obj.is_int (Obj.dup (Obj.repr Num)))
 
 // with_tag returns Obj.t
-(tag (with_tag Num (repr Str)))
-(is_block (with_tag string_tag (repr Str)))
+(Obj.tag (Obj.with_tag Num (Obj.repr Str)))
+(Obj.is_block (Obj.with_tag Obj.string_tag (Obj.repr Str)))
 
 // Extension_constructor submodule
-(Extension_constructor.name (Extension_constructor.of_val Num))
-(Extension_constructor.id (Extension_constructor.of_val Num))
-(= (Extension_constructor.id (Extension_constructor.of_val Num)) Num)
-(= (Extension_constructor.name (Extension_constructor.of_val Num)) Str)
+(Obj.Extension_constructor.name (Obj.Extension_constructor.of_val Num))
+(Obj.Extension_constructor.id (Obj.Extension_constructor.of_val Num))
+((=) (Obj.Extension_constructor.id (Obj.Extension_constructor.of_val Num)) Num)
+((=) (Obj.Extension_constructor.name (Obj.Extension_constructor.of_val Num)) Str)
 
 // Obj.Ephemeron submodule
-(Ephemeron.create Num)
-(Ephemeron.length (Ephemeron.create Num))
-(Ephemeron.check_key (Ephemeron.create Num) Num)
-(Ephemeron.check_data (Ephemeron.create Num))
+(Obj.Ephemeron.create Num)
+(Obj.Ephemeron.length (Obj.Ephemeron.create Num))
+(Obj.Ephemeron.check_key (Obj.Ephemeron.create Num) Num)
+(Obj.Ephemeron.check_data (Obj.Ephemeron.create Num))
 
 // Invalid: Obj.t used where plain values expected, and vice versa
-(succ (repr Num))
-(^ (repr Str) Str)
-(not (repr true))
-(tag Num)
-(size Str)
-(is_block Num)
-(field Num Num)
-(succ (is_block (repr Num)))
-(not (tag (repr Str)))
+(succ (Obj.repr Num))
+((^) (Obj.repr Str) Str)
+(not (Obj.repr true))
+(Obj.tag Num)
+(Obj.size Str)
+(Obj.is_block Num)
+(Obj.field Num Num)
+(succ (Obj.is_block (Obj.repr Num)))
+(not (Obj.tag (Obj.repr Str)))

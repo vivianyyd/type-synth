@@ -1,114 +1,114 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 6_float.types, 63_random_mod.types
 
 // init: int -> unit
-(init Num)
+(Random.init Num)
 
 // self_init: unit -> unit
-(self_init Unit)
+(Random.self_init Unit)
 
 // bits: unit -> int
-(bits Unit)
+(Random.bits Unit)
 
 // int: int -> int
-(int Num)
+(Random.int Num)
 
 // full_int: int -> int
-(full_int Num)
+(Random.full_int Num)
 
 // float: float -> float
-(float Flt)
+(Random.float Flt)
 
 // bool: unit -> bool
-(bool Unit)
+(Random.bool Unit)
 
 // bits32: unit -> Int32.t
-(bits32 Unit)
+(Random.bits32 Unit)
 
 // bits64: unit -> Int64.t
-(bits64 Unit)
+(Random.bits64 Unit)
 
 // get_state: unit -> State.t
-(get_state Unit)
+(Random.get_state Unit)
 
 // set_state: State.t -> unit
-(set_state (get_state Unit))
+(Random.set_state (Random.get_state Unit))
 
 // split: unit -> State.t
-(split Unit)
+(Random.split Unit)
 
 // State submodule
-(State.make_self_init Unit)
-(State.copy (get_state Unit))
-(State.bits (get_state Unit))
-(State.int (get_state Unit) Num)
-(State.full_int (get_state Unit) Num)
-(State.float (get_state Unit) Flt)
-(State.bool (get_state Unit))
-(State.bits32 (get_state Unit))
-(State.bits64 (get_state Unit))
-(State.split (get_state Unit))
-(State.to_binary_string (get_state Unit))
-(State.of_binary_string Str)
+(Random.State.make_self_init Unit)
+(Random.State.copy (Random.get_state Unit))
+(Random.State.bits (Random.get_state Unit))
+(Random.State.int (Random.get_state Unit) Num)
+(Random.State.full_int (Random.get_state Unit) Num)
+(Random.State.float (Random.get_state Unit) Flt)
+(Random.State.bool (Random.get_state Unit))
+(Random.State.bits32 (Random.get_state Unit))
+(Random.State.bits64 (Random.get_state Unit))
+(Random.State.split (Random.get_state Unit))
+(Random.State.to_binary_string (Random.get_state Unit))
+(Random.State.of_binary_string Str)
 
 // Chaining: bits/int/full_int return int
-(= (bits Unit) Num)
-(succ (bits Unit))
-(< (bits Unit) Num)
-(+ (bits Unit) (bits Unit))
-(int (bits Unit))
-(full_int (bits Unit))
-(init (bits Unit))
-(= (int Num) Num)
-(succ (int Num))
-(< (int Num) (full_int Num))
-(+ (int Num) (full_int Num))
+((=) (Random.bits Unit) Num)
+(succ (Random.bits Unit))
+((<) (Random.bits Unit) Num)
+((+) (Random.bits Unit) (Random.bits Unit))
+(Random.int (Random.bits Unit))
+(Random.full_int (Random.bits Unit))
+(Random.init (Random.bits Unit))
+((=) (Random.int Num) Num)
+(succ (Random.int Num))
+((<) (Random.int Num) (Random.full_int Num))
+((+) (Random.int Num) (Random.full_int Num))
 
 // float returns float
-(= (float Flt) Flt)
-(+. (float Flt) Flt)
-(*. (float Flt) (float Flt))
-(float (float Flt))
+((=) (Random.float Flt) Flt)
+((+.) (Random.float Flt) Flt)
+(( *. ) (Random.float Flt) (Random.float Flt))
+(Random.float (Random.float Flt))
 
 // bool returns bool
-(= (bool Unit) true)
-(not (bool Unit))
-(&& (bool Unit) (bool Unit))
+((=) (Random.bool Unit) true)
+(not (Random.bool Unit))
+((&&) (Random.bool Unit) (Random.bool Unit))
 
 // State.bits/int/full_int return int
-(= (State.bits (get_state Unit)) Num)
-(succ (State.bits (get_state Unit)))
-(+ (State.bits (get_state Unit)) (State.int (get_state Unit) Num))
-(State.int (get_state Unit) (State.bits (get_state Unit)))
+((=) (Random.State.bits (Random.get_state Unit)) Num)
+(succ (Random.State.bits (Random.get_state Unit)))
+((+) (Random.State.bits (Random.get_state Unit)) (Random.State.int (Random.get_state Unit) Num))
+(Random.State.int (Random.get_state Unit) (Random.State.bits (Random.get_state Unit)))
 
 // State.float returns float
-(+. (State.float (get_state Unit) Flt) Flt)
-(State.float (get_state Unit) (State.float (get_state Unit) Flt))
+((+.) (Random.State.float (Random.get_state Unit) Flt) Flt)
+(Random.State.float (Random.get_state Unit) (Random.State.float (Random.get_state Unit) Flt))
 
 // State.bool returns bool
-(not (State.bool (get_state Unit)))
-(&& (State.bool (get_state Unit)) (bool Unit))
+(not (Random.State.bool (Random.get_state Unit)))
+((&&) (Random.State.bool (Random.get_state Unit)) (Random.bool Unit))
 
 // get_state/split/State.copy/State.make_self_init return State.t
-(State.bits (get_state Unit))
-(State.bits (split Unit))
-(State.bits (State.copy (get_state Unit)))
-(State.bits (State.split (get_state Unit)))
-(State.float (State.copy (get_state Unit)) Flt)
-(State.to_binary_string (State.copy (get_state Unit)))
-(State.of_binary_string (State.to_binary_string (get_state Unit)))
-(set_state (State.copy (get_state Unit)))
-(set_state (split Unit))
+(Random.State.bits (Random.get_state Unit))
+(Random.State.bits (Random.split Unit))
+(Random.State.bits (Random.State.copy (Random.get_state Unit)))
+(Random.State.bits (Random.State.split (Random.get_state Unit)))
+(Random.State.float (Random.State.copy (Random.get_state Unit)) Flt)
+(Random.State.to_binary_string (Random.State.copy (Random.get_state Unit)))
+(Random.State.of_binary_string (Random.State.to_binary_string (Random.get_state Unit)))
+(Random.set_state (Random.State.copy (Random.get_state Unit)))
+(Random.set_state (Random.split Unit))
 
 // State.to_binary_string returns string
-(= (State.to_binary_string (get_state Unit)) Str)
-(^ (State.to_binary_string (get_state Unit)) Str)
-(State.of_binary_string (State.to_binary_string (get_state Unit)))
+((=) (Random.State.to_binary_string (Random.get_state Unit)) Str)
+((^) (Random.State.to_binary_string (Random.get_state Unit)) Str)
+(Random.State.of_binary_string (Random.State.to_binary_string (Random.get_state Unit)))
 
 // Invalid
-(succ (bool Unit))
-(not (bits Unit))
-(+. (int Num) Flt)
-(init (bool Unit))
-(float Num)
-(State.int Num Num)
-(State.bits Num)
+(succ (Random.bool Unit))
+(not (Random.bits Unit))
+((+.) (Random.int Num) Flt)
+(Random.init (Random.bool Unit))
+(Random.float Num)
+(Random.State.int Num Num)
+(Random.State.bits Num)

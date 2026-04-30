@@ -1,62 +1,62 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 57_option_mod.types, 75_weak_mod.exs
 
 // create: int -> 'a t
-(create Num)
+(Weak.create Num)
 
 // length: 'a t -> int
-(length (create Num))
+(Weak.length (Weak.create Num))
 
 // set: 'a t -> int -> 'a option -> unit
-(set (create Num) Num (some Num))
-(set (create Num) Num (some Str))
-(set (create Num) Num none)
+(Weak.set (Weak.create Num) Num (Option.some Num))
+(Weak.set (Weak.create Num) Num (Option.some Str))
+(Weak.set (Weak.create Num) Num Option.none)
 
 // get: 'a t -> int -> 'a option
-(get (create Num) Num)
+(Weak.get (Weak.create Num) Num)
 
 // get_copy: 'a t -> int -> 'a option
-(get_copy (create Num) Num)
+(Weak.get_copy (Weak.create Num) Num)
 
 // check: 'a t -> int -> bool
-(check (create Num) Num)
+(Weak.check (Weak.create Num) Num)
 
 // fill: 'a t -> int -> int -> 'a option -> unit
-(fill (create Num) Num Num (some Num))
-(fill (create Num) Num Num none)
+(Weak.fill (Weak.create Num) Num Num (Option.some Num))
+(Weak.fill (Weak.create Num) Num Num Option.none)
 
 // blit: 'a t -> int -> 'a t -> int -> int -> unit
-(blit (create Num) Num (create Num) Num Num)
+(Weak.blit (Weak.create Num) Num (Weak.create Num) Num Num)
 
 // Chaining: create returns weak array — use length, check, get on it
-(length (create Num))
-(check (create Num) Num)
-(get (create Num) Num)
-(get_copy (create Num) Num)
+(Weak.length (Weak.create Num))
+(Weak.check (Weak.create Num) Num)
+(Weak.get (Weak.create Num) Num)
+(Weak.get_copy (Weak.create Num) Num)
 
 // length returns int
-(= (length (create Num)) Num)
-(succ (length (create Num)))
-(< (length (create Num)) Num)
-(check (create Num) (length (create Num)))
-(get (create Num) (length (create Num)))
-(create (length (create Num)))
+((=) (Weak.length (Weak.create Num)) Num)
+(succ (Weak.length (Weak.create Num)))
+((<) (Weak.length (Weak.create Num)) Num)
+(Weak.check (Weak.create Num) (Weak.length (Weak.create Num)))
+(Weak.get (Weak.create Num) (Weak.length (Weak.create Num)))
+(Weak.create (Weak.length (Weak.create Num)))
 
 // check returns bool
-(= (check (create Num) Num) true)
-(not (check (create Num) Num))
-(&& (check (create Num) Num) (check (create Num) Num))
+((=) (Weak.check (Weak.create Num) Num) true)
+(not (Weak.check (Weak.create Num) Num))
+((&&) (Weak.check (Weak.create Num) Num) (Weak.check (Weak.create Num) Num))
 
 // get/get_copy return 'a option — use is_some, is_none, get
-(is_some (get (create Num) Num))
-(is_none (get (create Num) Num))
-(is_some (get_copy (create Num) Num))
+(Option.is_some (Weak.get (Weak.create Num) Num))
+(Option.is_none (Weak.get (Weak.create Num) Num))
+(Option.is_some (Weak.get_copy (Weak.create Num) Num))
 
 // Invalid
-(create Str)
-(create true)
-(length Num)
-(check Num Num)
-(check (create Num) Str)
-(not (length (create Num)))
-(succ (check (create Num) Num))
-(get Num Num)
+(Weak.create Str)
+(Weak.create true)
+(Weak.length Num)
+(Weak.check Num Num)
+(Weak.check (Weak.create Num) Str)
+(not (Weak.length (Weak.create Num)))
+(succ (Weak.check (Weak.create Num) Num))
+(Weak.get Num Num)

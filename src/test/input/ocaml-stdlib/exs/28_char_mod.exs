@@ -1,123 +1,123 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 28_char_mod.types
 
 // code: char -> int
-(code Char)
+(Char.code Char)
 
 // chr: int -> char
-(chr Num)
+(Char.chr Num)
 
 // escaped: char -> string
-(escaped Char)
+(Char.escaped Char)
 
 // compare: char -> char -> int
-(compare Char Char)
+(Char.compare Char Char)
 
 // equal: char -> char -> bool
-(equal Char Char)
+(Char.equal Char Char)
 
 // hash
-(hash Char)
-(seeded_hash Num Char)
+(Char.hash Char)
+(Char.seeded_hash Num Char)
 
 // Ascii predicates: char -> bool
-(Ascii.is_valid Char)
-(Ascii.is_upper Char)
-(Ascii.is_lower Char)
-(Ascii.is_letter Char)
-(Ascii.is_alphanum Char)
-(Ascii.is_white Char)
-(Ascii.is_blank Char)
-(Ascii.is_graphic Char)
-(Ascii.is_print Char)
-(Ascii.is_control Char)
-(Ascii.is_digit Char)
-(Ascii.is_hex_digit Char)
+(Char.Ascii.is_valid Char)
+(Char.Ascii.is_upper Char)
+(Char.Ascii.is_lower Char)
+(Char.Ascii.is_letter Char)
+(Char.Ascii.is_alphanum Char)
+(Char.Ascii.is_white Char)
+(Char.Ascii.is_blank Char)
+(Char.Ascii.is_graphic Char)
+(Char.Ascii.is_print Char)
+(Char.Ascii.is_control Char)
+(Char.Ascii.is_digit Char)
+(Char.Ascii.is_hex_digit Char)
 
 // Ascii digit conversions
-(Ascii.digit_to_int Char)
-(Ascii.digit_of_int Num)
-(Ascii.hex_digit_to_int Char)
-(Ascii.lower_hex_digit_of_int Num)
-(Ascii.upper_hex_digit_of_int Num)
+(Char.Ascii.digit_to_int Char)
+(Char.Ascii.digit_of_int Num)
+(Char.Ascii.hex_digit_to_int Char)
+(Char.Ascii.lower_hex_digit_of_int Num)
+(Char.Ascii.upper_hex_digit_of_int Num)
 
 // Ascii case conversion: char -> char
-(Ascii.uppercase Char)
-(Ascii.lowercase Char)
-(uppercase_ascii Char)
-(lowercase_ascii Char)
+(Char.Ascii.uppercase Char)
+(Char.Ascii.lowercase Char)
+(Char.uppercase_ascii Char)
+(Char.lowercase_ascii Char)
 
 // Ascii constants
-Ascii.min
-Ascii.max
+Char.Ascii.min
+Char.Ascii.max
 
 // Chaining: code returns int
-(= (code Char) Num)
-(< (code Char) Num)
-(succ (code Char))
-(pred (code Char))
-(+ (code Char) Num)
-(code (chr Num))
-(chr (succ (code Char)))
-(chr (pred (code Char)))
-(chr (+ (code Char) (code Char)))
-(chr (code (chr Num)))
+((=) (Char.code Char) Num)
+((<) (Char.code Char) Num)
+(succ (Char.code Char))
+(pred (Char.code Char))
+((+) (Char.code Char) Num)
+(Char.code (Char.chr Num))
+(Char.chr (succ (Char.code Char)))
+(Char.chr (pred (Char.code Char)))
+(Char.chr ((+) (Char.code Char) (Char.code Char)))
+(Char.chr (Char.code (Char.chr Num)))
 
 // code output used in Ascii functions that take int
-(Ascii.digit_of_int (code Char))
-(Ascii.lower_hex_digit_of_int (code Char))
-(Ascii.upper_hex_digit_of_int (code Char))
+(Char.Ascii.digit_of_int (Char.code Char))
+(Char.Ascii.lower_hex_digit_of_int (Char.code Char))
+(Char.Ascii.upper_hex_digit_of_int (Char.code Char))
 
 // chr returns char: use in char functions
-(= (chr Num) Char)
-(code (chr Num))
-(escaped (chr Num))
-(uppercase_ascii (chr Num))
-(lowercase_ascii (chr Num))
-(Ascii.is_upper (chr Num))
-(Ascii.uppercase (chr Num))
-(equal (chr Num) Char)
-(compare (chr Num) Char)
-(equal (chr (code Char)) Char)
+((=) (Char.chr Num) Char)
+(Char.code (Char.chr Num))
+(Char.escaped (Char.chr Num))
+(Char.uppercase_ascii (Char.chr Num))
+(Char.lowercase_ascii (Char.chr Num))
+(Char.Ascii.is_upper (Char.chr Num))
+(Char.Ascii.uppercase (Char.chr Num))
+(Char.equal (Char.chr Num) Char)
+(Char.compare (Char.chr Num) Char)
+(Char.equal (Char.chr (Char.code Char)) Char)
 
 // escaped returns string
-(= (escaped Char) Str)
-(^ (escaped Char) Str)
-(^ (escaped Char) (escaped Char))
+((=) (Char.escaped Char) Str)
+((^) (Char.escaped Char) Str)
+((^) (Char.escaped Char) (Char.escaped Char))
 
 // compare returns int
-(= (compare Char Char) Num)
-(< (compare Char Char) Num)
-(succ (compare Char Char))
-(compare (compare Char Char) Num)
+((=) (Char.compare Char Char) Num)
+((<) (Char.compare Char Char) Num)
+(succ (Char.compare Char Char))
+(Char.compare (Char.compare Char Char) Num)
 
 // equal returns bool
-(= (equal Char Char) true)
+((=) (Char.equal Char Char) true)
 
 // Ascii.digit_to_int / hex_digit_to_int return int
-(= (Ascii.digit_to_int Char) Num)
-(succ (Ascii.digit_to_int Char))
-(chr (Ascii.digit_to_int Char))
-(Ascii.digit_of_int (Ascii.digit_to_int Char))
-(= (Ascii.hex_digit_to_int Char) Num)
-(Ascii.lower_hex_digit_of_int (Ascii.hex_digit_to_int Char))
+((=) (Char.Ascii.digit_to_int Char) Num)
+(succ (Char.Ascii.digit_to_int Char))
+(Char.chr (Char.Ascii.digit_to_int Char))
+(Char.Ascii.digit_of_int (Char.Ascii.digit_to_int Char))
+((=) (Char.Ascii.hex_digit_to_int Char) Num)
+(Char.Ascii.lower_hex_digit_of_int (Char.Ascii.hex_digit_to_int Char))
 
 // Ascii case: char -> char
-(equal (Ascii.uppercase Char) Char)
-(code (Ascii.uppercase Char))
-(Ascii.is_upper (Ascii.uppercase Char))
-(Ascii.lowercase (Ascii.uppercase Char))
-(uppercase_ascii (lowercase_ascii Char))
-(lowercase_ascii (uppercase_ascii Char))
+(Char.equal (Char.Ascii.uppercase Char) Char)
+(Char.code (Char.Ascii.uppercase Char))
+(Char.Ascii.is_upper (Char.Ascii.uppercase Char))
+(Char.Ascii.lowercase (Char.Ascii.uppercase Char))
+(Char.uppercase_ascii (Char.lowercase_ascii Char))
+(Char.lowercase_ascii (Char.uppercase_ascii Char))
 
 // hash returns int
-(= (hash Char) Num)
-(succ (hash Char))
+((=) (Char.hash Char) Num)
+(succ (Char.hash Char))
 
 // Invalid
-(code Num)
-(chr Char)
-(code Str)
-(equal Char Num)
-(compare Char Num)
-(Ascii.digit_to_int Num)
-(Ascii.digit_of_int Char)
+(Char.code Num)
+(Char.chr Char)
+(Char.code Str)
+(Char.equal Char Num)
+(Char.compare Char Num)
+(Char.Ascii.digit_to_int Num)
+(Char.Ascii.digit_of_int Char)

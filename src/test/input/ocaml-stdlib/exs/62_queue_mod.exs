@@ -1,83 +1,83 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 9_unit.types, 10_strconv.types, 14_stdout.types, 62_queue_mod.types
 
 // create: unit -> 'a t
-(create Unit)
+(Queue.create Unit)
 
 // add, push: 'a -> 'a t -> unit
-(add Num (create Unit))
-(add Str (create Unit))
-(push Num (create Unit))
-(push Str (create Unit))
+(Queue.add Num (Queue.create Unit))
+(Queue.add Str (Queue.create Unit))
+(Queue.push Num (Queue.create Unit))
+(Queue.push Str (Queue.create Unit))
 
 // take, pop, peek, top: 'a t -> 'a
-(take (create Unit))
-(pop (create Unit))
-(peek (create Unit))
-(top (create Unit))
+(Queue.take (Queue.create Unit))
+(Queue.pop (Queue.create Unit))
+(Queue.peek (Queue.create Unit))
+(Queue.top (Queue.create Unit))
 
 // take_opt, peek_opt: 'a t -> 'a option
-(take_opt (create Unit))
-(peek_opt (create Unit))
+(Queue.take_opt (Queue.create Unit))
+(Queue.peek_opt (Queue.create Unit))
 
 // drop, clear: 'a t -> unit
-(drop (create Unit))
-(clear (create Unit))
+(Queue.drop (Queue.create Unit))
+(Queue.clear (Queue.create Unit))
 
 // copy: 'a t -> 'a t
-(copy (create Unit))
+(Queue.copy (Queue.create Unit))
 
 // is_empty: 'a t -> bool
-(is_empty (create Unit))
+(Queue.is_empty (Queue.create Unit))
 
 // length: 'a t -> int
-(length (create Unit))
+(Queue.length (Queue.create Unit))
 
 // iter: ('a -> unit) -> 'a t -> unit
-(iter ignore (create Unit))
-(iter print_int (create Unit))
-(iter print_string (create Unit))
+(Queue.iter ignore (Queue.create Unit))
+(Queue.iter print_int (Queue.create Unit))
+(Queue.iter print_string (Queue.create Unit))
 
 // fold: ('acc -> 'a -> 'acc) -> 'acc -> 'a t -> 'acc
-(fold (+) Num (create Unit))
-(fold (^) Str (create Unit))
+(Queue.fold (+) Num (Queue.create Unit))
+(Queue.fold (^) Str (Queue.create Unit))
 
 // transfer: 'a t -> 'a t -> unit
-(transfer (create Unit) (create Unit))
+(Queue.transfer (Queue.create Unit) (Queue.create Unit))
 
 // Chaining: length returns int
-(= (length (create Unit)) Num)
-(< (length (create Unit)) Num)
-(succ (length (create Unit)))
-(= (length (copy (create Unit))) (length (create Unit)))
+((=) (Queue.length (Queue.create Unit)) Num)
+((<) (Queue.length (Queue.create Unit)) Num)
+(succ (Queue.length (Queue.create Unit)))
+((=) (Queue.length (Queue.copy (Queue.create Unit))) (Queue.length (Queue.create Unit)))
 
 // is_empty returns bool
-(= (is_empty (create Unit)) true)
-(not (is_empty (create Unit)))
-(&& (is_empty (create Unit)) (is_empty (create Unit)))
+((=) (Queue.is_empty (Queue.create Unit)) true)
+(not (Queue.is_empty (Queue.create Unit)))
+((&&) (Queue.is_empty (Queue.create Unit)) (Queue.is_empty (Queue.create Unit)))
 
 // copy returns queue — use length, is_empty on it
-(length (copy (create Unit)))
-(is_empty (copy (create Unit)))
-(take (copy (create Unit)))
-(drop (copy (create Unit)))
+(Queue.length (Queue.copy (Queue.create Unit)))
+(Queue.is_empty (Queue.copy (Queue.create Unit)))
+(Queue.take (Queue.copy (Queue.create Unit)))
+(Queue.drop (Queue.copy (Queue.create Unit)))
 
 // fold returns accumulator type
-(= (fold (+) Num (create Unit)) Num)
-(succ (fold (+) Num (create Unit)))
-(< (fold (+) Num (create Unit)) Num)
-(fold (+) (fold (+) Num (create Unit)) (create Unit))
+((=) (Queue.fold (+) Num (Queue.create Unit)) Num)
+(succ (Queue.fold (+) Num (Queue.create Unit)))
+((<) (Queue.fold (+) Num (Queue.create Unit)) Num)
+(Queue.fold (+) (Queue.fold (+) Num (Queue.create Unit)) (Queue.create Unit))
 
 // take/pop/peek/top return element type
-(= (take (create Unit)) Num)
-(succ (take (create Unit)))
-(add (take (copy (create Unit))) (create Unit))
-(= (peek (create Unit)) (top (create Unit)))
+((=) (Queue.take (Queue.create Unit)) Num)
+(succ (Queue.take (Queue.create Unit)))
+(Queue.add (Queue.take (Queue.copy (Queue.create Unit))) (Queue.create Unit))
+((=) (Queue.peek (Queue.create Unit)) (Queue.top (Queue.create Unit)))
 
 // Invalid
-(succ (is_empty (create Unit)))
-(not (length (create Unit)))
-(add Num (length (create Unit)))
-(length Num)
-(is_empty Num)
-(take Num)
-(fold (+) Str (create Unit))
+(succ (Queue.is_empty (Queue.create Unit)))
+(not (Queue.length (Queue.create Unit)))
+(Queue.add Num (Queue.length (Queue.create Unit)))
+(Queue.length Num)
+(Queue.is_empty Num)
+(Queue.take Num)
+(Queue.fold (+) Str (Queue.create Unit))

@@ -1,134 +1,134 @@
 // 0_basics.types, 1_comparison.types, 6_float.types, 7_str.types, 46_int32_mod.types, 54_nativeint_mod.types
 
 // Constants (type nativeint)
-zero
-one
-minus_one
-max_int
-min_int
+Nativeint.zero
+Nativeint.one
+Nativeint.minus_one
+Nativeint.max_int
+Nativeint.min_int
 
 // size: int constant
-size
+Nativeint.size
 
 // Constructing nativeint values
-(of_int Num)
-(of_float Flt)
-(of_string Str)
-(of_int32 Int32.zero)
-(of_int32 (Int32.of_int Num))
+(Nativeint.of_int Num)
+(Nativeint.of_float Flt)
+(Nativeint.of_string Str)
+(Nativeint.of_int32 Int32.zero)
+(Nativeint.of_int32 (Int32.of_int Num))
 
 // Unary: nativeint -> nativeint
-(neg zero)
-(neg one)
-(neg (of_int Num))
-(abs (of_int Num))
-(abs minus_one)
-(succ zero)
-(succ (of_int Num))
-(pred one)
-(pred (of_int Num))
-(lognot (of_int Num))
+(Nativeint.neg Nativeint.zero)
+(Nativeint.neg Nativeint.one)
+(Nativeint.neg (Nativeint.of_int Num))
+(Nativeint.abs (Nativeint.of_int Num))
+(Nativeint.abs Nativeint.minus_one)
+(Nativeint.succ Nativeint.zero)
+(Nativeint.succ (Nativeint.of_int Num))
+(Nativeint.pred Nativeint.one)
+(Nativeint.pred (Nativeint.of_int Num))
+(Nativeint.lognot (Nativeint.of_int Num))
 
 // Binary: nativeint -> nativeint -> nativeint
-(add zero one)
-(add (of_int Num) (of_int Num))
-(sub one zero)
-(sub (of_int Num) (of_int Num))
-(mul zero one)
-(mul (of_int Num) (of_int Num))
-(div one one)
-(div (of_int Num) one)
-(rem (of_int Num) one)
-(unsigned_div (of_int Num) one)
-(unsigned_rem (of_int Num) one)
-(logand (of_int Num) (of_int Num))
-(logor (of_int Num) (of_int Num))
-(logxor (of_int Num) (of_int Num))
+(Nativeint.add Nativeint.zero Nativeint.one)
+(Nativeint.add (Nativeint.of_int Num) (Nativeint.of_int Num))
+(Nativeint.sub Nativeint.one Nativeint.zero)
+(Nativeint.sub (Nativeint.of_int Num) (Nativeint.of_int Num))
+(Nativeint.mul Nativeint.zero Nativeint.one)
+(Nativeint.mul (Nativeint.of_int Num) (Nativeint.of_int Num))
+(Nativeint.div Nativeint.one Nativeint.one)
+(Nativeint.div (Nativeint.of_int Num) Nativeint.one)
+(Nativeint.rem (Nativeint.of_int Num) Nativeint.one)
+(Nativeint.unsigned_div (Nativeint.of_int Num) Nativeint.one)
+(Nativeint.unsigned_rem (Nativeint.of_int Num) Nativeint.one)
+(Nativeint.logand (Nativeint.of_int Num) (Nativeint.of_int Num))
+(Nativeint.logor (Nativeint.of_int Num) (Nativeint.of_int Num))
+(Nativeint.logxor (Nativeint.of_int Num) (Nativeint.of_int Num))
 
 // Shifts: nativeint -> int -> nativeint
-(shift_left (of_int Num) Num)
-(shift_right (of_int Num) Num)
-(shift_right_logical (of_int Num) Num)
+(Nativeint.shift_left (Nativeint.of_int Num) Num)
+(Nativeint.shift_right (Nativeint.of_int Num) Num)
+(Nativeint.shift_right_logical (Nativeint.of_int Num) Num)
 
 // Conversions
-(to_int zero)
-(to_int (of_int Num))
-(to_int32 zero)
-(to_int32 (of_int Num))
-(to_float zero)
-(to_float (of_int Num))
-(to_string zero)
-(to_string (of_int Num))
+(Nativeint.to_int Nativeint.zero)
+(Nativeint.to_int (Nativeint.of_int Num))
+(Nativeint.to_int32 Nativeint.zero)
+(Nativeint.to_int32 (Nativeint.of_int Num))
+(Nativeint.to_float Nativeint.zero)
+(Nativeint.to_float (Nativeint.of_int Num))
+(Nativeint.to_string Nativeint.zero)
+(Nativeint.to_string (Nativeint.of_int Num))
 
 // Comparison
-(compare zero one)
-(compare (of_int Num) (of_int Num))
-(unsigned_compare (of_int Num) (of_int Num))
-(equal zero one)
-(equal (of_int Num) (of_int Num))
-(min zero one)
-(max zero one)
-(min (of_int Num) (of_int Num))
-(max (of_int Num) (of_int Num))
+(Nativeint.compare Nativeint.zero Nativeint.one)
+(Nativeint.compare (Nativeint.of_int Num) (Nativeint.of_int Num))
+(Nativeint.unsigned_compare (Nativeint.of_int Num) (Nativeint.of_int Num))
+(Nativeint.equal Nativeint.zero Nativeint.one)
+(Nativeint.equal (Nativeint.of_int Num) (Nativeint.of_int Num))
+(Nativeint.min Nativeint.zero Nativeint.one)
+(Nativeint.max Nativeint.zero Nativeint.one)
+(Nativeint.min (Nativeint.of_int Num) (Nativeint.of_int Num))
+(Nativeint.max (Nativeint.of_int Num) (Nativeint.of_int Num))
 
 // hash
-(hash (of_int Num))
-(seeded_hash Num (of_int Num))
+(Nativeint.hash (Nativeint.of_int Num))
+(Nativeint.seeded_hash Num (Nativeint.of_int Num))
 
 // Chaining: nativeint arithmetic returns nativeint
-(neg (neg (of_int Num)))
-(abs (neg (of_int Num)))
-(succ (pred (of_int Num)))
-(add (succ (of_int Num)) (pred (of_int Num)))
-(mul (abs (of_int Num)) one)
-(logand (shift_left (of_int Num) Num) (shift_right (of_int Num) Num))
+(Nativeint.neg (Nativeint.neg (Nativeint.of_int Num)))
+(Nativeint.abs (Nativeint.neg (Nativeint.of_int Num)))
+(Nativeint.succ (Nativeint.pred (Nativeint.of_int Num)))
+(Nativeint.add (Nativeint.succ (Nativeint.of_int Num)) (Nativeint.pred (Nativeint.of_int Num)))
+(Nativeint.mul (Nativeint.abs (Nativeint.of_int Num)) Nativeint.one)
+(Nativeint.logand (Nativeint.shift_left (Nativeint.of_int Num) Num) (Nativeint.shift_right (Nativeint.of_int Num) Num))
 
 // size is int — use in int operations
-(= size Num)
-(succ size)
-(< size Num)
-(shift_left (of_int Num) size)
+((=) Nativeint.size Num)
+(Nativeint.succ Nativeint.size)
+((<) Nativeint.size Num)
+(Nativeint.shift_left (Nativeint.of_int Num) Nativeint.size)
 
 // to_int returns plain int
-(= (to_int (of_int Num)) Num)
-(succ (to_int (of_int Num)))
-(+ (to_int (of_int Num)) Num)
-(shift_left (of_int Num) (to_int (of_int Num)))
+((=) (Nativeint.to_int (Nativeint.of_int Num)) Num)
+(Nativeint.succ (Nativeint.to_int (Nativeint.of_int Num)))
+((+) (Nativeint.to_int (Nativeint.of_int Num)) Num)
+(Nativeint.shift_left (Nativeint.of_int Num) (Nativeint.to_int (Nativeint.of_int Num)))
 
 // to_int32 returns int32
-(Int32.succ (to_int32 (of_int Num)))
-(Int32.equal (to_int32 (of_int Num)) Int32.zero)
-(Int32.to_int (to_int32 (of_int Num)))
+(Int32.succ (Nativeint.to_int32 (Nativeint.of_int Num)))
+(Int32.equal (Nativeint.to_int32 (Nativeint.of_int Num)) Int32.zero)
+(Int32.to_int (Nativeint.to_int32 (Nativeint.of_int Num)))
 
 // to_float returns float
-(+. (to_float (of_int Num)) Flt)
-(= (to_float (of_int Num)) Flt)
+((+.) (Nativeint.to_float (Nativeint.of_int Num)) Flt)
+((=) (Nativeint.to_float (Nativeint.of_int Num)) Flt)
 
 // to_string returns string
-(= (to_string (of_int Num)) Str)
-(^ (to_string (of_int Num)) Str)
+((=) (Nativeint.to_string (Nativeint.of_int Num)) Str)
+((^) (Nativeint.to_string (Nativeint.of_int Num)) Str)
 
 // compare returns int
-(= (compare (of_int Num) (of_int Num)) Num)
-(succ (compare (of_int Num) (of_int Num)))
+((=) (Nativeint.compare (Nativeint.of_int Num) (Nativeint.of_int Num)) Num)
+(Nativeint.succ (Nativeint.compare (Nativeint.of_int Num) (Nativeint.of_int Num)))
 
 // equal returns bool
-(= (equal (of_int Num) (of_int Num)) true)
-(not (equal (of_int Num) (of_int Num)))
+((=) (Nativeint.equal (Nativeint.of_int Num) (Nativeint.of_int Num)) true)
+(not (Nativeint.equal (Nativeint.of_int Num) (Nativeint.of_int Num)))
 
 // min/max return nativeint
-(to_int (min (of_int Num) (of_int Num)))
-(neg (max (of_int Num) (of_int Num)))
-(equal (min (of_int Num) (of_int Num)) zero)
+(Nativeint.to_int (Nativeint.min (Nativeint.of_int Num) (Nativeint.of_int Num)))
+(Nativeint.neg (Nativeint.max (Nativeint.of_int Num) (Nativeint.of_int Num)))
+(Nativeint.equal (Nativeint.min (Nativeint.of_int Num) (Nativeint.of_int Num)) Nativeint.zero)
 
 // hash returns int
-(= (hash (of_int Num)) Num)
-(succ (hash (of_int Num)))
+((=) (Nativeint.hash (Nativeint.of_int Num)) Num)
+(Nativeint.succ (Nativeint.hash (Nativeint.of_int Num)))
 
 // Invalid: nativeint vs plain int mixups
-(+ (of_int Num) Num)
-(succ (of_int Num))
-(add (of_int Num) Num)
-(to_int Num)
-(equal (of_int Num) Num)
-(shift_left (of_int Num) (of_int Num))
+((+) (Nativeint.of_int Num) Num)
+(Nativeint.succ (Nativeint.of_int Num))
+(Nativeint.add (Nativeint.of_int Num) Num)
+(Nativeint.to_int Num)
+(Nativeint.equal (Nativeint.of_int Num) Num)
+(Nativeint.shift_left (Nativeint.of_int Num) (Nativeint.of_int Num))

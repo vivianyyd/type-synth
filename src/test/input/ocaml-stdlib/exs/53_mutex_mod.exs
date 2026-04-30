@@ -1,52 +1,52 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 16_stdin.types, 53_mutex_mod.types
 
 // create: unit -> t
-(create Unit)
+(Mutex.create Unit)
 
 // lock, unlock: t -> unit
-(lock (create Unit))
-(unlock (create Unit))
+(Mutex.lock (Mutex.create Unit))
+(Mutex.unlock (Mutex.create Unit))
 
 // try_lock: t -> bool
-(try_lock (create Unit))
+(Mutex.try_lock (Mutex.create Unit))
 
 // protect: t -> (unit -> 'a) -> 'a
-(protect (create Unit) read_line)
-(protect (create Unit) read_int)
-(protect (create Unit) read_float)
-(protect (create Unit) (fun u1 -> Num))
-(protect (create Unit) (fun u2 -> Str))
+(Mutex.protect (Mutex.create Unit) read_line)
+(Mutex.protect (Mutex.create Unit) read_int)
+(Mutex.protect (Mutex.create Unit) read_float)
+(Mutex.protect (Mutex.create Unit) (fun u1 -> Num))
+(Mutex.protect (Mutex.create Unit) (fun u2 -> Str))
 
 // Chaining: create returns mutex — use in all mutex ops
-(lock (create Unit))
-(unlock (create Unit))
-(try_lock (create Unit))
-(protect (create Unit) read_line)
+(Mutex.lock (Mutex.create Unit))
+(Mutex.unlock (Mutex.create Unit))
+(Mutex.try_lock (Mutex.create Unit))
+(Mutex.protect (Mutex.create Unit) read_line)
 
 // try_lock returns bool
-(= (try_lock (create Unit)) true)
-(not (try_lock (create Unit)))
-(= (try_lock (create Unit)) (try_lock (create Unit)))
+((=) (Mutex.try_lock (Mutex.create Unit)) true)
+(not (Mutex.try_lock (Mutex.create Unit)))
+((=) (Mutex.try_lock (Mutex.create Unit)) (Mutex.try_lock (Mutex.create Unit)))
 
 // protect returns the result type of its body function
-(= (protect (create Unit) read_line) Str)
-(^ (protect (create Unit) read_line) Str)
-(succ (protect (create Unit) read_int))
-(+ (protect (create Unit) read_int) Num)
-(= (protect (create Unit) read_int) Num)
-(protect (create Unit) (fun u3 -> protect (create Unit) read_int))
+((=) (Mutex.protect (Mutex.create Unit) read_line) Str)
+((^) (Mutex.protect (Mutex.create Unit) read_line) Str)
+(succ (Mutex.protect (Mutex.create Unit) read_int))
+((+) (Mutex.protect (Mutex.create Unit) read_int) Num)
+((=) (Mutex.protect (Mutex.create Unit) read_int) Num)
+(Mutex.protect (Mutex.create Unit) (fun u3 -> Mutex.protect (Mutex.create Unit) read_int))
 
 // protect with different body types shows polymorphism
-(= (protect (create Unit) (fun u4 -> Num)) Num)
-(= (protect (create Unit) (fun u5 -> Str)) Str)
-(^ (protect (create Unit) (fun u6 -> Str)) Str)
+((=) (Mutex.protect (Mutex.create Unit) (fun u4 -> Num)) Num)
+((=) (Mutex.protect (Mutex.create Unit) (fun u5 -> Str)) Str)
+((^) (Mutex.protect (Mutex.create Unit) (fun u6 -> Str)) Str)
 
 // Invalid: wrong argument types
-(lock Num)
-(unlock Str)
-(try_lock true)
-(protect Num read_line)
-(protect (create Unit) succ)
-(succ (try_lock (create Unit)))
-(not (lock (create Unit)))
-(^ (try_lock (create Unit)) Str)
+(Mutex.lock Num)
+(Mutex.unlock Str)
+(Mutex.try_lock true)
+(Mutex.protect Num read_line)
+(Mutex.protect (Mutex.create Unit) succ)
+(succ (Mutex.try_lock (Mutex.create Unit)))
+(not (Mutex.lock (Mutex.create Unit)))
+((^) (Mutex.try_lock (Mutex.create Unit)) Str)

@@ -1,176 +1,176 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 6_float.types, 7_str.types, 71_sys_mod.types
 
 // String constants
-executable_name
-os_type
-ocaml_version
+Sys.executable_name
+Sys.os_type
+Sys.ocaml_version
 
 // Int constants
-io_buffer_size
-word_size
-int_size
-max_string_length
-max_array_length
-max_floatarray_length
+Sys.io_buffer_size
+Sys.word_size
+Sys.int_size
+Sys.max_string_length
+Sys.max_array_length
+Sys.max_floatarray_length
 
 // Bool constants
-unix
-win32
-cygwin
-big_endian
-development_version
+Sys.unix
+Sys.win32
+Sys.cygwin
+Sys.big_endian
+Sys.development_version
 
 // file_exists, is_directory, is_regular_file: string -> bool
-(file_exists Str)
-(is_directory Str)
-(is_regular_file Str)
+(Sys.file_exists Str)
+(Sys.is_directory Str)
+(Sys.is_regular_file Str)
 
 // remove: string -> unit
-(remove Str)
+(Sys.remove Str)
 
 // rename: string -> string -> unit
-(rename Str Str)
+(Sys.rename Str Str)
 
 // getenv: string -> string
-(getenv Str)
+(Sys.getenv Str)
 
 // getenv_opt: string -> string option
-(getenv_opt Str)
+(Sys.getenv_opt Str)
 
 // command: string -> int
-(command Str)
+(Sys.command Str)
 
 // time: unit -> float
-(time Unit)
+(Sys.time Unit)
 
 // chdir, rmdir: string -> unit
-(chdir Str)
-(rmdir Str)
+(Sys.chdir Str)
+(Sys.rmdir Str)
 
 // mkdir: string -> int -> unit
-(mkdir Str Num)
+(Sys.mkdir Str Num)
 
 // getcwd: unit -> string
-(getcwd Unit)
+(Sys.getcwd Unit)
 
 // readdir: string -> string array
-(readdir Str)
+(Sys.readdir Str)
 
 // runtime_variant, runtime_parameters: unit -> string
-(runtime_variant Unit)
-(runtime_parameters Unit)
+(Sys.runtime_variant Unit)
+(Sys.runtime_parameters Unit)
 
 // poll_actions: unit -> unit
-(poll_actions Unit)
+(Sys.poll_actions Unit)
 
 // signal constants (int/signal type)
-sigabrt
-sigint
-sigterm
-sigusr1
-sigusr2
+Sys.sigabrt
+Sys.sigint
+Sys.sigterm
+Sys.sigusr1
+Sys.sigusr2
 
 // signal_to_string: signal -> string
-(signal_to_string sigabrt)
-(signal_to_string sigint)
+(Sys.signal_to_string Sys.sigabrt)
+(Sys.signal_to_string Sys.sigint)
 
 // signal_of_int: int -> signal
-(signal_of_int Num)
+(Sys.signal_of_int Num)
 
 // signal_to_int: signal -> int
-(signal_to_int sigabrt)
-(signal_to_int sigint)
+(Sys.signal_to_int Sys.sigabrt)
+(Sys.signal_to_int Sys.sigint)
 
 // catch_break: bool -> unit
-(catch_break true)
-(catch_break false)
+(Sys.catch_break true)
+(Sys.catch_break false)
 
 // runtime_warnings_enabled: unit -> bool
-(runtime_warnings_enabled Unit)
+(Sys.runtime_warnings_enabled Unit)
 
 // enable_runtime_warnings: bool -> unit
-(enable_runtime_warnings true)
-(enable_runtime_warnings false)
+(Sys.enable_runtime_warnings true)
+(Sys.enable_runtime_warnings false)
 
 // opaque_identity: 'a -> 'a
-(opaque_identity Num)
-(opaque_identity Str)
-(opaque_identity true)
+(Sys.opaque_identity Num)
+(Sys.opaque_identity Str)
+(Sys.opaque_identity true)
 
 // Chaining: file_exists/is_directory/is_regular_file return bool
-(= (file_exists Str) true)
-(not (file_exists Str))
-(not (is_directory Str))
-(not (is_regular_file Str))
-(&& (file_exists Str) (is_regular_file Str))
-(|| (is_directory Str) (is_regular_file Str))
+((=) (Sys.file_exists Str) true)
+(not (Sys.file_exists Str))
+(not (Sys.is_directory Str))
+(not (Sys.is_regular_file Str))
+((&&) (Sys.file_exists Str) (Sys.is_regular_file Str))
+((||) (Sys.is_directory Str) (Sys.is_regular_file Str))
 
 // getenv returns string
-(= (getenv Str) Str)
-(^ (getenv Str) Str)
-(file_exists (getenv Str))
-(is_directory (getenv Str))
-(getenv (getenv Str))
+((=) (Sys.getenv Str) Str)
+((^) (Sys.getenv Str) Str)
+(Sys.file_exists (Sys.getenv Str))
+(Sys.is_directory (Sys.getenv Str))
+(Sys.getenv (Sys.getenv Str))
 
 // getcwd returns string
-(= (getcwd Unit) Str)
-(^ (getcwd Unit) Str)
-(file_exists (getcwd Unit))
-(is_directory (getcwd Unit))
-(chdir (getcwd Unit))
-(readdir (getcwd Unit))
+((=) (Sys.getcwd Unit) Str)
+((^) (Sys.getcwd Unit) Str)
+(Sys.file_exists (Sys.getcwd Unit))
+(Sys.is_directory (Sys.getcwd Unit))
+(Sys.chdir (Sys.getcwd Unit))
+(Sys.readdir (Sys.getcwd Unit))
 
 // command returns int
-(= (command Str) Num)
-(succ (command Str))
-(< (command Str) Num)
-(= (command Str) (command Str))
+((=) (Sys.command Str) Num)
+(succ (Sys.command Str))
+((<) (Sys.command Str) Num)
+((=) (Sys.command Str) (Sys.command Str))
 
 // time returns float
-(= (time Unit) Flt)
-(+. (time Unit) Flt)
-(*. (time Unit) (time Unit))
-(< (time Unit) Flt)
+((=) (Sys.time Unit) Flt)
+((+.) (Sys.time Unit) Flt)
+(( *. ) (Sys.time Unit) (Sys.time Unit))
+((<) (Sys.time Unit) Flt)
 
 // signal_to_int returns int
-(= (signal_to_int sigabrt) Num)
-(succ (signal_to_int sigterm))
-(< (signal_to_int sigint) (signal_to_int sigterm))
-(signal_of_int (signal_to_int sigabrt))
+((=) (Sys.signal_to_int Sys.sigabrt) Num)
+(succ (Sys.signal_to_int Sys.sigterm))
+((<) (Sys.signal_to_int Sys.sigint) (Sys.signal_to_int Sys.sigterm))
+(Sys.signal_of_int (Sys.signal_to_int Sys.sigabrt))
 
 // signal_of_int returns signal
-(signal_to_string (signal_of_int Num))
-(signal_to_int (signal_of_int Num))
+(Sys.signal_to_string (Sys.signal_of_int Num))
+(Sys.signal_to_int (Sys.signal_of_int Num))
 
 // signal_to_string returns string
-(= (signal_to_string sigabrt) Str)
-(^ (signal_to_string sigabrt) Str)
+((=) (Sys.signal_to_string Sys.sigabrt) Str)
+((^) (Sys.signal_to_string Sys.sigabrt) Str)
 
 // runtime_warnings_enabled returns bool
-(= (runtime_warnings_enabled Unit) true)
-(not (runtime_warnings_enabled Unit))
-(enable_runtime_warnings (runtime_warnings_enabled Unit))
+((=) (Sys.runtime_warnings_enabled Unit) true)
+(not (Sys.runtime_warnings_enabled Unit))
+(Sys.enable_runtime_warnings (Sys.runtime_warnings_enabled Unit))
 
 // opaque_identity is identity — output same type as input
-(succ (opaque_identity Num))
-(^ (opaque_identity Str) Str)
-(not (opaque_identity true))
-(opaque_identity (opaque_identity Num))
-(= (opaque_identity Num) Num)
+(succ (Sys.opaque_identity Num))
+((^) (Sys.opaque_identity Str) Str)
+(not (Sys.opaque_identity true))
+(Sys.opaque_identity (Sys.opaque_identity Num))
+((=) (Sys.opaque_identity Num) Num)
 
 // int constants usable in arithmetic
-(succ word_size)
-(< word_size int_size)
-(= io_buffer_size Num)
-(+ word_size io_buffer_size)
+(succ Sys.word_size)
+((<) Sys.word_size Sys.int_size)
+((=) Sys.io_buffer_size Num)
+((+) Sys.word_size Sys.io_buffer_size)
 
 // Invalid
-(file_exists Num)
-(is_directory Num)
-(getenv Num)
-(command Num)
-(signal_to_string Num)
-(signal_of_int Str)
-(succ (file_exists Str))
-(not (command Str))
-(+. (signal_to_int sigabrt) Flt)
+(Sys.file_exists Num)
+(Sys.is_directory Num)
+(Sys.getenv Num)
+(Sys.command Num)
+(Sys.signal_to_string Num)
+(Sys.signal_of_int Str)
+(succ (Sys.file_exists Str))
+(not (Sys.command Str))
+((+.) (Sys.signal_to_int Sys.sigabrt) Flt)

@@ -6,8 +6,8 @@
 (char_of_int (int_of_char Char))
 (int_of_char (char_of_int Num))
 
-(= (int_of_char Char) Num)
-(= (char_of_int Num) Char)
+((=) (int_of_char Char) Num)
+((=) (char_of_int Num) Char)
 
 (int_of_char Num)
 (char_of_int Char)
@@ -17,24 +17,24 @@
 // int_of_char returns int: use in arithmetic and int comparisons
 (succ (int_of_char Char))
 (pred (int_of_char Char))
-(+ (int_of_char Char) Num)
-(- (int_of_char Char) (int_of_char Char))
-(= (int_of_char Char) (int_of_char Char))
-(< (int_of_char Char) (int_of_char Char))
+((+) (int_of_char Char) Num)
+((-) (int_of_char Char) (int_of_char Char))
+((=) (int_of_char Char) (int_of_char Char))
+((<) (int_of_char Char) (int_of_char Char))
 
 // char_of_int returns char: use in further char/int conversions
 (int_of_char (char_of_int Num))
 (int_of_char (char_of_int (succ Num)))
 (int_of_char (char_of_int (int_of_char Char)))
-(= (char_of_int Num) (char_of_int Num))
-(= (char_of_int Num) Char)
+((=) (char_of_int Num) (char_of_int Num))
+((=) (char_of_int Num) Char)
 
 // deeper chains
 (char_of_int (succ (int_of_char Char)))
 (char_of_int (pred (int_of_char Char)))
-(char_of_int (+ (int_of_char Char) (int_of_char Char)))
-(= (char_of_int (int_of_char Char)) Char)
-(= (int_of_char (char_of_int Num)) Num)
+(char_of_int ((+) (int_of_char Char) (int_of_char Char)))
+((=) (char_of_int (int_of_char Char)) Char)
+((=) (int_of_char (char_of_int Num)) Num)
 
 // invalid chaining
 (char_of_int (char_of_int Num))

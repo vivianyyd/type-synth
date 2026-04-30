@@ -25,22 +25,22 @@
 (flush stdin)
 
 // pos_out/out_channel_length return int: use in further output operations
-(= (pos_out stdout) Num)
-(= (out_channel_length stdout) Num)
+((=) (pos_out stdout) Num)
+((=) (out_channel_length stdout) Num)
 (output_byte stdout (pos_out stdout))
 (seek_out stdout (pos_out stdout))
 (output_binary_int stdout (out_channel_length stdout))
 
 // pos_in/in_channel_length return int: use in further input operations
-(= (pos_in stdin) Num)
-(= (in_channel_length stdin) Num)
+((=) (pos_in stdin) Num)
+((=) (in_channel_length stdin) Num)
 (really_input_string stdin (in_channel_length stdin))
 (seek_in stdin (pos_in stdin))
 
 // input functions return values that can be compared
-(= (input_line stdin) Str)
-(= (input_byte stdin) Num)
-(= (input_binary_int stdin) Num)
+((=) (input_line stdin) Str)
+((=) (input_byte stdin) Num)
+((=) (input_binary_int stdin) Num)
 
 // invalid: int output used where channel expected
 (flush (pos_out stdout))

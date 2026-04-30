@@ -21,8 +21,8 @@
 (close_in_noerr (open_in Str))
 (really_input_string (open_in Str) Num)
 
-(= (input_line stdin) Str)
-(= (input_byte stdin) Num)
+((=) (input_line stdin) Str)
+((=) (input_byte stdin) Num)
 
 (input_char stdout)
 (input_line stdout)
@@ -43,24 +43,24 @@
 (set_binary_mode_in (open_in Str) false)
 
 // pos_in/in_channel_length return int: use in further input operations
-(= (pos_in stdin) Num)
-(= (in_channel_length stdin) Num)
+((=) (pos_in stdin) Num)
+((=) (in_channel_length stdin) Num)
 (really_input_string stdin (in_channel_length stdin))
 (seek_in stdin (pos_in stdin))
-(= (pos_in (open_in Str)) Num)
-(< (pos_in stdin) (in_channel_length stdin))
+((=) (pos_in (open_in Str)) Num)
+((<) (pos_in stdin) (in_channel_length stdin))
 
 // input functions return values: use outputs further
-(= (input_line stdin) Str)
-(= (input_byte stdin) Num)
-(= (input_binary_int stdin) Num)
-(= (input_char stdin) Char)
-(= (input_line (open_in Str)) Str)
-(= (really_input_string stdin Num) Str)
+((=) (input_line stdin) Str)
+((=) (input_byte stdin) Num)
+((=) (input_binary_int stdin) Num)
+((=) (input_char stdin) Char)
+((=) (input_line (open_in Str)) Str)
+((=) (really_input_string stdin Num) Str)
 
 // chain: open_in, read, compare result
-(= (input_line (open_in Str)) (input_line (open_in Str)))
-(= (input_byte (open_in Str)) (input_byte (open_in Str)))
+((=) (input_line (open_in Str)) (input_line (open_in Str)))
+((=) (input_byte (open_in Str)) (input_byte (open_in Str)))
 (really_input_string (open_in Str) (in_channel_length (open_in Str)))
 
 // invalid: int/string outputs used where channel expected
