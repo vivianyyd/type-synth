@@ -9,7 +9,8 @@ import util.io.cvc.readCVC
 
 class LabelConstraints(
     private val s: SearchState,
-    private val dep: ParameterwiseDependencyAnalysis
+    private val dep: ParameterwiseDependencyAnalysis,
+    preserveValues: Boolean
 ) {
 
     private val nameToPy = mutableMapOf<String, String>()
@@ -55,6 +56,11 @@ class LabelConstraints(
             paramToType.values.filterIsInstance<NamedLabel>().map { pySize(it) }.toSet().toList()
         declareInts(vars)
         declareInts(lsizes)
+
+        // Preserve existing label arities
+        if (preserveValues) {
+            constrs.addAll(s.labelArities.map { (label, arity) -> "${pySize(label)} == $arity" })
+        }
 
         // All distinct variables must correspond to unique elements in a set
         val varsDistinct =
@@ -159,25 +165,32 @@ class LabelConstraints(
 }
 
 fun labelArities(s: SearchState, deps: ParameterwiseDependencyAnalysis): Map<Int, Int>? {
-    val gen = LabelConstraints(s, deps)
-    val testID = "${s.id}"
-    callCVC(gen.initialQuery(), testID)
+    /**
+     * @param [preserveValues] Whether to keep or override existing label arities.
+     */
+    fun attempt(preserveValues: Boolean): Map<Int, Int>? {
+        val gen = LabelConstraints(s, deps, preserveValues)
+        val testID = "${s.id}"
+        callCVC(gen.initialQuery(), testID)
 
-    var counter = 0
-    var previousSolution = readCVC(testID) ?: return null
-    var lastSuccessful = -1
-    do {
-        val parser = CVCParser(previousSolution)
-        val testName = "$testID-smaller${counter++}"
-        val cont =
-            if (parser.sizes.isNotEmpty()) callCVC(gen.smallerQuery(parser), testName) else false
-        if (cont) {
-            lastSuccessful = counter - 1
-            previousSolution = readCVC(testName)!! // callCVC returns success code stored in cont
-        }
-    } while (cont)
-    val finalSuccessfulOutput =
-        if (lastSuccessful == -1) testID else "$testID-smaller$lastSuccessful"
+        var counter = 0
+        var previousSolution = readCVC(testID) ?: return null
+        var lastSuccessful = -1
+        do {
+            val parser = CVCParser(previousSolution)
+            val testName = "$testID-smaller${counter++}"
+            val cont =
+                if (parser.sizes.isNotEmpty()) callCVC(gen.smallerQuery(parser), testName) else false
+            if (cont) {
+                lastSuccessful = counter - 1
+                previousSolution = readCVC(testName)!! // callCVC returns success code stored in cont
+            }
+        } while (cont)
+        val finalSuccessfulOutput =
+            if (lastSuccessful == -1) testID else "$testID-smaller$lastSuccessful"
 
-    return gen.extract(CVCParser(readCVC(finalSuccessfulOutput)!!))
+        return gen.extract(CVCParser(readCVC(finalSuccessfulOutput)!!))
+    }
+    // Start by trying to preserve existing arities. If fail, try again with overwriting
+    return attempt(s.labelArities.isNotEmpty()) ?: attempt(false)
 }
