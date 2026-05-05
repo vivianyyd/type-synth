@@ -72,7 +72,7 @@ class Examples(pos: Collection<Example>, val neg: Collection<Example>) {
     val posWithSubexprs: List<Example> =
         posNoSubexprs.toSet().flatMap { it.subexprs() }.toSet().toList()
     val names: List<String> =
-        pos.fold(setOf<String>()) { acc, ex -> acc + ex.names }.toList().sorted()
+        (pos + neg).fold(setOf<String>()) { acc, ex -> acc + ex.names }.toList().sorted()
 
     private val flatPos = flat(posWithSubexprs)
     private val flatNeg = flat(neg)
