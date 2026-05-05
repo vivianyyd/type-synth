@@ -6,7 +6,7 @@ val (+) : int -> int -> int
 val (-) : int -> int -> int
 val ( * ) : int -> int -> int
 val (/) : int -> int -> int
-val mod : int -> int -> int
+val ( mod ) : int -> int -> int
 val abs : int -> int
 val max_int : int
 val min_int : int

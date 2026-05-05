@@ -1,3 +1,14 @@
+// 0_basics.types, 2_boolean.types, 4_arith.types
+
+// arithmetic output is not a boolean: cannot pass to not, &&, ||
+(not (succ Num))
+(not ((+) Num Num))
+((&&) ((+) Num Num) true)
+((&&) true ((-) Num Num))
+((||) (( * ) Num Num) false)
+((||) false (abs Num))
+// above is boolean_arith I added
+
 // 0_basics.types, 2_boolean.types
 
 // pos I wrote
@@ -5,16 +16,12 @@
 (not false)
 ((&&) true false)
 ((||) false true)
-(not ((=) Num Num))
-(not ((<) Num Num))
 ((&&) true true)
 ((&&) false true)
 ((&&) (not false) true)
 ((||) true false)
 ((||) false false)
-((||) ((<) Num Num) ((>) Num Num))
 ((||) (not true) false)
-((&&) ((=) Num Num) ((<>) Str Str))
 
 // neg I wrote
 (not Num)

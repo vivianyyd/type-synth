@@ -9,7 +9,7 @@
 ((-) Num Num)
 (( * ) Num Num)
 ((/) Num Num)
-(mod Num Num)
+(( mod ) Num Num)
 (abs Num)
 
 (succ max_int)
@@ -20,17 +20,22 @@
 ((~-) (abs Num))
 ((+) (abs Num) Num)
 (( * ) (succ Num) (pred Num))
-(mod (abs Num) Num)
+(( mod ) (abs Num) Num)
 ((-) ((+) Num Num) Num)
 ((/) (( * ) Num Num) Num)
 
 (succ (succ (succ Num)))
 
 ((~-) Str)
+((-) Num Str)
+((-) Str)
 ((+) Num Str)
+((+) Str)
+(( * ) true)
 (( * ) Num true)
 (abs Str)
-(mod Num Flt)
+(( mod ) Num true)
+(( mod ) true true)
 
 // succ/pred/abs/~- return int: chain them
 (succ (succ (succ (succ Num))))
@@ -47,17 +52,17 @@
 (pred ((-) Num Num))
 (abs (( * ) Num Num))
 ((~-) ((/) Num Num))
-(succ (mod Num Num))
+(succ (( mod ) Num Num))
 ((+) (succ Num) (pred Num))
 ((+) (abs Num) (abs Num))
 ((-) (( * ) Num Num) (( * ) Num Num))
 (( * ) (succ Num) (succ Num))
 ((/) (abs Num) (succ Num))
-(mod (abs ((+) Num Num)) (succ Num))
+(( mod ) (abs ((+) Num Num)) (succ Num))
 ((+) ((+) Num Num) ((+) Num Num))
 (( * ) ((+) Num Num) ((-) Num Num))
 ((-) (( * ) (succ Num) Num) (pred Num))
-(abs (mod ((-) Num Num) (succ Num)))
+(abs (( mod ) ((-) Num Num) (succ Num)))
 
 // show outputs are ints by passing to functions expecting int
 (succ max_int)
@@ -69,3 +74,33 @@
 // invalid chaining
 (succ ((+) Num Str))
 (abs (( * ) true Num))
+
+// arithmetic does not accept booleans
+(succ true)
+(succ false)
+(pred true)
+((~-) false)
+((~+) true)
+(abs false)
+((+) true Num)
+((+) Num false)
+((-) false true)
+(( * ) true false)
+((/) Num true)
+(( mod ) false Num)
+
+// arithmetic does not accept function values
+(succ (+))
+(pred (-))
+((~-) (*))
+(abs (/))
+(abs abs)
+((+) (+) Num)
+((+) Num (-))
+(( * ) (+) (-))
+(( mod ) (+) Num)
+
+// arithmetic output is not a function: cannot apply it
+((succ Num) Num)
+(((+) Num Num) Num)
+((abs Num) Num)

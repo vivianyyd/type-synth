@@ -48,7 +48,7 @@
 ((-) (lsl Num Num) (lsr Num Num))
 (( * ) (land Num Num) Num)
 (abs (lnot Num))
-(mod (land Num Num) (succ Num))
+(( mod ) (land Num Num) (succ Num))
 
 // arithmetic output is int: use in bitwise
 (land (succ Num) Num)
