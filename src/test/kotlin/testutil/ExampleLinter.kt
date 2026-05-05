@@ -3,7 +3,6 @@ package testutil
 import oneast.Type
 import query.Example
 import query.Examples
-import query.Query
 import testutil.ocaml.OCamlChecker
 import util.CheckingGroundTruthOracle
 import util.GroundTruth
@@ -37,22 +36,25 @@ fun splitOCamlStrings(
 }
 
 fun splitOCamlExamplesAndCheckConsistency(
-    query: Query,
+    examples: Collection<Example>,
+    checkerFromTypes: CheckingGroundTruthOracle,
     groundTruth: OCamlChecker
 ): Pair<Set<Example>, Set<Example>> {
-    val examples = query.examples.posNoSubexprs + query.examples.neg
     /** Ground truth from parsing OCaml types and checking using our own unification. */
-    val (checkPos, checkNeg) = splitExamples(examples, query.oracle)
+    val (checkPos, checkNeg) = splitExamples(examples, checkerFromTypes)
     /** The ground truth given by the actual OCaml implementation. */
     val (realPos, realNeg) = splitExamples(examples, groundTruth)
 
-    fun assureEq(a: Set<Example>, b: Set<Example>) =
-        require(a == b) {
-            "Warning: oracle from parsed types disagrees with ground truth on ${(a - b) + (b - a)}"
+    fun assureEq(byCheckerFromTypes: Set<Example>, byOCamlc: Set<Example>, pos: Boolean) =
+        require(byCheckerFromTypes == byOCamlc) {
+            val sign = if (pos) "pos" else "neg"
+            "Warning: Oracle from parsed types disagrees with ocamlc ground truth:\n" +
+                    (byCheckerFromTypes - byOCamlc).let { if (it.isEmpty()) "" else "checker says $sign but ocamlc disagrees: $it" } +
+                    (byOCamlc - byCheckerFromTypes).let { if (it.isEmpty()) "" else "ocamlc says $sign but checker disagrees: $it" }
         }
 
-    assureEq(checkPos, realPos)
-    assureEq(checkNeg, realNeg)
+    assureEq(checkPos, realPos, true)
+    assureEq(checkNeg, realNeg, false)
 
     return realPos to realNeg
 }

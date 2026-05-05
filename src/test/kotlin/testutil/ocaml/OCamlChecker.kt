@@ -27,7 +27,7 @@ class OCamlChecker(
 
     private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
 
-    private val desugarAtomsToDummies = listOf("Num" to "1", "Str" to "\"s\"", "Char" to "\'a\'")
+    private val desugarAtomsToDummies = listOf("Num" to "1", "Str" to "\"s\"", "Char" to "\'a\'", "Flt" to "1.")
 
     private fun desugar(expr: String) =
         desugarAtomsToDummies.fold(expr) { acc, (from, to) -> acc.replace(from, to) }
