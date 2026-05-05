@@ -31,6 +31,7 @@ class Engine(
                 scheduled.addAll(info.customSchedule)
             }
             is Auto -> {
+                val (fns, nullaries) = names.partition { nameIsApplied(it, query.examples) }
                 val numRounds = (names.size + info.namesPerRound - 1) / info.namesPerRound
                 while (scheduled.size < numRounds) {
                     scheduled.add(
@@ -39,16 +40,22 @@ class Engine(
                                 // whether a name occurs in subexprs is good signal for its
                                 // importance.
                                 query.examples.posWithSubexprs,
-                                names,
+                                fns,
                                 buildSet { scheduled.forEach { addAll(it) } },
                                 info.namesPerRound
                             )
                     )
                 }
+                scheduled[0] = scheduled[0] + nullaries
             }
             is SingleRound -> scheduled.add(query.examples.names)
         }
     }
+
+    private fun nameIsApplied(name: String, exs: Examples) =
+        exs.posWithSubexprs.any { ex ->
+            ex is App && ex.fn is Name && ex.fn.name == name
+        }
 
     /** Returns the next synthesis problem, or null if we are done. */
     private fun buildNextQuery(state: SearchState, round: Int): Pair<Examples, SearchState>? {
@@ -64,11 +71,6 @@ class Engine(
         fun takeExs(exs: Collection<Example>) = exs.filter { newNames.keys.containsAll(it.names) }
         val nextExamples = Examples(takeExs(posExamples), takeExs(negExamples))
 
-        fun nameIsApplied(name: String) =
-            nextExamples.posWithSubexprs.any { ex ->
-                ex is App && ex.fn is Name && ex.fn.name == name
-            }
-
         val nextState =
             SearchState(
                 names = newNames,
@@ -77,7 +79,7 @@ class Engine(
                     if (i < oldSize) state.types[i]
                     // Importantly, we force names that are applied to be Arrows
                     // and names that are not to be labels.
-                    else if (nameIsApplied(scheduledRound[i - oldSize]))
+                    else if (nameIsApplied(scheduledRound[i - oldSize], nextExamples))
                         Arrow(TypeHole(), TypeHole())
                     else Blank(labelOnly = true)
                 },
