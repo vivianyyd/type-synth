@@ -111,10 +111,9 @@ class Search(
                     .filter { s ->
                         examples.neg.all { !OneUnification(s, listOf(it)).passedWithNoConstraints }
                     }
-                    .toList()
             }
 
-        val withLabelClasses = initialOutlines.mapNotNull { assignLabelClasses(it) }
+        val withLabelClasses = initialOutlines.mapNotNull { assignLabelClasses(it) }.toSet()
 
         logger.log(withLabelClasses.countedLines("Seeds before label arities"))
 
