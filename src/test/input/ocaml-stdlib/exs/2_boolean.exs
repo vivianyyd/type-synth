@@ -93,4 +93,9 @@
 // invalid
 (not Num)
 ((&&) (not true) Num)
-((||) Str (not false))
+((||) true Num)
+((&&) Num)
+((||) Num)
+((not true) false)
+((&&) true false true)
+((||) true false true)

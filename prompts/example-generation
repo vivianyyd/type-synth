@@ -60,8 +60,9 @@ We want invalid expressions to be MINIMAL, that is, all subexpressions are valid
 For instance, OCaml has partial application/currying; if our example calls a function where the first argument is
 invalid, we should stop right there instead of including any arguments after the first one.
 
-We also want examples that show off constraints on the outputs of each function.
-For instance, we can use the output by passing it to a different function that also restricts its inputs in some way.
+You must also show off constraints on the outputs of each function. To do this, write examples where the outputs of
+functions themselves are again used and passed to other functions.
+Make sure you make both positive and negative examples of using outputs. Show how the outputs can AND cannot be used.
 For example, to show that the output of some function is always an int, we can have an example that passes that output
 to succ or (+), or pass it to (=) where the other input is Num.
 
