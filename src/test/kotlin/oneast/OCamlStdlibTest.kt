@@ -9,7 +9,7 @@ import testutil.loadExamples
 import testutil.loadSchedule
 import testutil.ocaml.OCamlChecker
 import testutil.ocaml.OcamlTypeParser
-import testutil.splitOCamlExamplesAndCheckConsistency
+import testutil.splitOCamlExamples
 import testutil.unsignedExample
 import util.CheckingGroundTruthOracle
 import util.Logger
@@ -118,9 +118,7 @@ class OCamlStdlibTest {
 
         val (examples, oracleTypes) = loadFromExsFiles(exsFileNames)
         val oracle = CheckingGroundTruthOracle(oracleTypes)
-        val (pos, neg) = splitOCamlExamplesAndCheckConsistency(examples, oracle, OCamlChecker())
-
-        val query = Query(Examples(pos, neg), oracle)
+        val query = Query(splitOCamlExamples(examples, oracle, OCamlChecker()), oracle)
 
         val configuration =
             Configuration(

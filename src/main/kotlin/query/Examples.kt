@@ -52,30 +52,36 @@ data class App(val fn: Example, val arg: Example) : Example {
 /**
  * This is more general than the previous query because we can apply the result of applications
  * without them being explicitly assigned to a name [posWithSubexprs] contains all subexpressions!
+ *
+ * @requires [negIn] contains MINIMAL negative examples, i.e. no strict subexpression is a negative example.
  */
-class Examples(pos: Collection<Example>, val neg: Collection<Example>) {
+class Examples(posIn: Collection<Example>, negIn: Collection<Example>) {
     val posNoSubexprs: List<Example>
+    val neg: List<Example> = negIn.toList()
 
     init {
-        // TODO this is not quite right since examples are not flattened.
-        //   instead, we should flatten and eliminate prefixes.
-        val noSubexprs = pos.toMutableList()
-        for (posEx in pos) {
-            when (posEx) {
-                is Name -> noSubexprs.removeAll { it == posEx }
-                is App -> noSubexprs.removeAll { it == posEx.fn || it == posEx.arg }
-            }
+        val posInSet = posIn.toSet()
+        val strictSubexprs = buildSet {
+            // subexprs() ends with the ex itself
+            posInSet.forEach { addAll(it.subexprs().dropLast(1)) }
         }
-        posNoSubexprs = noSubexprs
+        posNoSubexprs = posInSet.filter { it !in strictSubexprs }
     }
 
-    val posWithSubexprs: List<Example> =
-        posNoSubexprs.toSet().flatMap { it.subexprs() }.toSet().toList()
-    val names: List<String> =
-        (pos + neg).fold(setOf<String>()) { acc, ex -> acc + ex.names }.toList().sorted()
+    val posWithSubexprs by lazy {
+        buildSet {
+            posNoSubexprs.forEach { addAll(it.subexprs()) }
+        }.toList()
+    }
 
-    private val flatPos = flat(posWithSubexprs)
-    private val flatNeg = flat(neg)
+    val names by lazy {
+        buildSet {
+            (posNoSubexprs + neg).forEach { addAll(it.names) }
+        }.sorted()
+    }
+
+    private val flatPos by lazy { flat(posWithSubexprs) }
+    private val flatNeg by lazy { flat(neg) }
 
     fun flatPos(name: String) = flatPos[name] ?: listOf()
 
