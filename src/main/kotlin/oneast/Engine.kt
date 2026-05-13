@@ -52,10 +52,14 @@ class Engine(
         }
     }
 
-    private fun nameIsApplied(name: String, exs: Examples) =
-        exs.posWithSubexprs.any { ex ->
-            ex is App && ex.fn is Name && ex.fn.name == name
+    private fun nameIsApplied(name: String, exs: Examples): Boolean {
+        fun nameAppliedIn(ex: Example): Boolean = when (ex) {
+            is Name -> false
+            is App -> ((ex.fn is Name && ex.fn.name == name) ||
+                    (nameAppliedIn(ex.fn) || nameAppliedIn(ex.arg)))
         }
+        return exs.posNoSubexprs.any { nameAppliedIn(it) }
+    }
 
     /** Returns the next synthesis problem, or null if we are done. */
     private fun buildNextQuery(state: SearchState, round: Int): Pair<Examples, SearchState>? {
