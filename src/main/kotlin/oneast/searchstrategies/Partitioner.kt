@@ -65,7 +65,7 @@ class Partitioner(
 ) : SearchStrategy(examples) {
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
-        return if (u.ok) recCandidates(c, u, sizeBound, c.types.sumOf { it.numFillableHoles() })
+        return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles())
         else emptySequence()
     }
 
@@ -120,7 +120,7 @@ class Partitioner(
                         newCandidate,
                         u,
                         currSizeBound = currSizeBound - holes.size,
-                        holesRemaining = newCandidate.types.sumOf { it.numFillableHoles() })
+                        holesRemaining = newCandidate.numFillableHoles())
                 else emptySequence()
             }
     }

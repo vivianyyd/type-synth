@@ -253,7 +253,7 @@ class Search(
             if (seeds.isEmpty()) continue
             logger.log(seeds.countedLines("Concrete seeds"))
 
-            val maxMinSize = seeds.maxOf { it.types.sumOf { it.numFillableHoles() } }
+            val maxMinSize = seeds.maxOf { it.numFillableHoles() }
             logger.log("Max min size: $maxMinSize")
 
             for (depth in 1..config.depthBound) {

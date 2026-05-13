@@ -47,6 +47,8 @@ class SearchState(
 
     fun noFillableHoles() = types.all { it.shallowestFillableHole(topLevel = true) == null }
 
+    fun numFillableHoles() = types.sumOf { it.numFillableHoles() }
+
     fun blanks() = types.flatMap { it.blanks() }
 
     fun noHoles() = types.all { it.noHoles() }
