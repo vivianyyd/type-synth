@@ -45,7 +45,6 @@ class ArrowDependencyAnalysis(
         val loops = mutableSetOf<SelfLoop>()
         val mayHaveFresh = mutableSetOf<ParameterNode>()
 
-        // TODO I think we don't actually need all subexprs in posexs here
         val posExs = flatExs(name, examples.posWithSubexprs)
         val negExs = flatExs(name, examples.neg)
         val parameters = nodes.filter { it.f == name }

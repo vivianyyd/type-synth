@@ -126,7 +126,7 @@ class OCamlStdlibTest {
                 searchStrategy = ::DFSEnumerator,
                 sizeBound = 20,
                 depthBound = 4,
-                scheduleInfo = Auto(5),
+                scheduleInfo = Auto(3),
                 numSols = Solutions.NumSolutions(1)
             )
 
