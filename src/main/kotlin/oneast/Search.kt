@@ -95,7 +95,7 @@ class Search(
                 is Variable -> t
             }
 
-        return s.mapTypesAndSetLabelArities(mapOf()) { assignLabels(it) }
+        return s.mapTypes { assignLabels(it) }
     }
 
     private fun concreteSeeds(size: Int, depth: Int): List<SearchState> {
@@ -287,7 +287,8 @@ class Search(
                         List(arity) {
                             if (underArrow) TypeHole() else Blank(labelOnly = false)
                         })
-                } else this
+                } else this.copy(
+                    params = params.map { it.addParamHoles(labelArities, underArrow) })
             }
             is THole,
             is Variable -> this
