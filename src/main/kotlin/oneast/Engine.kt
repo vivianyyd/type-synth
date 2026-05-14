@@ -93,21 +93,21 @@ class Engine(
         return nextExamples to nextState
     }
 
-    private fun solveQuery(examples: Examples, state: SearchState): Sequence<SearchState> {
-        val solver = Search(state, examples, query.oracle, config, logger)
+    private fun solveQuery(examples: Examples, state: SearchState, outerDepthBound: Int): Sequence<SearchState> {
+        val solver = Search(state, examples, query.oracle, config.copy(depthBound = outerDepthBound), logger)
         return solver.solutions()
     }
 
-    private fun searchRec(state: SearchState, round: Int): Sequence<SearchState> = sequence {
+    private fun searchRec(state: SearchState, round: Int, outerDepthBound: Int): Sequence<SearchState> = sequence {
         val nextQueryAndSeed = buildNextQuery(state, round)
 
         if (nextQueryAndSeed == null) {
             yield(state)
             return@sequence
         }
-        logger.log("Current query: ${nextQueryAndSeed.second}")
+        logger.log("Current query: ${nextQueryAndSeed.second} with depth bound $outerDepthBound")
 
-        for (solution in solveQuery(nextQueryAndSeed.first, nextQueryAndSeed.second)) {
+        for (solution in solveQuery(nextQueryAndSeed.first, nextQueryAndSeed.second, outerDepthBound)) {
             logger.log("Looking for counterexamples for potential solution $solution")
             val ctrex =
                 CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth) { s, e ->
@@ -116,7 +116,7 @@ class Engine(
                     .counterexample()
             if (ctrex == null) {
                 logger.log("Found no counterexamples")
-                yieldAll(searchRec(solution, round + 1))
+                yieldAll(searchRec(solution, round + 1, outerDepthBound))
             } else {
                 logger.log("Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}")
                 if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
@@ -124,7 +124,8 @@ class Engine(
         }
     }
 
-    fun search(): Sequence<SearchState> = searchRec(SearchState.emptyState, round = 0)
+    fun search(): Sequence<SearchState> =
+        (0 until config.depthBound).asSequence().flatMap { searchRec(SearchState.emptyState, round = 0, it) }
 }
 
 /*
