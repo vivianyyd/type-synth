@@ -1,7 +1,6 @@
 package oneast.searchstrategies
 
-import oneast.OneUnification
-import oneast.SearchState
+import oneast.*
 import query.Examples
 import util.Logger
 
@@ -67,7 +66,35 @@ class DFSEnumerator(
                         currSizeBound = currSizeBound - 1,
                         holesRemaining = holesRemaining - 1 + introducedHoles
                     )
-                else emptySequence()
+                else if (emitLabelBlanks && u.badLabels().isNotEmpty()) {
+                    // If we failed because we tried to unify distinct labels, we should regenerate those labels.
+                    // TODO: Not sure how to guarantee termination. I think it holds because we only backtrack
+                    //       if there are distinct labels to merge. Does this introduce duplicates?
+                    fun replaceBadLabelsWithBlanks(t: Type): Type =
+                        when (t) {
+                            is Arrow ->
+                                Arrow(
+                                    replaceBadLabelsWithBlanks(t.l),
+                                    replaceBadLabelsWithBlanks(t.r)
+                                )
+                            is NamedLabel ->
+                                if (t.label in u.badLabels()) Blank(labelOnly = true)
+                                else
+                                    t.copy(params = t.params.map { replaceBadLabelsWithBlanks(it) })
+                            is THole,
+                            is Variable -> t
+                        }
+
+                    val badLabelsBlanked = newCandidate.mapTypesAndSetLabelArities(
+                        newArities = newCandidate.labelArities.filterNot { (l, _) -> l in u.badLabels() }
+                    ) { replaceBadLabelsWithBlanks(it) }
+                    recCandidates(
+                        badLabelsBlanked,
+                        u,
+                        currSizeBound = currSizeBound - 1,
+                        holesRemaining = badLabelsBlanked.numFillableHoles()
+                    )
+                } else emptySequence()
             }
     }
 }

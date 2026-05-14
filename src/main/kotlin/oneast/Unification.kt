@@ -15,6 +15,7 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
     private val insts = Counter() // Number of times any top-level type has been instantiated
 
     private val holeConstraints = mutableMapOf<Int, MutableList<ConstraintTy>>() // holeId
+    private val badLabels = mutableSetOf<Int>()  // Labels that were unified with mismatching labels
 
     // The order of these declarations matters; [insts] and [holeConstraints] must be instantiated
     // before they are used to compute types
@@ -26,6 +27,8 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
 
     private fun holeEquals(hole: Int): List<ConstraintTy> =
         if (ok) holeConstraints[hole] ?: listOf() else listOf()
+
+    fun badLabels(): Set<Int> = badLabels
 
     fun type(ex: Example): ConstraintTy? =
         when (ex) {
@@ -88,7 +91,13 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
                                 }
                             }
                             bindings
-                        } else null
+                        } else {
+                            if (param is ConstraintLabel && arg is ConstraintLabel) {
+                                badLabels.add(param.label)
+                                badLabels.add(arg.label)
+                            }
+                            null
+                        }
                     }
                     is ConstraintVariable ->
                         // e.g. a function expects param (int -> int) and we pass ('a -> 'a)
