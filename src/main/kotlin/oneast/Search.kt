@@ -4,7 +4,6 @@ import dependencyanalysis.ParameterwiseDependencyAnalysis
 import query.Examples
 import util.*
 import java.util.stream.Collectors
-import java.util.stream.StreamSupport
 
 /** Lazily produces ALL solutions for [examples] from this [seed]. */
 class Search(
@@ -132,33 +131,59 @@ class Search(
                 }
             }
 
-        val resolvedLabelArities =
+        val labelAritySols =
             logger.time("Solving for label arities") {
                 // Phase 2: run labelArities() calls in parallel
                 seedsWithDeps
                     .parallelStream()
-                    .flatMap { (s, dep) ->
+                    .map { (s, dep) ->
+                        logger.count("Solver call")
                         val la = labelArities(s, dep)
-                        if (la == null) java.util.stream.Stream.empty()
-                        else {
-                            val (labels, arities) = la.toList().unzip()
-                            StreamSupport.stream(
-                                lazyCartesianProduct(arities.map { (0..it).toList() })
-                                    .map { labels.zip(it).toMap() }
-                                    .map { subla ->
-                                        // TODO - if any of the new label arity assignments disagree
-                                        //   w previous, we clear them
-                                        s.mapTypesAndSetLabelArities(subla) {
-                                            it.addParamHoles(subla)
-                                        }
-                                    }
-                                    .asIterable()
-                                    .spliterator(),
-                                false)
-                        }
+                        s to la
                     }
+                    .filter { (_, la) -> la != null }
                     .collect(Collectors.toList())
             }
+
+        val splitLabelArities = labelAritySols
+            .flatMap { (s, la) ->
+                val (labels, arities) = la!!.toList().unzip()
+                lazyCartesianProduct(arities.map { (0..it).toList() })
+                    .map { s to labels.zip(it).toMap() }
+            }
+            // Order seeds by whether label arities from previous rounds are preserved
+            .partition { (s, subla) -> s.labelArities.all { (l, a) -> subla[l] == a } }
+            .let { it.first + it.second }
+
+        val resolvedLabelArities =
+            splitLabelArities.map { (s, subla) -> // New label arities overwrite old ones
+                s.mapTypesAndSetLabelArities(subla) { t ->
+                    t.addParamHoles(subla)
+                }
+            }
+
+        /*
+        // Without ordering seeds by arity preserved
+        val resolvedLabelArities = log...
+            seedsWithDeps.parallelStream().flatMap { (s, dep) ->
+                val la = labelArities(s, dep)
+                if (la == null) java.util.stream.Stream.empty()
+                else {
+                    val (labels, arities) = la.toList().unzip()
+                    StreamSupport.stream(
+                        lazyCartesianProduct(arities.map { (0..it).toList() })
+                            .map {
+                                val subla = labels.zip(it).toMap() }
+                                // New label arities overwrite old ones
+                                s.mapTypesAndSetLabelArities(subla) { t ->
+                                    t.addParamHoles(subla)
+                                }
+                            }.asIterable().spliterator(),
+                        false)
+                }
+            }
+            .collect(Collectors.toList())
+         */
         return resolvedLabelArities
     }
 
