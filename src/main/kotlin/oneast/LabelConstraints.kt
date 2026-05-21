@@ -192,5 +192,11 @@ fun labelArities(s: SearchState, deps: ParameterwiseDependencyAnalysis): Map<Int
         return gen.extract(CVCParser(readCVC(finalSuccessfulOutput)!!))
     }
     // Start by trying to preserve existing arities. If fail, try again with overwriting
+    // TODO. AllMinSAT, and we should also do both with and without preserving arities
+    //       rather than only allowing overwriting if preserving fails.
+    //       i.e. There might be a better soln that does not preserve old arities.
+    //       If later we iteratively deepen labels anyway, is the latter necessary?
+    //       Could we guarantee if when we add more examples arities only get bigger?
+    //       Bc they could only show off more flexibility
     return attempt(s.labelArities.isNotEmpty()) ?: attempt(false)
 }

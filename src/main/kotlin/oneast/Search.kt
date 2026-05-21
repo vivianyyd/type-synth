@@ -162,28 +162,28 @@ class Search(
                 }
             }
 
-        /*
         // Without ordering seeds by arity preserved
-        val resolvedLabelArities = log...
-            seedsWithDeps.parallelStream().flatMap { (s, dep) ->
-                val la = labelArities(s, dep)
-                if (la == null) java.util.stream.Stream.empty()
-                else {
-                    val (labels, arities) = la.toList().unzip()
-                    StreamSupport.stream(
-                        lazyCartesianProduct(arities.map { (0..it).toList() })
-                            .map {
-                                val subla = labels.zip(it).toMap() }
-                                // New label arities overwrite old ones
-                                s.mapTypesAndSetLabelArities(subla) { t ->
-                                    t.addParamHoles(subla)
-                                }
-                            }.asIterable().spliterator(),
-                        false)
-                }
-            }
-            .collect(Collectors.toList())
-         */
+//        val resolvedLabelArities = logger.time("Solving for label arities") {
+//            seedsWithDeps.parallelStream().flatMap { (s, dep) ->
+//                logger.count("Solver call")
+//                val la = labelArities(s, dep)
+//                if (la == null) java.util.stream.Stream.empty()
+//                else {
+//                    val (labels, arities) = la.toList().unzip()
+//                    StreamSupport.stream(
+//                        lazyCartesianProduct(arities.map { (0..it).toList() })
+//                            .map {
+//                                val subla = labels.zip(it).toMap()
+//                                // New label arities overwrite old ones
+//                                s.mapTypesAndSetLabelArities(subla) { t ->
+//                                    t.addParamHoles(subla)
+//                                }
+//                            }.asIterable().spliterator(),
+//                        false)
+//                }
+//            }.collect(Collectors.toList())
+//        }
+
         return resolvedLabelArities
     }
 
@@ -265,15 +265,16 @@ class Search(
     }
 
     fun solutions(): Sequence<SearchState> = sequence {
-        val seen = mutableSetOf<SearchState>()
+//        val seen = mutableSetOf<SearchState>()
         for (seedDepth in 0..config.depthBound) {
             var seeds =
                 logger.time("Depth $seedDepth outlining $names") {
                     concreteSeeds(config.sizeBound, seedDepth)
                 }
             // Only try concretizing the new seeds
-            seeds = (seeds.toSet() - seen).toList()
-            seen.addAll(seeds)
+            // TODO this doesn't work right now since holes use physical equals!
+//            seeds = (seeds.toSet() - seen).toList()
+//            seen.addAll(seeds)
 
             if (seeds.isEmpty()) continue
             logger.log(seeds.countedLines("Concrete seeds"))
