@@ -281,10 +281,13 @@ class Search(
 
             val maxMinSize = seeds.maxOf { it.numFillableHoles() }
             logger.log("Max min size: $maxMinSize")
+            if (maxMinSize > config.sizeBound)
+                logger.log("Warning: the largest seed contains more holes than the size bound")
 
             for (depth in 1..config.depthBound) {
                 logger.start("Depth $depth concretizing $names")
-                for (size in maxMinSize..config.sizeBound) {
+                // If largest seed is greater than the size bound, just try size bound for smaller seeds
+                for (size in maxMinSize.coerceAtMost(config.sizeBound)..config.sizeBound) {
                     logger.start("Size $size concretizing $names")
                     val sols = concretizationSearch(seeds, size, depth).iterator()
                     yieldAll(sols)
