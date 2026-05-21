@@ -443,7 +443,9 @@ class TypeHole : THole() {
                 else
                     when (i) {
                         is ConstraintArrow -> listOf(fnExpansion)
-                        is ConstraintLabel -> labelExpansions.filter { it.label == i.label }
+                        is ConstraintLabel ->
+                            if (emitLabelBlanks) emptyList()
+                            else labelExpansions.filter { it.label == i.label }
                     }
             } else listOf()
         //                labelExpansions +
@@ -454,9 +456,8 @@ class TypeHole : THole() {
         // adding all label expansions"
         //                            )
         //                        )
-        return constructorTypes +
-            variableExps +
-                listOfNotNull(Blank(labelOnly = true).takeIf { emitLabelBlanks })
+        return constructorTypes.ifEmpty { listOfNotNull(Blank(labelOnly = true).takeIf { emitLabelBlanks }) } +
+                variableExps
     }
 
     override fun toString() = "_"
