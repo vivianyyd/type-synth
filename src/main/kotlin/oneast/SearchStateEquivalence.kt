@@ -63,3 +63,106 @@ private fun bindBijective(
     mapRev[v] = k
     return true
 }
+
+
+/** Total node count: each Variable, Hole, Arrow, and NamedLabel counts as 1. */
+fun Type.nodeCount(): Int = when (this) {
+    is Variable -> 1
+    is THole -> 1
+    is Arrow -> 1 + l.nodeCount() + r.nodeCount()
+    is NamedLabel -> 1 + params.sumOf { it.nodeCount() }
+}
+
+/** Sum of [Type.nodeCount] over every type in the state. */
+fun SearchState.nodeCount(): Int = types.sumOf { it.nodeCount() }
+
+/**
+ * Cost-based diff between two states, modulo the same renaming semantics as
+ * [equivalentTo]: bijective label renaming (global across the state) and
+ * bijective variable renaming (local per type).
+ *
+ * - [cost] is symmetric in expected/actual (subtree sizes don't depend on which
+ *   side is which).
+ * - [expectedSize] is the total node count of the receiver; used as the
+ *   normalization denominator in [ratio].
+ *
+ * `ratio = cost / expectedSize`, with 0/0 → 0.0 and cost>0/0 → +Inf. The
+ * ratio is unbounded: values > 1 mean the actual diverges by more than the
+ * expected has nodes (e.g., expected is a hole and actual is a deep tree).
+ */
+data class StateDiff(val cost: Int, val expectedSize: Int) {
+    val ratio: Double = when {
+        expectedSize == 0 -> if (cost == 0) 0.0 else Double.POSITIVE_INFINITY
+        else -> cost.toDouble() / expectedSize
+    }
+}
+
+/**
+ * @return cost-based diff of [actual] against [this] expected state. See
+ *   [StateDiff] for the cost / ratio interpretation. Per-node cost rules:
+ *
+ * | comparison                                  | cost                          | recurse? |
+ * |---------------------------------------------|-------------------------------|----------|
+ * | same kind, compatible binding               | 0                             | yes      |
+ * | hole vs hole (any THole subtypes)           | 0                             | -        |
+ * | variable bijection conflict                 | 1                             | -        |
+ * | NamedLabel bijection conflict, same arity   | 1                             | yes      |
+ * | NamedLabel arity mismatch                   | nodeCount(t1) + nodeCount(t2) | no       |
+ * | kind mismatch (Arrow / Label / Var cross)   | nodeCount(t1) + nodeCount(t2) | no       |
+ * | hole vs non-hole                            | nodeCount(non-hole)           | no       |
+ *
+ * Names appearing on only one side contribute the full nodeCount of that side's
+ * tree. Names are processed in sorted order so the (greedy) global label
+ * binding is deterministic.
+ */
+fun SearchState.diffTo(actual: SearchState): StateDiff {
+    val labelMap = HashMap<Int, Int>()
+    val labelMapRev = HashMap<Int, Int>()
+    var cost = 0
+    val allNames = (this.names.keys + actual.names.keys).sorted()
+    for (name in allNames) {
+        val expIdx = this.names[name]
+        val actIdx = actual.names[name]
+        cost += when {
+            expIdx != null && actIdx != null -> {
+                val varMap = HashMap<Int, Int>()
+                val varMapRev = HashMap<Int, Int>()
+                diffTypes(
+                    this.types[expIdx], actual.types[actIdx],
+                    labelMap, labelMapRev, varMap, varMapRev
+                )
+            }
+            expIdx != null -> this.types[expIdx].nodeCount()
+            else -> actual.types[actIdx!!].nodeCount()
+        }
+    }
+    return StateDiff(cost = cost, expectedSize = this.nodeCount())
+}
+
+private fun diffTypes(
+    t1: Type,
+    t2: Type,
+    labelMap: MutableMap<Int, Int>,
+    labelMapRev: MutableMap<Int, Int>,
+    varMap: MutableMap<Int, Int>,
+    varMapRev: MutableMap<Int, Int>
+): Int = when {
+    t1 is THole && t2 is THole -> 0
+    t1 is THole -> t2.nodeCount()
+    t2 is THole -> t1.nodeCount()
+    t1 is Variable && t2 is Variable ->
+        if (bindBijective(t1.v, t2.v, varMap, varMapRev)) 0 else 1
+    t1 is Arrow && t2 is Arrow ->
+        diffTypes(t1.l, t2.l, labelMap, labelMapRev, varMap, varMapRev) +
+            diffTypes(t1.r, t2.r, labelMap, labelMapRev, varMap, varMapRev)
+    t1 is NamedLabel && t2 is NamedLabel ->
+        if (t1.params.size != t2.params.size) t1.nodeCount() + t2.nodeCount()
+        else {
+            val headCost =
+                if (bindBijective(t1.label, t2.label, labelMap, labelMapRev)) 0 else 1
+            headCost + t1.params.zip(t2.params).sumOf { (p1, p2) ->
+                diffTypes(p1, p2, labelMap, labelMapRev, varMap, varMapRev)
+            }
+        }
+    else -> t1.nodeCount() + t2.nodeCount()
+}
