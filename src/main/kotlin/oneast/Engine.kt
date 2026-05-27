@@ -14,7 +14,10 @@ class Engine(
     private val posExamples = query.examples.posNoSubexprs.toMutableList()
     private val negExamples = query.examples.neg.toMutableList()
 
-    // ceiling division
+    private val committedSeed = query.committedSeed.commitAll()
+    private val committedNames = committedSeed.names.keys
+    private val newNames = names.filter { it !in committedNames }
+
     private val scheduled = mutableListOf<List<String>>()
 
     init {
@@ -25,14 +28,19 @@ class Engine(
                 require(scheduledNames.size == scheduledNamesSet.size) {
                     "Duplicate name in custom schedule"
                 }
-                require(scheduledNamesSet.containsAll(query.examples.names)) {
-                    "Schedule is missing names: ${query.examples.names.toSet() - scheduledNamesSet}"
+                require(scheduledNamesSet.intersect(committedNames).isEmpty()) {
+                    "Custom schedule includes already-committed names: " +
+                            "${scheduledNamesSet.intersect(committedNames)}"
+                }
+                require((scheduledNamesSet + committedNames).containsAll(names)) {
+                    "Schedule + committed seed are missing names: " +
+                            "${names.toSet() - (scheduledNamesSet + committedNames)}"
                 }
                 scheduled.addAll(info.customSchedule)
             }
             is Auto -> {
-                val (fns, nullaries) = names.partition { nameIsApplied(it, query.examples) }
-                val numRounds = (names.size + info.namesPerRound - 1) / info.namesPerRound
+                val (fns, nullaries) = newNames.partition { nameIsApplied(it, query.examples) }
+                val numRounds = (newNames.size + info.namesPerRound - 1) / info.namesPerRound
                 while (scheduled.size < numRounds) {
                     scheduled.add(
                         Selector()
@@ -46,9 +54,13 @@ class Engine(
                             )
                     )
                 }
-                scheduled[0] = scheduled[0] + nullaries
+                if (scheduled.isNotEmpty()) {
+                    scheduled[0] = scheduled[0] + nullaries
+                } else if (nullaries.isNotEmpty()) {
+                    scheduled.add(nullaries)
+                }
             }
-            is SingleRound -> scheduled.add(query.examples.names)
+            is SingleRound -> if (newNames.isNotEmpty()) scheduled.add(newNames)
         }
     }
 
@@ -87,7 +99,9 @@ class Engine(
                         Arrow(TypeHole(), TypeHole())
                     else Blank(labelOnly = true)
                 },
-                labelArities = state.labelArities
+                labelArities = state.labelArities,
+                numCommittedTypes = state.numCommittedTypes,
+                committedLabels = state.committedLabels
             )
 
         return nextExamples to nextState
@@ -125,7 +139,7 @@ class Engine(
     }
 
     fun search(): Sequence<SearchState> =
-        (0 until config.depthBound).asSequence().flatMap { searchRec(SearchState.emptyState, round = 0, it) }
+        (0 until config.depthBound).asSequence().flatMap { searchRec(committedSeed, round = 0, it) }
 }
 
 /*

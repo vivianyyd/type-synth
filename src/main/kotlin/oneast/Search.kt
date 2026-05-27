@@ -147,7 +147,8 @@ class Search(
 
         val splitLabelArities = labelAritySols
             .flatMap { (s, la) ->
-                val (labels, arities) = la!!.toList().unzip()
+                require(la!!.all { (l, a) -> if (l in s.committedLabels) a == s.labelArities[l] else true })
+                val (labels, arities) = la.toList().unzip()
                 lazyCartesianProduct(arities.map { (0..it).toList() })
                     .map { s to labels.zip(it).toMap() }
             }

@@ -2,7 +2,6 @@
 val Str : string
 val Num : int
 val Char: char
-val Flt : float
 
 // Basics
 val true : bool

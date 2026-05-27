@@ -144,4 +144,50 @@ class OCamlStdlibTest {
 
         assert(run(query, OCamlChecker(), configuration, logger).isNotEmpty())
     }
+
+    @Test
+    fun `can reconstruct from exs files iteratively`() {
+        val exsFileGroups: List<List<String>> = listOf(
+            listOf("4_arith", "0_basics", "2_boolean", "7_str", "8_char"),
+            listOf("1_comparison"),
+            listOf("5_bitwise"),
+//            listOf("6_float")
+        )
+
+        var committedSeed: SearchState = SearchState.emptyState
+
+        for ((iter, _) in exsFileGroups.withIndex()) {
+            val cumulativeFiles = exsFileGroups.subList(0, iter + 1).flatten()
+
+            val (examples, oracleTypes) = loadFromExsFiles(cumulativeFiles)
+            val oracle = CheckingGroundTruthOracle(oracleTypes)
+            val query = Query(
+                splitOCamlExamples(examples, oracle, OCamlChecker()),
+                oracle,
+                committedSeed = committedSeed
+            )
+
+            val configuration =
+                Configuration(
+                    name = "OCaml Stdlib (exs) iter $iter",
+                    searchStrategy = ::DFSEnumerator,
+                    sizeBound = 20,
+                    depthBound = 4,
+                    scheduleInfo = Auto(3),
+                    numSols = Solutions.NumSolutions(1)
+                )
+
+            val logger =
+                Logger(
+                    configuration = configuration,
+                    logFilename = "ocaml-exs-iter$iter-willBeOverwritten.log",
+                    logToFile = true,
+                    verbosity = 5
+                )
+
+            val solutions = run(query, OCamlChecker(), configuration, logger)
+            assert(solutions.isNotEmpty()) { "No solution found at iteration $iter" }
+            committedSeed = solutions.first()
+        }
+    }
 }

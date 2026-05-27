@@ -67,6 +67,9 @@ class DFSEnumerator(
                         holesRemaining = holesRemaining - 1 + introducedHoles
                     )
                 else if (emitLabelBlanks && u.badLabels().isNotEmpty()) {
+                    // A bad label that is committed cannot be rewritten, so there is no solution.
+                    if (u.badLabels().any { it in newCandidate.committedLabels })
+                        return@flatMap emptySequence<SearchState>()
                     // If we failed because we tried to unify distinct labels, we should regenerate those labels.
                     // TODO: Not sure how to guarantee termination. I think it holds because we only backtrack
                     //       if there are distinct labels to merge. Does this introduce duplicates?

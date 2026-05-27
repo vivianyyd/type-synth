@@ -10,8 +10,29 @@ class SearchState(
      * enumerated in round j > i.
      */
     val types: List<Type>,
-    val labelArities: Map<Int, Int>
+    val labelArities: Map<Int, Int>,
+    /**
+     * The first [numCommittedTypes] entries of [types] are committed: their types are immutable
+     * across any subsequent search. All mutating helpers below ([mapTypes], [mapTypesOrNull],
+     * [mapTypesAndSetLabelArities], [mapTypeAtIndex]) only apply transforms to indices
+     * `>= numCommittedTypes`.
+     */
+    val numCommittedTypes: Int = 0,
+    /**
+     * The subset of [labelArities] keys whose arities are immutable across any subsequent search.
+     * Constraint solvers and rewrites that adjust label arities must pin these labels.
+     */
+    val committedLabels: Set<Int> = emptySet()
 ) {
+    init {
+        require(numCommittedTypes >= 0 && numCommittedTypes <= types.size) {
+            "numCommittedTypes is $numCommittedTypes but only ${types.size} types]"
+        }
+        require(committedLabels.all { it in labelArities }) {
+            "Committed labels missing from labelArities: ${committedLabels - labelArities.keys}"
+        }
+    }
+
     companion object {
         var nextId = 0
 
@@ -32,6 +53,19 @@ class SearchState(
     }
 
     val id = nextId++
+
+    /**
+     * Returns a copy of this state with every current name and label marked as committed. Used to
+     * promote a previously-found solution to a fixed seed for a later search.
+     */
+    fun commitAll(): SearchState =
+        SearchState(
+            names = names,
+            types = types,
+            labelArities = labelArities,
+            numCommittedTypes = types.size,
+            committedLabels = labelArities.keys.toSet()
+        )
 
     fun fnArities(): Map<String, Int> = names.mapValues { (_, i) -> types[i].fnArity() }
 
@@ -64,24 +98,54 @@ class SearchState(
 
     fun asMap() = asMap
 
-    fun mapTypesAndSetLabelArities(newArities: Map<Int, Int>, transform: (Type) -> Type) =
-        SearchState(names = names, types = types.map(transform), labelArities = newArities)
-
-    fun mapTypes(transform: (Type) -> Type): SearchState =
-        SearchState(names = names, types = types.map(transform), labelArities = labelArities)
-
-    fun mapTypesOrNull(transform: (Type) -> Type?): SearchState? {
-        val newTypes = types.map(transform)
-        return if (null in newTypes) null else
-            SearchState(names = names, types = newTypes.requireNoNulls(), labelArities = labelArities)
+    private fun <T> safeMapTypes(transform: (Type) -> T): List<T> {
+        val mappedTypes = types.map(transform)
+        require(mappedTypes.withIndex().all { (i, t) -> (i >= numCommittedTypes) || (t is Type && t == types[i]) })
+        return mappedTypes
     }
 
-    fun mapTypeAtIndex(i: Int, transform: (Type) -> Type): SearchState =
+    fun mapTypesAndSetLabelArities(newArities: Map<Int, Int>, transform: (Type) -> Type): SearchState {
+        require(newArities.all { (l, a) -> l !in committedLabels || a == labelArities[l]!! })
+        return SearchState(
+            names = names,
+            types = safeMapTypes(transform),
+            labelArities = newArities,
+            numCommittedTypes = numCommittedTypes,
+            committedLabels = committedLabels
+        )
+    }
+
+    fun mapTypes(transform: (Type) -> Type): SearchState =
         SearchState(
             names = names,
-            types = types.mapIndexed { j, t -> if (i == j) transform(t) else t },
-            labelArities = labelArities
+            types = safeMapTypes(transform),
+            labelArities = labelArities,
+            numCommittedTypes = numCommittedTypes,
+            committedLabels = committedLabels
         )
+
+    fun mapTypesOrNull(transform: (Type) -> Type?): SearchState? {
+        val newTypes = safeMapTypes(transform)
+        return if (null in newTypes) null else
+            SearchState(
+                names = names,
+                types = newTypes.requireNoNulls(),
+                labelArities = labelArities,
+                numCommittedTypes = numCommittedTypes,
+                committedLabels = committedLabels
+            )
+    }
+
+    fun mapTypeAtIndex(i: Int, transform: (Type) -> Type): SearchState {
+        require(i >= numCommittedTypes) { "Cannot modify committed type at index $i" }
+        return SearchState(
+            names = names,
+            types = types.mapIndexed { j, t -> if (i == j) transform(t) else t },
+            labelArities = labelArities,
+            numCommittedTypes = numCommittedTypes,
+            committedLabels = committedLabels
+        )
+    }
 
     override fun toString() = asMap.toString()
 }

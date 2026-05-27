@@ -1,0 +1,15 @@
+((=) (int_of_char Char) Num)
+((=) (char_of_int Num) Char)
+((=) (int_of_char Char) (int_of_char Char))
+((<) (int_of_char Char) (int_of_char Char))
+((=) (char_of_int Num) (char_of_int Num))
+((=) (char_of_int Num) Char)
+((=) (char_of_int (int_of_char Char)) Char)
+((=) (int_of_char (char_of_int Num)) Num)
+// this one has char num and comparison
+
+// below str num and comparison
+// ^ output used as input to =
+((=) ((^) Str Str) Str)
+((=) ((^) Str Str) ((^) Str Str))
+((=) ((^) Str Str) Num)

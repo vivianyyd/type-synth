@@ -1,3 +1,4 @@
+val Flt : float
 val (~-.) : float -> float
 val (~+.) : float -> float
 val (+.) : float -> float -> float

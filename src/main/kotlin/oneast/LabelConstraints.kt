@@ -58,9 +58,12 @@ class LabelConstraints(
         declareInts(vars)
         declareInts(lsizes)
 
-        // Preserve existing label arities
-        if (preserveValues) {
-            constrs.addAll(s.labelArities.map { (label, arity) -> "${pySize(label)} == $arity" })
+        // Committed label arities are always pinned. Non-committed existing arities are pinned only
+        // when [preserveValues] is true.
+        s.labelArities.forEach { (label, arity) ->
+            if (label in s.committedLabels || preserveValues) {
+                constrs.add("${pySize(label)} == $arity")
+            }
         }
 
         // All distinct variables must correspond to unique elements in a set
@@ -104,6 +107,17 @@ class LabelConstraints(
             dep.constrained.flatMap { (name, a) ->
                 a.mapIndexedNotNull { i, constrained ->
                     if (constrained && i > 0) {
+                        TODO("This is wrong. something can be negex if there's a label mismatch, might" +
+                                "have nothing to do with label parameters." +
+                                "We should update constrained to take this into account - " +
+                                "under our hyp with label names but not label holes (?? think??), the labels match i.e. we accept" +
+                                "but it's a negex. we can't just omit this check, or we'll just think everything is 0" +
+                                "Dep analysis actually needs to be performed for every outline" +
+                                "This forces us to believe smaller label arities assignments are unsat when they are ok." +
+                                "While previously this was not a problem because we iteratively deepen up to a bound," +
+                                "Now it matters because we impose the additional constraint that solns must match" +
+                                "committed labels. But this is not possible if we erroneously think that committed label" +
+                                "arity is unsat")
                         "SetIntersect(${py(ParameterNode(name, i))}, ${union(name, i)}) != EmptySet(IntSort())"
                     } else null // TODO not sure if we can introduce an == constraint in this case
                 }
