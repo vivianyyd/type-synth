@@ -1,0 +1,752 @@
+OCaml Stdlib (exs)
+Search strategy: fun `<init>`(query.Examples, kotlin.Boolean, kotlin.Boolean, kotlin.Int, kotlin.Int, util.Logger): oneast.searchstrategies.DFSEnumerator
+Size bound: 20
+Depth bound: 4
+Schedule: Auto with 3 names per round
+Searching for 1 solutions
+=====
+
+[16:14:31.542]	Current query: {succ=_ -> _, abs=_ -> _, (+)=_ -> _, Num=.L, Str=.L, false=.L, max_int=.L, min_int=.L, true=.L} with depth bound 0
+[16:14:31.545]	BEG Depth 0 outlining [succ, abs, (+), Num, Str, false, max_int, min_int, true]
+[16:14:31.545]	BEG Initial outlines
+[16:14:31.548]	END Initial outlines : 3 ms
+[16:14:31.548]	Counts:
+
+[16:14:31.548]	Elapsed time: 689 ms
+[16:14:31.596]	Seeds before label arities: 24
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+[16:14:31.598]	BEG Dependency analysis
+[16:14:31.610]	END Dependency analysis : 12 ms
+[16:14:31.611]	Counts:
+Total candidates=138
+[16:14:31.611]	Elapsed time: 752 ms
+[16:14:31.612]	BEG Solving for label arities
+[16:14:33.327]	END Solving for label arities : 1715 ms
+[16:14:33.327]	Counts:
+Total candidates=138
+[16:14:33.328]	Elapsed time: 2469 ms
+[16:14:33.331]	END Depth 0 outlining [succ, abs, (+), Num, Str, false, max_int, min_int, true] : 1786 ms
+[16:14:33.331]	Counts:
+Total candidates=138
+[16:14:33.331]	Elapsed time: 2472 ms
+[16:14:33.332]	Concrete seeds: 44
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> V0, (+)=L0[_] -> V0 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> V0, (+)=L0[_] -> V1 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> V0, (+)=L0[_] -> L0[_] -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> V0, (+)=L0[_] -> V0 -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> V0, (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> L0[_], (+)=L0[_] -> V0 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> L0[_], (+)=L0[_] -> V1 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> L0[_], (+)=L0[_] -> V0 -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> V0, (+)=L0[_] -> V0 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> V0, (+)=L0[_] -> V1 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> V0, (+)=L0[_] -> L0[_] -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> V0, (+)=L0[_] -> V0 -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> V0, (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> V0 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> V1 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> V0 -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+[16:14:33.333]	Max min size: 7
+[16:14:33.333]	Current query: {succ=_ -> _, abs=_ -> _, (+)=_ -> _, Num=.L, Str=.L, false=.L, max_int=.L, min_int=.L, true=.L} with depth bound 1
+[16:14:33.333]	BEG Depth 0 outlining [succ, abs, (+), Num, Str, false, max_int, min_int, true]
+[16:14:33.334]	BEG Initial outlines
+[16:14:33.334]	END Initial outlines : 0 ms
+[16:14:33.334]	Counts:
+Total candidates=138
+[16:14:33.334]	Elapsed time: 2475 ms
+[16:14:33.346]	Seeds before label arities: 24
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+[16:14:33.346]	BEG Dependency analysis
+[16:14:33.348]	END Dependency analysis : 2 ms
+[16:14:33.348]	Counts:
+Total candidates=276
+[16:14:33.348]	Elapsed time: 2489 ms
+[16:14:33.348]	BEG Solving for label arities
+[16:14:34.631]	END Solving for label arities : 1283 ms
+[16:14:34.631]	Counts:
+Total candidates=276
+[16:14:34.631]	Elapsed time: 3772 ms
+[16:14:34.633]	END Depth 0 outlining [succ, abs, (+), Num, Str, false, max_int, min_int, true] : 1300 ms
+[16:14:34.633]	Counts:
+Total candidates=276
+[16:14:34.633]	Elapsed time: 3774 ms
+[16:14:34.634]	Concrete seeds: 44
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> V0, (+)=L0[_] -> V0 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> V0, (+)=L0[_] -> V1 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> V0, (+)=L0[_] -> L0[_] -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> V0, (+)=L0[_] -> V0 -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> V0, (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> V0, (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> L0[_], (+)=L0[_] -> V0 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> L0[_], (+)=L0[_] -> V1 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> L0[_], (+)=L0[_] -> V0 -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> V0, abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> V0, abs=L0[] -> L0[], (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> V0, (+)=L0[_] -> V0 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> V0, (+)=L0[_] -> V1 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> V0, (+)=L0[_] -> L0[_] -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> V0, (+)=L0[_] -> V0 -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> V0, (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> V0, (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> V0 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V1 -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> V1 -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> V0, Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0 -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> V0 -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> V0, Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+[16:14:34.635]	Max min size: 7
+[16:14:34.635]	BEG Depth 1 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true]
+[16:14:34.635]	BEG Size 7 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true]
+[16:14:34.748]	Looking for counterexamples for potential solution {succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[]}
+[16:14:34.762]	Found no counterexamples
+[16:14:34.763]	Current query: {succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=_ -> _, pred=_ -> _, (/)=_ -> _} with depth bound 1
+[16:14:34.763]	BEG Depth 0 outlining [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/)]
+[16:14:34.763]	BEG Initial outlines
+[16:14:34.763]	END Initial outlines : 0 ms
+[16:14:34.764]	Counts:
+Total candidates=580
+[16:14:34.764]	Elapsed time: 3905 ms
+[16:14:35.307]	Seeds before label arities: 72
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0}
+[16:14:35.307]	BEG Dependency analysis
+[16:14:35.312]	END Dependency analysis : 5 ms
+[16:14:35.313]	Counts:
+Total candidates=5226
+[16:14:35.313]	Elapsed time: 4454 ms
+[16:14:35.313]	BEG Solving for label arities
+[16:14:42.551]	END Solving for label arities : 7238 ms
+[16:14:42.552]	Counts:
+Total candidates=5226
+Solver call=120
+[16:14:42.552]	Elapsed time: 11693 ms
+[16:14:42.554]	END Depth 0 outlining [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/)] : 7791 ms
+[16:14:42.555]	Counts:
+Total candidates=5226
+Solver call=120
+[16:14:42.555]	Elapsed time: 11696 ms
+[16:14:42.558]	Concrete seeds: 144
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> L0[], pred=L0[] -> V0, (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V1 -> V0, pred=L0[] -> V0, (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> L0[], (/)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V1 -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> V0, pred=L0[] -> V0, (/)=L0[] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> L0[_], pred=L0[_] -> V0, (/)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V1 -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> L0[_], (/)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0 -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V1 -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> V0, pred=L0[_] -> V0, (/)=L0[_] -> V0}
+[16:14:42.560]	Max min size: 15
+[16:14:42.560]	BEG Depth 1 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/)]
+[16:14:42.560]	BEG Size 15 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/)]
+[16:14:42.561]	Looking for counterexamples for potential solution {succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[]}
+[16:14:42.564]	Found no counterexamples
+[16:14:42.566]	Current query: {succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=_ -> _, ( * )=_ -> _, (~-)=_ -> _} with depth bound 1
+[16:14:42.566]	BEG Depth 0 outlining [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-)]
+[16:14:42.566]	BEG Initial outlines
+[16:14:42.566]	END Initial outlines : 0 ms
+[16:14:42.566]	Counts:
+Total candidates=5226
+Solver call=120
+[16:14:42.567]	Elapsed time: 11707 ms
+[16:14:43.304]	Seeds before label arities: 72
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+[16:14:43.304]	BEG Dependency analysis
+[16:14:43.308]	END Dependency analysis : 4 ms
+[16:14:43.308]	Counts:
+Total candidates=10336
+Solver call=120
+[16:14:43.308]	Elapsed time: 12449 ms
+[16:14:43.308]	BEG Solving for label arities
+[16:14:51.528]	END Solving for label arities : 8220 ms
+[16:14:51.529]	Counts:
+Total candidates=10336
+Solver call=191
+[16:14:51.529]	Elapsed time: 20670 ms
+[16:14:51.532]	END Depth 0 outlining [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-)] : 8966 ms
+[16:14:51.532]	Counts:
+Total candidates=10336
+Solver call=191
+[16:14:51.533]	Elapsed time: 20674 ms
+[16:14:51.534]	Concrete seeds: 144
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> L0[], ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0 -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V1 -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0 -> L0[], (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V1 -> V0, (~-)=L0[] -> V0}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> V0, ( * )=L0[] -> V0, (~-)=L0[] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> L0[_], ( * )=L0[_] -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> V0, ( * )=L0[_] -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0 -> V0, ( * )=L0[_] -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V1 -> V0, ( * )=L0[_] -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> V0 -> L0[_], (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> L0[_] -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> V0 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> V1 -> V0, (~-)=L0[_] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> V0, (~-)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> V0, ( * )=L0[_] -> V0, (~-)=L0[_] -> V0}
+[16:14:51.535]	Max min size: 23
+[16:14:51.535]	Warning: the largest seed contains more holes than the size bound
+[16:14:51.535]	BEG Depth 1 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-)]
+[16:14:51.535]	BEG Size 20 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-)]
+[16:14:51.536]	Looking for counterexamples for potential solution {succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[]}
+[16:14:51.537]	Found no counterexamples
+[16:14:51.538]	Current query: {succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[], (~+)=_ -> _} with depth bound 1
+[16:14:51.538]	BEG Depth 0 outlining [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-), (~+)]
+[16:14:51.538]	BEG Initial outlines
+[16:14:51.538]	END Initial outlines : 0 ms
+[16:14:51.538]	Counts:
+Total candidates=10336
+Solver call=191
+[16:14:51.538]	Elapsed time: 20679 ms
+[16:14:51.541]	Seeds before label arities: 2
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[], (~+)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[], (~+)=L0[] -> V0}
+[16:14:51.541]	BEG Dependency analysis
+[16:14:51.542]	END Dependency analysis : 1 ms
+[16:14:51.542]	Counts:
+Total candidates=10349
+Solver call=191
+[16:14:51.543]	Elapsed time: 20683 ms
+[16:14:51.543]	BEG Solving for label arities
+[16:14:51.894]	END Solving for label arities : 351 ms
+[16:14:51.894]	Counts:
+Total candidates=10349
+Solver call=193
+[16:14:51.894]	Elapsed time: 21035 ms
+[16:14:51.894]	END Depth 0 outlining [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-), (~+)] : 356 ms
+[16:14:51.894]	Counts:
+Total candidates=10349
+Solver call=193
+[16:14:51.894]	Elapsed time: 21035 ms
+[16:14:51.894]	Concrete seeds: 4
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[], (~+)=L0[] -> L0[]}
+{succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[], (~+)=L0[] -> V0}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> L0[_], (~+)=L0[_] -> L0[_]}
+{succ=L0[_] -> L0[_], abs=L0[_] -> L0[_], (+)=L0[_] -> L0[_] -> L0[_], Num=L0[.], Str=L1[], false=L2[], max_int=L0[.], min_int=L0[.], true=L3[], (-)=L0[_] -> L0[_] -> L0[_], pred=L0[_] -> L0[_], (/)=L0[_] -> L0[_] -> L0[_], ( mod )=L0[_] -> L0[_] -> L0[_], ( * )=L0[_] -> L0[_] -> L0[_], (~-)=L0[_] -> L0[_], (~+)=L0[_] -> V0}
+[16:14:51.895]	Max min size: 25
+[16:14:51.895]	Warning: the largest seed contains more holes than the size bound
+[16:14:51.895]	BEG Depth 1 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-), (~+)]
+[16:14:51.895]	BEG Size 20 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-), (~+)]
+[16:14:51.895]	Looking for counterexamples for potential solution {succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[], (~+)=L0[] -> L0[]}
+[16:14:51.896]	Found no counterexamples
+[16:14:51.897]	SOLUTION: {succ=L0[] -> L0[], abs=L0[] -> L0[], (+)=L0[] -> L0[] -> L0[], Num=L0[], Str=L1[], false=L2[], max_int=L0[], min_int=L0[], true=L3[], (-)=L0[] -> L0[] -> L0[], pred=L0[] -> L0[], (/)=L0[] -> L0[] -> L0[], ( mod )=L0[] -> L0[] -> L0[], ( * )=L0[] -> L0[] -> L0[], (~-)=L0[] -> L0[], (~+)=L0[] -> L0[]}
+[16:14:51.897]	END Size 20 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-), (~+)] : 2 ms
+[16:14:51.897]	Elapsed time: 21038 ms
+[16:14:51.897]	END Depth 1 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-), (~+)] : 2 ms
+[16:14:51.897]	Elapsed time: 21038 ms
+[16:14:51.897]	END Size 20 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-)] : 362 ms
+[16:14:51.897]	Elapsed time: 21038 ms
+[16:14:51.897]	END Depth 1 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/), ( mod ), ( * ), (~-)] : 362 ms
+[16:14:51.897]	Elapsed time: 21038 ms
+[16:14:51.897]	END Size 15 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/)] : 9337 ms
+[16:14:51.897]	Elapsed time: 21038 ms
+[16:14:51.897]	END Depth 1 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true, (-), pred, (/)] : 9337 ms
+[16:14:51.897]	Elapsed time: 21038 ms
+[16:14:51.897]	END Size 7 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true] : 17262 ms
+[16:14:51.898]	Elapsed time: 21039 ms
+[16:14:51.898]	END Depth 1 concretizing [succ, abs, (+), Num, Str, false, max_int, min_int, true] : 17263 ms
+[16:14:51.898]	Elapsed time: 21039 ms
+[16:14:51.898]	Counts:
+Total candidates=10349
+Solver call=193
+Seeds=45
+[16:14:51.898]	Total time: 21039 ms

@@ -1,0 +1,86 @@
+id-inc
+Search strategy: fun `<init>`(query.Examples, kotlin.Boolean, kotlin.Boolean, kotlin.Int, kotlin.Int, util.Logger): oneast.searchstrategies.DFSEnumerator
+Size bound: 20
+Depth bound: 4
+Schedule: Single round
+Searching for 1 solutions
+=====
+
+[14:40:45.711]	Current query: {id=_ -> _, inc=_ -> _, n=.L} with depth bound 0
+[14:40:45.711]	BEG Depth 0 outlining [id, inc, n]
+[14:40:45.711]	BEG Initial outlines
+[14:40:45.711]	END Initial outlines : 0 ms
+[14:40:45.711]	Counts:
+
+[14:40:45.711]	Elapsed time: 58 ms
+[14:40:45.712]	Seeds before label arities: 4
+{id=V0 -> V0, inc=L0[] -> L0[], n=L0[]}
+{id=V1 -> V0, inc=L0[] -> L0[], n=L0[]}
+{id=V0 -> V0, inc=L0[] -> V0, n=L0[]}
+{id=V1 -> V0, inc=L0[] -> V0, n=L0[]}
+[14:40:45.712]	BEG Dependency analysis
+[14:40:45.712]	END Dependency analysis : 0 ms
+[14:40:45.712]	Counts:
+Total candidates=71
+[14:40:45.712]	Elapsed time: 59 ms
+[14:40:45.712]	BEG Solving for label arities
+[14:40:45.966]	END Solving for label arities : 254 ms
+[14:40:45.966]	Counts:
+Total candidates=71
+[14:40:45.966]	Elapsed time: 313 ms
+[14:40:45.966]	END Depth 0 outlining [id, inc, n] : 255 ms
+[14:40:45.966]	Counts:
+Total candidates=71
+[14:40:45.966]	Elapsed time: 313 ms
+[14:40:45.966]	Concrete seeds: 4
+{id=V0 -> V0, inc=L0[] -> L0[], n=L0[]}
+{id=V1 -> V0, inc=L0[] -> L0[], n=L0[]}
+{id=V0 -> V0, inc=L0[] -> V0, n=L0[]}
+{id=V1 -> V0, inc=L0[] -> V0, n=L0[]}
+[14:40:45.966]	Max min size: 0
+[14:40:45.966]	Current query: {id=_ -> _, inc=_ -> _, n=.L} with depth bound 1
+[14:40:45.966]	BEG Depth 0 outlining [id, inc, n]
+[14:40:45.967]	BEG Initial outlines
+[14:40:45.967]	END Initial outlines : 0 ms
+[14:40:45.967]	Counts:
+Total candidates=71
+[14:40:45.967]	Elapsed time: 314 ms
+[14:40:45.967]	Seeds before label arities: 4
+{id=V0 -> V0, inc=L0[] -> L0[], n=L0[]}
+{id=V1 -> V0, inc=L0[] -> L0[], n=L0[]}
+{id=V0 -> V0, inc=L0[] -> V0, n=L0[]}
+{id=V1 -> V0, inc=L0[] -> V0, n=L0[]}
+[14:40:45.968]	BEG Dependency analysis
+[14:40:45.968]	END Dependency analysis : 0 ms
+[14:40:45.968]	Counts:
+Total candidates=142
+[14:40:45.968]	Elapsed time: 315 ms
+[14:40:45.968]	BEG Solving for label arities
+[14:40:46.192]	END Solving for label arities : 224 ms
+[14:40:46.192]	Counts:
+Total candidates=142
+[14:40:46.192]	Elapsed time: 539 ms
+[14:40:46.192]	END Depth 0 outlining [id, inc, n] : 226 ms
+[14:40:46.192]	Counts:
+Total candidates=142
+[14:40:46.192]	Elapsed time: 539 ms
+[14:40:46.192]	Concrete seeds: 4
+{id=V0 -> V0, inc=L0[] -> L0[], n=L0[]}
+{id=V1 -> V0, inc=L0[] -> L0[], n=L0[]}
+{id=V0 -> V0, inc=L0[] -> V0, n=L0[]}
+{id=V1 -> V0, inc=L0[] -> V0, n=L0[]}
+[14:40:46.192]	Max min size: 0
+[14:40:46.192]	BEG Depth 1 concretizing [id, inc, n]
+[14:40:46.192]	BEG Size 0 concretizing [id, inc, n]
+[14:40:46.192]	Looking for counterexamples for potential solution {id=V0 -> V0, inc=L0[] -> L0[], n=L0[]}
+[14:40:46.193]	Found no counterexamples
+[14:40:46.193]	SOLUTION: {id=V0 -> V0, inc=L0[] -> L0[], n=L0[]}
+[14:40:46.193]	END Size 0 concretizing [id, inc, n] : 1 ms
+[14:40:46.193]	Elapsed time: 540 ms
+[14:40:46.193]	END Depth 1 concretizing [id, inc, n] : 1 ms
+[14:40:46.193]	Elapsed time: 540 ms
+[14:40:46.193]	Counts:
+Total candidates=142
+Solver call=8
+Seeds=1
+[14:40:46.193]	Total time: 540 ms
