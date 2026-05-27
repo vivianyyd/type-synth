@@ -6,6 +6,7 @@ import util.PyWriter
 import util.io.cvc.CVCParser
 import util.io.cvc.callCVC
 import util.io.cvc.readCVC
+import util.lines
 
 class LabelConstraints(
     private val s: SearchState,
@@ -148,7 +149,15 @@ class LabelConstraints(
         decls.add("$py = Int${if (names.size == 1) "" else "s"}('$cvc5')")
     }
 
-    fun initialQuery(): String = PyWriter().query("${s.asMap()}", decls, constrs)
+    private val header = "\"\"\"\n" +
+            s.asMap().entries.partition { it.value is Arrow }.let { (fns, nullaries) -> nullaries + fns }.lines() +
+            "\n===\n" +
+            nameToPy +
+            "\n\"\"\""
+
+    private fun makeQuery(): String = PyWriter().query(header, decls, constrs)
+
+    fun initialQuery(): String = makeQuery()
 
     private fun smallerQuery(sizes: Map<Int, Int>): String {
         fun or(args: List<String>): String {
@@ -156,7 +165,7 @@ class LabelConstraints(
             return "Or(${args.first()},${or(args.drop(1))})"
         }
         constrs.add(or(sizes.entries.map { "${pySize(it.key)} < ${it.value}" }))
-        return PyWriter().query("$s", decls, constrs)
+        return makeQuery()
     }
 
     fun smallerQuery(p: CVCParser): String = smallerQuery(extract(p))

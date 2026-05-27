@@ -33,7 +33,7 @@ class PyWriter : Writer() {
     }
 
     fun query(header: String, decls: List<String>, constrs: List<String>): String {
-        comment(header)
+        line(header)
         import("cvc5.pythonic")
         import("cardinality")
         beginMain()

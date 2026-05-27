@@ -89,7 +89,11 @@ class OCamlStdlibTest {
                     .split(",")
                     .map { it.trim() }
                     .filter { it.endsWith(".types") }
-                    .forEach { referencedTypesFiles.add(it) }
+                    .forEach {
+                        if (it.substringBefore(".types") !in exsFileNames)
+                            println("Warning in module $name: Dependency $it is not in provided files, adding its type signatures without its examples")
+                        referencedTypesFiles.add(it)
+                    }
             }
 
             lines.drop(1).forEach { line ->
