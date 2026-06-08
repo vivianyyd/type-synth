@@ -249,31 +249,53 @@ class OcamlTypeParser {
         return trimmed
     }
 
+    /**
+     * Arrows are right-associative and have the lowest precedence: `a -> b -> c` parses as
+     * `a -> (b -> c)`.
+     */
     private fun parseArrow(tokens: List<String>, ctx: VariableContext): Pair<Type, List<String>> {
-        var (lhs, rest) = parseApplication(tokens, ctx)
-        while (rest.firstOrNull() == "->") {
+        val (lhs, rest) = parseTuple(tokens, ctx)
+        return if (rest.firstOrNull() == "->") {
             val (rhs, next) = parseArrow(rest.drop(1), ctx)
-            lhs = Arrow(lhs, rhs)
-            rest = next
+            Arrow(lhs, rhs) to next
+        } else {
+            lhs to rest
         }
-        return lhs to rest
     }
 
+    /**
+     * Tuple types bind tighter than arrows but looser than constructor application:
+     * `'a * 'b list` parses as `'a * ('b list)`. An n-tuple becomes a [NamedLabel] with n
+     * parameters, using an arity-tagged constructor so that pairs, triples, etc. are distinct
+     * labels (mirroring how `int`/`bool` become zero-parameter labels).
+     */
+    private fun parseTuple(tokens: List<String>, ctx: VariableContext): Pair<Type, List<String>> {
+        val (first, rest0) = parseApplication(tokens, ctx)
+        if (rest0.firstOrNull() != "*") return first to rest0
+        val components = mutableListOf(first)
+        var rest = rest0
+        while (rest.firstOrNull() == "*") {
+            val (component, next) = parseApplication(rest.drop(1), ctx)
+            components.add(component)
+            rest = next
+        }
+        return NamedLabel(constructorId("*${components.size}"), components) to rest
+    }
+
+    /**
+     * OCaml type-constructor application is postfix and left-associative: `'a list` applies `list`
+     * to `'a`, and `'a list list` is `list (list 'a)`. Multi-parameter constructors are written
+     * with their arguments parenthesized and comma-separated, e.g. `('b, 'c) Either.t`; those are
+     * handled in [parseAtom].
+     */
     private fun parseApplication(
         tokens: List<String>,
         ctx: VariableContext
     ): Pair<Type, List<String>> {
         var (base, rest) = parseAtom(tokens, ctx)
-        val args = mutableListOf<Type>()
-        while (rest.isNotEmpty() && isAtomStart(rest[0])) {
-            val (arg, next) = parseAtom(rest, ctx)
-            args.add(arg)
-            rest = next
-        }
-        if (args.isNotEmpty()) {
-            val head =
-                base as? NamedLabel ?: error("Cannot apply arguments to non-constructor $base")
-            base = head.copy(params = head.params + args)
+        while (rest.isNotEmpty() && isConstructorName(rest[0])) {
+            base = NamedLabel(constructorId(rest[0]), listOf(base))
+            rest = rest.drop(1)
         }
         return base to rest
     }
@@ -285,15 +307,42 @@ class OcamlTypeParser {
             head.startsWith("'") -> {
                 Variable(ctx.variableId(head)) to tokens.drop(1)
             }
-            head == "(" -> {
-                val (inner, rest) = parseArrow(tokens.drop(1), ctx)
-                require(rest.firstOrNull() == ")") { "Expected closing parenthesis" }
-                inner to rest.drop(1)
-            }
-            else -> {
+            head == "(" -> parseParenthesized(tokens.drop(1), ctx)
+            isConstructorName(head) -> {
                 NamedLabel(constructorId(head), emptyList()) to tokens.drop(1)
             }
+            else -> error("Unexpected token '$head'")
         }
+    }
+
+    /**
+     * Parses the remainder after a `(`. A plain `( typexpr )` is a grouping, while a comma-separated
+     * `( t1 , t2 , ... ) Constr` is a multi-parameter constructor application whose arguments precede
+     * the constructor name.
+     */
+    private fun parseParenthesized(
+        tokens: List<String>,
+        ctx: VariableContext
+    ): Pair<Type, List<String>> {
+        val (first, rest0) = parseArrow(tokens, ctx)
+        if (rest0.firstOrNull() == ",") {
+            val args = mutableListOf(first)
+            var rest = rest0
+            while (rest.firstOrNull() == ",") {
+                val (arg, next) = parseArrow(rest.drop(1), ctx)
+                args.add(arg)
+                rest = next
+            }
+            require(rest.firstOrNull() == ")") { "Expected closing parenthesis" }
+            rest = rest.drop(1)
+            val ctor = rest.firstOrNull()
+            require(ctor != null && isConstructorName(ctor)) {
+                "Expected type constructor after parenthesized arguments, got $ctor"
+            }
+            return NamedLabel(constructorId(ctor), args) to rest.drop(1)
+        }
+        require(rest0.firstOrNull() == ")") { "Expected closing parenthesis" }
+        return first to rest0.drop(1)
     }
 
     private fun constructorId(name: String): Int =
@@ -304,11 +353,17 @@ class OcamlTypeParser {
             .replace("(", " ( ")
             .replace(")", " ) ")
             .replace("->", " -> ")
+            .replace("*", " * ")
+            .replace(",", " , ")
             .split(Regex("\\s+"))
             .filter { it.isNotEmpty() }
 
-    private fun isAtomStart(token: String): Boolean =
-        token.startsWith("'") || token == "(" || token.firstOrNull()?.isLetter() == true
+    /**
+     * A type constructor name is an identifier (possibly module-qualified, e.g. `Either.t`). It is
+     * distinguished from the punctuation tokens produced by [tokenize] and from type variables.
+     */
+    private fun isConstructorName(token: String): Boolean =
+        token.firstOrNull()?.isLetter() == true
 
     private data class VariableContext(
         val ids: MutableMap<String, Int> = mutableMapOf(),
