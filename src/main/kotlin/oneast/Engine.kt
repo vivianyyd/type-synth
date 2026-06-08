@@ -11,7 +11,7 @@ class Engine(
     private val logger: Logger
 ) {
     private val names = query.examples.names
-    private val posExamples = query.examples.posNoSubexprs.toMutableList()
+    private val posExamples = query.examples.posWithSubexprs.toMutableList()
     private val negExamples = query.examples.neg.toMutableList()
 
     private val committedSeed = query.committedSeed.commitAll()
