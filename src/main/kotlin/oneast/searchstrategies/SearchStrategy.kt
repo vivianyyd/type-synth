@@ -49,14 +49,6 @@ abstract class SearchStrategy(private val examples: Examples) {
         } ?: emptySequence()
     }
 
-    fun fastForward(
-        candidate: SearchState,
-        depthBound: Int,
-    ): Sequence<SearchState> {
-        val fix = fixpoint(candidate, THole::fastForward, depthBound) ?: return emptySequence()
-        return if (fix.noHoles()) sequenceOf(fix) else emptySequence()
-    }
-
     private fun fixpoint(
         candidate: SearchState,
         transform: (THole, OneUnification) -> Type?,

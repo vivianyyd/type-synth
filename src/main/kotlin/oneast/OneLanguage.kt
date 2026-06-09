@@ -406,52 +406,6 @@ sealed class THole : Type {
         if (constrs.any { a -> constrs.any { b -> !a.match(b) } }) return null
         return antiunify(antiunifies, defaultAntiunifier = defaultHoleMaker)
     }
-
-    /**
-     * Fast forward once we've hit our budget, a last-ditch effort to find a solution if we were
-     * quite close.
-     */
-    fun fastForward(unification: OneUnification): Type? {
-        val defaultVariable = Variable(0)
-
-        val antiunifies = unification.holeEquals(this)
-        val au = antiunify(antiunifies, defaultAntiunifier = { defaultVariable })
-        return if (au is Constructor) {
-            val instsPointTo =
-                antiunifies.filterIsInstance<InstantiationTy>().mapNotNull {
-                    // todo this is not efficient, if you read it you'll see we examine things
-                    //  multiple times
-                    val instEqs = unification.holeEquals(it.hole)
-                    // Ignore the other insts if unconstrained, if it can be a variable, or
-                    // constructors mismatch
-                    if (instEqs.any { it is ConstraintVariable }) null
-                    else takeFirstIfMatch(instEqs.filterIsInstance<ConstraintTypeConstructor>())
-                }
-            takeFirstIfMatch(listOf(au.instantiate(0) as ConstraintTypeConstructor) + instsPointTo)
-                ?.toNode()
-        } else au
-    }
-
-    /** Returns the first node if top-level constructors all match; null if mismatch or empty. */
-    private fun takeFirstIfMatch(
-        constrs: List<ConstraintTypeConstructor>
-    ): ConstraintTypeConstructor? {
-        return if (constrs.isEmpty()) null
-        else if (constrs.all { a -> constrs.all { b -> a.match(b) } }) {
-            // we only care about the top-level constructor, so it suffices to return an arbitrary
-            // element
-            constrs.first()
-        } else null
-    }
-
-    private fun ConstraintTy.toNode(): Type =
-        when (this) {
-            is ConstraintArrow -> Arrow(this.l.toNode(), this.r.toNode())
-            is ConstraintLabel -> NamedLabel(this.label, this.params.map { it.toNode() })
-            is ConstraintVariable -> Variable(this.v)
-            is InstantiationTy -> error("Unreachable pattern match - convert Instantiation to node")
-            Bottom -> error("Antiunifying should never produce Bottom")
-        }
 }
 
 class TypeHole : THole() {

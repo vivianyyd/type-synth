@@ -27,6 +27,18 @@ fun SearchState.equivalentTo(other: SearchState): Boolean {
     return true
 }
 
+fun equalInEmptyLabelContext(a: ConstraintTy, b: ConstraintTy): Boolean {
+    fun ConstraintTy.toNode(): Type =
+        when (this) {
+            is ConstraintArrow -> Arrow(this.l.toNode(), this.r.toNode())
+            is ConstraintLabel -> NamedLabel(this.label, this.params.map { it.toNode() })
+            is ConstraintVariable -> Variable(this.v)
+            is InstantiationTy -> TypeHole()
+            Bottom -> error("Can't compare types that contain bottom")
+        }
+    return matchTypes(a.toNode(), b.toNode(), HashMap(), HashMap(), HashMap(), HashMap())
+}
+
 private fun matchTypes(
     t1: Type,
     t2: Type,

@@ -383,6 +383,7 @@ class UnificationTest {
         assertOk(context, example)
     }
 
+    /** TODO This should use the more robust type equivalence we have... */
     private fun ConstraintTy.toNode(): Type =
         when (this) {
             is ConstraintArrow -> Arrow(this.l.toNode(), this.r.toNode())
