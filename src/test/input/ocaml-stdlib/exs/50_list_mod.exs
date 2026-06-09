@@ -1,5 +1,20 @@
 // 0_basics.types, 1_comparison.types, 4_arith.types, 8_char.types, 50_list_mod.types
 
+(List.cons Num (List.cons Num Nil))
+(List.cons true (List.cons true Nil))
+(List.cons Num (List.cons true Nil))
+(List.cons true (List.cons Num Nil))
+(List.cons (List.hd (List.cons Num Nil)) (List.cons Num Nil))
+(List.cons (List.hd (List.cons true Nil)) (List.cons true Nil))
+(List.cons (List.hd (List.cons Num Nil)) (List.cons true Nil))
+(List.cons (List.hd (List.cons true Nil)) (List.cons Num Nil))
+
+(List.cons Num (List.hd (List.cons Num Nil)))
+(List.cons Num (List.tl (List.cons Num Nil)))
+(List.cons true (List.tl (List.cons true Nil)))
+(List.cons Num (List.tl (List.cons true Nil)))
+(List.cons true (List.tl (List.cons Num Nil)))
+
 // length: 'a list -> int
 (List.length Nil)
 (List.length (List.cons Num Nil))

@@ -39,6 +39,7 @@
 ((!=) true false )
 ((=) Num Num )
 ((=) true false)
+((==) ((==) Num Num) true )
 ((==) ((=) Num Num) true )
 ((<>) Num Num)
 ((<>) true false )
