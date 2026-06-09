@@ -1,5 +1,7 @@
 package oneast
 
+import util.Logger
+
 /**
  * Returns true iff [this] and [other] denote the same state up to:
  *  - bijective renaming of label IDs (global across all types in the state), and
@@ -13,18 +15,25 @@ package oneast
  * (label / variable) renaming is forced by the corresponding label or variable
  * on the other side.
  */
-fun SearchState.equivalentTo(other: SearchState): Boolean {
+fun SearchState.equivalentTo(other: SearchState, logger: Logger? = null): Boolean {
     if (this.names.keys != other.names.keys) return false
     val labelMap = HashMap<Int, Int>()
     val labelMapRev = HashMap<Int, Int>()
+    var equivalent = true
     for (name in this.names.keys) {
         val t1 = this.types[this.names.getValue(name)]
         val t2 = other.types[other.names.getValue(name)]
         val varMap = HashMap<Int, Int>()
         val varMapRev = HashMap<Int, Int>()
-        if (!matchTypes(t1, t2, labelMap, labelMapRev, varMap, varMapRev)) return false
+        if (!matchTypes(t1, t2, labelMap, labelMapRev, varMap, varMapRev)) {
+            if (logger == null) return false
+            else {
+                logger.log("Mismatch for $name: $t1 and $t2")
+                equivalent = false
+            }
+        }
     }
-    return true
+    return equivalent
 }
 
 fun equalInEmptyLabelContext(a: ConstraintTy, b: ConstraintTy): Boolean {

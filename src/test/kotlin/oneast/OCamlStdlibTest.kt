@@ -2,6 +2,8 @@ package oneast
 
 import oneast.searchstrategies.DFSEnumerator
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.TestFactory
 import query.Example
 import query.Examples
 import query.Query
@@ -11,9 +13,8 @@ import testutil.ocaml.OCamlChecker
 import testutil.ocaml.OcamlTypeParser
 import testutil.splitOCamlExamples
 import testutil.unsignedExample
-import util.CheckingGroundTruthOracle
-import util.Logger
-import util.join
+import util.*
+import util.io.cvc.clearCVC
 import java.io.File
 import kotlin.test.Test
 
@@ -111,25 +112,68 @@ class OCamlStdlibTest {
     }
 
     @Test
-//    @Disabled
+    @Disabled
     fun `single module`() {
-        val exsFileNames = listOf("4_arith", "0_basics") // , "2_boolean")
+        val exsFileNames = listOf("4_arith", "0_basics")
         val (examples, oracleTypes) = loadFromExsFiles(exsFileNames)
         val oracle = CheckingGroundTruthOracle(oracleTypes)
         val query = Query(splitOCamlExamples(examples, oracle, OCamlChecker()), oracle)
         val (configuration, logger) = configLogger(Auto(3))
-        assert(run(query, OCamlChecker(), configuration, logger).isNotEmpty())
+        val sols = run(query, OCamlChecker(), configuration, logger)
+        assert(sols.isNotEmpty())
+        assert(sols.any { it.equivalentTo(stateFromContext(oracleTypes), logger) })
+    }
+
+    @TestFactory
+    fun `test sublists (factory)`(): List<DynamicTest> {
+        clearCVC()
+
+        val modules =
+            listOf(
+                listOf("0_basics", "2_boolean", "4_arith", "8_char"),
+                listOf("1_comparison"),
+                listOf("50_list_mod"),
+                listOf("5_bitwise"),
+                listOf("6_float"),
+                listOf("7_str"),
+                )
+        return modules.indices.map { i ->
+            val task = modules[i]
+            val fixed = modules.subList(0, i)
+            DynamicTest.dynamicTest(task.toString()) {
+                val (_, fixedTypes) = loadFromExsFiles(fixed.flatten())
+                val (examplesAll, desiredTypes) = loadFromExsFiles(task)
+                val oracleTypes = fixedTypes + desiredTypes
+                val examples =
+                    examplesAll
+                        .flatMap { it.subexprs() }
+                        .toSet()
+                        .filter { it.names.all { it in oracleTypes } }
+                val oracle = CheckingGroundTruthOracle(oracleTypes)
+                val query =
+                    Query(
+                        splitOCamlExamples(examples, oracle, OCamlChecker()),
+                        oracle,
+                        committedSeed = stateFromContext(fixedTypes))
+                val (configuration, logger) = configLogger(Auto(3), i)
+                val sols = run(query, OCamlChecker(), configuration, logger)
+                assert(sols.isNotEmpty()) { "No solution found for module $task" }
+                val gotone = sols.any { it.equivalentTo(stateFromContext(oracleTypes), logger) }
+                // TODO for some reason mismatches not getting logged, putting it in a seaprate varaiable in case weird test harness side effect behavior
+                assert(gotone) {
+                    "None of\n${sols.lines()}\nmatch expected context\n$oracleTypes"
+                }
+            }
+        }
     }
 
     @Test
     fun `multiple modules`() {
-        val exsFileGroups: List<List<String>> = listOf(
-            // 0_basics.types, 1_comparison.types, 4_arith.types, 8_char.types, 50_list_mod.exs
-            listOf("4_arith", "0_basics", "2_boolean", "8_char", "1_comparison"),// "7_str", ),
-            listOf("50_list_mod")
-//            listOf("5_bitwise"),
-//            listOf("6_float")
-        )
+        val exsFileGroups: List<List<String>> =
+            listOf(
+                listOf("0_basics", "2_boolean", "4_arith", "8_char"),
+                listOf("1_comparison"),
+                listOf("50_list_mod"))
 
         var committedSeed = SearchState.emptyState
         for ((iter, _) in exsFileGroups.withIndex()) {

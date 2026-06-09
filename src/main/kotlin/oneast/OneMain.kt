@@ -6,7 +6,6 @@ import query.Examples
 import util.Config
 import util.GroundTruth
 import util.Logger
-import util.io.cvc.clearCVC
 import util.lines
 
 fun run(
@@ -15,8 +14,6 @@ fun run(
     configuration: Configuration,
     logger: Logger
 ): List<SearchState> {
-    clearCVC()
-
     val engine = Engine(query, languageGroundTruth::valid, configuration, logger)
 
     val solutions = mutableListOf<SearchState>()

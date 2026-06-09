@@ -62,6 +62,7 @@ class Engine(
             }
             is SingleRound -> if (newNames.isNotEmpty()) scheduled.add(newNames)
         }
+        logger.log("Schedule: $scheduled")
     }
 
     private fun nameIsApplied(name: String, exs: Examples): Boolean {
@@ -75,7 +76,7 @@ class Engine(
 
     /** Returns the next synthesis problem, or null if we are done. */
     private fun buildNextQuery(state: SearchState, round: Int): Pair<Examples, SearchState>? {
-        if (names.size == state.names.size) return null
+        if (round >= scheduled.size) return null
 
         val scheduledRound = scheduled[round]
         // TODO I think enumeration doesn't actually need the subexprs, so we should make a separate

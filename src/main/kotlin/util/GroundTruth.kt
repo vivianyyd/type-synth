@@ -10,15 +10,7 @@ interface GroundTruth {
 /** Computes types of applications based on types of named values, given as [secret] */
 class CheckingGroundTruthOracle(secret: Map<String, Type>) : GroundTruth, Oracle {
     // This doesn't enforce the invariant that a label must have the same arity always
-    private val truth = stateFromSecret(secret)
-
-    private fun stateFromSecret(secret: Map<String, Type>): SearchState {
-        val labelArities = secret.values.flatMap { it.labels() }.toSet().toMap()
-        val (names, types) = secret.toList().unzip()
-        return SearchState(
-            names = names.withIndex().associate { it.value to it.index }, types = types, labelArities
-        )
-    }
+    private val truth = stateFromContext(secret)
 
     override fun valid(example: Example): Boolean = OneUnification(truth, listOf(example)).ok
 
@@ -39,3 +31,11 @@ private fun Type.labels(): Set<Pair<Int, Int>> =
         is THole,
         is Variable -> emptySet()
     }
+
+fun stateFromContext(context: Map<String, Type>): SearchState {
+    val labelArities = context.values.flatMap { it.labels() }.toSet().toMap()
+    val (names, types) = context.toList().unzip()
+    return SearchState(
+        names = names.withIndex().associate { it.value to it.index }, types = types, labelArities
+    )
+}
