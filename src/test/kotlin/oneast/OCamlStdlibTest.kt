@@ -151,6 +151,30 @@ class OCamlStdlibTest {
         }
     }
 
+    /** Input sanity check: load every .exs and .types file and run splitOCamlExamples */
+    @Test
+    fun `load all and split`() {
+        val exsDir = File(join("src", "test", "input", "ocaml-stdlib", "exs"))
+        val typesDir = File(join("src", "test", "input", "ocaml-stdlib", "types"))
+
+        val allExsNames = exsDir.listFiles()
+            ?.filter { it.extension == "exs" && it.isFile }
+            ?.map { it.nameWithoutExtension }
+            ?: emptyList()
+
+        val (examples, _) = loadFromExsFiles(allExsNames)
+
+        val parser = OcamlTypeParser()
+        val oracleTypes = buildMap {
+            typesDir.listFiles()
+                ?.filter { it.extension == "types" && it.isFile }
+                ?.forEach { putAll(parser.parseSignatures(it.readText())) }
+        }
+        val oracle = CheckingGroundTruthOracle(oracleTypes)
+
+        splitOCamlExamples(examples, oracle, OCamlChecker())
+    }
+
     /** arrows, hofs, modules, tuples, parameterized types incl. multiple params */
     @Test
     fun `parses signatures`() {
