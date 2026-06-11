@@ -449,33 +449,25 @@ class TypeHole : THole() {
         val variableExps = if (canBeVar) (0 until vars + 1).map { Variable(it) } else emptyList()
         val fnExpansion = Arrow(TypeHole(), TypeHole())
         val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
-        // If there are no existing labels, we need to learn them.
-        // For now, instead we will explicitly introduce only blanks for expansions
-        // An alternate implementation might introduce a blank if [labelExpansions] is empty
 
         val instances = unification.holeEquals(this).filterIsInstance<ConstraintTypeConstructor>()
-        val constructorTypes = // this would be cleaner if implemented as a filter
-            if (emitConstructors && instances.isNotEmpty()) {
+        val constructors =
+            if (!emitConstructors) null
+            else if (instances.isNotEmpty()) {
                 val i = instances.first()
-                if (instances.any { !i.match(it) }) emptyList()
-                else
-                    when (i) {
-                        is ConstraintArrow -> listOf(fnExpansion)
-                        is ConstraintLabel ->
-                            if (emitLabelBlanks) emptyList()
-                            else labelExpansions.filter { it.label == i.label }
-                    }
-            } else listOf()
-        //                labelExpansions +
-        //                        listOf(
-        //                            TODO(
-        //                                "It's only fast if I make the else branch return no
-        // constructors instead of any label. Why was Concrete version so much faster even when
-        // adding all label expansions"
-        //                            )
-        //                        )
-        return constructorTypes.ifEmpty { listOfNotNull(Blank(labelOnly = true).takeIf { emitLabelBlanks }) } +
-                variableExps
+                if (instances.any { !i.match(it) }) null
+                else when (i) {
+                    is ConstraintArrow -> listOf(fnExpansion)
+                    is ConstraintLabel -> labelExpansions.filter { it.label == i.label }
+                }
+            } else {
+                // Unsound version:
+                if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
+                // Sound version
+                // if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
+                // else labelExpansions + fnExpansion
+            }
+        return constructors.orEmpty() + variableExps
     }
 
     override fun toString() = "_"
