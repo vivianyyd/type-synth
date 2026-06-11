@@ -34,9 +34,9 @@ class DFSEnumerator(
         if (c.noHoles()) return sequenceOf(c)
 
         // We won't fast-forward label blanks that we ourselves emitted.
-        if (c.noFillableHoles())
-            return if (!emitLabelBlanks) unionFastForward(c, depthBound)
-            else sequenceOf(c)
+        if (c.noFillableHoles()) return sequenceOf(c)
+            // return if (!emitLabelBlanks) unionFastForward(c, depthBound)
+            // else sequenceOf(c)
 
         if (currSizeBound - holesRemaining < 0) return emptySequence()
 

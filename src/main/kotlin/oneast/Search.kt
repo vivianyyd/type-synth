@@ -230,7 +230,7 @@ class Search(
                     allCandidates(
                         blanksReplacedWithHoles,
                         emitLabelBlanks = false,
-                        emitConstructors = false, // TODO here is something we are testing out.
+                        emitConstructors = true, // we can set emitConstructors to false if fast forwarding is on, but that loses completeness.
                         sizeBound = currentSizeBound,
                         depthBound = currentDepthBound,
                     )
