@@ -1,5 +1,128 @@
 package util
 
+import oneast.ConstraintTy
+import oneast.Leaf
+
+/**
+ * A union-find over [Leaf]s, suited to Hindley-Milner type unification.
+ *
+ * Each equivalence class groups the leaves that have been unified together, and may additionally be
+ * resolved to a single bound [ConstraintTy] (`null` = still unbound, i.e. a free type variable).
+ *
+ * Classes are identified by their representative [Leaf] (a canonical member), so all queries take a
+ * [Leaf] and return [Leaf]s — there is no separate handle object. The member set and bound type are
+ * kept on the representative; [find] resolves any member to it. Weighted union by rank with path
+ * compression.
+ */
+class UnionFind<T> {
+    /** Parent pointer per leaf; a representative points to itself. */
+    private val parent = hashMapOf<Leaf, Leaf>()
+
+    /** Rank per leaf (only meaningful for representatives). */
+    private val rank = hashMapOf<Leaf, Int>()
+
+    /** Members of each class, keyed by representative (non-representatives are removed on union). */
+    private val memberSet = hashMapOf<Leaf, MutableSet<Leaf>>()
+
+    /** Bound type of each class, keyed by representative; absent = unbound. */
+    private val boundType = hashMapOf<Leaf, T>()
+
+    /** A snapshot of one equivalence class. */
+    data class Class<T>(val members: Set<Leaf>, val bound: T?)
+
+    /** Ensure [v] is tracked, returning the representative of its (current) class. */
+    fun add(v: Leaf): Leaf {
+        if (v in parent) return root(v)
+        parent[v] = v
+        rank[v] = 0
+        memberSet[v] = hashSetOf(v)
+        return v
+    }
+
+    /** Representative of [v]'s class, with path compression; assumes [v] is present. */
+    private fun root(v: Leaf): Leaf {
+        var r = v
+        while (parent[r] != r) r = parent.getValue(r)
+        var cur = v
+        while (parent[cur] != cur) {
+            val next = parent.getValue(cur)
+            parent[cur] = r
+            cur = next
+        }
+        return r
+    }
+
+    /** Representative of [v]'s class, or `null` if [v] has never been added. */
+    fun find(v: Leaf): Leaf? = if (v in parent) root(v) else null
+
+    /** The type [v]'s class is resolved to, or `null` if [v] is absent or still unbound. */
+    fun bound(v: Leaf): T? = find(v)?.let { boundType[it] }
+
+    /** All leaves in [v]'s class, or empty if [v] is absent. */
+    fun members(v: Leaf): Set<Leaf> = find(v)?.let { memberSet.getValue(it) } ?: emptySet()
+
+    /** Whether [a] and [b] are in the same class (adding either if absent). */
+    fun connected(a: Leaf, b: Leaf): Boolean {
+        add(a)
+        add(b)
+        return root(a) == root(b)
+    }
+
+    /**
+     * Merge the classes of [a] and [b], adding either if absent. The merged class contains the
+     * union of both member sets. Bound types are reconciled: if only one side is bound the merged
+     * class keeps it; if both are bound [reconcile] decides the single result. Returns whether
+     * union was successful.
+     */
+    fun union(a: Leaf, b: Leaf, reconcile: (T, T) -> T?): Boolean {
+        add(a)
+        add(b)
+        val ra = root(a)
+        val rb = root(b)
+        if (ra == rb) return true
+
+        val ba = boundType[ra]
+        val bb = boundType[rb]
+        val merged: T? = if (ba != null && bb != null) {
+            reconcile(ba, bb) ?: return false
+        } else ba ?: bb
+
+        // Union by rank: attach the shorter tree (child) under the taller (root).
+        val (root, child) = when {
+            rank.getValue(ra) < rank.getValue(rb) -> rb to ra
+            rank.getValue(ra) > rank.getValue(rb) -> ra to rb
+            else -> ra.also { rank[it] = rank.getValue(it) + 1 } to rb
+        }
+        parent[child] = root
+        memberSet.getValue(root).addAll(memberSet.remove(child)!!)
+        boundType.remove(child)
+        if (merged != null) boundType[root] = merged else boundType.remove(root)
+        return true
+    }
+
+    /**
+     * Bind [v]'s class to [type]. Binding an unbound class sets it; rebinding to an equal type is a
+     * no-op. Binding a class already bound to a *different* type is a conflict and throws — callers
+     * that want to reconcile two bound classes should go through [union] instead.
+     */
+    fun bind(v: Leaf, type: T, reconcile: (T, T) -> T?): Boolean {
+        val r = add(v)
+        val existing = boundType[r]
+        if (existing != null && existing != type)
+            boundType[r] = reconcile(existing, type)?:return false
+        else boundType[r] = type
+        return true
+//        TODO()
+//        check(existing == null || existing == type) {
+//            "Cannot bind $v to $type: its class is already bound to $existing"
+//        }
+    }
+
+    /** A snapshot of all current equivalence classes. */
+    val classes: Collection<Class<T>>
+        get() = memberSet.map { (rep, ms) -> Class(ms.toSet(), boundType[rep]) }
+}
+
 class OldUnionFind(initialSize: Int = 0) {
     private val parent = mutableListOf<Int>()
 

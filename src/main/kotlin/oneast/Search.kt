@@ -35,12 +35,10 @@ class Search(
 
         // Make equivalence classes of blanks
         s.blanks().forEach { blank ->
-            u.holeEquals(blank).forEach { other ->
-                if (other is InstantiationTy) {
-                    if (other.hole !is Blank) return null
-                    require(blank.labelOnly && other.hole.labelOnly)
-                    uf.union(blank.id, other.hole.id)
-                }
+            u.boundHoles(blank).forEach { other ->
+                if (other.hole !is Blank) return null
+                require(blank.labelOnly && other.hole.labelOnly)
+                uf.union(blank.id, other.hole.id)
             }
         }
 
@@ -67,7 +65,7 @@ class Search(
         // Populate with bindings to existing labels
         val holes = s.types.flatMap { it.allHoles() }.filterIsInstance<Blank>()
         holes.forEach {
-            val constructors = u.holeEquals(it).filterIsInstance<ConstraintTypeConstructor>()
+            val constructors = u.boundTypes(it)
             if (constructors.isNotEmpty()) {
                 if (constructors.any { !it.match(constructors.first()) || it is ConstraintArrow })
                     return null
@@ -108,7 +106,7 @@ class Search(
                     depthBound = depth,
                 )
                     .filter { s ->
-                        examples.neg.all { !OneUnification(s, listOf(it)).passedWithNoConstraints }
+                        examples.neg.all { !OneUnification(s, listOf(it)).passedWithNoConstraints() }
                     }
             }
 

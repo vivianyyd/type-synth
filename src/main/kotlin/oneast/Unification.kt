@@ -4,8 +4,9 @@ import query.App
 import query.Example
 import query.Name
 import util.Counter
+import util.UnionFind
 
-typealias Binding = Pair<ConstraintVariable, ConstraintTy>
+// typealias Binding = Pair<ConstraintVariable, ConstraintTy>
 
 /**
  * This unification does not persist state after evaluating a candidate, and cannot be used more
@@ -14,21 +15,48 @@ typealias Binding = Pair<ConstraintVariable, ConstraintTy>
 class OneUnification(private val candidate: SearchState, exs: List<Example>) {
     private val insts = Counter() // Number of times any top-level type has been instantiated
 
-    private val holeConstraints = mutableMapOf<Int, MutableList<ConstraintTy>>() // holeId
+    private val uf = UnionFind<ConstraintTy>()
     private val badLabels = mutableSetOf<Int>()  // Labels that were unified with mismatching labels
 
-    // The order of these declarations matters; [insts] and [holeConstraints] must be instantiated
+    // The order of these declarations matters; [insts] and [uf] must be instantiated
     // before they are used to compute types
     val ok = exs.all { type(it) != null }
 
-    val passedWithNoConstraints = ok && holeConstraints.isEmpty()
+    fun passedWithNoConstraints(): Boolean{ return ok && holeToConstructors().all { it.value.isEmpty() } }
 
-    fun holeEquals(hole: THole): List<ConstraintTy> = holeEquals(hole.id)
+    // TODO i'm slow but just tryign to make sure it runs
+    private fun holeConstrs() : Pair<Map<THole, List<ConstraintTypeConstructor>>, Map<THole, List<InstantiationTy>>> {
+            val constrs = mutableMapOf<THole, MutableList<ConstraintTypeConstructor>>()
+            val insts = mutableMapOf<THole, MutableList<InstantiationTy>>()
+            uf.classes.forEach { cls ->
+                cls.members.forEach { lf ->
+                    if (lf is InstantiationTy) {
+                        if (cls.bound != null && cls.bound is ConstraintTypeConstructor)
+                            constrs.getOrPut(lf.hole) { mutableListOf() }.add(cls.bound)
+                        insts
+                            .getOrPut(lf.hole) { mutableListOf() }
+                            .addAll(cls.members.filterIsInstance<InstantiationTy>())
+                    }
+                }
+            }
+            return constrs to insts
+        }
 
-    private fun holeEquals(hole: Int): List<ConstraintTy> =
-        if (ok) holeConstraints[hole] ?: listOf() else listOf()
+    private fun holeToConstructors(): Map<THole, List<ConstraintTypeConstructor>>
+        = holeConstrs().first
+
+    private fun holeToHoles(): Map<THole, List<InstantiationTy>>
+        = holeConstrs().second
+
+    fun boundTypes(hole: THole): List<ConstraintTypeConstructor> =
+        holeToConstructors()[hole] ?: listOf()
+
+    fun boundHoles(hole: THole): List<InstantiationTy> =
+        holeToHoles()[hole] ?: listOf()
 
     fun badLabels(): Set<Int> = badLabels
+
+//    fun holeEquals(hole: THole): List<ConstraintTy> = TODO()
 
     fun type(ex: Example): ConstraintTy? =
         when (ex) {
@@ -38,14 +66,17 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
                 type(ex.fn)?.let { f ->
                     type(ex.arg)?.let { arg ->
                         when (f) {
-                            is ConstraintArrow -> unify(f.l, arg)?.let { applyBindings(f.r, it) }
+                            is ConstraintArrow -> {
+                                val out = ConstraintVariable(Int.MAX_VALUE, insts.get())
+                                if (unify(f, ConstraintArrow(arg, out)) != null) out else null
+                            }
                             is InstantiationTy -> {
                                 /* since we continue deriving constraints after seeing f, introduce
                                 a bottom type which doesn't correspond to any node. once this
                                 hole expands into concrete type options, we'll derive constraints
                                 on the function inputs/outputs accordingly - but that must happen
                                 in a future pass. */
-                                holeConstraint(f, ConstraintArrow(arg, Bottom))?.let { Bottom }
+                                if (bindHole(f, ConstraintArrow(arg, Bottom))) Bottom else null
                             }
                             is ConstraintVariable,
                             is Bottom -> Bottom // we are applying an unbound variable
@@ -55,42 +86,44 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
                 }
         }
 
-    private fun holeConstraint(inst: InstantiationTy, t: ConstraintTy): List<Binding>? =
+    private fun union(l: Leaf, t: Leaf) = uf.union(l, t, ::unify)
+
+    private fun bind(l: Leaf, t: ConstraintTy) = uf.bind(l, t, ::unify)
+
+    private fun bindHole(inst: InstantiationTy, t: ConstraintTy): Boolean =
         // unifying a Blank that must be a Label with an Arrow should fail
-        if (inst.hole is Blank && inst.hole.labelOnly && t is ConstraintArrow) null
-        else {
-            holeConstraints.getOrPut(inst.hole.id) { mutableListOf() }.add(t)
-            listOf()
-        }
+        if (inst.hole is Blank && inst.hole.labelOnly && t is ConstraintArrow) false
+        else bind(inst, t)
 
     /**
      * Returns a list of bindings resulting from unifying [arg] with [param], or null if they are
      * incompatible.
      */
-    private fun unify(param: ConstraintTy, arg: ConstraintTy): List<Binding>? =
+    private fun unify(param: ConstraintTy, arg: ConstraintTy): ConstraintTy? =
         when (param) {
-            Bottom -> emptyList()
+            Bottom -> arg
             is ConstraintVariable ->
-                when (param) {
-                    arg -> listOf()
-                    in arg.variables() -> null
-                    else -> listOf(Binding(param, arg))
-                }
+                if (param in arg.variables()) null
+                else
+                    when (arg) {
+                        is Leaf -> {
+                            if (union(param, arg)) param else null
+                        }
+                        is ConstraintTypeConstructor -> {
+                            if (bind(param, arg)) param else null
+                        }
+                        Bottom -> param
+                    }
             is ConstraintTypeConstructor ->
                 when (arg) {
-                    Bottom -> emptyList()
+                    Bottom -> param
                     is ConstraintTypeConstructor -> {
                         if (param.match(arg)) {
-                            var bindings: MutableList<Binding>? = mutableListOf()
+                            var fail = false
                             param.params.zip(arg.params).forEach {
-                                if (bindings != null) {
-                                    val l = applyBindings(it.first, bindings!!)
-                                    val r = applyBindings(it.second, bindings!!)
-                                    val u = unify(l, r)
-                                    if (u == null) bindings = null else bindings!!.addAll(u)
-                                }
+                                if (unify(it.first, it.second) == null) fail = true
                             }
-                            bindings
+                            if (fail) null else param
                         } else {
                             if (param is ConstraintLabel && arg is ConstraintLabel) {
                                 badLabels.add(param.label)
@@ -101,36 +134,9 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
                     }
                     is ConstraintVariable ->
                         // e.g. a function expects param (int -> int) and we pass ('a -> 'a)
-                        when (arg) {
-                            param -> listOf()
-                            in param.variables() -> null
-                            else -> listOf(Binding(arg, param))
-                        }
-                    is InstantiationTy -> if (arg == param) listOf() else holeConstraint(arg, param)
+                        if (arg in param.variables()) null else if (bind(arg, param)) arg else null
+                    is InstantiationTy -> if (bindHole(arg, param)) param else null
                 }
-            is InstantiationTy -> if (arg == param) listOf() else holeConstraint(param, arg)
+            is InstantiationTy -> if (bindHole(param, arg)) arg else null
         }
-
-    private fun applyBinding(
-        t: ConstraintTy,
-        v: ConstraintVariable,
-        sub: ConstraintTy
-    ): ConstraintTy {
-        if (t.variables().isEmpty()) return t
-        return when (t) {
-            Bottom -> t
-            is ConstraintVariable -> if (t == v) sub else t
-            is ConstraintTypeConstructor -> {
-                val reboundParams = t.params.map { applyBinding(it, v, sub) }
-                when (t) {
-                    is ConstraintArrow -> t.copy(params = reboundParams)
-                    is ConstraintLabel -> t.copy(params = reboundParams)
-                }
-            }
-            is InstantiationTy -> error("variables() should be empty")
-        }
-    }
-
-    private fun applyBindings(t: ConstraintTy, bindings: List<Binding>): ConstraintTy =
-        bindings.fold(t) { acc, (v, sub) -> applyBinding(acc, v, sub) }
 }

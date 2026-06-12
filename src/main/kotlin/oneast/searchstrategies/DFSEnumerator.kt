@@ -31,6 +31,7 @@ class DFSEnumerator(
         currSizeBound: Int,
         holesRemaining: Int
     ): Sequence<SearchState> {
+        logger.log("$c")
         if (c.noHoles()) return sequenceOf(c)
 
         // We won't fast-forward label blanks that we ourselves emitted.
@@ -53,10 +54,16 @@ class DFSEnumerator(
             )
             .asSequence()
             .map {
+                logger.log("EXPANDING TO $it")
                 logger.count("Total candidates")
                 it.numFillableHoles() to c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) }
             }
-            .filterNot { (_, newCandidate) -> failsNegexWithNoHoleConstraints(newCandidate) }
+            .filterNot { (_, newCandidate) ->
+                logger.log("$newCandidate")
+                val n = failsNegexWithNoHoleConstraints(newCandidate)
+                logger.log("pruning bc negex: $n")
+                n
+            }
             .flatMap { (introducedHoles, newCandidate) ->
                 val u = posUnification(newCandidate)
                 if (u.ok)

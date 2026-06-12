@@ -14,8 +14,8 @@ class SearchState(
     /**
      * The first [numCommittedTypes] entries of [types] are committed: their types are immutable
      * across any subsequent search. All mutating helpers below ([mapTypes], [mapTypesOrNull],
-     * [mapTypesAndSetLabelArities], [mapTypeAtIndex]) only apply transforms to indices
-     * `>= numCommittedTypes`.
+     * [mapTypesAndSetLabelArities], [mapTypeAtIndex]) only apply transforms to indices `>=
+     * numCommittedTypes`.
      */
     val numCommittedTypes: Int = 0,
     /**
@@ -41,9 +41,9 @@ class SearchState(
 
     override fun equals(other: Any?): Boolean =
         other is SearchState &&
-                other.names == names &&
-                other.types == types &&
-                other.labelArities == labelArities
+            other.names == names &&
+            other.types == types &&
+            other.labelArities == labelArities
 
     override fun hashCode(): Int {
         var result = names.hashCode()
@@ -346,18 +346,16 @@ sealed class THole : Type {
                 is ConstraintLabel -> {
                     val params =
                         List(constructors.first().params.size) { i ->
-                            antiunify(
-                                constructors.map { (it as ConstraintLabel).params[i] },
-                                defaultAntiunifier
-                            )
-                        }
+                                antiunify(
+                                    constructors.map { (it as ConstraintLabel).params[i] },
+                                    defaultAntiunifier)
+                            }
                             .filterNotNull()
                     if (params.size != constructors.first().params.size) null
                     else NamedLabel((constructors.first() as ConstraintLabel).label, params)
                 }
             }
         }
-
     }
 
     val id = nextId++
@@ -390,22 +388,22 @@ sealed class THole : Type {
      * anything, but we autofill all the holes we can at once. If a hole points to an Instantiation,
      * Variable, or Bottom, we do not fast forward.
      */
-    fun conservativeFastForward(unification: OneUnification): Type? {
-        val defaultHoleMaker = { TypeHole() }
-
-        val antiunifies = unification.holeEquals(this)
-        val constrs = antiunifies.filterIsInstance<ConstraintTypeConstructor>()
-
-        /* It may seem redundant to perform these checks when antiunify() does them as well, but it is
-        not. This prevents us from an infinite loop when we try to get the fixpoint of this
-        function, since our default antiunification behavior is to make another hole. If at the
-        top-level we can't do anything, we shouldn't replace this hole with another hole, we
-        should just return no changes. We still want to keep that behavior in antiunify() though,
-        since we need it to fill the leaves when we are fast-forwarding to an entire tree. */
-        if (constrs.isEmpty() || antiunifies.any { it !is ConstraintTypeConstructor }) return null
-        if (constrs.any { a -> constrs.any { b -> !a.match(b) } }) return null
-        return antiunify(antiunifies, defaultAntiunifier = defaultHoleMaker)
-    }
+//    fun conservativeFastForward(unification: OneUnification): Type? {
+//        val defaultHoleMaker = { TypeHole() }
+//
+//        val antiunifies = unification.holeEquals(this)
+//        val constrs = antiunifies.filterIsInstance<ConstraintTypeConstructor>()
+//
+//        /* It may seem redundant to perform these checks when antiunify() does them as well, but it is
+//        not. This prevents us from an infinite loop when we try to get the fixpoint of this
+//        function, since our default antiunification behavior is to make another hole. If at the
+//        top-level we can't do anything, we shouldn't replace this hole with another hole, we
+//        should just return no changes. We still want to keep that behavior in antiunify() though,
+//        since we need it to fill the leaves when we are fast-forwarding to an entire tree. */
+//        if (constrs.isEmpty() || antiunifies.any { it !is ConstraintTypeConstructor }) return null
+//        if (constrs.any { a -> constrs.any { b -> !a.match(b) } }) return null
+//        return antiunify(antiunifies, defaultAntiunifier = defaultHoleMaker)
+//    }
 }
 
 class TypeHole : THole() {
@@ -450,7 +448,7 @@ class TypeHole : THole() {
         val fnExpansion = Arrow(TypeHole(), TypeHole())
         val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
 
-        val instances = unification.holeEquals(this).filterIsInstance<ConstraintTypeConstructor>()
+        val instances = unification.boundTypes(this)
         val constructors =
             if (!emitConstructors) null
             else if (instances.isNotEmpty()) {
@@ -497,6 +495,8 @@ sealed interface ConstraintTy {
     fun variables(): List<ConstraintVariable>
 }
 
+sealed interface Leaf : ConstraintTy
+
 object Bottom : ConstraintTy {
     override fun variables() = emptyList<ConstraintVariable>()
 
@@ -506,13 +506,13 @@ object Bottom : ConstraintTy {
 // TODO Consider whether I want two different types of instantiations for TypeHoles vs
 //   UnnamedLabels. UnnamedLabels behave differently from TypeHoles because while their
 //   instantiated types can differ, they always have the same root. Does it matter?
-data class InstantiationTy(val hole: THole, val instId: Int) : ConstraintTy {
+data class InstantiationTy(val hole: THole, val instId: Int) : Leaf, ConstraintTy {
     override fun variables() = emptyList<ConstraintVariable>()
 
     override fun toString(): String = "_${hole.id}-$instId"
 }
 
-data class ConstraintVariable(val v: Int, val instId: Int) : ConstraintTy {
+data class ConstraintVariable(val v: Int, val instId: Int) : Leaf, ConstraintTy {
     private val variables by lazy { listOf(this) }
 
     override fun variables() = variables

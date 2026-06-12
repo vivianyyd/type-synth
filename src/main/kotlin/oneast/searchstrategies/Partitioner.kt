@@ -82,12 +82,12 @@ class Partitioner(
         if (c.noHoles()) return sequenceOf(c)
 
         // We won't fast-forward label blanks that we ourselves emitted.
-        if (c.noFillableHoles())
-            return if (!emitLabelBlanks) {
-                unionFastForward(c, depthBound).filterNot {
-                    it.types.any { it is Arrow && it.blanks().isNotEmpty() }
-                }
-            } else sequenceOf(c)
+        if (c.noFillableHoles()) return sequenceOf(c)
+//            return if (!emitLabelBlanks) {
+//                unionFastForward(c, depthBound).filterNot {
+//                    it.types.any { it is Arrow && it.blanks().isNotEmpty() }
+//                }
+//            } else sequenceOf(c)
 
         if (currSizeBound - holesRemaining < 0) return emptySequence()
 
@@ -104,7 +104,9 @@ class Partitioner(
                 logger.count("Total candidates")
                 val partitioned = c.mapTypeAtIndex(iToFill) { typ -> applyPartition(typ, it) }
                 logger.log("$partitioned")
-                unionFastForward(partitioned, depthBound)
+                TODO()
+                sequenceOf(partitioned)
+//                unionFastForward(partitioned, depthBound)
             }
             .filterNot {
                 // Importantly, this pruning is sound even when we perform it on outlines (before
