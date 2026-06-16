@@ -1,7 +1,5 @@
 package util
 
-import products.types.Type
-import products.types.checkApplication
 import query.*
 
 interface Oracle {
@@ -29,37 +27,4 @@ class ScrappyNewOracle(private val secret: Map<Example, String?>) : Oracle {
 
 interface EqualityOracle {
     fun equal(a: FlatApp, b: FlatApp): Boolean
-}
-
-/** Computes types of applications based on types of named values, given as [secret] */
-class CheckingOracle(private val secret: Map<String, Type>) : Oracle {
-    // flatEqual(a.flatten(), b.flatten()) works too. Idk why I did this
-    override fun equal(a: Example, b: Example): Boolean {
-        val ta = products.check(a, secret)
-        val tb = products.check(b, secret)
-        return ta != null && tb != null && ta == tb
-    }
-
-    override fun flatEqual(a: FlatApp, b: FlatApp): Boolean {
-        val ta = checkApplication(a, secret)
-        val tb = checkApplication(b, secret)
-        return ta !is Error && tb !is Error && ta == tb
-    }
-
-    override fun dummy(e: Example): Int = checkApplication(e.flatten(), secret).hashCode()
-
-    fun printSecret() = println(secret.entries.joinToString(separator = "\n"))
-}
-
-/**
- * Requires [secretTypes[app]] is null iff [app] is a negative example Requires a mapping of *all*
- * applications (including all subexpressions) to their dummy types
- */
-class ScrappyOracle(private val secret: Map<FlatApp, String?>) : EqualityOracle {
-    override fun equal(a: FlatApp, b: FlatApp): Boolean =
-        if (secret[a] == null || secret[b] == null) false else secret[a] == secret[b]
-}
-
-class PairwiseCheckOracle : EqualityOracle {
-    override fun equal(a: FlatApp, b: FlatApp): Boolean = TODO("memoize results")
 }

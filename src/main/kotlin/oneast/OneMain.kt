@@ -3,7 +3,6 @@ package oneast
 import oneast.searchstrategies.SearchStrategy
 import query.AbstractQuery
 import query.Examples
-import util.Config
 import util.GroundTruth
 import util.Logger
 import util.lines
@@ -50,7 +49,7 @@ data class Configuration(
     val depthBound: Int,
     val scheduleInfo: SchedulingInfo = Auto(5),
     val numSols: Solutions
-) : Config {
+) {
     override fun toString(): String =
         listOf(
             name,
