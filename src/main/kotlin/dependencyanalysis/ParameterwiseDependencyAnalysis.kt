@@ -7,6 +7,12 @@ import util.PrefixBruteForce
 import util.PrefixContainment
 import util.eqClasses
 
+data class ParameterNode(val f: String, val i: Int) {
+    private var ctr = 0
+
+    override fun toString(): String = "$f-$i"
+}
+
 class ParameterwiseDependencyAnalysis(
     private val examples: Examples,
     private val arities: Map<String, Int>,
