@@ -26,7 +26,7 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
 
     fun passedWithNoConstraints(): Boolean {
         return ok &&
-            uf.classes.all {
+            uf.classes.filter{it.members.any{it is InstantiationTy}}.all {
                 it.bound == null &&
                     it.members.none {
                         it is InstantiationTy && it.hole is Blank && it.hole.labelOnly

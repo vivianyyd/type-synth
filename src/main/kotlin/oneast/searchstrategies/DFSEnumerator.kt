@@ -59,12 +59,7 @@ class DFSEnumerator(
                 logger.count("Total candidates")
                 it.numFillableHoles() to c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) }
             }
-            .filterNot { (_, newCandidate) ->
-//                println(newCandidate.debugString())
-                val n = failsNegexWithNoHoleConstraints(newCandidate)
-//                println("pruning bc negex: $n")
-                n
-            }
+            .filterNot { (_, newCandidate) -> failsNegexWithNoHoleConstraints(newCandidate) }
             .flatMap { (introducedHoles, newCandidate) ->
                 val u = posUnification(newCandidate)
                 if (u.ok)
