@@ -1,8 +1,10 @@
 package oneast.searchstrategies
 
-import oneast.*
+import oneast.OneUnification
+import oneast.SearchState
+import oneast.THole
+import oneast.Type
 import query.Examples
-import util.IntUnionFind
 
 abstract class SearchStrategy(private val examples: Examples) {
     /**
@@ -14,7 +16,21 @@ abstract class SearchStrategy(private val examples: Examples) {
     protected fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
     protected fun failsNegexWithNoHoleConstraints(s: SearchState) =
-        examples.neg.any { OneUnification(s, listOf(it)).passedWithNoConstraints() }
+        examples.neg.any { OneUnification(s, listOf(it)).passedWithNoConstraints() }.let{
+//            if (it) {
+//                examples.neg.forEach{
+//                    val u = OneUnification(
+//                        s,
+//                        listOf(it)
+//                    )
+//                    if (u.passedWithNoConstraints()) {
+//                        println("failed on negex $it")
+//                        println("\tclasses $u")
+//                    }
+//                }
+//            }
+            it
+        }
 
     //    protected fun fastForward(candidate: SearchState): Sequence<SearchState> {
     //        var curr = candidate

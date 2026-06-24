@@ -1,6 +1,7 @@
 package util
 
 import oneast.ConstraintTy
+import oneast.ConstraintTypeConstructor
 import oneast.Leaf
 
 /**
@@ -14,21 +15,23 @@ import oneast.Leaf
  * kept on the representative; [find] resolves any member to it. Weighted union by rank with path
  * compression.
  */
-class UnionFind<T> {
+class UnionFind {
     /** Parent pointer per leaf; a representative points to itself. */
     private val parent = hashMapOf<Leaf, Leaf>()
 
     /** Rank per leaf (only meaningful for representatives). */
     private val rank = hashMapOf<Leaf, Int>()
 
-    /** Members of each class, keyed by representative (non-representatives are removed on union). */
+    /**
+     * Members of each class, keyed by representative (non-representatives are removed on union).
+     */
     private val memberSet = hashMapOf<Leaf, MutableSet<Leaf>>()
 
     /** Bound type of each class, keyed by representative; absent = unbound. */
-    private val boundType = hashMapOf<Leaf, T>()
+    private val boundType = hashMapOf<Leaf, ConstraintTypeConstructor>()
 
     /** A snapshot of one equivalence class. */
-    data class Class<T>(val members: Set<Leaf>, val bound: T?)
+    data class Class(val members: Set<Leaf>, val bound: ConstraintTypeConstructor?)
 
     /** Ensure [v] is tracked, returning the representative of its (current) class. */
     fun add(v: Leaf): Leaf {
@@ -56,7 +59,7 @@ class UnionFind<T> {
     fun find(v: Leaf): Leaf? = if (v in parent) root(v) else null
 
     /** The type [v]'s class is resolved to, or `null` if [v] is absent or still unbound. */
-    fun bound(v: Leaf): T? = find(v)?.let { boundType[it] }
+    fun bound(v: Leaf): ConstraintTypeConstructor? = find(v)?.let { boundType[it] }
 
     /** All leaves in [v]'s class, or empty if [v] is absent. */
     fun members(v: Leaf): Set<Leaf> = find(v)?.let { memberSet.getValue(it) } ?: emptySet()
@@ -68,59 +71,101 @@ class UnionFind<T> {
         return root(a) == root(b)
     }
 
+    fun union(
+        a: Leaf,
+        b: ConstraintTy,
+        reconcile:
+            (ConstraintTypeConstructor, ConstraintTypeConstructor) -> ConstraintTypeConstructor?
+    ): Boolean = when (b) {
+        is Leaf -> merge(a, b, reconcile)
+        is ConstraintTypeConstructor -> bind(a, b, reconcile)
+    }
+
     /**
      * Merge the classes of [a] and [b], adding either if absent. The merged class contains the
      * union of both member sets. Bound types are reconciled: if only one side is bound the merged
      * class keeps it; if both are bound [reconcile] decides the single result. Returns whether
      * union was successful.
      */
-    fun union(a: Leaf, b: Leaf, reconcile: (T, T) -> T?): Boolean {
-        add(a)
-        add(b)
-        val ra = root(a)
-        val rb = root(b)
-        if (ra == rb) return true
+    private fun merge(
+        a: Leaf,
+        b: Leaf,
+        reconcile:
+            (ConstraintTypeConstructor, ConstraintTypeConstructor) -> ConstraintTypeConstructor?
+    ): Boolean {
+            add(a)
+            add(b)
+            val ra = root(a)
+            val rb = root(b)
+            if (ra == rb) return true
 
-        val ba = boundType[ra]
-        val bb = boundType[rb]
-        val merged: T? = if (ba != null && bb != null) {
-            reconcile(ba, bb) ?: return false
-        } else ba ?: bb
+            val ba = boundType[ra]
+            val bb = boundType[rb]
+            val merged: ConstraintTypeConstructor? =
+                if (ba != null && bb != null) {
+                    reconcile(ba, bb) ?: return false
+                } else ba ?: bb
 
-        // Union by rank: attach the shorter tree (child) under the taller (root).
-        val (root, child) = when {
-            rank.getValue(ra) < rank.getValue(rb) -> rb to ra
-            rank.getValue(ra) > rank.getValue(rb) -> ra to rb
-            else -> ra.also { rank[it] = rank.getValue(it) + 1 } to rb
+            // Union by rank: attach the shorter tree (child) under the taller (root).
+            val (root, child) =
+                when {
+                    rank.getValue(ra) < rank.getValue(rb) -> rb to ra
+                    rank.getValue(ra) > rank.getValue(rb) -> ra to rb
+                    else -> ra.also { rank[it] = rank.getValue(it) + 1 } to rb
+                }
+            parent[child] = root
+            memberSet.getValue(root).addAll(memberSet.remove(child)!!)
+            boundType.remove(child)
+            if (merged != null) boundType[root] = merged else boundType.remove(root)
+            return true
         }
-        parent[child] = root
-        memberSet.getValue(root).addAll(memberSet.remove(child)!!)
-        boundType.remove(child)
-        if (merged != null) boundType[root] = merged else boundType.remove(root)
-        return true
-    }
 
-    /**
-     * Bind [v]'s class to [type]. Binding an unbound class sets it; rebinding to an equal type is a
-     * no-op. Binding a class already bound to a *different* type is a conflict and throws — callers
-     * that want to reconcile two bound classes should go through [union] instead.
-     */
-    fun bind(v: Leaf, type: T, reconcile: (T, T) -> T?): Boolean {
-        val r = add(v)
-        val existing = boundType[r]
-        if (existing != null && existing != type)
-            boundType[r] = reconcile(existing, type)?:return false
-        else boundType[r] = type
-        return true
-//        TODO()
-//        check(existing == null || existing == type) {
-//            "Cannot bind $v to $type: its class is already bound to $existing"
-//        }
-    }
+        /**
+         * Bind [v]'s class to [type]. Binding an unbound class sets it; rebinding to an equal type is a
+         * no-op. Rebinding to a *different* type calls [reconcile] with `(existing, type)`: a non-null
+         * result becomes the new bound type and binding succeeds; a null result is a conflict, leaving
+         * the existing bound type untouched and returning `false`.
+         */
+        private fun bind(
+            v: Leaf,
+            type: ConstraintTypeConstructor,
+            reconcile:
+                (ConstraintTypeConstructor, ConstraintTypeConstructor) -> ConstraintTypeConstructor?
+        ): Boolean {
+            val r = add(v)
+            val existing = boundType[r]
+            if (existing != null && existing != type)
+                boundType[r] = reconcile(existing, type) ?: return false
+            else boundType[r] = type
+            return true
+            TODO()
+            //        check(existing == null || existing == type) {
+            //            "Cannot bind $v to $type: its class is already bound to $existing"
+            //        }
+        }
 
     /** A snapshot of all current equivalence classes. */
-    val classes: Collection<Class<T>>
+    val classes: Collection<Class>
         get() = memberSet.map { (rep, ms) -> Class(ms.toSet(), boundType[rep]) }
+
+    /**
+     * A human-readable rendering of every equivalence class, one per line, each as the set of its
+     * members optionally followed by `= <bound type>` when the class is bound. Members within a
+     * class and the classes themselves are sorted by their [toString] so the output is stable
+     * regardless of insertion or union order.
+     */
+    override fun toString(): String {
+        if (memberSet.isEmpty()) return "UnionFind(empty)"
+        val lines =
+            memberSet
+                .map { (rep, ms) ->
+                    val members = ms.map { it.toString() }.sorted().joinToString(", ", "{", "}")
+                    val bound = boundType[rep]
+                    if (bound != null) "$members = $bound" else members
+                }
+                .sorted()
+        return lines.joinToString("\n", "UnionFind(\n", "\n)") { "  $it" }
+    }
 }
 
 class OldUnionFind(initialSize: Int = 0) {

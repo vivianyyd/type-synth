@@ -65,7 +65,7 @@ class Search(
         // Populate with bindings to existing labels
         val holes = s.types.flatMap { it.allHoles() }.filterIsInstance<Blank>()
         holes.forEach {
-            val constructors = u.boundTypes(it)
+            val constructors = u.boundConstructors(it)
             if (constructors.isNotEmpty()) {
                 if (constructors.any { !it.match(constructors.first()) || it is ConstraintArrow })
                     return null
