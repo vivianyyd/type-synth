@@ -18,37 +18,25 @@ class DFSEnumerator(
     //   restore tree to original state
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
-        return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles()) else emptySequence()
-    }
-
-    private fun pickHole(c: SearchState, unification: OneUnification): Triple<Int, TypeHole, Int> {
-//        return c.shallowestFillableHole() ?: error("Impossible")
-        val shallowest = c.shallowestFillableHole() ?: error("Impossible")
-        val holes = c.fillableHolesWithDepth()
-        check(holes.minByOrNull { it.third } == shallowest) {
-            "TEMP: fillableHolesWithDepth parity broken for $c"
-        }
-        var toFill = shallowest
-        var toFillFlag = unification.antiunifyRoots(toFill.second)
-        for (h in holes) {
-            // prioritize bottom or constructor
-            val au = unification.antiunifyRoots(h.second)
-            if (toFillFlag is OneUnification.AUResult.Top && au !is OneUnification.AUResult.Top) {
-                toFill = h
-                break
-            }
-        }
-        return toFill
+        return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles())
+        else emptySequence()
     }
 
     /**
      * As long as seed [c] passes positive examples, states returned by this function do as well.
+     *
+     * [negVerdicts] holds, for each negative example, whether it passes-with-no-constraints against
+     * [c] (i.e. whether [c] would fail the negex filter on it). It is threaded down the recursion and
+     * updated incrementally: filling a hole modifies exactly one component's type, so only negs that
+     * reference that component can change verdict; the rest are inherited unchanged.
      */
     private fun recCandidates(
         c: SearchState,
         unification: OneUnification,
         currSizeBound: Int,
-        holesRemaining: Int
+        holesRemaining: Int,
+        negVerdicts: BooleanArray,
+        reverseNames: Map<Int, List<String>>
     ): Sequence<SearchState> {
         //        println("$c")
         if (c.noHoles()) return sequenceOf(c)
@@ -60,12 +48,9 @@ class DFSEnumerator(
 
         if (currSizeBound - holesRemaining < 0) return emptySequence()
 
-        val (iToFill, hole, depth) =
-            pickHole(c, unification) // c.shallowestFillableHole() ?: error("Impossible") //
-
-        //        println("Expanding ${c.names.filterValues { it==iToFill }}:
-        // ${c.types[iToFill].debugString()}")
-        //        println(unification.boundConstructors(hole))
+        val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
+//        println("Expanding ${c.names.filterValues { it==iToFill }}: ${c.types[iToFill].debugString()}")
+//        println(unification.boundConstructors(hole))
         return hole
             .expansions(
                 unification = unification,

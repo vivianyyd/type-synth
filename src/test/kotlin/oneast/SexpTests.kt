@@ -46,7 +46,7 @@ class SexpTests {
 
     @Test
 //    @Disabled
-    fun `just one`() = test("cons")
+    fun `just one`() = test("polymorphic-dictchain")
 
     @ParameterizedTest
     @MethodSource("testNames")
