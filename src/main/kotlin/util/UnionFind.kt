@@ -101,11 +101,16 @@ class UnionFind {
 
             val ba = boundType[ra]
             val bb = boundType[rb]
-            val merged: ConstraintTypeConstructor? =
-                if (ba != null && bb != null) {
-                    reconcile(ba, bb) ?: return false
-                } else ba ?: bb
 
+            // Link the two classes *before* reconciling. [reconcile] may re-enter this
+            // union-find (unifying the two bound constructors can trigger further unions and
+            // binds), and that re-entrant work relocates roots and rewrites member sets. If we
+            // reconciled first and then linked, the [ra]/[rb] we captured could be stale
+            // non-roots by the time we touch [parent]/[memberSet] — corrupting the structure or
+            // crashing on the `memberSet.remove(child)!!`. Doing the structural link first means
+            // (a) the roots captured just above are still valid (nothing has run in between) and
+            // (b) any re-entrant unification sees a single, consistent class.
+            //
             // Union by rank: attach the shorter tree (child) under the taller (root).
             val (root, child) =
                 when {
@@ -116,7 +121,17 @@ class UnionFind {
             parent[child] = root
             memberSet.getValue(root).addAll(memberSet.remove(child)!!)
             boundType.remove(child)
-            if (merged != null) boundType[root] = merged else boundType.remove(root)
+
+            val merged: ConstraintTypeConstructor? =
+                if (ba != null && bb != null) {
+                    reconcile(ba, bb) ?: return false
+                } else ba ?: bb
+
+            // [reconcile] above may have relocated this class's root, so resolve it again rather
+            // than writing the bound onto the now-possibly-stale [root] (which could have become
+            // a non-root, stranding the bound where [find]/[bound] never see it).
+            val cur = root(a)
+            if (merged != null) boundType[cur] = merged else boundType.remove(cur)
             return true
         }
 
@@ -134,14 +149,16 @@ class UnionFind {
         ): Boolean {
             val r = add(v)
             val existing = boundType[r]
-            if (existing != null && existing != type)
-                boundType[r] = reconcile(existing, type) ?: return false
-            else boundType[r] = type
+            if (existing == null || existing == type) {
+                boundType[r] = type
+                return true
+            }
+            val merged = reconcile(existing, type) ?: return false
+            // [reconcile] may have re-entered this union-find and relocated [v]'s class, so
+            // resolve the root again rather than writing the bound onto the stale [r] (which
+            // could now be a non-root, stranding the bound where [find]/[bound] never see it).
+            boundType[root(v)] = merged
             return true
-            TODO()
-            //        check(existing == null || existing == type) {
-            //            "Cannot bind $v to $type: its class is already bound to $existing"
-            //        }
         }
 
     /** A snapshot of all current equivalence classes. */
