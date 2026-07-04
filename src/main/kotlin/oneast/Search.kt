@@ -65,14 +65,20 @@ class Search(
         // Populate with bindings to existing labels
         val holes = s.types.flatMap { it.allHoles() }.filterIsInstance<Blank>()
         holes.forEach {
-            val constructors = u.boundConstructors(it)
-            if (constructors.isNotEmpty()) {
-                if (constructors.any { !it.match(constructors.first()) || it is ConstraintArrow })
-                    return null
-                val label = (constructors.first() as ConstraintLabel).label
-                val canonical = uf.find(it.id) ?: it.id
-                if (canonical in holeToLabel && holeToLabel[canonical] != label) return null
-                else if (canonical !in holeToLabel) holeToLabel[canonical] = label
+            when (val constr = u.antiunifyRoots(it)) {
+                OneUnification.AUResult.Top -> { }
+                OneUnification.AUResult.Bottom -> return null
+                is OneUnification.AUResult.Constructor -> {
+                    when (constr.c){
+                        is ConstraintArrow -> return null
+                        is ConstraintLabel -> {
+                            val label = constr.c.label
+                            val canonical = uf.find(it.id) ?: it.id
+                            if (canonical in holeToLabel && holeToLabel[canonical] != label) return null
+                            else if (canonical !in holeToLabel) holeToLabel[canonical] = label
+                        }
+                    }
+                }
             }
         }
 
@@ -265,7 +271,7 @@ class Search(
 
     fun solutions(): Sequence<SearchState> = sequence {
 //        val seen = mutableSetOf<SearchState>()
-        for (seedDepth in 0..config.depthBound) {
+        for (seedDepth in 1..config.depthBound) {
             var seeds =
                 logger.time("Depth $seedDepth outlining $names") {
                     concreteSeeds(config.sizeBound, seedDepth)

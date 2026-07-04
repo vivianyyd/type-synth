@@ -41,6 +41,8 @@ class Logger(
         if (printImmediately) logStream.flush()
     }
 
+    private fun elapsed() = log("Elapsed time: ${System.currentTimeMillis() - startTime} ms")
+
     fun start(stage: String) {
         stages.push(stage to System.currentTimeMillis())
         log("BEG $stage")
@@ -56,7 +58,7 @@ class Logger(
             counts.entries
                 .filter { it.value > 50 }
                 .joinToString(separator = "\n", prefix = "Counts:\n"))
-        log("Elapsed time: ${System.currentTimeMillis() - startTime} ms")
+        elapsed()
     }
 
     private val counts = mutableMapOf<String, Int>()
@@ -65,12 +67,15 @@ class Logger(
         if (verbosity > 4) {
             if (value in counts) counts[value] = counts[value]!! + 1 else counts[value] = 1
         }
-        if (System.currentTimeMillis() - lastLog > 20 * 1000) log(
-            counts.entries.joinToString(
-                separator = "\n",
-                prefix = "Counts so far:\n"
+        if (System.currentTimeMillis() - lastLog > 20 * 1000) {
+            log(
+                counts.entries.joinToString(
+                    separator = "\n\t",
+                    prefix = "Counts so far:\n\t"
+                )
             )
-        )
+            elapsed()
+        }
     }
 
     fun finish() {

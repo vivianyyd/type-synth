@@ -289,7 +289,8 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
 
     override fun toString() = "${if (l is Arrow) "($l)" else "$l"} -> $r"
 
-    override fun debugString(): String = "${if (l is Arrow) "(${l.debugString()})" else l.debugString()} -> ${r.debugString()}"
+    override fun debugString(): String =
+        "${if (l is Arrow) "(${l.debugString()})" else l.debugString()} -> ${r.debugString()}"
 }
 
 /** Could also be called DefinedLabel? */
@@ -464,25 +465,73 @@ class TypeHole : THole() {
         val variableExps = if (canBeVar) (0 until vars + 1).map { Variable(it) } else emptyList()
         val fnExpansion = Arrow(TypeHole(), TypeHole())
         val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
-
-        val instances = unification.boundConstructors(this)
-        val constructors =
-            if (!emitConstructors) null
-            else if (instances.isNotEmpty()) {
-                val i = instances.first()
-                if (instances.any { !i.match(it) }) null
-                else when (i) {
-                    is ConstraintArrow -> listOf(fnExpansion)
-                    is ConstraintLabel -> labelExpansions.filter { it.label == i.label }
+        val au = unification.antiunifyRoots(this)
+        val constructorTypes =
+            when (au) {
+                OneUnification.AUResult.Top -> {
+                    if (emitLabelBlanks) listOf(Blank(labelOnly = true)) // This is unsound
+                    else labelExpansions + fnExpansion // This is slow
                 }
-            } else {
-                // Unsound version:
-                if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
-                // Sound version
-                // if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
-                // else labelExpansions + fnExpansion
+                OneUnification.AUResult.Bottom -> emptyList()
+                is OneUnification.AUResult.Constructor -> {
+                    when (au.c) {
+                        is ConstraintArrow -> listOf(fnExpansion)
+                        is ConstraintLabel -> labelExpansions.filter { it.label == au.c.label }
+                    }
+                }
             }
-        return constructors.orEmpty() + variableExps
+        //        val instances = unification.boundConstructors(this)
+        //        val constructorTypes =
+        //            if (emitConstructors) {
+        //                if (instances.isNotEmpty()) {
+        //                    val i = instances.first()
+        //                    if (instances.any { !i.match(it) }) emptyList()
+        //                    else
+        //                        when (i) {
+        //                            is ConstraintArrow -> listOf(fnExpansion)
+        //                            is ConstraintLabel ->
+        //                                if (emitLabelBlanks) listOf(Blank(labelOnly = true))  //
+        // this is overly permissive!
+        //                                else labelExpansions.filter { it.label == i.label }
+        //                        }
+        //                }
+        //                else if (emitLabelBlanks) listOf(Blank(labelOnly = true))
+        //                else labelExpansions + fnExpansion
+        //            } else listOf()
+        return variableExps + constructorTypes
+        // TODO Note that else branch returns no constructors instead of all.
+        //   Why was Concrete version faster even when adding all label expansions?
+        //   Completeness problems if we haven't witnessed a constraint on this hole yet,
+        //   but turns out it needs to be a specific label?
+        //   Suppose L[this_, _] only ever unifies with L[other_, _] when other_ is bound to L1
+        //   (arrow also works).
+        //   L[other_, _] should be L[a, _], a is later bound to L1,
+        //   but we haven't picked other_ yet.
+        //   Even using Algo J with union find doesn't catch this...
+        //   It needs to be delayed to either fn or label, ****or we can emit all of them****.
+        //        return listOfNotNull(constructor) + variableExps
+        //        val constructorTypes = // this would be cleaner if implemented as a filter
+        //            if (emitConstructors && instances.isNotEmpty()) {
+        //                val i = instances.first()
+        //                if (instances.any { !i.match(it) }) emptyList()
+        //                else
+        //                    when (i) {
+        //                        is ConstraintArrow -> listOf(fnExpansion)
+        //                        is ConstraintLabel ->
+        //                            if (emitLabelBlanks) emptyList()  // this leads to overly
+        // permissive behavior! we should always return that label
+        //                            else labelExpansions.filter { it.label == i.label }
+        //                    }
+        //            } else listOf()
+        //        return constructorTypes.ifEmpty {
+        //            listOfNotNull(
+        //                Blank(labelOnly = true).takeIf {
+        //                    emitLabelBlanks &&
+        //                        instances.firstOrNull()?.let { i -> instances.all { i.match(it) }
+        // } ?: true
+        //                })
+        //        } + variableExps
+        // Note it's important that a blank gets emitted if there are no constructor constraints
     }
 
     override fun toString() = "_"

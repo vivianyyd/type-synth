@@ -4,6 +4,7 @@ import query.App
 import query.Example
 import query.Name
 import util.Counter
+import util.Logger
 import util.UnionFind
 
 // typealias Binding = Pair<ConstraintVariable, ConstraintTy>
@@ -24,13 +25,28 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
 
     override fun toString() = uf.toString()
 
+    fun log(logger: Logger) {
+        logger.log(uf.classes.joinToString(prefix="\n\n======", separator="\n"))
+    }
+
     fun passedWithNoConstraints(): Boolean {
         return ok &&
-            uf.classes.filter{it.members.any{it is InstantiationTy}}.all {
-                it.bound == null &&
-                    it.members.none {
-                        it is InstantiationTy && it.hole is Blank && it.hole.labelOnly
+            uf.classes.all { cls ->
+                var firstHole: THole? = null
+                var twoDistinctHoles = false
+                for (m in cls.members) {
+                    if (m is InstantiationTy) {
+                        if (firstHole == null) firstHole = m.hole
+                        else if (m.hole != firstHole) {
+                            twoDistinctHoles = true
+                            break
+                        }
                     }
+                }
+                // No hole here → irrelevant. Hole present → unconstrained (so prunable) only if its
+                // class is unbound and every instantiation is of the same hole. A concrete bound or
+                // a second distinct hole is a real constraint, so we keep the candidate.
+                firstHole == null || (cls.bound == null && !twoDistinctHoles)
             }
     }
 
@@ -53,7 +69,39 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
     //        return constrs to insts
     //    }
 
-    fun boundConstructors(hole: THole): List<ConstraintTypeConstructor> =
+    sealed class AUResult {
+        object Top : AUResult()
+        object Bottom : AUResult()
+        data class Constructor(val c: ConstraintTypeConstructor) : AUResult()
+    }
+
+    fun antiunifyRoots(hole: THole): AUResult {
+        val constrs = hole.instantiations().mapNotNull { uf.bound(it) }
+        if (constrs.isEmpty()) return AUResult.Top
+        val one = constrs.first()
+        if (constrs.any { !one.match(it) }) return AUResult.Bottom
+        return AUResult.Constructor(one)
+    }
+
+    fun match(a: Leaf, b: Leaf): Boolean =
+        uf.bound(a)?.let { uf.bound(b)?.match(it) } ?: true
+
+//    /** v → every instId for which a ConstraintVariable(v, instId) exists (each is unique). */
+//    private val instIdsByVariable: Map<Int, List<Int>> by lazy {
+//        val m = hashMapOf<Int, MutableList<Int>>()
+//        for (cls in uf.classes) {
+//            for (member in cls.members) {
+//                if (member is ConstraintVariable) {
+//                    m.getOrPut(member.v) { mutableListOf() }.add(member.instId)
+//                }
+//            }
+//        }
+//        m
+//    }
+//
+//    fun instIds(v: Int): List<Int> = instIdsByVariable[v] ?: emptyList()
+
+    private fun boundConstructors(hole: THole): List<ConstraintTypeConstructor> =
         hole.instantiations().mapNotNull { uf.bound(it) }
 
     fun boundHoles(hole: THole): List<InstantiationTy> =
@@ -74,7 +122,7 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
                             is ConstraintArrow,
                             is ConstraintVariable,
                             is InstantiationTy -> {
-                                val out = ConstraintVariable(Int.MAX_VALUE, insts.get())
+                                val out = ConstraintVariable(-1, insts.get())
                                 if (unify(f, ConstraintArrow(arg, out)) != null) out else null
                             }
                             //                            is InstantiationTy -> {
