@@ -78,6 +78,18 @@ class SearchState(
             .minByOrNull { it.second.second }
             ?.let { Triple(it.first, it.second.first, it.second.second) }
 
+    /**
+     * @return Triple(type index, hole, depth) for EVERY fillable [TypeHole], across all types.
+     * Parity: `fillableHolesWithDepth().minByOrNull { it.third }` (first on ties) equals
+     * [shallowestFillableHole].
+     */
+    fun fillableHolesWithDepth(): List<Triple<Int, TypeHole, Int>> =
+        types.withIndex().flatMap { (i, t) ->
+            t.allFillableHolesWithDepth(topLevel = true).map { (hole, depth) ->
+                Triple(i, hole, depth)
+            }
+        }
+
     fun noFillableHoles() = types.all { it.shallowestFillableHole(topLevel = true) == null }
 
     fun numFillableHoles() = types.sumOf { it.numFillableHoles() }
@@ -212,6 +224,13 @@ sealed interface Type {
 
     fun shallowestFillableHole(topLevel: Boolean): Pair<TypeHole, Int>?
 
+    /**
+     * Like [shallowestFillableHole] but returns EVERY fillable [TypeHole] with its depth (rather
+     * than only the minimum). Parity guarantee: the element of the returned list with minimum depth
+     * (first on ties, in structural order) equals [shallowestFillableHole].
+     */
+    fun allFillableHolesWithDepth(topLevel: Boolean): List<Pair<TypeHole, Int>>
+
     fun variables(): Set<Int>
 
     fun replace(hole: THole, replacement: Type): Type
@@ -242,6 +261,8 @@ data class Variable(val v: Int) : Type {
     override fun instantiate(instId: Int): ConstraintTy = ConstraintVariable(v, instId)
 
     override fun shallowestFillableHole(topLevel: Boolean) = null
+
+    override fun allFillableHolesWithDepth(topLevel: Boolean) = emptyList<Pair<TypeHole, Int>>()
 
     override fun variables() = setOf(this.v)
 
@@ -278,6 +299,18 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
             ?.let { it.first to it.second + (if (topLevel) 0 else 1) }
     }
 
+    override fun allFillableHolesWithDepth(topLevel: Boolean): List<Pair<TypeHole, Int>> {
+        val left = l.allFillableHolesWithDepth(topLevel = false)
+        val rite = r.allFillableHolesWithDepth(topLevel = topLevel)
+        // Mirrors the last-parameter `-1` adjustment in shallowestFillableHole. Whenever the last
+        // parameter is a fillable hole it is always the shallowest hole in [r] (it gets -1, which
+        // beats every other hole's non-negative depth), so applying the adjustment here per-element
+        // is equivalent to the single-hole check in shallowestFillableHole.
+        val riteAdjusted =
+            rite.map { (hole, d) -> if (topLevel && hole == lastParam()) hole to -1 else hole to d }
+        return (left + riteAdjusted).map { it.first to it.second + (if (topLevel) 0 else 1) }
+    }
+
     override fun maxParamDepth(countArrow: Boolean) =
         (if (countArrow) 1 else 0) + max(l.maxParamDepth(true), r.maxParamDepth(countArrow))
 
@@ -303,6 +336,11 @@ data class NamedLabel(val label: Int, override val params: List<Type>) : Constru
             .mapNotNull { it.shallowestFillableHole(topLevel) }
             .minByOrNull { it.second }
             ?.let { it.first to it.second + 1 }
+
+    override fun allFillableHolesWithDepth(topLevel: Boolean) =
+        params.flatMap { p ->
+            p.allFillableHolesWithDepth(topLevel).map { (hole, d) -> hole to d + 1 }
+        }
 
     override fun maxParamDepth(countArrow: Boolean) =
         // 1 plus the max depth of any child, or 0 if this node is a leaf
@@ -429,6 +467,8 @@ sealed class THole : Type {
 class TypeHole : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = this to 0
 
+    override fun allFillableHolesWithDepth(topLevel: Boolean) = listOf(this to 0)
+
     override fun expansions(
         unification: OneUnification,
         labelArities: Map<Int, Int>,
@@ -543,6 +583,8 @@ class TypeHole : THole() {
  */
 class Blank(val labelOnly: Boolean) : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = null
+
+    override fun allFillableHolesWithDepth(topLevel: Boolean) = emptyList<Pair<TypeHole, Int>>()
 
     override fun expansions(
         unification: OneUnification,

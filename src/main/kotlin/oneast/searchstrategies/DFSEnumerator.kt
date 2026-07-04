@@ -18,8 +18,27 @@ class DFSEnumerator(
     //   restore tree to original state
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
-        return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles())
-        else emptySequence()
+        return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles()) else emptySequence()
+    }
+
+    private fun pickHole(c: SearchState, unification: OneUnification): Triple<Int, TypeHole, Int> {
+//        return c.shallowestFillableHole() ?: error("Impossible")
+        val shallowest = c.shallowestFillableHole() ?: error("Impossible")
+        val holes = c.fillableHolesWithDepth()
+        check(holes.minByOrNull { it.third } == shallowest) {
+            "TEMP: fillableHolesWithDepth parity broken for $c"
+        }
+        var toFill = shallowest
+        var toFillFlag = unification.antiunifyRoots(toFill.second)
+        for (h in holes) {
+            // prioritize bottom or constructor
+            val au = unification.antiunifyRoots(h.second)
+            if (toFillFlag is OneUnification.AUResult.Top && au !is OneUnification.AUResult.Top) {
+                toFill = h
+                break
+            }
+        }
+        return toFill
     }
 
     /**
@@ -31,7 +50,7 @@ class DFSEnumerator(
         currSizeBound: Int,
         holesRemaining: Int
     ): Sequence<SearchState> {
-//        println("$c")
+        //        println("$c")
         if (c.noHoles()) return sequenceOf(c)
 
         // We won't fast-forward label blanks that we ourselves emitted.
@@ -41,9 +60,12 @@ class DFSEnumerator(
 
         if (currSizeBound - holesRemaining < 0) return emptySequence()
 
-        val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
-//        println("Expanding ${c.names.filterValues { it==iToFill }}: ${c.types[iToFill].debugString()}")
-//        println(unification.boundConstructors(hole))
+        val (iToFill, hole, depth) =
+            pickHole(c, unification) // c.shallowestFillableHole() ?: error("Impossible") //
+
+        //        println("Expanding ${c.names.filterValues { it==iToFill }}:
+        // ${c.types[iToFill].debugString()}")
+        //        println(unification.boundConstructors(hole))
         return hole
             .expansions(
                 unification = unification,
