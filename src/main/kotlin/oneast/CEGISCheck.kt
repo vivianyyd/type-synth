@@ -6,7 +6,7 @@ import util.BloomFilter
 import util.RandomExampleGenerator
 
 class CEGISCheck(
-    initExamples: Examples,
+    private val initExamples: Examples,
     private val candidate: SearchState,
     private val valid: (Example) -> Boolean,
     private val check: (SearchState, Example) -> Boolean,
@@ -20,7 +20,18 @@ class CEGISCheck(
         initExamples.posWithSubexprs.forEach { bf.add(it) }
     }
 
+    private fun justCheckOGExamples(): Pair<Example, Boolean>? {
+        for (p in initExamples.posNoSubexprs) {
+            if (!check(candidate, p)) return p to true
+        }
+        for (n in initExamples.neg) {
+            if (check(candidate, n)) return n to true
+        }
+        return null
+    }
+
     fun counterexample(): Pair<Example, Boolean>? {
+        return justCheckOGExamples()
         return null // TODO remove me
         while (posCtr < 10) {
             val next = generator.get(exampleDepthBound)

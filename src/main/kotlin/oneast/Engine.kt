@@ -11,8 +11,6 @@ class Engine(
     private val logger: Logger
 ) {
     private val names = query.examples.names
-    private val posExamples = query.examples.posWithSubexprs.toMutableList()
-    private val negExamples = query.examples.neg.toMutableList()
 
     private val committedSeed = query.committedSeed.commitAll()
     private val committedNames = committedSeed.names.keys
@@ -74,6 +72,12 @@ class Engine(
         return exs.posNoSubexprs.any { nameAppliedIn(it) }
     }
 
+    /** The set of examples for each round used during CEGIS */
+    private val workingExsSubset =
+        mutableMapOf<Int, Pair<MutableList<Example>, MutableList<Example>>>()
+
+    private fun toExamples(e: Pair<List<Example>, List<Example>>) = Examples(e.first, e.second)
+
     /** Returns the next synthesis problem, or null if we are done. */
     private fun buildNextQuery(state: SearchState, round: Int): Pair<Examples, SearchState>? {
         if (round >= scheduled.size) return null
@@ -86,7 +90,7 @@ class Engine(
         val newNames = state.names + (scheduledRound.zip(oldSize until newSize))
 
         fun takeExs(exs: Collection<Example>) = exs.filter { newNames.keys.containsAll(it.names) }
-        val nextExamples = Examples(takeExs(posExamples), takeExs(negExamples))
+        val allNextExamples = Examples(takeExs(query.examples.posWithSubexprs), takeExs(query.examples.neg))
 
         val nextState =
             SearchState(
@@ -96,14 +100,22 @@ class Engine(
                     if (i < oldSize) state.types[i]
                     // Importantly, we force names that are applied to be Arrows
                     // and names that are not to be labels.
-                    else if (nameIsApplied(scheduledRound[i - oldSize], nextExamples))
+                    else if (nameIsApplied(scheduledRound[i - oldSize], allNextExamples))
                         Arrow(TypeHole(), TypeHole())
                     else Blank(labelOnly = true)
                 },
                 labelArities = state.labelArities,
                 numCommittedTypes = state.numCommittedTypes,
-                committedLabels = state.committedLabels
-            )
+                committedLabels = state.committedLabels)
+
+        fun takeSmallest(exs: Collection<Example>): MutableList<Example> {
+            val e = exs.sortedBy { it.size() }
+            return e.take((e.size / 3).coerceAtLeast(e.filter{it is Name}.size + 5)).toMutableList()
+        }
+        val nextExamples = toExamples(workingExsSubset.getOrPut(round) {
+            takeSmallest(allNextExamples.posWithSubexprs) to
+                    takeSmallest(allNextExamples.neg)
+        })
 
         return nextExamples to nextState
     }
@@ -125,16 +137,21 @@ class Engine(
         for (solution in solveQuery(nextQueryAndSeed.first, nextQueryAndSeed.second, outerDepthBound)) {
             logger.log("Looking for counterexamples for potential solution $solution")
             val ctrex =
-                CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth) { s, e ->
+                CEGISCheck(
+                    toExamples(
+                        query.examples.posWithSubexprs.filter { nextQueryAndSeed.second.names.keys.containsAll(it.names) } to
+                                query.examples.neg.filter { nextQueryAndSeed.second.names.keys.containsAll(it.names) }
+                    ), solution, languageGroundTruth) { s, e ->
                     OneUnification(s, listOf(e)).ok
-                }
-                    .counterexample()
+                }.counterexample()
             if (ctrex == null) {
                 logger.log("Found no counterexamples")
                 yieldAll(searchRec(solution, round + 1, outerDepthBound))
             } else {
                 logger.log("Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}")
-                if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
+                if (ctrex.second) workingExsSubset[round]!!.first.add(ctrex.first)
+                else workingExsSubset[round]!!.second.add(ctrex.first)
+//                if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
             }
         }
     }
