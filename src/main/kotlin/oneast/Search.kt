@@ -1,6 +1,7 @@
 package oneast
 
 import dependencyanalysis.ParameterwiseDependencyAnalysis
+import query.Example
 import query.Examples
 import util.*
 import java.util.stream.Collectors
@@ -13,6 +14,11 @@ class Search(
     private val config: Configuration,
     private val logger: Logger
 ) {
+
+    /** The set of examples for each round used during CEGIS */
+    private val workingExsSubset = mutableListOf<Example>() to mutableListOf<Example>()
+
+    private fun toExamples(e: Pair<List<Example>, List<Example>>) = Examples(e.first, e.second)
     private val names = seed.names.keys
 
     private fun allCandidates(
@@ -24,6 +30,17 @@ class Search(
     ): Sequence<SearchState> =
         config
             .searchStrategy(examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, logger)
+            .candidates(c)
+
+    private fun concCandidates(
+        c: SearchState,
+        emitLabelBlanks: Boolean,
+        emitConstructors: Boolean,
+        sizeBound: Int,
+        depthBound: Int,
+    ): Sequence<SearchState> =
+        config
+            .searchStrategy(toExamples(workingExsSubset), emitLabelBlanks, emitConstructors, sizeBound, depthBound, logger)
             .candidates(c)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
@@ -202,7 +219,7 @@ class Search(
         val candidatesNullariesDeduced =
             seeds.asSequence().flatMap {
                 logger.count("Seeds")
-                allCandidates(
+                concCandidates(
                     it,
                     emitLabelBlanks = false,
                     emitConstructors = true,
@@ -218,35 +235,72 @@ class Search(
         // the same fn signatures but different nullaries.
         val finalResults =
             candidatesNullariesDeduced.flatMap {
-                if (it.noHoles()) sequenceOf(it)
-                // We only want to enumerate the nullaries. If there are still holes under function
-                // types, we simply didn't have the size or depth budget to finish. jk. this logic
-                // is directly handled in dfs enumerator
-                //                else if (it.types.filterIsInstance<Arrow>().all { it.noHoles() })
-                else {
-                    val blanksReplacedWithHoles =
-                        it.mapTypes { t ->
-                            t.blanks().fold(t) { acc: Type, h: THole ->
-                                if (h is Blank) acc.replace(h, TypeHole()) else acc
-                            }
+                logger.log("Looking for counterexamples for potential solution $it")
+                fun fullExsOK(): Boolean {
+                    for (p in examples.posNoSubexprs) {
+                        if (!OneUnification(it, listOf(p)).ok) {
+                            logger.log("Adding + counterexample $p")
+                            workingExsSubset.first.add(p)
+                            return false
                         }
-                    // Need to respect depth bound here or in conservative FF
-                    allCandidates(
-                        blanksReplacedWithHoles,
-                        emitLabelBlanks = false,
-                        emitConstructors = true, // we can set emitConstructors to false if fast forwarding is on, but that loses completeness.
-                        sizeBound = currentSizeBound,
-                        depthBound = currentDepthBound,
-                    )
-                } // else emptySequence()
+                    }
+                    for (n in examples.neg) {
+                        if (OneUnification(it, listOf(n)).passedWithNoConstraints()) {
+                            logger.log("Adding - counterexample $n")
+                            workingExsSubset.second.add(n)
+                            return false
+                        }
+                    }
+                    logger.log("Found no counterexamples")
+                    return true
+                }
+                if (!fullExsOK()) sequenceOf()
+                else {
+                    if (it.noHoles()) sequenceOf(it)
+                    // We only want to enumerate the nullaries. If there are still holes under function
+                    // types, we simply didn't have the size or depth budget to finish. jk. this logic
+                    // is directly handled in dfs enumerator
+                    //                else if (it.types.filterIsInstance<Arrow>().all { it.noHoles() })
+                    else {
+                        val blanksReplacedWithHoles =
+                            it.mapTypes { t ->
+                                t.blanks().fold(t) { acc: Type, h: THole ->
+                                    if (h is Blank) acc.replace(h, TypeHole()) else acc
+                                }
+                            }
+                        // Need to respect depth bound here or in conservative FF
+                        concCandidates(
+                            blanksReplacedWithHoles,
+                            emitLabelBlanks = false,
+                            emitConstructors = true, //false, <- this works if we have ff on // TODO here is something we are testing out.
+                            sizeBound = currentSizeBound,
+                            depthBound = currentDepthBound,
+                        )
+                    } // else emptySequence()}
+                }
             }
 
         return finalResults.filter { c ->
-            if (!(posUnification(c).ok))
-                error(
-                    "Enumerator should never return something that fails posexs at concretization stage"
-                )
-            examples.neg.all { !OneUnification(c, listOf(it)).ok }
+            fun fullExsOK(): Boolean {
+                logger.log("Looking for counterexamples for potential solution $c")
+                for (p in examples.posNoSubexprs) {
+                    if (!OneUnification(c, listOf(p)).ok) {
+                        logger.log("Adding + counterexample $p")
+                        workingExsSubset.first.add(p)
+                        return false
+                    }
+                }
+                for (n in examples.neg) {
+                    if (OneUnification(c, listOf(n)).ok) {
+                        logger.log("Adding - counterexample $n")
+                        workingExsSubset.second.add(n)
+                        return false
+                    }
+                }
+                logger.log("Found no counterexamples")
+                return true
+            }
+            fullExsOK()
         }
     }
 

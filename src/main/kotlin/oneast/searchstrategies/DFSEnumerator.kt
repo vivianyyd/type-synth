@@ -6,7 +6,7 @@ import util.Logger
 
 /** Fills one hole at a time, shallowest first, in DFS style. */
 class DFSEnumerator(
-    examples: Examples,
+    private val examples: Examples,
     private val emitLabelBlanks: Boolean,
     private val emitConstructors: Boolean,
     private val sizeBound: Int,
@@ -17,17 +17,14 @@ class DFSEnumerator(
     //   has a parent pointer, for each of the expansions, modify the parent and recurse. when done,
     //   restore tree to original state
     override fun candidates(c: SearchState): Sequence<SearchState> {
-        val u = posUnification(c)
+        val u = OneUnification(c, examples.posNoSubexprs)
         return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles()) else emptySequence()
     }
 
     private fun pickHole(c: SearchState, unification: OneUnification): Triple<Int, TypeHole, Int> {
 //        return c.shallowestFillableHole() ?: error("Impossible")
-        val shallowest = c.shallowestFillableHole() ?: error("Impossible")
         val holes = c.fillableHolesWithDepth()
-        check(holes.minByOrNull { it.third } == shallowest) {
-            "TEMP: fillableHolesWithDepth parity broken for $c"
-        }
+        val shallowest = holes.minByOrNull { it.third } ?: error("Impossible")
         var toFill = shallowest
         var toFillFlag = unification.antiunifyRoots(toFill.second)
         for (h in holes) {
@@ -81,9 +78,14 @@ class DFSEnumerator(
                 logger.count("Total candidates")
                 it.numFillableHoles() to c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) }
             }
-            .filterNot { (_, newCandidate) -> failsNegexWithNoHoleConstraints(newCandidate) }
+            .filterNot { (_, newCandidate) ->
+                logger.log("\t$newCandidate")
+                val n = failsNegexWithNoHoleConstraints(newCandidate)
+                if (n) logger.log("\t\tpruning due to negexs")
+                n
+            }
             .flatMap { (introducedHoles, newCandidate) ->
-                val u = posUnification(newCandidate)
+                val u = OneUnification(newCandidate, examples.posNoSubexprs)
                 if (u.ok)
                     recCandidates(
                         newCandidate,

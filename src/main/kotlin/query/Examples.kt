@@ -56,8 +56,8 @@ data class App(val fn: Example, val arg: Example) : Example {
  * @requires [negIn] contains MINIMAL negative examples, i.e. no strict subexpression is a negative example.
  */
 class Examples(posIn: Collection<Example>, negIn: Collection<Example>) {
-    val posNoSubexprs: List<Example>
-    val neg: List<Example> = negIn.toList()
+    val posNoSubexprs: MutableList<Example>
+    val neg: MutableList<Example> = negIn.toMutableList()
 
     init {
         val posInSet = posIn.toSet()
@@ -65,7 +65,7 @@ class Examples(posIn: Collection<Example>, negIn: Collection<Example>) {
             // subexprs() ends with the ex itself
             posInSet.forEach { addAll(it.subexprs().dropLast(1)) }
         }
-        posNoSubexprs = posInSet.filter { it !in strictSubexprs }
+        posNoSubexprs = posInSet.filter { it !in strictSubexprs }.toMutableList()
     }
 
     val posWithSubexprs by lazy {
