@@ -46,7 +46,11 @@ class SexpTests {
 
     @Test
 //    @Disabled
-    fun `just one`() = test("polymorphic-dictchain")
+    fun `just one`() {
+        System.getProperty("dfs.bottom")?.toBoolean()?.let { DFSEnumerator.bottomPruning = it }
+        System.getProperty("dfs.cfo")?.toBoolean()?.let { DFSEnumerator.constructorFirstOrdering = it }
+        test("cons")
+    }
 
     @ParameterizedTest
     @MethodSource("testNames")

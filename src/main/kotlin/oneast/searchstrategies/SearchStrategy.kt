@@ -13,9 +13,6 @@ abstract class SearchStrategy(private val examples: Examples) {
 
     protected fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
-    /** Number of negative examples; length of the per-neg verdict arrays threaded through search. */
-    protected val numNegs: Int = examples.neg.size
-
     /**
      * For each component name, the indices of negative examples whose name-set contains it.
      * Constant across the whole search. A neg whose name-set omits a component `N` has an identical
@@ -35,10 +32,6 @@ abstract class SearchStrategy(private val examples: Examples) {
      */
     protected fun negVerdict(s: SearchState, i: Int): Boolean =
         OneUnification(s, listOf(examples.neg[i])).passedWithNoConstraints()
-
-    /** Full per-neg verdict array for [s]. Used at search entry and where incremental reuse fails. */
-    protected fun fullNegVerdicts(s: SearchState): BooleanArray =
-        BooleanArray(numNegs) { i -> negVerdict(s, i) }
 
     protected fun failsNegexWithNoHoleConstraints(s: SearchState) =
         examples.neg.any { OneUnification(s, listOf(it)).passedWithNoConstraints() }.let{
