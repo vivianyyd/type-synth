@@ -33,7 +33,7 @@ class UnificationTest {
         makeContext(context.toList())
 
     private fun ok(context: SearchState, program: Example) =
-        OneUnification(context, listOf(program)).ok
+        Unification(context, listOf(program)).ok
 
     private fun assertOk(context: SearchState, program: Example) = assertTrue(ok(context, program))
 
@@ -54,7 +54,7 @@ class UnificationTest {
                 )
             )
         examples.posNoSubexprs.forEach {
-            assert(OneUnification(context, listOf(it)).ok) { "Bad positive example: $it" }
+            assert(Unification(context, listOf(it)).ok) { "Bad positive example: $it" }
         }
     }
 
@@ -64,7 +64,7 @@ class UnificationTest {
         val bai = Arrow(Arrow(b, a), Arrow(a, b))
         val context = makeContext("f" to bai, "g" to ab)
         assertOk(context, App(f, g))
-        assertSameType(Arrow(b, a), OneUnification(context, emptyList()).type(App(f, g)))
+        assertSameType(Arrow(b, a), Unification(context, emptyList()).type(App(f, g)))
     }
 
     @Test
@@ -73,11 +73,11 @@ class UnificationTest {
         val aai = Arrow(a, Arrow(a, I))
         val context1 = makeContext("f" to Arrow(iai, iai), "g" to aai)
         assertOk(context1, App(f, g))
-        assertSameType(Arrow(I, Arrow(I, I)), OneUnification(context1, emptyList()).type(App(f, g)))
+        assertSameType(Arrow(I, Arrow(I, I)), Unification(context1, emptyList()).type(App(f, g)))
 
         val context2 = makeContext("f" to Arrow(aai, aai), "g" to iai)
         assertOk(context2, App(f, g))
-        assertSameType(Arrow(I, Arrow(I, I)), OneUnification(context2, emptyList()).type(App(f, g)))
+        assertSameType(Arrow(I, Arrow(I, I)), Unification(context2, emptyList()).type(App(f, g)))
     }
 
     @Test
@@ -95,7 +95,7 @@ class UnificationTest {
         val compare = Name("compare")
         val max = Name("max")
         val example = App(App(compare, max), compare)
-        val unify = OneUnification(context, listOf(example))
+        val unify = Unification(context, listOf(example))
 
         println(unify.type(App(compare, max)))
         println(unify.type(compare))
@@ -170,7 +170,7 @@ class UnificationTest {
         val cDbiDii = App(App(chain, Name("dbi")), Name("dii"))
         val example = App(cDib, cDbiDii)
 
-        val u = OneUnification(context, listOf(example))
+        val u = Unification(context, listOf(example))
         assertSameType(Arrow(llaaa, NamedLabel(3, listOf(llaaa, llaaa))), u.type(cDib))
         assertSameType(NamedLabel(3, listOf(llaaa, llaaa)), u.type(cDbiDii))
         // must unify:
@@ -243,7 +243,7 @@ class UnificationTest {
         val example = App(f, g)
 
         assertOk(context, example)
-        val u = OneUnification(context, listOf(example))
+        val u = Unification(context, listOf(example))
         assertSameType(Arrow(I, Arrow(I, I)), u.type(example))
 
         assertOk(context, App(App(example, Name("0")), Name("0")))
@@ -306,7 +306,7 @@ class UnificationTest {
 
     /**
      * Negative test case: Type constructor parameter count mismatch. This test verifies that
-     * OneUnification properly rejects types where a type constructor is used with the wrong number
+     * Unification properly rejects types where a type constructor is used with the wrong number
      * of parameters relative to its declared arity.
      *
      * In this case, List is declared with arity 1, but 'x' attempts to use it with 2 parameters.

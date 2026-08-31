@@ -375,7 +375,7 @@ sealed class THole : Type {
     override fun replace(hole: THole, replacement: Type) = if (hole == this) replacement else this
 
     abstract fun expansions(
-        unification: OneUnification,
+        unification: Unification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -389,7 +389,7 @@ class TypeHole : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = this to 0
 
     override fun expansions(
-        unification: OneUnification,
+        unification: Unification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -416,7 +416,7 @@ class TypeHole : THole() {
             )
 
     private fun expansionsNoBound(
-        unification: OneUnification,
+        unification: Unification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -427,22 +427,19 @@ class TypeHole : THole() {
         val fnExpansion = Arrow(TypeHole(), TypeHole())
         val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
 
-        val instances = unification.holeEquals(this).filterIsInstance<ConstraintTypeConstructor>()
         val constructors =
             if (!emitConstructors) null
-            else if (instances.isNotEmpty()) {
-                val i = instances.first()
-                if (instances.any { !i.match(it) }) null
-                else when (i) {
-                    is ConstraintArrow -> listOf(fnExpansion)
-                    is ConstraintLabel -> labelExpansions.filter { it.label == i.label }
+            else when (val label = unification.holeConstructor(this)) {
+                Unification.NO_CONSTRUCTOR -> {
+                    // Unsound version:
+                    if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
+                    // Sound version
+                    // if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
+                    // else labelExpansions + fnExpansion
                 }
-            } else {
-                // Unsound version:
-                if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
-                // Sound version
-                // if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
-                // else labelExpansions + fnExpansion
+                Unification.CONFLICTING_CONSTRUCTORS -> null
+                TypeGraph.ARROW -> listOf(fnExpansion)
+                else -> labelExpansions.filter { it.label == label }
             }
         return constructors.orEmpty() + variableExps
     }
@@ -458,7 +455,7 @@ class Blank(val labelOnly: Boolean) : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = null
 
     override fun expansions(
-        unification: OneUnification,
+        unification: Unification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
