@@ -4,38 +4,17 @@ import oneast.*
 import query.Examples
 import util.IntUnionFind
 
-abstract class SearchStrategy(private val examples: Examples) {
+abstract class SearchStrategy(protected val examples: Examples) {
     /**
      * Lazily produces refinements of the seed [c] that pass [examples]. Output states are not
      * guaranteed to be concrete, but they are as concretized as this SearchStrategy will allow
      */
     abstract fun candidates(c: SearchState): Sequence<SearchState>
 
-    protected fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
+    protected fun posUnification(s: SearchState) = Unification(examples.programs(s.names).pos, s)
 
     protected fun failsNegexWithNoHoleConstraints(s: SearchState) =
-        examples.neg.any { OneUnification(s, listOf(it)).passedWithNoConstraints }
-
-    //    protected fun fastForward(candidate: SearchState): Sequence<SearchState> {
-    //        var curr = candidate
-    //        do {
-    //            var changed = false
-    //            val u = posUnification(curr)
-    //            curr =
-    //                curr.mapTypes { t ->
-    //                    val changes =
-    //                        t.allHolesWithDepth(topLevel = true).map { (hole, depth) ->
-    //                            hole to hole.fastForward(u, topLevel = depth == 0)
-    //                        }
-    //                    if (changes.isNotEmpty() && changes.any { it.second != null }) changed =
-    // true
-    //                    changes.fold(t) { acc: Type, (hole, ty): Pair<THole, Type?> ->
-    //                        if (ty == null) acc else acc.replace(hole, ty)
-    //                    }
-    //                }
-    //        } while (changed)
-    //        return if (curr.noHoles()) sequenceOf(curr) else emptySequence()
-    //    }
+        examples.programs(s.names).neg.any { Unification(it, s).passedWithNoConstraints }
 
     /** May return an empty sequence, since fast forwarding may uncover a contradiction. */
     fun conservativeFastForward(
@@ -51,7 +30,7 @@ abstract class SearchStrategy(private val examples: Examples) {
 
     private fun fixpoint(
         candidate: SearchState,
-        transform: (THole, OneUnification) -> Type?,
+        transform: (THole, Unification) -> Type?,
         depthBound: Int,
     ): SearchState? {
         var curr = candidate

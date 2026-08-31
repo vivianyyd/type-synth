@@ -1,5 +1,6 @@
 package query
 
+import oneast.Programs
 import util.lines
 
 sealed interface Example {
@@ -66,6 +67,21 @@ class Examples(posIn: Collection<Example>, negIn: Collection<Example>) {
             posInSet.forEach { addAll(it.subexprs().dropLast(1)) }
         }
         posNoSubexprs = posInSet.filter { it !in strictSubexprs }
+    }
+
+    private var programsNames: Map<String, Int>? = null
+    private var programs: Programs? = null
+
+    /**
+     * The application structure of these examples, resolved against [names]. Cached, since every
+     * search state visited for one query shares the same name → type-index mapping.
+     */
+    fun programs(names: Map<String, Int>): Programs {
+        if (programsNames !== names) {
+            programsNames = names
+            programs = Programs(this, names)
+        }
+        return programs!!
     }
 
     val posWithSubexprs by lazy {

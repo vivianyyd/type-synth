@@ -74,7 +74,7 @@ class Partitioner(
      */
     private fun recCandidates(
         c: SearchState,
-        unification: OneUnification,
+        unification: Unification,
         currSizeBound: Int,
         holesRemaining: Int
     ): Sequence<SearchState> {

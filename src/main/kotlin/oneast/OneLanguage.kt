@@ -375,7 +375,7 @@ sealed class THole : Type {
     override fun replace(hole: THole, replacement: Type) = if (hole == this) replacement else this
 
     abstract fun expansions(
-        unification: OneUnification,
+        unification: Unification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -390,7 +390,7 @@ sealed class THole : Type {
      * anything, but we autofill all the holes we can at once. If a hole points to an Instantiation,
      * Variable, or Bottom, we do not fast forward.
      */
-    fun conservativeFastForward(unification: OneUnification): Type? {
+    fun conservativeFastForward(unification: Unification): Type? {
         val defaultHoleMaker = { TypeHole() }
 
         val antiunifies = unification.holeEquals(this)
@@ -412,7 +412,7 @@ class TypeHole : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = this to 0
 
     override fun expansions(
-        unification: OneUnification,
+        unification: Unification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -439,7 +439,7 @@ class TypeHole : THole() {
             )
 
     private fun expansionsNoBound(
-        unification: OneUnification,
+        unification: Unification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -453,19 +453,17 @@ class TypeHole : THole() {
         // For now, instead we will explicitly introduce only blanks for expansions
         // An alternate implementation might introduce a blank if [labelExpansions] is empty
 
-        val instances = unification.holeEquals(this).filterIsInstance<ConstraintTypeConstructor>()
-        val constructorTypes = // this would be cleaner if implemented as a filter
-            if (emitConstructors && instances.isNotEmpty()) {
-                val i = instances.first()
-                if (instances.any { !i.match(it) }) emptyList()
-                else
-                    when (i) {
-                        is ConstraintArrow -> listOf(fnExpansion)
-                        is ConstraintLabel ->
-                            if (emitLabelBlanks) emptyList()
-                            else labelExpansions.filter { it.label == i.label }
-                    }
-            } else listOf()
+        // If every instantiation of this hole was unified with the same constructor, that is the
+        // only shape it can take. Disagreement tells us nothing, and reads the same as silence.
+        val constructorTypes =
+            if (!emitConstructors) emptyList()
+            else when (val label = unification.holeConstructor(this)) {
+                null -> emptyList()
+                TypeGraph.ARROW -> listOf(fnExpansion)
+                else ->
+                    if (emitLabelBlanks) emptyList()
+                    else labelExpansions.filter { it.label == label }
+            }
         //                labelExpansions +
         //                        listOf(
         //                            TODO(
@@ -489,7 +487,7 @@ class Blank(val labelOnly: Boolean) : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = null
 
     override fun expansions(
-        unification: OneUnification,
+        unification: Unification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
