@@ -1,0 +1,59 @@
+package testutil.parser;
+
+import java.util.ArrayList;
+import testutil.OCamlExpr;
+
+parser code {:
+    @Override
+    public void report_error(String message, Object info) {
+        throw new IllegalArgumentException(message);
+    }
+
+    @Override
+    public void report_fatal_error(String message, Object info) throws Exception {
+        throw new IllegalArgumentException(message);
+    }
+:};
+
+terminal        FUN, ARROW, LPAREN, RPAREN;
+terminal String IDENT, OP;
+
+non terminal OCamlExpr                root;
+non terminal OCamlExpr                expr;
+non terminal OCamlExpr                app_expr;
+non terminal OCamlExpr                atom_expr;
+non terminal ArrayList<String>   params;
+
+start with root;
+
+root ::= expr:e {: RESULT = e; :} ;
+
+expr ::=
+      FUN params:ps ARROW expr:body
+        {: RESULT = new OCamlExpr.Lam(ps, body); :}
+    | app_expr:e
+        {: RESULT = e; :}
+    ;
+
+params ::=
+      IDENT:x
+        {: ArrayList<String> ps = new ArrayList<String>(); ps.add(x); RESULT = ps; :}
+    | params:ps IDENT:x
+        {: ps.add(x); RESULT = ps; :}
+    ;
+
+app_expr ::=
+      app_expr:f atom_expr:a
+        {: RESULT = new OCamlExpr.App(f, a); :}
+    | atom_expr:e
+        {: RESULT = e; :}
+    ;
+
+atom_expr ::=
+      IDENT:x
+        {: RESULT = new OCamlExpr.Var(x); :}
+    | LPAREN OP:op RPAREN
+        {: RESULT = new OCamlExpr.Var("(" + op + ")"); :}
+    | LPAREN expr:e RPAREN
+        {: RESULT = e; :}
+    ;
