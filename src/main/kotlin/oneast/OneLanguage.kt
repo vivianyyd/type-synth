@@ -444,22 +444,26 @@ sealed class THole : Type {
      * anything, but we autofill all the holes we can at once. If a hole points to an Instantiation,
      * Variable, or Bottom, we do not fast forward.
      */
-//    fun conservativeFastForward(unification: OneUnification): Type? {
-//        val defaultHoleMaker = { TypeHole() }
-//
-//        val antiunifies = unification.holeEquals(this)
-//        val constrs = antiunifies.filterIsInstance<ConstraintTypeConstructor>()
-//
-//        /* It may seem redundant to perform these checks when antiunify() does them as well, but it is
-//        not. This prevents us from an infinite loop when we try to get the fixpoint of this
-//        function, since our default antiunification behavior is to make another hole. If at the
-//        top-level we can't do anything, we shouldn't replace this hole with another hole, we
-//        should just return no changes. We still want to keep that behavior in antiunify() though,
-//        since we need it to fill the leaves when we are fast-forwarding to an entire tree. */
-//        if (constrs.isEmpty() || antiunifies.any { it !is ConstraintTypeConstructor }) return null
-//        if (constrs.any { a -> constrs.any { b -> !a.match(b) } }) return null
-//        return antiunify(antiunifies, defaultAntiunifier = defaultHoleMaker)
-//    }
+    //    fun conservativeFastForward(unification: OneUnification): Type? {
+    //        val defaultHoleMaker = { TypeHole() }
+    //
+    //        val antiunifies = unification.holeEquals(this)
+    //        val constrs = antiunifies.filterIsInstance<ConstraintTypeConstructor>()
+    //
+    //        /* It may seem redundant to perform these checks when antiunify() does them as well,
+    // but it is
+    //        not. This prevents us from an infinite loop when we try to get the fixpoint of this
+    //        function, since our default antiunification behavior is to make another hole. If at
+    // the
+    //        top-level we can't do anything, we shouldn't replace this hole with another hole, we
+    //        should just return no changes. We still want to keep that behavior in antiunify()
+    // though,
+    //        since we need it to fill the leaves when we are fast-forwarding to an entire tree. */
+    //        if (constrs.isEmpty() || antiunifies.any { it !is ConstraintTypeConstructor }) return
+    // null
+    //        if (constrs.any { a -> constrs.any { b -> !a.match(b) } }) return null
+    //        return antiunify(antiunifies, defaultAntiunifier = defaultHoleMaker)
+    //    }
 
     override fun debugString() = toString() + id
 }
@@ -502,15 +506,33 @@ class TypeHole : THole() {
         emitLabelBlanks: Boolean,
         emitConstructors: Boolean
     ): List<Type> {
-        val variableExps = if (canBeVar) (0 until vars + 1).map { Variable(it) } else emptyList()
+        /**
+         * A variable is compatible with a hole when for all instantiations of this hole, if there
+         * is an instantiation of this variable with the same id, the two have compatible bound
+         * types.
+         */
+        fun checkVariable(v: Int): Boolean = true
+//            instantiations().all { unification.match(it, ConstraintVariable(v, it.instId)) }
+
+        val variableExps =
+            if (canBeVar)
+                (0 until vars + 1).mapNotNull { if (checkVariable(it)) Variable(it) else {
+//                    println("Pruned variable")
+                    null
+                } }
+            else emptyList()
+
         val fnExpansion = Arrow(TypeHole(), TypeHole())
         val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
+        // If there are no existing labels, we need to learn them.
+        // For now, instead we will explicitly introduce only blanks for expansions
+        // An alternate implementation might introduce a blank if [labelExpansions] is empty
         val au = unification.antiunifyRoots(this)
         val constructorTypes =
             when (au) {
                 OneUnification.AUResult.Top -> {
-                    if (emitLabelBlanks) listOf(Blank(labelOnly = true)) // This is unsound
-                    else labelExpansions + fnExpansion // This is slow
+                    if (emitLabelBlanks) listOf(Blank(labelOnly = true))
+                    else labelExpansions + fnExpansion
                 }
                 OneUnification.AUResult.Bottom -> emptyList()
                 is OneUnification.AUResult.Constructor -> {

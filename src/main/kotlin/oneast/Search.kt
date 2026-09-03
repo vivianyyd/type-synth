@@ -200,16 +200,22 @@ class Search(
         // Things blow up here, so sequencing
         // We start by searching for the functions, and try to deduce the nullaries from them.
         val candidatesNullariesDeduced =
-            seeds.asSequence().flatMap {
-                logger.count("Seeds")
-                allCandidates(
-                    it,
-                    emitLabelBlanks = false,
-                    emitConstructors = true,
-                    sizeBound = currentSizeBound,
-                    depthBound = currentDepthBound,
-                )
-            }
+            roundRobin(
+                seeds.map { seed ->
+                    sequence {
+                        logger.count("Seeds")
+                        yieldAll(
+                            allCandidates(
+                                seed,
+                                emitLabelBlanks = false,
+                                emitConstructors = true,
+                                sizeBound = currentSizeBound,
+                                depthBound = currentDepthBound,
+                            )
+                        )
+                    }
+                }
+            )
 
         // If the functions are not contradictory but we couldn't deduce the nullaries, we transform
         // blanks into normal holes and enumerate for them
@@ -247,6 +253,21 @@ class Search(
                     "Enumerator should never return something that fails posexs at concretization stage"
                 )
             examples.neg.all { !OneUnification(c, listOf(it)).ok }
+        }
+    }
+
+    /**
+     * Interleaves [seqs] in round-robin order: pulls one element lazily from each sequence in turn
+     * before cycling back to the first. Exhausted sequences drop out; iteration ends once all are.
+     */
+    private fun <T> roundRobin(seqs: List<Sequence<T>>): Sequence<T> = sequence {
+        val iterators = seqs.map { it.iterator() }.toMutableList()
+        while (iterators.isNotEmpty()) {
+            val cursor = iterators.iterator()
+            while (cursor.hasNext()) {
+                val iter = cursor.next()
+                if (iter.hasNext()) yield(iter.next()) else cursor.remove()
+            }
         }
     }
 
