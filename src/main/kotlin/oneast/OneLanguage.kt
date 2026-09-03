@@ -375,7 +375,7 @@ sealed class THole : Type {
     override fun replace(hole: THole, replacement: Type) = if (hole == this) replacement else this
 
     abstract fun expansions(
-        unification: Unification,
+        unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -389,7 +389,7 @@ class TypeHole : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = this to 0
 
     override fun expansions(
-        unification: Unification,
+        unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -416,7 +416,7 @@ class TypeHole : THole() {
             )
 
     private fun expansionsNoBound(
-        unification: Unification,
+        unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -430,14 +430,14 @@ class TypeHole : THole() {
         val constructors =
             if (!emitConstructors) null
             else when (val label = unification.holeConstructor(this)) {
-                Unification.NO_CONSTRUCTOR -> {
+                OneUnification.NO_CONSTRUCTOR -> {
                     // Unsound version:
                     if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
                     // Sound version
                     // if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
                     // else labelExpansions + fnExpansion
                 }
-                Unification.CONFLICTING_CONSTRUCTORS -> null
+                OneUnification.CONFLICTING_CONSTRUCTORS -> null
                 TypeGraph.ARROW -> listOf(fnExpansion)
                 else -> labelExpansions.filter { it.label == label }
             }
@@ -455,7 +455,7 @@ class Blank(val labelOnly: Boolean) : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = null
 
     override fun expansions(
-        unification: Unification,
+        unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
