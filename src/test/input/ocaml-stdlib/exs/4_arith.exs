@@ -125,6 +125,10 @@
 
 // arithmetic output is not a function: cannot apply it
 ((succ Num) Num)
+((pred Num) Num)
 (((+) Num Num) Num)
 ((abs Num) Num)
 (((~+) Num) Num)
+(((~-) Num) Num)
+(((/) Num Num) Num)
+((( mod ) Num Num) Num)
