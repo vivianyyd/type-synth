@@ -114,3 +114,28 @@ tasks.withType<JavaCompile>().matching { it.name.contains("Test") }.configureEac
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
     .matching { it.name.contains("Test") }
     .configureEach { dependsOn(generateSExprLexer, generateSExprParser) }
+
+tasks.register<JavaExec>("sexpBench") {
+    group = "verification"
+    description = "Run one .sexp synthesis query end to end (-PbenchArgs=\"name\")"
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("oneast.bench.SexpBench")
+    args = ((project.findProperty("benchArgs") as String?) ?: "").split(" ").filter { it.isNotBlank() }
+    jvmArgs = ((project.findProperty("benchJvmArgs") as String?) ?: "").split(" ").filter { it.isNotBlank() }
+}
+
+tasks.register<JavaExec>("bench") {
+    group = "verification"
+    description = "Run the enumerator benchmark (-PbenchArgs=\"modules limit reps\")"
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("oneast.bench.EnumeratorBench")
+    args = ((project.findProperty("benchArgs") as String?) ?: "").split(" ").filter { it.isNotBlank() }
+    jvmArgs = ((project.findProperty("benchJvmArgs") as String?) ?: "").split(" ").filter { it.isNotBlank() }
+}
+
+tasks.register<JavaExec>("oracleDigest") {
+    group = "verification"
+    description = "Digest the hole-free type checker's verdict on every stdlib example"
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("oneast.bench.OracleDigest")
+}
