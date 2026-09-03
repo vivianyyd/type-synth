@@ -11,7 +11,7 @@ import util.IntVec
  * search state's types.
  *
  * Neither the examples nor the set of names change during a search, so this is built once and
- * shared by every [Unification] over them. Nodes are numbered so that a node's children come
+ * shared by every [OneUnification] over them. Nodes are numbered so that a node's children come
  * before it, which lets a check be a single forward pass.
  */
 class Program(names: Map<String, Int>, examples: List<Example>) {
@@ -84,7 +84,7 @@ class Programs(examples: Examples, names: Map<String, Int>) {
  * [type] is only meaningful before any [refine], since the environment it reports against is the
  * one this was constructed with.
  */
-class Unification(private val program: Program, private val environment: SearchState) {
+class OneUnification(private val program: Program, private val environment: SearchState) {
     constructor(environment: SearchState, examples: List<Example>) :
             this(Program(environment.names, examples), environment)
 
@@ -207,9 +207,9 @@ class Unification(private val program: Program, private val environment: SearchS
 class Checks(state: SearchState, examples: Examples) {
     private val programs = examples.programs(state.names)
 
-    val pos = Unification(programs.pos, state)
+    val pos = OneUnification(programs.pos, state)
 
-    private val neg = Array(programs.neg.size) { Unification(programs.neg[it], state) }
+    private val neg = Array(programs.neg.size) { OneUnification(programs.neg[it], state) }
 
     /** Whether each negative example currently type-checks without relying on any hole. */
     private val negPasses = BooleanArray(neg.size) { neg[it].passedWithNoConstraints }

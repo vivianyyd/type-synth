@@ -375,7 +375,7 @@ sealed class THole : Type {
     override fun replace(hole: THole, replacement: Type) = if (hole == this) replacement else this
 
     abstract fun expansions(
-        unification: Unification,
+        unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -390,7 +390,7 @@ sealed class THole : Type {
      * anything, but we autofill all the holes we can at once. If a hole points to an Instantiation,
      * Variable, or Bottom, we do not fast forward.
      */
-    fun conservativeFastForward(unification: Unification): Type? {
+    fun conservativeFastForward(unification: OneUnification): Type? {
         val defaultHoleMaker = { TypeHole() }
 
         val antiunifies = unification.holeEquals(this)
@@ -412,7 +412,7 @@ class TypeHole : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = this to 0
 
     override fun expansions(
-        unification: Unification,
+        unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -439,7 +439,7 @@ class TypeHole : THole() {
             )
 
     private fun expansionsNoBound(
-        unification: Unification,
+        unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,
@@ -487,7 +487,7 @@ class Blank(val labelOnly: Boolean) : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = null
 
     override fun expansions(
-        unification: Unification,
+        unification: OneUnification,
         labelArities: Map<Int, Int>,
         vars: Int,
         canBeVar: Boolean,

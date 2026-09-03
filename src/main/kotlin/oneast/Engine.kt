@@ -126,7 +126,7 @@ class Engine(
             logger.log("Looking for counterexamples for potential solution $solution")
             val ctrex =
                 CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth) { s, e ->
-                    Unification(s, listOf(e)).ok
+                    OneUnification(s, listOf(e)).ok
                 }
                     .counterexample()
             if (ctrex == null) {

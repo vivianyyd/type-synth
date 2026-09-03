@@ -11,10 +11,10 @@ abstract class SearchStrategy(protected val examples: Examples) {
      */
     abstract fun candidates(c: SearchState): Sequence<SearchState>
 
-    protected fun posUnification(s: SearchState) = Unification(examples.programs(s.names).pos, s)
+    protected fun posUnification(s: SearchState) = OneUnification(examples.programs(s.names).pos, s)
 
     protected fun failsNegexWithNoHoleConstraints(s: SearchState) =
-        examples.programs(s.names).neg.any { Unification(it, s).passedWithNoConstraints }
+        examples.programs(s.names).neg.any { OneUnification(it, s).passedWithNoConstraints }
 
     /** May return an empty sequence, since fast forwarding may uncover a contradiction. */
     fun conservativeFastForward(
@@ -30,7 +30,7 @@ abstract class SearchStrategy(protected val examples: Examples) {
 
     private fun fixpoint(
         candidate: SearchState,
-        transform: (THole, Unification) -> Type?,
+        transform: (THole, OneUnification) -> Type?,
         depthBound: Int,
     ): SearchState? {
         var curr = candidate

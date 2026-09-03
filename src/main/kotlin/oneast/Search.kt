@@ -26,7 +26,7 @@ class Search(
             .searchStrategy(examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, logger)
             .candidates(c)
 
-    private fun posUnification(s: SearchState) = Unification(examples.programs(s.names).pos, s)
+    private fun posUnification(s: SearchState) = OneUnification(examples.programs(s.names).pos, s)
 
     /** Find all blanks, which must only be equal to other blanks, and assign them label classes. */
     private fun assignLabelClasses(s: SearchState): SearchState? {
@@ -109,7 +109,7 @@ class Search(
                 )
                     .filter { s ->
                         examples.programs(s.names).neg.none {
-                            Unification(it, s).passedWithNoConstraints
+                            OneUnification(it, s).passedWithNoConstraints
                         }
                     }
             }
@@ -244,7 +244,7 @@ class Search(
                 error(
                     "Enumerator should never return something that fails posexs at concretization stage"
                 )
-            examples.programs(c.names).neg.none { Unification(it, c).ok }
+            examples.programs(c.names).neg.none { OneUnification(it, c).ok }
         }
     }
 

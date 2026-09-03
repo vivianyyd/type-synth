@@ -20,7 +20,7 @@ import util.LongVec
  * - **constructor** — an arrow or a label applied to argument nodes.
  * - **rigid** — the instance of a component type's [Variable] at one instantiation.
  * - **hole** — the instance of a [THole] at one instantiation. Unifies like an ordinary variable;
- *   the types it ends up equal to are what [Unification.holeEquals] reports back to the search.
+ *   the types it ends up equal to are what [OneUnification.holeEquals] reports back to the search.
  * - **fresh** — an anonymous unification variable, e.g. the result of an application.
  */
 class TypeGraph {
