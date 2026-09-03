@@ -1,6 +1,8 @@
 package oneast.bench
 
 import oneast.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import oneast.searchstrategies.DFSEnumerator
 import query.Example
 import query.Examples
@@ -17,7 +19,7 @@ import java.io.File
  * Micro/macro benchmark for the enumerator's inner loop. Loads a set of OCaml stdlib modules,
  * splits examples into pos/neg with our own checker, and enumerates outlines.
  */
-object EnumeratorBench {
+class EnumeratorBench {
     private fun loadFromExsFiles(exsFileNames: List<String>): Pair<List<Example>, Map<String, Type>> {
         val exsDir = File(join("src", "test", "input", "ocaml-stdlib", "exs"))
         val typesDir = File(join("src", "test", "input", "ocaml-stdlib", "types"))
@@ -74,14 +76,15 @@ object EnumeratorBench {
         return examples to seed
     }
 
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val modules = if (args.isNotEmpty()) args[0].split(",") else listOf("0_basics", "2_boolean", "4_arith", "8_char")
-        val limit = if (args.size > 1) args[1].toInt() else 20000
-        val reps = if (args.size > 2) args[2].toInt() else 3
-        val sizeBound = if (args.size > 3) args[3].toInt() else 60
-        val depthBound = if (args.size > 4) args[4].toInt() else 4
-        val dump = args.size > 5 && args[5] == "dump"
+    @Test
+    @EnabledIfSystemProperty(named = Bench.GATE, matches = ".+")
+    fun enumerator() {
+        val modules = Bench.list("modules", listOf("0_basics", "2_boolean", "4_arith", "8_char"))
+        val limit = Bench.int("limit", 20000)
+        val reps = Bench.int("reps", 3)
+        val sizeBound = Bench.int("sizeBound", 60)
+        val depthBound = Bench.int("depthBound", 4)
+        val dump = Bench.flag("dump")
         val (examples, seed) = workload(modules)
         println("modules=$modules names=${examples.names.size} pos=${examples.posNoSubexprs.size} neg=${examples.neg.size}")
         println("total pos expr nodes=${examples.posNoSubexprs.sumOf { it.size() }} seedHoles=${seed.numFillableHoles()}")

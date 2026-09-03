@@ -1,6 +1,8 @@
 package oneast.bench
 
 import oneast.Type
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import query.Example
 import testutil.ocaml.OcamlTypeParser
 import testutil.unsignedExample
@@ -12,9 +14,10 @@ import java.io.File
  * Classifies every OCaml stdlib example with the hole-free type checker and digests the result, so
  * two builds can be compared exactly.
  */
-object OracleDigest {
-    @JvmStatic
-    fun main(args: Array<String>) {
+class OracleDigest {
+    @Test
+    @EnabledIfSystemProperty(named = Bench.GATE, matches = ".+")
+    fun digest() {
         val exsDir = File(join("src", "test", "input", "ocaml-stdlib", "exs"))
         val typesDir = File(join("src", "test", "input", "ocaml-stdlib", "types"))
         val parser = OcamlTypeParser()

@@ -46,6 +46,18 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+
+    // Gradle forks the test JVM and does not inherit -D from the daemon, so forward the
+    // prefixes our tests read. Add a prefix here rather than registering a new task.
+    val forwarded = listOf("bench", "dfs")
+    System.getProperties().forEach { k, v ->
+        val key = k as String
+        if (forwarded.any { key == it || key.startsWith("$it.") }) systemProperty(key, v)
+    }
+
+    // Benchmarks report by printing; only surface stdout when one was actually requested,
+    // so an ordinary `./gradlew test` stays quiet.
+    if (System.getProperty("bench") != null) testLogging { showStandardStreams = true }
 }
 
 kotlin {
@@ -114,28 +126,3 @@ tasks.withType<JavaCompile>().matching { it.name.contains("Test") }.configureEac
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>()
     .matching { it.name.contains("Test") }
     .configureEach { dependsOn(generateSExprLexer, generateSExprParser) }
-
-tasks.register<JavaExec>("sexpBench") {
-    group = "verification"
-    description = "Run one .sexp synthesis query end to end (-PbenchArgs=\"name\")"
-    classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("oneast.bench.SexpBench")
-    args = ((project.findProperty("benchArgs") as String?) ?: "").split(" ").filter { it.isNotBlank() }
-    jvmArgs = ((project.findProperty("benchJvmArgs") as String?) ?: "").split(" ").filter { it.isNotBlank() }
-}
-
-tasks.register<JavaExec>("bench") {
-    group = "verification"
-    description = "Run the enumerator benchmark (-PbenchArgs=\"modules limit reps\")"
-    classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("oneast.bench.EnumeratorBench")
-    args = ((project.findProperty("benchArgs") as String?) ?: "").split(" ").filter { it.isNotBlank() }
-    jvmArgs = ((project.findProperty("benchJvmArgs") as String?) ?: "").split(" ").filter { it.isNotBlank() }
-}
-
-tasks.register<JavaExec>("oracleDigest") {
-    group = "verification"
-    description = "Digest the hole-free type checker's verdict on every stdlib example"
-    classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("oneast.bench.OracleDigest")
-}

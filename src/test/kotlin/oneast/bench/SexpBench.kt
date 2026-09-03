@@ -1,16 +1,19 @@
 package oneast.bench
 
 import oneast.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import oneast.searchstrategies.DFSEnumerator
 import testutil.loadQueryFromFile
 import util.GroundTruth
 import util.Logger
 
 /** Runs one of the .sexp synthesis queries end to end, with timing. */
-object SexpBench {
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val name = if (args.isNotEmpty()) args[0] else "hofs"
+class SexpBench {
+    @Test
+    @EnabledIfSystemProperty(named = Bench.GATE, matches = ".+")
+    fun query() {
+        val name = Bench.str("query", "hofs")
         val query = loadQueryFromFile(name)
         val truth: GroundTruth = query.oracle
         val cfg = Configuration(
