@@ -46,6 +46,10 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    // TEMP (A/B verification): forward hole-ordering toggles to the test JVM.
+    listOf("dfs.bottom", "dfs.cfo").forEach { k ->
+        System.getProperty(k)?.let { systemProperty(k, it) }
+    }
 }
 
 kotlin {

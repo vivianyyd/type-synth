@@ -13,6 +13,26 @@ abstract class SearchStrategy(private val examples: Examples) {
 
     protected fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
+    /**
+     * For each component name, the indices of negative examples whose name-set contains it.
+     * Constant across the whole search. A neg whose name-set omits a component `N` has an identical
+     * derivation regardless of `N`'s type, so filling a hole in `N` cannot change its verdict.
+     */
+    protected val affectedNegs: Map<String, List<Int>> by lazy {
+        buildMap<String, MutableList<Int>> {
+            examples.neg.forEachIndexed { i, neg ->
+                neg.names.forEach { getOrPut(it) { mutableListOf() }.add(i) }
+            }
+        }
+    }
+
+    /**
+     * @return whether negative example [i] "passes with no constraints" against [s], i.e. the value
+     * that makes [s] fail the negex filter on that example.
+     */
+    protected fun negVerdict(s: SearchState, i: Int): Boolean =
+        OneUnification(s, listOf(examples.neg[i])).passedWithNoConstraints()
+
     protected fun failsNegexWithNoHoleConstraints(s: SearchState) =
         examples.neg.any { OneUnification(s, listOf(it)).passedWithNoConstraints() }.let{
 //            if (it) {
