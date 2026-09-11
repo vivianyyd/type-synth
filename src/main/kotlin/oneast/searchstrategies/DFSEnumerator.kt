@@ -18,7 +18,8 @@ class DFSEnumerator(
     //   restore tree to original state
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
-        return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles()) else emptySequence()
+        return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles())
+        else emptySequence()
     }
 
     private fun pickHole(c: SearchState, unification: OneUnification): Triple<Int, TypeHole, Int> {

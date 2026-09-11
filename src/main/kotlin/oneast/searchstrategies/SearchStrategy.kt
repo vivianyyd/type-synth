@@ -1,7 +1,6 @@
 package oneast.searchstrategies
 
-import oneast.OneUnification
-import oneast.SearchState
+import oneast.*
 import query.Examples
 
 abstract class SearchStrategy(private val examples: Examples) {

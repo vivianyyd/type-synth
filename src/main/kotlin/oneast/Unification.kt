@@ -17,7 +17,7 @@ class OneUnification(private val candidate: SearchState, exs: List<Example>) {
     private val insts = Counter() // Number of times any top-level type has been instantiated
 
     private val uf = UnionFind()
-    private val badLabels = mutableSetOf<Int>() // Labels that were unified with mismatching labels
+    private val badLabels = mutableSetOf<Int>()  // Labels that were unified with mismatching labels
 
     // The order of these declarations matters; [insts] and [uf] must be instantiated
     // before they are used to compute types

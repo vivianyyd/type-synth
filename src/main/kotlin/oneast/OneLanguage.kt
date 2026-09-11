@@ -14,8 +14,8 @@ class SearchState(
     /**
      * The first [numCommittedTypes] entries of [types] are committed: their types are immutable
      * across any subsequent search. All mutating helpers below ([mapTypes], [mapTypesOrNull],
-     * [mapTypesAndSetLabelArities], [mapTypeAtIndex]) only apply transforms to indices `>=
-     * numCommittedTypes`.
+     * [mapTypesAndSetLabelArities], [mapTypeAtIndex]) only apply transforms to indices
+     * `>= numCommittedTypes`.
      */
     val numCommittedTypes: Int = 0,
     /**
@@ -41,9 +41,9 @@ class SearchState(
 
     override fun equals(other: Any?): Boolean =
         other is SearchState &&
-            other.names == names &&
-            other.types == types &&
-            other.labelArities == labelArities
+                other.names == names &&
+                other.types == types &&
+                other.labelArities == labelArities
 
     override fun hashCode(): Int {
         var result = names.hashCode()
@@ -64,7 +64,8 @@ class SearchState(
             types = types,
             labelArities = labelArities,
             numCommittedTypes = types.size,
-            committedLabels = labelArities.keys.toSet())
+            committedLabels = labelArities.keys.toSet()
+        )
 
     fun fnArities(): Map<String, Int> = names.mapValues { (_, i) -> types[i].fnArity() }
 
@@ -111,24 +112,19 @@ class SearchState(
 
     private fun <T> safeMapTypes(transform: (Type) -> T): List<T> {
         val mappedTypes = types.map(transform)
-        require(
-            mappedTypes.withIndex().all { (i, t) ->
-                (i >= numCommittedTypes) || (t is Type && t == types[i])
-            })
+        require(mappedTypes.withIndex().all { (i, t) -> (i >= numCommittedTypes) || (t is Type && t == types[i]) })
         return mappedTypes
     }
 
-    fun mapTypesAndSetLabelArities(
-        newArities: Map<Int, Int>,
-        transform: (Type) -> Type
-    ): SearchState {
+    fun mapTypesAndSetLabelArities(newArities: Map<Int, Int>, transform: (Type) -> Type): SearchState {
         require(newArities.all { (l, a) -> l !in committedLabels || a == labelArities[l]!! })
         return SearchState(
             names = names,
             types = safeMapTypes(transform),
             labelArities = newArities,
             numCommittedTypes = numCommittedTypes,
-            committedLabels = committedLabels)
+            committedLabels = committedLabels
+        )
     }
 
     fun mapTypes(transform: (Type) -> Type): SearchState =
@@ -137,18 +133,19 @@ class SearchState(
             types = safeMapTypes(transform),
             labelArities = labelArities,
             numCommittedTypes = numCommittedTypes,
-            committedLabels = committedLabels)
+            committedLabels = committedLabels
+        )
 
     fun mapTypesOrNull(transform: (Type) -> Type?): SearchState? {
         val newTypes = safeMapTypes(transform)
-        return if (null in newTypes) null
-        else
+        return if (null in newTypes) null else
             SearchState(
                 names = names,
                 types = newTypes.requireNoNulls(),
                 labelArities = labelArities,
                 numCommittedTypes = numCommittedTypes,
-                committedLabels = committedLabels)
+                committedLabels = committedLabels
+            )
     }
 
     fun mapTypeAtIndex(i: Int, transform: (Type) -> Type): SearchState {
@@ -158,7 +155,8 @@ class SearchState(
             types = types.mapIndexed { j, t -> if (i == j) transform(t) else t },
             labelArities = labelArities,
             numCommittedTypes = numCommittedTypes,
-            committedLabels = committedLabels)
+            committedLabels = committedLabels
+        )
     }
 
     override fun toString() = asMap.toString()
@@ -367,8 +365,8 @@ sealed class THole : Type {
         }
 
         /**
-         * Antiunifies types in [exprs], *ignoring Instantiations and Bottom*. Only considers
-         * Variables and Constructors.
+         * Antiunifies types in [exprs], *ignoring Instantiations and Bottom*. Only considers Variables
+         * and Constructors.
          */
         fun antiunify(exprs: List<ConstraintTy>, defaultAntiunifier: () -> Type): Type? {
             if (exprs.isEmpty()) return defaultAntiunifier()
@@ -377,7 +375,8 @@ sealed class THole : Type {
             val constructors = exprs.filterIsInstance<ConstraintTypeConstructor>()
 
             if (constructors.isEmpty() ||
-                constructors.any { a -> constructors.any { b -> !a.match(b) } })
+                constructors.any { a -> constructors.any { b -> !a.match(b) } }
+            )
                 return defaultAntiunifier()
 
             // We know they match now
@@ -386,24 +385,26 @@ sealed class THole : Type {
                     antiunify(constructors.map { (it as ConstraintArrow).l }, defaultAntiunifier)
                         ?.let { l ->
                             antiunify(
-                                    constructors.map { (it as ConstraintArrow).r },
-                                    defaultAntiunifier)
+                                constructors.map { (it as ConstraintArrow).r }, defaultAntiunifier
+                            )
                                 ?.let { r -> Arrow(l, r) }
                         }
                 }
                 is ConstraintLabel -> {
                     val params =
                         List(constructors.first().params.size) { i ->
-                                antiunify(
-                                    constructors.map { (it as ConstraintLabel).params[i] },
-                                    defaultAntiunifier)
-                            }
+                            antiunify(
+                                constructors.map { (it as ConstraintLabel).params[i] },
+                                defaultAntiunifier
+                            )
+                        }
                             .filterNotNull()
                     if (params.size != constructors.first().params.size) null
                     else NamedLabel((constructors.first() as ConstraintLabel).label, params)
                 }
             }
         }
+
     }
 
     val id = nextId++
@@ -480,7 +481,8 @@ class TypeHole : THole() {
     ): List<Type> =
         if (mustBeLeaf)
             expansionsNoBound(
-                    unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors)
+                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors
+            )
                 .filter {
                     when (it) {
                         is Variable -> true
@@ -492,7 +494,8 @@ class TypeHole : THole() {
                 }
         else
             expansionsNoBound(
-                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors)
+                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors
+            )
 
     private fun expansionsNoBound(
         unification: OneUnification,
