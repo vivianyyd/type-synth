@@ -79,6 +79,18 @@ class SearchState(
             .minByOrNull { it.second.second }
             ?.let { Triple(it.first, it.second.first, it.second.second) }
 
+    /**
+     * @return Triple(type index, hole, depth) for EVERY fillable [TypeHole], across all types.
+     * Parity: `fillableHolesWithDepth().minByOrNull { it.third }` (first on ties) equals
+     * [shallowestFillableHole].
+     */
+    fun fillableHolesWithDepth(): List<Triple<Int, TypeHole, Int>> =
+        types.withIndex().flatMap { (i, t) ->
+            t.allFillableHolesWithDepth(topLevel = true).map { (hole, depth) ->
+                Triple(i, hole, depth)
+            }
+        }
+
     fun noFillableHoles() = types.all { it.shallowestFillableHole(topLevel = true) == null }
 
     fun numFillableHoles() = types.sumOf { it.numFillableHoles() }
@@ -148,6 +160,8 @@ class SearchState(
     }
 
     override fun toString() = asMap.toString()
+
+    fun debugString() = asMap.mapValues { (_, t) -> t.debugString() }.toString()
 }
 
 sealed interface Type {
@@ -208,6 +222,13 @@ sealed interface Type {
 
     fun shallowestFillableHole(topLevel: Boolean): Pair<TypeHole, Int>?
 
+    /**
+     * Like [shallowestFillableHole] but returns EVERY fillable [TypeHole] with its depth (rather
+     * than only the minimum). Parity guarantee: the element of the returned list with minimum depth
+     * (first on ties, in structural order) equals [shallowestFillableHole].
+     */
+    fun allFillableHolesWithDepth(topLevel: Boolean): List<Pair<TypeHole, Int>>
+
     fun variables(): Set<Int>
 
     fun replace(hole: THole, replacement: Type): Type
@@ -218,6 +239,8 @@ sealed interface Type {
             is Arrow -> 1 + r.fnArity()
             else -> 1
         }
+
+    fun debugString(): String = toString()
 }
 
 sealed class Constructor(open val params: List<Type>) : Type {
@@ -236,6 +259,8 @@ data class Variable(val v: Int) : Type {
     override fun instantiate(instId: Int): ConstraintTy = ConstraintVariable(v, instId)
 
     override fun shallowestFillableHole(topLevel: Boolean) = null
+
+    override fun allFillableHolesWithDepth(topLevel: Boolean) = emptyList<Pair<TypeHole, Int>>()
 
     override fun variables() = setOf(this.v)
 
@@ -272,6 +297,18 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
             ?.let { it.first to it.second + (if (topLevel) 0 else 1) }
     }
 
+    override fun allFillableHolesWithDepth(topLevel: Boolean): List<Pair<TypeHole, Int>> {
+        val left = l.allFillableHolesWithDepth(topLevel = false)
+        val rite = r.allFillableHolesWithDepth(topLevel = topLevel)
+        // Mirrors the last-parameter `-1` adjustment in shallowestFillableHole. Whenever the last
+        // parameter is a fillable hole it is always the shallowest hole in [r] (it gets -1, which
+        // beats every other hole's non-negative depth), so applying the adjustment here per-element
+        // is equivalent to the single-hole check in shallowestFillableHole.
+        val riteAdjusted =
+            rite.map { (hole, d) -> if (topLevel && hole == lastParam()) hole to -1 else hole to d }
+        return (left + riteAdjusted).map { it.first to it.second + (if (topLevel) 0 else 1) }
+    }
+
     override fun maxParamDepth(countArrow: Boolean) =
         (if (countArrow) 1 else 0) + max(l.maxParamDepth(true), r.maxParamDepth(countArrow))
 
@@ -282,6 +319,9 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
         Arrow(l.replace(hole, replacement), r.replace(hole, replacement))
 
     override fun toString() = "${if (l is Arrow) "($l)" else "$l"} -> $r"
+
+    override fun debugString(): String =
+        "${if (l is Arrow) "(${l.debugString()})" else l.debugString()} -> ${r.debugString()}"
 }
 
 /** Could also be called DefinedLabel? */
@@ -295,6 +335,11 @@ data class NamedLabel(val label: Int, override val params: List<Type>) : Constru
             .minByOrNull { it.second }
             ?.let { it.first to it.second + 1 }
 
+    override fun allFillableHolesWithDepth(topLevel: Boolean) =
+        params.flatMap { p ->
+            p.allFillableHolesWithDepth(topLevel).map { (hole, d) -> hole to d + 1 }
+        }
+
     override fun maxParamDepth(countArrow: Boolean) =
         // 1 plus the max depth of any child, or 0 if this node is a leaf
         params.maxOfOrNull { it.maxParamDepth(countArrow) }?.let { it + 1 } ?: 0
@@ -306,6 +351,8 @@ data class NamedLabel(val label: Int, override val params: List<Type>) : Constru
         copy(params = params.map { it.replace(hole, replacement) })
 
     override fun toString() = "L$label[${params.joinToString(", ")}]"
+
+    override fun debugString(): String = "L$label[${params.joinToString(", "){it.debugString()}}]"
 }
 
 sealed class THole : Type {
@@ -362,13 +409,21 @@ sealed class THole : Type {
 
     val id = nextId++
 
+    private val instantiations = mutableListOf<InstantiationTy>()
+
     override fun maxParamDepth(countArrow: Boolean) = 0
 
     override fun allHoles() = listOf(this)
 
     override fun allHolesWithDepth(topLevel: Boolean) = listOf(this to 0)
 
-    override fun instantiate(instId: Int): ConstraintTy = InstantiationTy(this, instId)
+    override fun instantiate(instId: Int): ConstraintTy {
+        val i = InstantiationTy(this, instId)
+        instantiations.add(i)
+        return i
+    }
+
+    fun instantiations(): List<InstantiationTy> = instantiations
 
     override fun variables() = emptySet<Int>()
 
@@ -390,26 +445,30 @@ sealed class THole : Type {
      * anything, but we autofill all the holes we can at once. If a hole points to an Instantiation,
      * Variable, or Bottom, we do not fast forward.
      */
-    fun conservativeFastForward(unification: OneUnification): Type? {
-        val defaultHoleMaker = { TypeHole() }
+//    fun conservativeFastForward(unification: OneUnification): Type? {
+//        val defaultHoleMaker = { TypeHole() }
+//
+//        val antiunifies = unification.holeEquals(this)
+//        val constrs = antiunifies.filterIsInstance<ConstraintTypeConstructor>()
+//
+//        /* It may seem redundant to perform these checks when antiunify() does them as well, but it is
+//        not. This prevents us from an infinite loop when we try to get the fixpoint of this
+//        function, since our default antiunification behavior is to make another hole. If at the
+//        top-level we can't do anything, we shouldn't replace this hole with another hole, we
+//        should just return no changes. We still want to keep that behavior in antiunify() though,
+//        since we need it to fill the leaves when we are fast-forwarding to an entire tree. */
+//        if (constrs.isEmpty() || antiunifies.any { it !is ConstraintTypeConstructor }) return null
+//        if (constrs.any { a -> constrs.any { b -> !a.match(b) } }) return null
+//        return antiunify(antiunifies, defaultAntiunifier = defaultHoleMaker)
+//    }
 
-        val antiunifies = unification.holeEquals(this)
-        val constrs = antiunifies.filterIsInstance<ConstraintTypeConstructor>()
-
-        /* It may seem redundant to perform these checks when antiunify() does them as well, but it is
-        not. This prevents us from an infinite loop when we try to get the fixpoint of this
-        function, since our default antiunification behavior is to make another hole. If at the
-        top-level we can't do anything, we shouldn't replace this hole with another hole, we
-        should just return no changes. We still want to keep that behavior in antiunify() though,
-        since we need it to fill the leaves when we are fast-forwarding to an entire tree. */
-        if (constrs.isEmpty() || antiunifies.any { it !is ConstraintTypeConstructor }) return null
-        if (constrs.any { a -> constrs.any { b -> !a.match(b) } }) return null
-        return antiunify(antiunifies, defaultAntiunifier = defaultHoleMaker)
-    }
+    override fun debugString() = toString() + id
 }
 
 class TypeHole : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = this to 0
+
+    override fun allFillableHolesWithDepth(topLevel: Boolean) = listOf(this to 0)
 
     override fun expansions(
         unification: OneUnification,
@@ -449,25 +508,73 @@ class TypeHole : THole() {
         val variableExps = if (canBeVar) (0 until vars + 1).map { Variable(it) } else emptyList()
         val fnExpansion = Arrow(TypeHole(), TypeHole())
         val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
-
-        val instances = unification.holeEquals(this).filterIsInstance<ConstraintTypeConstructor>()
-        val constructors =
-            if (!emitConstructors) null
-            else if (instances.isNotEmpty()) {
-                val i = instances.first()
-                if (instances.any { !i.match(it) }) null
-                else when (i) {
-                    is ConstraintArrow -> listOf(fnExpansion)
-                    is ConstraintLabel -> labelExpansions.filter { it.label == i.label }
+        val au = unification.antiunifyRoots(this)
+        val constructorTypes =
+            when (au) {
+                OneUnification.AUResult.Top -> {
+                    if (emitLabelBlanks) listOf(Blank(labelOnly = true)) // This is unsound
+                    else labelExpansions + fnExpansion // This is slow
                 }
-            } else {
-                // Unsound version:
-                if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
-                // Sound version
-                // if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
-                // else labelExpansions + fnExpansion
+                OneUnification.AUResult.Bottom -> emptyList()
+                is OneUnification.AUResult.Constructor -> {
+                    when (au.c) {
+                        is ConstraintArrow -> listOf(fnExpansion)
+                        is ConstraintLabel -> labelExpansions.filter { it.label == au.c.label }
+                    }
+                }
             }
-        return constructors.orEmpty() + variableExps
+        //        val instances = unification.boundConstructors(this)
+        //        val constructorTypes =
+        //            if (emitConstructors) {
+        //                if (instances.isNotEmpty()) {
+        //                    val i = instances.first()
+        //                    if (instances.any { !i.match(it) }) emptyList()
+        //                    else
+        //                        when (i) {
+        //                            is ConstraintArrow -> listOf(fnExpansion)
+        //                            is ConstraintLabel ->
+        //                                if (emitLabelBlanks) listOf(Blank(labelOnly = true))  //
+        // this is overly permissive!
+        //                                else labelExpansions.filter { it.label == i.label }
+        //                        }
+        //                }
+        //                else if (emitLabelBlanks) listOf(Blank(labelOnly = true))
+        //                else labelExpansions + fnExpansion
+        //            } else listOf()
+        return variableExps + constructorTypes
+        // TODO Note that else branch returns no constructors instead of all.
+        //   Why was Concrete version faster even when adding all label expansions?
+        //   Completeness problems if we haven't witnessed a constraint on this hole yet,
+        //   but turns out it needs to be a specific label?
+        //   Suppose L[this_, _] only ever unifies with L[other_, _] when other_ is bound to L1
+        //   (arrow also works).
+        //   L[other_, _] should be L[a, _], a is later bound to L1,
+        //   but we haven't picked other_ yet.
+        //   Even using Algo J with union find doesn't catch this...
+        //   It needs to be delayed to either fn or label, ****or we can emit all of them****.
+        //        return listOfNotNull(constructor) + variableExps
+        //        val constructorTypes = // this would be cleaner if implemented as a filter
+        //            if (emitConstructors && instances.isNotEmpty()) {
+        //                val i = instances.first()
+        //                if (instances.any { !i.match(it) }) emptyList()
+        //                else
+        //                    when (i) {
+        //                        is ConstraintArrow -> listOf(fnExpansion)
+        //                        is ConstraintLabel ->
+        //                            if (emitLabelBlanks) emptyList()  // this leads to overly
+        // permissive behavior! we should always return that label
+        //                            else labelExpansions.filter { it.label == i.label }
+        //                    }
+        //            } else listOf()
+        //        return constructorTypes.ifEmpty {
+        //            listOfNotNull(
+        //                Blank(labelOnly = true).takeIf {
+        //                    emitLabelBlanks &&
+        //                        instances.firstOrNull()?.let { i -> instances.all { i.match(it) }
+        // } ?: true
+        //                })
+        //        } + variableExps
+        // Note it's important that a blank gets emitted if there are no constructor constraints
     }
 
     override fun toString() = "_"
@@ -479,6 +586,8 @@ class TypeHole : THole() {
  */
 class Blank(val labelOnly: Boolean) : THole() {
     override fun shallowestFillableHole(topLevel: Boolean) = null
+
+    override fun allFillableHolesWithDepth(topLevel: Boolean) = emptyList<Pair<TypeHole, Int>>()
 
     override fun expansions(
         unification: OneUnification,
@@ -497,22 +606,18 @@ sealed interface ConstraintTy {
     fun variables(): List<ConstraintVariable>
 }
 
-object Bottom : ConstraintTy {
-    override fun variables() = emptyList<ConstraintVariable>()
-
-    override fun toString(): String = "⊥"
-}
+sealed interface Leaf : ConstraintTy
 
 // TODO Consider whether I want two different types of instantiations for TypeHoles vs
 //   UnnamedLabels. UnnamedLabels behave differently from TypeHoles because while their
 //   instantiated types can differ, they always have the same root. Does it matter?
-data class InstantiationTy(val hole: THole, val instId: Int) : ConstraintTy {
+data class InstantiationTy(val hole: THole, val instId: Int) : Leaf {
     override fun variables() = emptyList<ConstraintVariable>()
 
     override fun toString(): String = "_${hole.id}-$instId"
 }
 
-data class ConstraintVariable(val v: Int, val instId: Int) : ConstraintTy {
+data class ConstraintVariable(val v: Int, val instId: Int) : Leaf {
     private val variables by lazy { listOf(this) }
 
     override fun variables() = variables

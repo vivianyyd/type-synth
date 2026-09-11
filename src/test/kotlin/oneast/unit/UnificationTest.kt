@@ -390,6 +390,5 @@ class UnificationTest {
             is ConstraintLabel -> NamedLabel(this.label, this.params.map { it.toNode() })
             is ConstraintVariable -> Variable(this.v)
             is InstantiationTy -> error("Unreachable pattern match - convert Instantiation to node")
-            Bottom -> error("Antiunifying should never produce Bottom")
         }
 }

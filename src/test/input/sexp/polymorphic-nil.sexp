@@ -4,6 +4,7 @@
 (+ (cons nil (cons nil nil)))
 (+ (cons (cons Num nil) nil))
 (+ (cons true (cons true nil)))
+(+ (cons cons nil))
 (- (cons nil Num))
 (- (cons nil true))
 (- (cons Num (cons true nil)))

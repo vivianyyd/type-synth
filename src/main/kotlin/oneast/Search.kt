@@ -35,12 +35,10 @@ class Search(
 
         // Make equivalence classes of blanks
         s.blanks().forEach { blank ->
-            u.holeEquals(blank).forEach { other ->
-                if (other is InstantiationTy) {
-                    if (other.hole !is Blank) return null
-                    require(blank.labelOnly && other.hole.labelOnly)
-                    uf.union(blank.id, other.hole.id)
-                }
+            u.boundHoles(blank).forEach { other ->
+                if (other.hole !is Blank) return null
+                require(blank.labelOnly && other.hole.labelOnly)
+                uf.union(blank.id, other.hole.id)
             }
         }
 
@@ -67,14 +65,20 @@ class Search(
         // Populate with bindings to existing labels
         val holes = s.types.flatMap { it.allHoles() }.filterIsInstance<Blank>()
         holes.forEach {
-            val constructors = u.holeEquals(it).filterIsInstance<ConstraintTypeConstructor>()
-            if (constructors.isNotEmpty()) {
-                if (constructors.any { !it.match(constructors.first()) || it is ConstraintArrow })
-                    return null
-                val label = (constructors.first() as ConstraintLabel).label
-                val canonical = uf.find(it.id) ?: it.id
-                if (canonical in holeToLabel && holeToLabel[canonical] != label) return null
-                else if (canonical !in holeToLabel) holeToLabel[canonical] = label
+            when (val constr = u.antiunifyRoots(it)) {
+                OneUnification.AUResult.Top -> { }
+                OneUnification.AUResult.Bottom -> return null
+                is OneUnification.AUResult.Constructor -> {
+                    when (constr.c){
+                        is ConstraintArrow -> return null
+                        is ConstraintLabel -> {
+                            val label = constr.c.label
+                            val canonical = uf.find(it.id) ?: it.id
+                            if (canonical in holeToLabel && holeToLabel[canonical] != label) return null
+                            else if (canonical !in holeToLabel) holeToLabel[canonical] = label
+                        }
+                    }
+                }
             }
         }
 
@@ -108,7 +112,7 @@ class Search(
                     depthBound = depth,
                 )
                     .filter { s ->
-                        examples.neg.all { !OneUnification(s, listOf(it)).passedWithNoConstraints }
+                        examples.neg.all { !OneUnification(s, listOf(it)).passedWithNoConstraints() }
                     }
             }
 
@@ -230,7 +234,7 @@ class Search(
                     allCandidates(
                         blanksReplacedWithHoles,
                         emitLabelBlanks = false,
-                        emitConstructors = false, // TODO here is something we are testing out.
+                        emitConstructors = true, // we can set emitConstructors to false if fast forwarding is on, but that loses completeness.
                         sizeBound = currentSizeBound,
                         depthBound = currentDepthBound,
                     )
@@ -267,7 +271,7 @@ class Search(
 
     fun solutions(): Sequence<SearchState> = sequence {
 //        val seen = mutableSetOf<SearchState>()
-        for (seedDepth in 0..config.depthBound) {
+        for (seedDepth in 1..config.depthBound) {
             var seeds =
                 logger.time("Depth $seedDepth outlining $names") {
                     concreteSeeds(config.sizeBound, seedDepth)

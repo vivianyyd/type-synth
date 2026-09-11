@@ -43,7 +43,6 @@ fun equalInEmptyLabelContext(a: ConstraintTy, b: ConstraintTy): Boolean {
             is ConstraintLabel -> NamedLabel(this.label, this.params.map { it.toNode() })
             is ConstraintVariable -> Variable(this.v)
             is InstantiationTy -> TypeHole()
-            Bottom -> error("Can't compare types that contain bottom")
         }
     return matchTypes(a.toNode(), b.toNode(), HashMap(), HashMap(), HashMap(), HashMap())
 }
