@@ -16,12 +16,16 @@ import util.LongVec
  * has grown into a type, so it can be checked by merging that growth into the parent's graph
  * (O(occurrences of the hole)) rather than re-deriving the whole thing (O(size of all examples)).
  *
- * There are four kinds of node:
- * - **constructor** — an arrow or a label applied to argument nodes.
- * - **rigid** — the instance of a component type's [Variable] at one instantiation.
- * - **hole** — the instance of a [THole] at one instantiation. Unifies like an ordinary variable;
+ * A node has no kind tag of its own. What it is, is which of its class's three slots it registered
+ * itself in when it was allocated:
+ * - [ctorAt] — an arrow or a label applied to argument nodes. Arrows are labels whose id is [ARROW].
+ * - [rigidAt] — the instance of a component type's [Variable] at one instantiation.
+ * - [holeAt] — the instance of a [THole] at one instantiation. Unifies like an ordinary variable;
  *   the types it ends up equal to are what [OneUnification.holeEquals] reports back to the search.
- * - **fresh** — an anonymous unification variable, e.g. the result of an application.
+ *
+ * A node in none of them ([freshVar]) is an anonymous unification variable, such as the result of
+ * applying something whose type is not yet known to be a function. Every decision reads these three
+ * slots at the class root, never anything about an individual node.
  */
 class TypeGraph {
     companion object {
@@ -30,11 +34,6 @@ class TypeGraph {
 
         /** The label id of the arrow type constructor. */
         const val ARROW = -2
-
-        private const val CTOR: Byte = 0
-        private const val RIGID: Byte = 1
-        private const val HOLE: Byte = 2
-        private const val FRESH: Byte = 3
 
         /** Set on a class containing a [Blank] that may only ever become a label. */
         private const val LABEL_ONLY = 1
@@ -50,6 +49,8 @@ class TypeGraph {
         private const val NEW_HOLE = 9
         private const val RETIRE_HOLE = 10
         private const val SET_NEXT = 11
+        private const val ADD_INSTANCE = 12
+        private const val FAILED = 13
 
         private const val FIELD = 30
         private const val MASK = (1L shl FIELD) - 1
@@ -60,8 +61,6 @@ class TypeGraph {
     }
 
     // ---------------------------------------------------------------- node storage
-
-    private var kind = ByteArray(64)
 
     /** CTOR: label id ([ARROW] for arrows). RIGID: variable id. */
     private var key = IntArray(64)
@@ -115,19 +114,16 @@ class TypeGraph {
     var failed = false
         private set
 
-    private var failedAt = 0
-
     /** The two labels whose mismatch caused the most recent failure, if that is what it was. */
     var clash: Set<Int> = emptySet()
         private set
 
     // ---------------------------------------------------------------- node construction
 
-    private fun alloc(k: Byte): Int {
-        if (count == kind.size) grow(count * 2)
+    private fun alloc(): Int {
+        if (count == parent.size) grow(count * 2)
         val n = count++
         argsAt[n] = args.size
-        kind[n] = k
         parent[n] = n
         classSize[n] = 1
         ctorAt[n] = NONE
@@ -140,7 +136,6 @@ class TypeGraph {
     }
 
     private fun grow(n: Int) {
-        kind = kind.copyOf(n)
         key = key.copyOf(n)
         inst = inst.copyOf(n)
         argOff = argOff.copyOf(n)
@@ -157,7 +152,7 @@ class TypeGraph {
         seen = seen.copyOf(n)
     }
 
-    fun freshVar(): Int = alloc(FRESH)
+    fun freshVar(): Int = alloc()
 
     /** The node for [Variable] [v] at instantiation [i]; shared by every occurrence of it. */
     fun rigid(v: Int, i: Int): Int {
@@ -168,7 +163,7 @@ class TypeGraph {
             rigidNodes[i] = row
         }
         if (row[v] != NONE) return row[v]
-        val n = alloc(RIGID)
+        val n = alloc()
         key[n] = v
         inst[n] = i
         rigidAt[n] = n
@@ -179,7 +174,7 @@ class TypeGraph {
 
     /** A new node for [hole] at instantiation [i]. Each pair occurs at most once. */
     fun hole(hole: THole, i: Int): Int {
-        val n = alloc(HOLE)
+        val n = alloc()
         inst[n] = i
         holeOf[n] = hole
         holeAt[n] = n
@@ -188,12 +183,15 @@ class TypeGraph {
         if (instances == null) {
             holeInstances[hole] = Instances(IntVec(4).also { it.add(n) })
             trail.add(entry(NEW_HOLE, n, 0))
-        } else instances.nodes.add(n)
+        } else {
+            instances.nodes.add(n)
+            trail.add(entry(ADD_INSTANCE, n, 0))
+        }
         return n
     }
 
     fun ctor(label: Int, arguments: IntArray): Int {
-        val n = alloc(CTOR)
+        val n = alloc()
         key[n] = label
         argOff[n] = args.size
         argLen[n] = arguments.size
@@ -203,7 +201,7 @@ class TypeGraph {
     }
 
     fun arrow(from: Int, to: Int): Int {
-        val n = alloc(CTOR)
+        val n = alloc()
         key[n] = ARROW
         argOff[n] = args.size
         argLen[n] = 2
@@ -266,7 +264,7 @@ class TypeGraph {
         val c = ctorAt[f]
         if (c != NONE) {
             if (key[c] != ARROW) {
-                fail(trail.size)
+                fail()
                 return NONE
             }
             return if (merge(args[argOff[c]], arg)) args[argOff[c] + 1] else NONE
@@ -288,7 +286,6 @@ class TypeGraph {
     fun merge(a: Int, b: Int): Boolean {
         if (failed) return false
         clash = emptySet()
-        val start = trail.size
         pending.clear()
         pending.add(a, b)
         while (!pending.isEmpty()) {
@@ -302,28 +299,50 @@ class TypeGraph {
             if (cx != NONE && cy != NONE) {
                 if (key[cx] != key[cy] || argLen[cx] != argLen[cy]) {
                     if (key[cx] != ARROW && key[cy] != ARROW) clash = setOf(key[cx], key[cy])
-                    return fail(start)
+                    return fail()
                 }
                 for (i in 0 until argLen[cx]) pending.add(args[argOff[cx] + i], args[argOff[cy] + i])
-            } else if (cx != NONE) {
-                if (occurs(ry, cx)) return fail(start)
-            } else if (cy != NONE) {
-                if (occurs(rx, cy)) return fail(start)
             }
-            if (!link(rx, ry)) return fail(start)
+            if (!link(rx, ry)) return fail()
         }
         return true
     }
 
-    private fun fail(start: Int): Boolean {
+    /**
+     * Records a type error. Journalled rather than remembered as a position, because a merge can
+     * fail without having written anything, and then the state before the failure and the state
+     * after it are the same position — so a rewind to that position could not tell them apart.
+     */
+    private fun fail(): Boolean {
+        trail.add(entry(FAILED, 0, 0))
         failed = true
-        failedAt = start
         return false
     }
 
     /**
      * Merges the class rooted at [x] into the one rooted at [y] (or the other way round; the larger
      * class wins). Returns false if the merged class is contradictory.
+     *
+     * **Invariant: no class reaches itself through its constructor's arguments** — see [acyclic].
+     * A class that did would denote an infinite type, which is never a solution. Merging is the
+     * only thing that can break the invariant, and this is the argument that it does not:
+     *
+     * The merged class's arguments are those of whichever constructor survives. Every other class
+     * keeps the arguments it had; all that changes is that an argument which was [x] or [y] is now
+     * the merged class. So a cycle that did not exist before must run through the merged class,
+     * which is to say there is a path from the surviving constructor's arguments back to [x] or to
+     * [y]. Rejecting exactly that therefore preserves the invariant, and since a graph starts empty
+     * it holds throughout.
+     *
+     * Checking where a variable class meets a constructor class is *not* enough. Merging two
+     * classes that both already carry a constructor attaches one class's constructor to a class
+     * that now also contains the other, which is equally a way for a class to end up below itself,
+     * and class size decides which half that is. A unifier that builds an explicit substitution
+     * escapes this: there, structure enters only when a variable is bound, so one check per
+     * binding covers every case.
+     *
+     * The check runs before any write, so a rejected merge leaves nothing behind and the invariant
+     * holds even while a failed [merge] is unwinding.
      */
     private fun link(x: Int, y: Int): Boolean {
         val big: Int
@@ -335,6 +354,9 @@ class TypeGraph {
             big = y
             small = x
         }
+        val ctor = if (ctorAt[big] != NONE) ctorAt[big] else ctorAt[small]
+        if (ctor != NONE && occurs(big, small, ctor)) return false
+
         if (ctorAt[big] == NONE && ctorAt[small] != NONE) {
             trail.add(entry(SET_CTOR, big, ctorAt[big] + 1))
             ctorAt[big] = ctorAt[small]
@@ -380,8 +402,8 @@ class TypeGraph {
         nextHole[y] = t
     }
 
-    /** Whether the class [v] appears strictly inside the term rooted at constructor node [c]. */
-    private fun occurs(v: Int, c: Int): Boolean {
+    /** Whether class [v] or class [w] appears strictly inside the term rooted at [c]. */
+    private fun occurs(v: Int, w: Int, c: Int): Boolean {
         if (stamp == Int.MAX_VALUE) {
             seen.fill(0)
             stamp = 0
@@ -391,7 +413,7 @@ class TypeGraph {
         for (i in 0 until argLen[c]) stack.add(args[argOff[c] + i])
         while (!stack.isEmpty()) {
             val r = find(stack.removeLast())
-            if (r == v) return true
+            if (r == v || r == w) return true
             if (seen[r] == stamp) continue
             seen[r] = stamp
             val inner = ctorAt[r]
@@ -409,13 +431,11 @@ class TypeGraph {
     fun <T> speculate(body: () -> T): T {
         val mark = mark()
         val wasFailed = failed
-        val wasFailedAt = failedAt
         val wasClash = clash
         failed = false
         val result = body()
         rewindTo(mark)
         failed = wasFailed
-        failedAt = wasFailedAt
         clash = wasClash
         return result
     }
@@ -448,9 +468,10 @@ class TypeGraph {
                 NEW_RIGID -> rigidNodes[a]!![b] = NONE
                 NEW_HOLE -> holeInstances.remove(holeOf[a])
                 RETIRE_HOLE -> holeInstances[holeOf[a]]!!.live = true
+                ADD_INSTANCE -> holeInstances[holeOf[a]]!!.nodes.removeLast()
+                FAILED -> failed = false
             }
         }
-        if (failed && failedAt >= journalled) failed = false
     }
 
     // ---------------------------------------------------------------- reading types back out
@@ -500,6 +521,28 @@ class TypeGraph {
             }
         }
         return false
+    }
+
+    /**
+     * Whether no class reaches itself through its constructor's arguments — the invariant [link]
+     * maintains, and which [merge] therefore never has to check for globally. Not used in the
+     * search; it is here to be stated and tested.
+     */
+    fun acyclic(): Boolean {
+        val colour = IntArray(count) // 0 unvisited, 1 on the current path, 2 done
+        fun walk(root: Int): Boolean {
+            if (colour[root] == 1) return false
+            if (colour[root] == 2) return true
+            colour[root] = 1
+            val c = ctorAt[root]
+            if (c != NONE) {
+                for (i in 0 until argLen[c]) if (!walk(find(args[argOff[c] + i]))) return false
+            }
+            colour[root] = 2
+            return true
+        }
+        for (n in 0 until count) if (!walk(find(n))) return false
+        return true
     }
 
     /** A hole node in the class rooted at [root] other than [ignoring], if there is one. */
