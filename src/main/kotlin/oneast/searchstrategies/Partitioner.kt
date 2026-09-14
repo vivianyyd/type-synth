@@ -77,53 +77,7 @@ class Partitioner(
         unification: OneUnification,
         currSizeBound: Int,
         holesRemaining: Int
-    ): Sequence<SearchState> {
-        logger.count("Recursed")
-        if (c.noHoles()) return sequenceOf(c)
-
-        // We won't fast-forward label blanks that we ourselves emitted.
-        if (c.noFillableHoles())
-            return if (!emitLabelBlanks) {
-                unionFastForward(c, depthBound).filterNot {
-                    it.types.any { it is Arrow && it.blanks().isNotEmpty() }
-                }
-            } else sequenceOf(c)
-
-        if (currSizeBound - holesRemaining < 0) return emptySequence()
-
-        val (iToFill, _, depth) = c.shallowestFillableHole() ?: error("Impossible")
-        if (depth > depthBound) return emptySequence()
-
-        val ty = c.types[iToFill]
-        val holes = ty.allHoles().filterIsInstance<TypeHole>()
-
-        val assignments = Partitions.generate(holes, ty.variables().size)
-
-        return assignments
-            .flatMap {
-                logger.count("Total candidates")
-                val partitioned = c.mapTypeAtIndex(iToFill) { typ -> applyPartition(typ, it) }
-                logger.log("$partitioned")
-                unionFastForward(partitioned, depthBound)
-            }
-            .filterNot {
-                // Importantly, this pruning is sound even when we perform it on outlines (before
-                // label arities are computed and holes inserted accordingly). That's because when
-                // we are generating outlines, labels are considered blanks
-                (it.types[iToFill] is Arrow &&
-                        it.types[iToFill].blanks().isNotEmpty()) // unsuccessful ff
-            }
-            .flatMap { newCandidate ->
-                val u = posUnification(newCandidate)
-                if (u.ok)
-                    recCandidates(
-                        newCandidate,
-                        u,
-                        currSizeBound = currSizeBound - holes.size,
-                        holesRemaining = newCandidate.numFillableHoles())
-                else emptySequence()
-            }
-    }
+    ): Sequence<SearchState> = TODO()
 
     /**
      * TODO I think this is slightly less efficient than if we implemented Types.replaceAll that
