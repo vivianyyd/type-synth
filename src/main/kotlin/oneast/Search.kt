@@ -209,9 +209,6 @@ class Search(
 
         // If the functions are not contradictory but we couldn't deduce the nullaries, we transform
         // blanks into normal holes and enumerate for them
-        // TODO completeness bug here: Our fast forward is too aggressive; if we successfully fast
-        // forward but to something that doesn't actually work, we miss all other candidates with
-        // the same fn signatures but different nullaries.
         val finalResults =
             candidatesNullariesDeduced.flatMap {
                 if (it.noHoles()) sequenceOf(it)
@@ -230,7 +227,7 @@ class Search(
                     allCandidates(
                         blanksReplacedWithHoles,
                         emitLabelBlanks = false,
-                        emitConstructors = false, // TODO here is something we are testing out.
+                        emitConstructors = true, // TODO false loses completeness and is especially broken with no union ff
                         sizeBound = currentSizeBound,
                         depthBound = currentDepthBound,
                     )
