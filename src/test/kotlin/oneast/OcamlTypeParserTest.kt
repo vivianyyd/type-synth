@@ -12,6 +12,12 @@ class OcamlTypeParserTest {
     /** A [NamedLabel] regardless of its (encounter-order-dependent) label id. */
     private fun Type.asLabel(): NamedLabel = this as NamedLabel
 
+    /** Parses both types within one parser, so that constructor labels are comparable. */
+    private fun assertParsesLike(expected: String, actual: String) {
+        val types = OcamlTypeParser().parseSignatures("val e : $expected\nval a : $actual")
+        assertEquals(types.getValue("e"), types.getValue("a"))
+    }
+
     @Test
     fun `postfix application is left-associative and applies to the preceding atom`() {
         // 'a list -> list applied to 'a, not 'a applied to list.
@@ -113,5 +119,73 @@ class OcamlTypeParserTest {
         val hdList = ((types.getValue("hd")) as Arrow).l as NamedLabel
         val lengthList = ((types.getValue("length")) as Arrow).l as NamedLabel
         assertEquals(hdList.label, lengthList.label)
+    }
+
+    @Test
+    fun `labelled arguments parse as their unlabelled type`() {
+        assertParsesLike(
+            "'a -> ('b -> 'a) -> 'b option -> 'a",
+            "none:'a -> some:('b -> 'a) -> 'b option -> 'a"
+        )
+        // The label is not mistaken for a constructor when its type is not parenthesized.
+        assertParsesLike("'a option -> 'a -> 'a", "'a option -> default:'a -> 'a")
+        assertParsesLike(
+            "formatter -> string * int -> unit",
+            "formatter -> fits:(string * int) -> unit"
+        )
+    }
+
+    @Test
+    fun `optional arguments parse as their unlabelled type`() {
+        assertParsesLike("bool -> int -> ('a, 'b) t", "?random:bool -> int -> ('a, 'b) t")
+        assertParsesLike(
+            "(formatter -> unit) -> formatter -> 'a list -> unit",
+            "?pp_sep:(formatter -> unit) -> formatter -> 'a list -> unit"
+        )
+        assertParsesLike(
+            "string -> string -> string list -> string",
+            "string -> ?stdin:string -> string list -> string"
+        )
+    }
+
+    @Test
+    fun `comments are ignored`() {
+        val types = OcamlTypeParser().parseSignatures(
+            """
+            // Ref
+            val ref : 'a -> 'a ref
+            val (!) : 'a ref -> 'a  // Equivalent to fun r -> r.contents.
+            """.trimIndent()
+        )
+        assertEquals(listOf("ref", "(!)"), types.keys.toList())
+        val deref = types.getValue("(!)") as Arrow
+        assertEquals(listOf(Variable(0)), deref.l.asLabel().params)
+        assertEquals(Variable(0), deref.r)
+    }
+
+    @Test
+    fun `operator names may contain a colon`() {
+        val types = OcamlTypeParser().parseSignatures(
+            """
+            val (:=) : 'a ref -> 'a -> unit
+            val set : 'a ref -> 'a -> unit
+            """.trimIndent()
+        )
+        assertEquals(types.getValue("set"), types.getValue("(:=)"))
+    }
+
+    @Test
+    fun `open object types become a constant and aliases stand for the type they name`() {
+        val types = OcamlTypeParser().parseSignatures(
+            """
+            val copy : (< .. > as 'a) -> 'a
+            val id : < .. > -> int
+            """.trimIndent()
+        )
+        // (< .. > as 'a) -> 'a == < .. > -> < .. >
+        val copy = types.getValue("copy") as Arrow
+        assertEquals(emptyList<Type>(), copy.l.asLabel().params)
+        assertEquals(copy.l, copy.r)
+        assertEquals(copy.l, (types.getValue("id") as Arrow).l)
     }
 }

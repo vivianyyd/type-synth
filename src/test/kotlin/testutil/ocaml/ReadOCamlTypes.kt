@@ -207,13 +207,14 @@ class OcamlTypeParser {
 
     /**
      * Parses one or more signatures (separated by newlines) into a map from value names to [Type]s.
+     * A `//` comment runs to the end of its line.
      */
     fun parseSignatures(block: String): Map<String, Type> {
         val result = LinkedHashMap<String, Type>()
         block
             .lineSequence()
-            .map { it.trim() }
-            .filter { it.isNotEmpty() && !it.startsWith("//") }
+            .map { it.substringBefore("//").trim() }
+            .filter { it.isNotEmpty() }
             .forEach { line ->
                 val (name, type) = parseSignatureLine(line)
                 result[name] = type
@@ -226,14 +227,16 @@ class OcamlTypeParser {
 
     private fun parseSignatureLine(line: String): Pair<String, Type> {
         val normalized = normalizeLine(line)
-        val colonIndex = normalized.indexOf(':')
+        // An operator name can itself contain ':', e.g. `(:=)`, so the separator comes after it.
+        val nameEnd = if (normalized.startsWith("(")) normalized.indexOf(')') else 0
+        val colonIndex = normalized.indexOf(':', nameEnd)
         require(colonIndex >= 0) { "Signature must contain ':' : $line" }
         val name = normalized.substring(0, colonIndex).trim()
         val typePart = normalized.substring(colonIndex + 1).trim()
 
         val tokens = tokenize(typePart)
         val variableContext = VariableContext()
-        val (type, remaining) = parseArrow(tokens, variableContext)
+        val (type, remaining) = parseAlias(tokens, variableContext)
         require(remaining.isEmpty()) { "Unparsed tokens: $remaining" }
         return name to type
     }
@@ -250,11 +253,29 @@ class OcamlTypeParser {
     }
 
     /**
-     * Arrows are right-associative and have the lowest precedence: `a -> b -> c` parses as
-     * `a -> (b -> c)`.
+     * `t as 'a` names `t`, so later occurrences of `'a` stand for `t`. It has the lowest
+     * precedence: `a -> b as 'c` names the whole arrow type.
+     */
+    private fun parseAlias(tokens: List<String>, ctx: VariableContext): Pair<Type, List<String>> {
+        val (type, rest) = parseArrow(tokens, ctx)
+        if (rest.firstOrNull() != "as") return type to rest
+        val variable = rest.getOrNull(1)
+        require(variable != null && variable.startsWith("'")) {
+            "Expected type variable after 'as', got $variable"
+        }
+        require(variable !in ctx.ids) { "Type variable $variable is used before 'as' names it" }
+        ctx.aliases[variable] = type
+        return type to rest.drop(2)
+    }
+
+    /**
+     * Arrows are right-associative and bind tighter only than `as`: `a -> b -> c` parses as
+     * `a -> (b -> c)`. Our types have no argument labels, so labelled and optional arguments drop
+     * their label: `label:a -> b` and `?label:a -> b` both parse as `a -> b`.
      */
     private fun parseArrow(tokens: List<String>, ctx: VariableContext): Pair<Type, List<String>> {
-        val (lhs, rest) = parseTuple(tokens, ctx)
+        val unlabelled = if (tokens.getOrNull(1) == ":") tokens.drop(2) else tokens
+        val (lhs, rest) = parseTuple(unlabelled, ctx)
         return if (rest.firstOrNull() == "->") {
             val (rhs, next) = parseArrow(rest.drop(1), ctx)
             Arrow(lhs, rhs) to next
@@ -305,10 +326,11 @@ class OcamlTypeParser {
         val head = tokens.first()
         return when {
             head.startsWith("'") -> {
-                Variable(ctx.variableId(head)) to tokens.drop(1)
+                (ctx.aliases[head] ?: Variable(ctx.variableId(head))) to tokens.drop(1)
             }
             head == "(" -> parseParenthesized(tokens.drop(1), ctx)
-            isConstructorName(head) -> {
+            // Our types have no objects, so the open object type `<..>` is a constant like `int`.
+            isConstructorName(head) || head == "<..>" -> {
                 NamedLabel(constructorId(head), emptyList()) to tokens.drop(1)
             }
             else -> error("Unexpected token '$head'")
@@ -324,12 +346,12 @@ class OcamlTypeParser {
         tokens: List<String>,
         ctx: VariableContext
     ): Pair<Type, List<String>> {
-        val (first, rest0) = parseArrow(tokens, ctx)
+        val (first, rest0) = parseAlias(tokens, ctx)
         if (rest0.firstOrNull() == ",") {
             val args = mutableListOf(first)
             var rest = rest0
             while (rest.firstOrNull() == ",") {
-                val (arg, next) = parseArrow(rest.drop(1), ctx)
+                val (arg, next) = parseAlias(rest.drop(1), ctx)
                 args.add(arg)
                 rest = next
             }
@@ -350,24 +372,29 @@ class OcamlTypeParser {
 
     private fun tokenize(expr: String): List<String> =
         expr
+            .replace(Regex("<\\s*\\.\\.\\s*>"), " <..> ")
             .replace("(", " ( ")
             .replace(")", " ) ")
             .replace("->", " -> ")
             .replace("*", " * ")
             .replace(",", " , ")
+            .replace(":", " : ")
             .split(Regex("\\s+"))
             .filter { it.isNotEmpty() }
 
     /**
      * A type constructor name is an identifier (possibly module-qualified, e.g. `Either.t`). It is
-     * distinguished from the punctuation tokens produced by [tokenize] and from type variables.
+     * distinguished from the punctuation tokens produced by [tokenize], from type variables, and
+     * from the keyword `as`.
      */
     private fun isConstructorName(token: String): Boolean =
-        token.firstOrNull()?.isLetter() == true
+        token.firstOrNull()?.isLetter() == true && token != "as"
 
     private data class VariableContext(
         val ids: MutableMap<String, Int> = mutableMapOf(),
-        var nextId: Int = 0
+        var nextId: Int = 0,
+        /** Type variables named by `as`, mapped to the type they stand for. */
+        val aliases: MutableMap<String, Type> = mutableMapOf()
     ) {
         fun variableId(name: String): Int = ids.getOrPut(name) { nextId++ }
     }
