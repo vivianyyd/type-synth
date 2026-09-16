@@ -429,17 +429,17 @@ class TypeHole : THole() {
 
         val constructors =
             if (!emitConstructors) null
-            else when (val label = unification.holeConstructor(this)) {
-                OneUnification.NO_CONSTRUCTOR -> {
+            else when (val constructor = unification.holeConstructor(this)) {
+                HoleConstructor.None -> {
                     // Unsound version:
                     if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
                     // Sound version
                     // if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
                     // else labelExpansions + fnExpansion
                 }
-                OneUnification.CONFLICTING_CONSTRUCTORS -> null
-                TypeGraph.ARROW -> listOf(fnExpansion)
-                else -> labelExpansions.filter { it.label == label }
+                HoleConstructor.Conflicting -> null
+                HoleConstructor.Arrow -> listOf(fnExpansion)
+                is HoleConstructor.Label -> labelExpansions.filter { it.label == constructor.label }
             }
         return constructors.orEmpty() + variableExps
     }

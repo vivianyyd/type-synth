@@ -1,7 +1,7 @@
 package oneast.searchstrategies
 
-import oneast.SearchState
 import oneast.OneUnification
+import oneast.SearchState
 import query.Examples
 
 abstract class SearchStrategy(protected val examples: Examples) {
@@ -11,8 +11,5 @@ abstract class SearchStrategy(protected val examples: Examples) {
      */
     abstract fun candidates(c: SearchState): Sequence<SearchState>
 
-    protected fun posUnification(s: SearchState) = OneUnification(examples.programs(s.names).pos, s)
-
-    protected fun failsNegexWithNoHoleConstraints(s: SearchState) =
-        examples.programs(s.names).neg.any { OneUnification(it, s).passedWithNoConstraints }
+    protected fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 }

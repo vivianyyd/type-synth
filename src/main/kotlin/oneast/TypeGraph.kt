@@ -1,7 +1,6 @@
 package oneast
 
 import util.IntVec
-import util.LongVec
 
 /**
  * A store of type terms under syntactic unification, with an undo journal.
@@ -28,36 +27,28 @@ import util.LongVec
  * slots at the class root, never anything about an individual node.
  */
 class TypeGraph {
+    private enum class Visit { UNVISITED, ON_PATH, DONE }
+
     companion object {
-        /** The absence of a node. */
-        const val NONE = -1
+        /** Stored where a node is expected but there is none. */
+        private const val NONE = -1
 
-        /** The label id of the arrow type constructor. */
-        const val ARROW = -2
+        /** The label id stored for the arrow type constructor. Label ids are never negative. */
+        private const val ARROW = -2
 
-        /** Set on a class containing a [Blank] that may only ever become a label. */
-        private const val LABEL_ONLY = 1
-
-        // Journal opcodes. An entry is (op, a, b) packed into a Long.
-        private const val UNION = 2
-        private const val SET_CTOR = 3
-        private const val SET_RIGID = 4
-        private const val SET_HOLE = 5
-        private const val SET_FLAGS = 6
-        private const val SWAP_HOLES = 7
-        private const val NEW_RIGID = 8
-        private const val NEW_HOLE = 9
-        private const val RETIRE_HOLE = 10
-        private const val SET_NEXT = 11
-        private const val ADD_INSTANCE = 12
-        private const val FAILED = 13
-
-        private const val FIELD = 30
-        private const val MASK = (1L shl FIELD) - 1
-
-        /** All journalled values are node indices or small counts, so all fit unsigned in [FIELD]. */
-        private fun entry(op: Int, a: Int, b: Int) =
-            (op.toLong() shl (2 * FIELD)) or ((a.toLong() and MASK) shl FIELD) or (b.toLong() and MASK)
+        // Journal opcodes. Each entry is an opcode and up to two values, as described in [rewindTo].
+        private const val UNION = 0
+        private const val SET_CTOR = 1
+        private const val SET_RIGID = 2
+        private const val SET_HOLE = 3
+        private const val SET_LABEL_ONLY = 4
+        private const val SWAP_HOLES = 5
+        private const val NEW_RIGID = 6
+        private const val NEW_HOLE = 7
+        private const val RETIRE_HOLE = 8
+        private const val SET_NEXT = 9
+        private const val ADD_INSTANCE = 10
+        private const val FAILED = 11
     }
 
     // ---------------------------------------------------------------- node storage
@@ -72,9 +63,6 @@ class TypeGraph {
     private var argOff = IntArray(64)
     private var argLen = IntArray(64)
 
-    /** How long [args] was when this node was allocated, so a rewind can truncate it. */
-    private var argsAt = IntArray(64)
-
     /** HOLE: the hole this node instantiates, needed to report constraints back to the search. */
     private var holeOf = arrayOfNulls<THole>(64)
 
@@ -88,7 +76,9 @@ class TypeGraph {
 
     /** The HOLE nodes of a class, as a circular list, so two lists splice in one swap. */
     private var nextHole = IntArray(64)
-    private var flags = IntArray(64)
+
+    /** Whether a class contains a [Blank] that may only ever become a label. */
+    private var labelOnly = BooleanArray(64)
 
     /** Scratch for [occurs], stamped with [stamp] so it never needs clearing. */
     private var seen = IntArray(64)
@@ -96,12 +86,17 @@ class TypeGraph {
 
     private var count = 0
     private val args = IntVec()
-    private val trail = LongVec()
+
+    /** The journal: one entry per change, as three parallel columns. */
+    private val journalOp = IntVec()
+    private val journalA = IntVec()
+    private val journalB = IntVec()
+
     private val pending = IntVec()
     private val stack = IntVec()
 
-    /** `rigidNodes[instantiation][variable]`, or [NONE]; rows are allocated on demand. */
-    private var rigidNodes = arrayOfNulls<IntArray>(16)
+    /** For each instantiation, the nodes of its type variables, as (variable, node) pairs. */
+    private var rigidNodes = arrayOfNulls<IntVec>(16)
 
     /** Where one hole was instantiated, and whether a refinement has since replaced that hole. */
     private class Instances(val nodes: IntVec) {
@@ -123,14 +118,13 @@ class TypeGraph {
     private fun alloc(): Int {
         if (count == parent.size) grow(count * 2)
         val n = count++
-        argsAt[n] = args.size
         parent[n] = n
         classSize[n] = 1
         ctorAt[n] = NONE
         rigidAt[n] = NONE
         holeAt[n] = NONE
         nextHole[n] = n
-        flags[n] = 0
+        labelOnly[n] = false
         holeOf[n] = null
         return n
     }
@@ -140,7 +134,6 @@ class TypeGraph {
         inst = inst.copyOf(n)
         argOff = argOff.copyOf(n)
         argLen = argLen.copyOf(n)
-        argsAt = argsAt.copyOf(n)
         holeOf = holeOf.copyOf(n)
         parent = parent.copyOf(n)
         classSize = classSize.copyOf(n)
@@ -148,7 +141,7 @@ class TypeGraph {
         rigidAt = rigidAt.copyOf(n)
         holeAt = holeAt.copyOf(n)
         nextHole = nextHole.copyOf(n)
-        flags = flags.copyOf(n)
+        labelOnly = labelOnly.copyOf(n)
         seen = seen.copyOf(n)
     }
 
@@ -157,18 +150,14 @@ class TypeGraph {
     /** The node for [Variable] [v] at instantiation [i]; shared by every occurrence of it. */
     fun rigid(v: Int, i: Int): Int {
         if (i >= rigidNodes.size) rigidNodes = rigidNodes.copyOf(maxOf(i + 1, rigidNodes.size * 2))
-        var row = rigidNodes[i]
-        if (row == null || v >= row.size) {
-            row = IntArray(maxOf(v + 1, 8)) { NONE }.also { rigidNodes[i]?.copyInto(it) }
-            rigidNodes[i] = row
-        }
-        if (row[v] != NONE) return row[v]
+        val pairs = rigidNodes[i] ?: IntVec(4).also { rigidNodes[i] = it }
+        for (k in 0 until pairs.size step 2) if (pairs[k] == v) return pairs[k + 1]
         val n = alloc()
         key[n] = v
         inst[n] = i
         rigidAt[n] = n
-        row[v] = n
-        trail.add(entry(NEW_RIGID, i, v))
+        pairs.add(v, n)
+        log(NEW_RIGID, i)
         return n
     }
 
@@ -178,14 +167,14 @@ class TypeGraph {
         inst[n] = i
         holeOf[n] = hole
         holeAt[n] = n
-        if (hole is Blank && hole.labelOnly) flags[n] = LABEL_ONLY
+        labelOnly[n] = hole is Blank && hole.labelOnly
         val instances = holeInstances[hole]
         if (instances == null) {
             holeInstances[hole] = Instances(IntVec(4).also { it.add(n) })
-            trail.add(entry(NEW_HOLE, n, 0))
+            log(NEW_HOLE, n)
         } else {
             instances.nodes.add(n)
-            trail.add(entry(ADD_INSTANCE, n, 0))
+            log(ADD_INSTANCE, n)
         }
         return n
     }
@@ -210,14 +199,21 @@ class TypeGraph {
         return n
     }
 
-    /** The label of the constructor [node]'s class is known to have, or [NONE] if it has none. */
-    fun constructorOf(node: Int): Int {
-        val c = ctorAt[find(node)]
-        return if (c == NONE) NONE else key[c]
-    }
+    /** Whether [node]'s class is known to have a constructor. */
+    fun hasConstructor(node: Int) = ctorAt[find(node)] != NONE
 
-    /** How many arguments the constructor of [node]'s class takes. Requires it to have one. */
-    fun constructorArity(node: Int) = argLen[ctorAt[find(node)]]
+    /** Whether the constructor of [node]'s class is an arrow. Requires it to have one. */
+    fun isArrow(node: Int) = key[ctorAt[find(node)]] == ARROW
+
+    /** The label of the constructor of [node]'s class. Requires it to be a label. */
+    fun labelOf(node: Int) = key[ctorAt[find(node)]]
+
+    /** Whether the classes of [x] and [y] have the same constructor with the same number of arguments. */
+    fun sameConstructor(x: Int, y: Int): Boolean {
+        val cx = ctorAt[find(x)]
+        val cy = ctorAt[find(y)]
+        return key[cx] == key[cy] && argLen[cx] == argLen[cy]
+    }
 
     /** The nodes instantiating [hole], in instantiation order, or null if it has been refined away. */
     fun instancesOf(hole: THole): IntVec? = holeInstances[hole]?.takeIf { it.live }?.nodes
@@ -227,7 +223,7 @@ class TypeGraph {
         val instances = holeInstances[hole] ?: return
         if (!instances.live) return
         instances.live = false
-        trail.add(entry(RETIRE_HOLE, instances.nodes[0], 0))
+        log(RETIRE_HOLE, instances.nodes[0])
         for (i in 0 until instances.nodes.size) unlinkHole(instances.nodes[i])
     }
 
@@ -238,13 +234,13 @@ class TypeGraph {
         while (nextHole[before] != n) before = nextHole[before]
         val after = nextHole[n]
         if (before != n) {
-            trail.add(entry(SET_NEXT, before, nextHole[before]))
+            log(SET_NEXT, before, nextHole[before])
             nextHole[before] = after
-            trail.add(entry(SET_NEXT, n, after))
+            log(SET_NEXT, n, after)
             nextHole[n] = n
         }
         if (holeAt[root] == n) {
-            trail.add(entry(SET_HOLE, root, holeAt[root] + 1))
+            log(SET_HOLE, root, holeAt[root])
             holeAt[root] = if (before == n) NONE else after
         }
     }
@@ -255,22 +251,22 @@ class TypeGraph {
     // ---------------------------------------------------------------- union-find
 
     /**
-     * The result of applying something of type [fn] to something of type [arg], or [NONE] if that
-     * is a type error.
+     * The result of applying something of type [fn] to something of type [arg], or null if that is
+     * a type error.
      */
-    fun apply(fn: Int, arg: Int): Int {
-        if (failed) return NONE
+    fun apply(fn: Int, arg: Int): Int? {
+        if (failed) return null
         val f = find(fn)
         val c = ctorAt[f]
         if (c != NONE) {
             if (key[c] != ARROW) {
                 fail()
-                return NONE
+                return null
             }
-            return if (merge(args[argOff[c]], arg)) args[argOff[c] + 1] else NONE
+            return if (merge(args[argOff[c]], arg)) args[argOff[c] + 1] else null
         }
         val result = freshVar()
-        return if (merge(f, arrow(arg, result))) result else NONE
+        return if (merge(f, arrow(arg, result))) result else null
     }
 
     fun find(x: Int): Int {
@@ -314,7 +310,7 @@ class TypeGraph {
      * after it are the same position — so a rewind to that position could not tell them apart.
      */
     private fun fail(): Boolean {
-        trail.add(entry(FAILED, 0, 0))
+        log(FAILED)
         failed = true
         return false
     }
@@ -358,30 +354,29 @@ class TypeGraph {
         if (ctor != NONE && occurs(big, small, ctor)) return false
 
         if (ctorAt[big] == NONE && ctorAt[small] != NONE) {
-            trail.add(entry(SET_CTOR, big, ctorAt[big] + 1))
+            log(SET_CTOR, big, ctorAt[big])
             ctorAt[big] = ctorAt[small]
         }
         val rigid = laterOf(rigidAt[big], rigidAt[small])
         if (rigid != rigidAt[big]) {
-            trail.add(entry(SET_RIGID, big, rigidAt[big] + 1))
+            log(SET_RIGID, big, rigidAt[big])
             rigidAt[big] = rigid
         }
         if (holeAt[small] != NONE) {
             if (holeAt[big] == NONE) {
-                trail.add(entry(SET_HOLE, big, holeAt[big] + 1))
+                log(SET_HOLE, big, holeAt[big])
                 holeAt[big] = holeAt[small]
             } else spliceHoles(holeAt[big], holeAt[small])
         }
-        val merged = flags[big] or flags[small]
-        if (merged != flags[big]) {
-            trail.add(entry(SET_FLAGS, big, flags[big]))
-            flags[big] = merged
+        if (labelOnly[small] && !labelOnly[big]) {
+            log(SET_LABEL_ONLY, big)
+            labelOnly[big] = true
         }
-        trail.add(entry(UNION, small, 0))
+        log(UNION, small)
         parent[small] = big
         classSize[big] += classSize[small]
         // A blank that stands for a label can never turn out to be a function.
-        return (merged and LABEL_ONLY) == 0 || ctorAt[big] == NONE || key[ctorAt[big]] != ARROW
+        return !labelOnly[big] || ctorAt[big] == NONE || key[ctorAt[big]] != ARROW
     }
 
     /**
@@ -396,7 +391,7 @@ class TypeGraph {
     }
 
     private fun spliceHoles(x: Int, y: Int) {
-        trail.add(entry(SWAP_HOLES, x, y))
+        log(SWAP_HOLES, x, y)
         val t = nextHole[x]
         nextHole[x] = nextHole[y]
         nextHole[y] = t
@@ -424,48 +419,44 @@ class TypeGraph {
 
     // ---------------------------------------------------------------- undo
 
-    /**
-     * Runs [body] as if nothing had failed yet, then restores the graph exactly. Used to type an
-     * expression that is not part of the checked program.
-     */
-    fun <T> speculate(body: () -> T): T {
-        val mark = mark()
-        val wasFailed = failed
-        val wasClash = clash
-        failed = false
-        val result = body()
-        rewindTo(mark)
-        failed = wasFailed
-        clash = wasClash
-        return result
+    private fun log(op: Int, a: Int = 0, b: Int = 0) {
+        journalOp.add(op)
+        journalA.add(a)
+        journalB.add(b)
     }
 
-    /** A point to which the graph can later be [rewindTo]. */
-    fun mark(): Long = (trail.size.toLong() shl 32) or count.toLong()
+    /** A point to which the graph can later be [rewindTo]: the length of the journal. */
+    fun mark(): Int = journalOp.size
 
-    /** Undoes everything done since [mark] was taken. */
-    fun rewindTo(mark: Long) {
-        val journalled = (mark ushr 32).toInt()
-        while (trail.size > journalled) {
-            val e = trail.removeLast()
-            val a = ((e ushr FIELD) and MASK).toInt()
-            val b = (e and MASK).toInt()
-            when ((e ushr (2 * FIELD)).toInt()) {
+    /**
+     * Undoes everything done since [mark] was taken, newest first. Each entry restores what one
+     * change overwrote; its two values are the node or class it changed and, where needed, the
+     * value that was there before.
+     */
+    fun rewindTo(mark: Int) {
+        while (journalOp.size > mark) {
+            val op = journalOp.removeLast()
+            val a = journalA.removeLast()
+            val b = journalB.removeLast()
+            when (op) {
                 UNION -> {
                     classSize[parent[a]] -= classSize[a]
                     parent[a] = a
                 }
-                SET_CTOR -> ctorAt[a] = b - 1
-                SET_RIGID -> rigidAt[a] = b - 1
-                SET_HOLE -> holeAt[a] = b - 1
-                SET_FLAGS -> flags[a] = b
+                SET_CTOR -> ctorAt[a] = b
+                SET_RIGID -> rigidAt[a] = b
+                SET_HOLE -> holeAt[a] = b
+                SET_LABEL_ONLY -> labelOnly[a] = false
                 SET_NEXT -> nextHole[a] = b
                 SWAP_HOLES -> {
                     val t = nextHole[a]
                     nextHole[a] = nextHole[b]
                     nextHole[b] = t
                 }
-                NEW_RIGID -> rigidNodes[a]!![b] = NONE
+                NEW_RIGID -> rigidNodes[a]!!.run {
+                    removeLast()
+                    removeLast()
+                }
                 NEW_HOLE -> holeInstances.remove(holeOf[a])
                 RETIRE_HOLE -> holeInstances[holeOf[a]]!!.live = true
                 ADD_INSTANCE -> holeInstances[holeOf[a]]!!.nodes.removeLast()
@@ -477,13 +468,14 @@ class TypeGraph {
     // ---------------------------------------------------------------- reading types back out
 
     /**
-     * The type denoted by [node], as far as unification has determined it. An unconstrained class
-     * reads back as [Bottom]: the search treats that as "no information", which is what it is.
+     * The type denoted by [node], as far as unification has determined it. A class reads back as
+     * the first of these it has: a constructor; a type variable; a hole; otherwise [Bottom].
      *
-     * @param ignoring a hole node whose own identity should not be reported as a constraint on
-     *   itself.
      */
-    fun typeAt(node: Int, ignoring: Int = NONE): ConstraintTy {
+    fun typeAt(node: Int): ConstraintTy = typeAt(node, ignoring = NONE)
+
+    /** [typeAt], but never reporting the hole node [ignoring] as what its own class is equal to. */
+    private fun typeAt(node: Int, ignoring: Int): ConstraintTy {
         val r = find(node)
         val c = ctorAt[r]
         if (c != NONE) {
@@ -529,18 +521,19 @@ class TypeGraph {
      * search; it is here to be stated and tested.
      */
     fun acyclic(): Boolean {
-        val colour = IntArray(count) // 0 unvisited, 1 on the current path, 2 done
-        fun walk(root: Int): Boolean {
-            if (colour[root] == 1) return false
-            if (colour[root] == 2) return true
-            colour[root] = 1
-            val c = ctorAt[root]
-            if (c != NONE) {
-                for (i in 0 until argLen[c]) if (!walk(find(args[argOff[c] + i]))) return false
+        val visit = Array(count) { Visit.UNVISITED }
+        fun walk(root: Int): Boolean =
+            when (visit[root]) {
+                Visit.ON_PATH -> false
+                Visit.DONE -> true
+                Visit.UNVISITED -> {
+                    visit[root] = Visit.ON_PATH
+                    val c = ctorAt[root]
+                    val ok = c == NONE || (0 until argLen[c]).all { walk(find(args[argOff[c] + it])) }
+                    visit[root] = Visit.DONE
+                    ok
+                }
             }
-            colour[root] = 2
-            return true
-        }
         for (n in 0 until count) if (!walk(find(n))) return false
         return true
     }

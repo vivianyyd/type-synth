@@ -4,71 +4,9 @@ import query.App
 import query.Example
 import query.Examples
 import query.Name
-import util.IntVec
 
 /**
- * The application structure of a fixed list of examples, with names resolved to indices into a
- * search state's types.
- *
- * Neither the examples nor the set of names change during a search, so this is built once and
- * shared by every [OneUnification] over them. Nodes are numbered so that a node's children come
- * before it, which lets a check be a single forward pass.
- */
-class Program(names: Map<String, Int>, examples: List<Example>) {
-    /** Which of the environment's types these examples mention, so a refinement elsewhere is free. */
-    internal val usesType = BooleanArray(names.size)
-
-    /** For an application, the node of the function; -1 for a name. */
-    internal val fn = IntVec()
-
-    /** For an application, the node of the argument; for a name, the index of its type. */
-    internal val arg = IntVec()
-
-    /** For a name, which instantiation of its type this occurrence is; -1 for an application. */
-    internal val instId = IntVec()
-
-    /** How many times a component type is instantiated by these examples. */
-    internal var instantiations = 0
-        private set
-
-    internal val size
-        get() = fn.size
-
-    init {
-        examples.forEach { add(it, names) }
-    }
-
-    private fun add(ex: Example, names: Map<String, Int>): Int =
-        when (ex) {
-            is Name -> {
-                fn.add(-1)
-                val type = names[ex.name] ?: error("${ex.name} not in $names")
-                usesType[type] = true
-                arg.add(type)
-                instId.add(instantiations++)
-                fn.size - 1
-            }
-            is App -> {
-                val f = add(ex.fn, names)
-                val a = add(ex.arg, names)
-                fn.add(f)
-                arg.add(a)
-                instId.add(-1)
-                fn.size - 1
-            }
-        }
-}
-
-/** The [Program]s of an example set, which every search state over the same names shares. */
-class Programs(examples: Examples, names: Map<String, Int>) {
-    val pos = Program(names, examples.posNoSubexprs)
-
-    /** One per negative example, since each must be shown unsatisfiable on its own. */
-    val neg = examples.neg.map { Program(names, listOf(it)) }
-}
-
-/**
- * Type-checks a [Program] against an [environment], and reports what that told us about the
+ * Type-checks [examples] against an [environment], and reports what that told us about the
  * environment's holes.
  *
  * A hole stands for an unknown type expression, so each of its instantiations unifies like an
@@ -81,33 +19,16 @@ class Programs(examples: Examples, names: Map<String, Int>) {
  * instantiations of that one hole, instead of re-deriving constraints for every example. [mark] and
  * [rewindTo] undo a refinement, so an entire DFS over refinements shares a single check.
  *
- * [type] is only meaningful before any [refine], since the environment it reports against is the
- * one this was constructed with.
+ * [type] reports against the environment this was constructed with, not against any refinement.
  */
-class OneUnification(private val program: Program, private val environment: SearchState) {
-    constructor(environment: SearchState, examples: List<Example>) :
-            this(Program(environment.names, examples), environment)
-
-    companion object {
-        /** From [holeConstructor]: no instantiation of the hole was unified with a constructor. */
-        const val NO_CONSTRUCTOR = -3
-
-        /** From [holeConstructor]: instantiations were unified with different constructors. */
-        const val CONFLICTING_CONSTRUCTORS = -4
-    }
-
+class OneUnification(private val environment: SearchState, examples: List<Example>) {
     private val graph = TypeGraph()
-    private val node = IntArray(program.size)
-    private var instantiations = program.instantiations
+
+    /** How many times a component type has been instantiated so far. Each use of a name is one. */
+    private var instantiations = 0
 
     init {
-        for (i in 0 until program.size) {
-            val f = program.fn[i]
-            node[i] =
-                if (f < 0) instantiate(environment.types[program.arg[i]], program.instId[i])
-                else graph.apply(node[f], node[program.arg[i]])
-            if (node[i] == TypeGraph.NONE) break
-        }
+        examples.all { build(it) != null }
     }
 
     val ok: Boolean
@@ -130,48 +51,37 @@ class OneUnification(private val program: Program, private val environment: Sear
     }
 
     /**
-     * The type constructor every instantiation of [hole] was unified with, as a label id or
-     * [TypeGraph.ARROW]. [NO_CONSTRUCTOR] if none was unified with any constructor, and
-     * [CONFLICTING_CONSTRUCTORS] if two were unified with different ones. Asking this way avoids
-     * building the constraint types just to compare their heads.
+     * The type constructor every instantiation of [hole] was unified with. Asking this way avoids
+     * building the constraint types just to compare their outermost constructors.
      */
-    fun holeConstructor(hole: THole): Int {
-        if (!ok) return NO_CONSTRUCTOR
-        val instances = graph.instancesOf(hole) ?: return NO_CONSTRUCTOR
-        var label = NO_CONSTRUCTOR
-        var arity = -1
+    fun holeConstructor(hole: THole): HoleConstructor {
+        if (!ok) return HoleConstructor.None
+        val instances = graph.instancesOf(hole) ?: return HoleConstructor.None
+        var first: Int? = null
         for (i in 0 until instances.size) {
-            val found = graph.constructorOf(instances[i])
-            if (found == TypeGraph.NONE) continue
-            val foundArity = graph.constructorArity(instances[i])
-            if (label == NO_CONSTRUCTOR) {
-                label = found
-                arity = foundArity
-            } else if (label != found || arity != foundArity) return CONFLICTING_CONSTRUCTORS
+            val node = instances[i]
+            if (!graph.hasConstructor(node)) continue
+            if (first == null) first = node
+            else if (!graph.sameConstructor(first, node)) return HoleConstructor.Conflicting
         }
-        return label
+        return when {
+            first == null -> HoleConstructor.None
+            graph.isArrow(first) -> HoleConstructor.Arrow
+            else -> HoleConstructor.Label(graph.labelOf(first))
+        }
     }
 
-    /**
-     * The type [ex] has in this environment, or null if it does not type-check. Derived on its own,
-     * so it is meaningful even for an expression whose enclosing example failed.
-     */
-    fun type(ex: Example): ConstraintTy? =
-        graph.speculate {
-            val n = typeNode(ex)
-            if (n == TypeGraph.NONE) null else graph.typeAt(n)
-        }
+    /** The type [ex] has in this environment, or null if it does not type-check. */
+    fun type(ex: Example): ConstraintTy? {
+        val fresh = OneUnification(environment, emptyList())
+        return fresh.build(ex)?.let { fresh.graph.typeAt(it) }
+    }
 
-    private fun typeNode(ex: Example): Int =
+    /** Adds [ex] to the graph. Returns the node for its type, or null if it does not type-check. */
+    private fun build(ex: Example): Int? =
         when (ex) {
             is Name -> instantiate(environment.typeOf(ex.name), instantiations++)
-            is App -> {
-                val f = typeNode(ex.fn)
-                if (f == TypeGraph.NONE) f
-                else typeNode(ex.arg).let { a ->
-                    if (a == TypeGraph.NONE) a else graph.apply(f, a)
-                }
-            }
+            is App -> build(ex.fn)?.let { f -> build(ex.arg)?.let { a -> graph.apply(f, a) } }
         }
 
     private fun instantiate(t: Type, inst: Int): Int =
@@ -186,10 +96,10 @@ class OneUnification(private val program: Program, private val environment: Sear
     // ------------------------------------------------------------------ incremental refinement
 
     /** A point the check can later be [rewindTo]. */
-    fun mark(): Long = graph.mark()
+    fun mark(): Int = graph.mark()
 
     /** Undoes every refinement made since [mark] was taken. */
-    fun rewindTo(mark: Long) = graph.rewindTo(mark)
+    fun rewindTo(mark: Int) = graph.rewindTo(mark)
 
     /** Re-checks the state in which [hole] has become [replacement]. Returns whether it still [ok]s. */
     fun refine(hole: THole, replacement: Type): Boolean {
@@ -205,6 +115,27 @@ class OneUnification(private val program: Program, private val environment: Sear
     }
 }
 
+/** What [OneUnification.holeConstructor] learned about the outermost constructor of a hole. */
+sealed interface HoleConstructor {
+    /** No instantiation of the hole was unified with a constructor. */
+    object None : HoleConstructor {
+        override fun toString() = "None"
+    }
+
+    /** Instantiations of the hole were unified with different constructors. */
+    object Conflicting : HoleConstructor {
+        override fun toString() = "Conflicting"
+    }
+
+    /** Every instantiation unified with a constructor was unified with an arrow. */
+    object Arrow : HoleConstructor {
+        override fun toString() = "Arrow"
+    }
+
+    /** Every instantiation unified with a constructor was unified with this label, at one arity. */
+    data class Label(val label: Int) : HoleConstructor
+}
+
 /**
  * The checks the enumerator carries as it descends: the positive examples must stay satisfiable,
  * and no negative example may become satisfiable without help from a hole.
@@ -213,51 +144,41 @@ class OneUnification(private val program: Program, private val environment: Sear
  * refinement of each rather than a full re-check.
  */
 class Checks(state: SearchState, examples: Examples) {
-    private val programs = examples.programs(state.names)
+    val pos = OneUnification(state, examples.posNoSubexprs)
 
-    val pos = OneUnification(programs.pos, state)
+    private val neg = Array(examples.neg.size) { OneUnification(state, listOf(examples.neg[it])) }
 
-    private val neg = Array(programs.neg.size) { OneUnification(programs.neg[it], state) }
+    /** For each negative example, which of the state's types it mentions. */
+    private val negMentions = Array(neg.size) { i ->
+        BooleanArray(state.types.size).also { mentions ->
+            examples.neg[i].names.forEach { mentions[state.names.getValue(it)] = true }
+        }
+    }
 
     /** Whether each negative example currently type-checks without relying on any hole. */
     private val negPasses = BooleanArray(neg.size) { neg[it].passedWithNoConstraints }
 
     private var passing = negPasses.count { it }
 
-    /** One saved state per search depth; see [save]. */
-    private var checkpoints = arrayOfNulls<Checkpoint>(16)
-
-    private class Checkpoint(graphs: Int, negex: Int) {
-        val graphs = LongArray(graphs)
-        val negPasses = BooleanArray(negex)
-        var passing = 0
-    }
+    /** Everything [rewindTo] needs to return every check to how it was when [mark] was called. */
+    class Mark internal constructor(
+        internal val pos: Int,
+        internal val neg: IntArray,
+        internal val negPasses: BooleanArray,
+        internal val passing: Int,
+    )
 
     /** Whether some negative example type-checks without relying on any hole. */
     fun someNegexPasses() = passing > 0
 
-    /**
-     * Remembers the state of every check, so that [restore] can come back to it before the next
-     * expansion at this [depth] of the search. Checkpoints are kept per depth rather than allocated
-     * per call, since the search only ever returns to the depth it is currently at.
-     */
-    fun save(depth: Int) {
-        if (depth >= checkpoints.size) checkpoints = checkpoints.copyOf(depth * 2)
-        val saved =
-            checkpoints[depth] ?: Checkpoint(neg.size + 1, neg.size).also { checkpoints[depth] = it }
-        saved.graphs[0] = pos.mark()
-        for (i in neg.indices) saved.graphs[i + 1] = neg[i].mark()
-        negPasses.copyInto(saved.negPasses)
-        saved.passing = passing
-    }
+    fun mark() = Mark(pos.mark(), IntArray(neg.size) { neg[it].mark() }, negPasses.copyOf(), passing)
 
-    /** Undoes every refinement made since [save] was called at this [depth]. */
-    fun restore(depth: Int) {
-        val saved = checkpoints[depth]!!
-        pos.rewindTo(saved.graphs[0])
-        for (i in neg.indices) neg[i].rewindTo(saved.graphs[i + 1])
-        saved.negPasses.copyInto(negPasses)
-        passing = saved.passing
+    /** Undoes every refinement made since [mark] was taken. */
+    fun rewindTo(mark: Mark) {
+        pos.rewindTo(mark.pos)
+        for (i in neg.indices) neg[i].rewindTo(mark.neg[i])
+        mark.negPasses.copyInto(negPasses)
+        passing = mark.passing
     }
 
     /**
@@ -266,7 +187,7 @@ class Checks(state: SearchState, examples: Examples) {
      */
     fun refine(typeIndex: Int, hole: THole, replacement: Type): Boolean {
         for (i in neg.indices) {
-            if (!programs.neg[i].usesType[typeIndex]) continue
+            if (!negMentions[i][typeIndex]) continue
             neg[i].refine(hole, replacement)
             val passes = neg[i].passedWithNoConstraints
             if (passes != negPasses[i]) {

@@ -15,7 +15,7 @@ class DFSEnumerator(
 ) : SearchStrategy(examples) {
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val checks = Checks(c, examples)
-        return if (checks.pos.ok) recCandidates(c, checks, 0, sizeBound, c.numFillableHoles())
+        return if (checks.pos.ok) recCandidates(c, checks, sizeBound, c.numFillableHoles())
         else emptySequence()
     }
 
@@ -31,7 +31,6 @@ class DFSEnumerator(
     private fun recCandidates(
         c: SearchState,
         checks: Checks,
-        depth: Int,
         currSizeBound: Int,
         holesRemaining: Int
     ): Sequence<SearchState> {
@@ -41,8 +40,8 @@ class DFSEnumerator(
 
         if (currSizeBound - holesRemaining < 0) return emptySequence()
 
-        val (iToFill, hole, holeDepth) = c.shallowestFillableHole() ?: error("Impossible")
-        checks.save(depth)
+        val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
+        val mark = checks.mark()
         return hole
             .expansions(
                 unification = checks.pos,
@@ -51,11 +50,11 @@ class DFSEnumerator(
                 canBeVar = hole != c.types[iToFill],
                 emitLabelBlanks = emitLabelBlanks,
                 emitConstructors = emitConstructors,
-                mustBeLeaf = currSizeBound - holesRemaining <= 1 || holeDepth >= depthBound
+                mustBeLeaf = currSizeBound - holesRemaining <= 1 || depth >= depthBound
             )
             .asSequence()
             .flatMap { expansion ->
-                checks.restore(depth)
+                checks.rewindTo(mark)
                 logger.count("Total candidates")
                 val newCandidate = c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, expansion) }
                 val stillPasses = checks.refine(iToFill, hole, expansion)
@@ -65,7 +64,6 @@ class DFSEnumerator(
                         recCandidates(
                             newCandidate,
                             checks,
-                            depth = depth + 1,
                             currSizeBound = currSizeBound - 1,
                             holesRemaining = holesRemaining - 1 + expansion.numFillableHoles()
                         )
@@ -108,7 +106,7 @@ class DFSEnumerator(
         // The labels changed everywhere at once, so this subtree needs a check of its own.
         val checks = Checks(blanked, examples)
         return if (checks.pos.ok)
-            recCandidates(blanked, checks, 0, currSizeBound - 1, blanked.numFillableHoles())
+            recCandidates(blanked, checks, currSizeBound - 1, blanked.numFillableHoles())
         else emptySequence()
     }
 }
