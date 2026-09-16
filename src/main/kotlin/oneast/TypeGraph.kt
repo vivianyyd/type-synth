@@ -64,7 +64,9 @@ class TypeGraph {
          */
         private const val SET_CTOR = 1
 
-        /** Class root a's type variable node changed from b. Undo: restore b. */
+        /**
+         * Class root a gained a type variable; b is what it had before, always NONE. Undo: restore b.
+         */
         private const val SET_RIGID = 2
 
         /** Class root a's entry into its list of hole nodes changed from b. Undo: restore b. */
@@ -418,10 +420,9 @@ class TypeGraph {
             log(SET_CTOR, big, ctorAt[big])
             ctorAt[big] = ctorAt[small]
         }
-        val rigid = laterOf(rigidAt[big], rigidAt[small])
-        if (rigid != rigidAt[big]) {
+        if (rigidAt[big] == NONE && rigidAt[small] != NONE) {
             log(SET_RIGID, big, rigidAt[big])
-            rigidAt[big] = rigid
+            rigidAt[big] = rigidAt[small]
         }
         if (holeAt[small] != NONE) {
             if (holeAt[big] == NONE) {
@@ -438,17 +439,6 @@ class TypeGraph {
         classSize[big] += classSize[small]
         // A blank that stands for a label can never turn out to be a function.
         return !labelOnly[big] || ctorAt[big] == NONE || key[ctorAt[big]] != ARROW
-    }
-
-    /**
-     * Which of two rigid variables names the merged class. The later-instantiated one wins, so a
-     * function's variables read back as the argument's rather than the other way round.
-     */
-    private fun laterOf(x: Int, y: Int): Int = when {
-        x == NONE -> y
-        y == NONE -> x
-        inst[y] > inst[x] || (inst[y] == inst[x] && y > x) -> y
-        else -> x
     }
 
     private fun spliceHoles(x: Int, y: Int) {
