@@ -7,7 +7,6 @@ import query.App
 import query.Example
 import query.Name
 import testutil.loadQueryFromFile
-import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -65,7 +64,7 @@ class UnificationTest {
         val bai = Arrow(Arrow(b, a), Arrow(a, b))
         val context = makeContext("f" to bai, "g" to ab)
         assertOk(context, App(f, g))
-        assertEquals(OneUnification(context, emptyList()).type(App(f, g))!!.toNode(), Arrow(b, a))
+        assertSameType(Arrow(b, a), OneUnification(context, emptyList()).type(App(f, g)))
     }
 
     @Test
@@ -74,15 +73,11 @@ class UnificationTest {
         val aai = Arrow(a, Arrow(a, I))
         val context1 = makeContext("f" to Arrow(iai, iai), "g" to aai)
         assertOk(context1, App(f, g))
-        assertEquals(
-            OneUnification(context1, emptyList()).type(App(f, g))!!.toNode(), Arrow(I, Arrow(I, I))
-        )
+        assertSameType(Arrow(I, Arrow(I, I)), OneUnification(context1, emptyList()).type(App(f, g)))
 
         val context2 = makeContext("f" to Arrow(aai, aai), "g" to iai)
         assertOk(context2, App(f, g))
-        assertEquals(
-            OneUnification(context2, emptyList()).type(App(f, g))!!.toNode(), Arrow(I, Arrow(I, I))
-        )
+        assertSameType(Arrow(I, Arrow(I, I)), OneUnification(context2, emptyList()).type(App(f, g)))
     }
 
     @Test
@@ -105,15 +100,15 @@ class UnificationTest {
         println(unify.type(App(compare, max)))
         println(unify.type(compare))
 
-        assertEquals( // (V0 -> V0 -> V0) -> L0[]
-            Arrow(Arrow(a, Arrow(a, a)), I), unify.type(App(compare, max))!!.toNode()
+        assertSameType( // (V0 -> V0 -> V0) -> L0[]
+            Arrow(Arrow(a, Arrow(a, a)), I), unify.type(App(compare, max))
         )
-        assertEquals( // (V0 -> V0 -> L0[]) -> (V0 -> V0 -> L0[])
+        assertSameType( // (V0 -> V0 -> L0[]) -> (V0 -> V0 -> L0[])
             Arrow(
                 Arrow(a, Arrow(a, I)),
                 Arrow(a, Arrow(a, I)),
             ),
-            unify.type(App(max, compare))!!.toNode()
+            unify.type(App(max, compare))
         )
 
         assertTrue(unify.ok)
@@ -176,13 +171,8 @@ class UnificationTest {
         val example = App(cDib, cDbiDii)
 
         val u = OneUnification(context, listOf(example))
-        val cDibType = u.type(cDib)
-        assertNotNull(cDibType)
-        assertEquals(Arrow(llaaa, NamedLabel(3, listOf(llaaa, llaaa))), cDibType.toNode())
-
-        val cDbiDiiType = u.type(cDbiDii)
-        assertNotNull(cDbiDiiType)
-        assertEquals(NamedLabel(3, listOf(llaaa, llaaa)), cDbiDiiType.toNode())
+        assertSameType(Arrow(llaaa, NamedLabel(3, listOf(llaaa, llaaa))), u.type(cDib))
+        assertSameType(NamedLabel(3, listOf(llaaa, llaaa)), u.type(cDbiDii))
         // must unify:
         // L0[L0[V0, V0], V0]
         // L0[L0[L0[V0, V0], V0], L0[L0[V0, V0], V0]]
@@ -254,7 +244,7 @@ class UnificationTest {
 
         assertOk(context, example)
         val u = OneUnification(context, listOf(example))
-        assertEquals(Arrow(I, Arrow(I, I)), u.type(example)!!.toNode())
+        assertSameType(Arrow(I, Arrow(I, I)), u.type(example))
 
         assertOk(context, App(App(example, Name("0")), Name("0")))
         assertFail(context, App(example, Name("true")))
@@ -383,13 +373,16 @@ class UnificationTest {
         assertOk(context, example)
     }
 
-    /** TODO This should use the more robust type equivalence we have... */
-    private fun ConstraintTy.toNode(): Type =
-        when (this) {
-            is ConstraintArrow -> Arrow(this.l.toNode(), this.r.toNode())
-            is ConstraintLabel -> NamedLabel(this.label, this.params.map { it.toNode() })
-            is ConstraintVariable -> Variable(this.v)
-            is InstantiationTy -> error("Unreachable pattern match - convert Instantiation to node")
-            Bottom -> error("Antiunifying should never produce Bottom")
-        }
+    /**
+     * Unification picks which variable names a class arbitrarily, so types are compared up to
+     * renaming variables.
+     */
+    private fun assertSameType(expected: Type, actual: ConstraintTy?) {
+        assertNotNull(actual)
+        val type = actual.toType()
+        assertTrue(
+            equalUpToVariableRenaming(expected, type),
+            "Expected $expected up to renaming variables, but was $type"
+        )
+    }
 }
