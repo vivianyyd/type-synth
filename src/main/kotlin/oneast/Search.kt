@@ -34,14 +34,12 @@ class Search(
         val uf = IntUnionFind()
 
         // Make equivalence classes of blanks
-        s.blanks().forEach { blank ->
-            u.holeEquals(blank).forEach { other ->
-                if (other is InstantiationTy) {
-                    if (other.hole !is Blank) return null
-                    require(blank.labelOnly && other.hole.labelOnly)
-                    uf.union(blank.id, other.hole.id)
-                }
-            }
+        u.equalHoles().forEach { group ->
+            val blanks = group.filterIsInstance<Blank>()
+            if (blanks.isEmpty()) return@forEach
+            if (blanks.size != group.size) return null
+            require(blanks.all { it.labelOnly })
+            blanks.zipWithNext { x, y -> uf.union(x.id, y.id) }
         }
 
         // TODO It's not really clear why we need this if we've done the previous step properly but
@@ -67,15 +65,15 @@ class Search(
         // Populate with bindings to existing labels
         val holes = s.types.flatMap { it.allHoles() }.filterIsInstance<Blank>()
         holes.forEach {
-            val constructors = u.holeEquals(it).filterIsInstance<ConstraintTypeConstructor>()
-            if (constructors.isNotEmpty()) {
-                if (constructors.any { !it.match(constructors.first()) || it is ConstraintArrow })
-                    return null
-                val label = (constructors.first() as ConstraintLabel).label
-                val canonical = uf.find(it.id) ?: it.id
-                if (canonical in holeToLabel && holeToLabel[canonical] != label) return null
-                else if (canonical !in holeToLabel) holeToLabel[canonical] = label
-            }
+            val label =
+                when (val constructor = u.holeConstructor(it)) {
+                    HoleConstructor.None -> return@forEach
+                    HoleConstructor.Conflicting, HoleConstructor.Arrow -> return null
+                    is HoleConstructor.Label -> constructor.label
+                }
+            val canonical = uf.find(it.id) ?: it.id
+            if (canonical in holeToLabel && holeToLabel[canonical] != label) return null
+            else if (canonical !in holeToLabel) holeToLabel[canonical] = label
         }
 
         // Iterate through types and substitute labels for blanks - either the hole's equivalence
@@ -107,9 +105,7 @@ class Search(
                     sizeBound = size,
                     depthBound = depth,
                 )
-                    .filter { s ->
-                        examples.neg.all { !OneUnification(s, listOf(it)).passedWithNoConstraints }
-                    }
+                // TODO: prune using negative examples.
             }
 
         val withLabelClasses = initialOutlines.mapNotNull { assignLabelClasses(it) }.toSet()
@@ -239,7 +235,7 @@ class Search(
                 error(
                     "Enumerator should never return something that fails posexs at concretization stage"
                 )
-            examples.neg.all { !OneUnification(c, listOf(it)).ok }
+            true // TODO: prune using negative examples.
         }
     }
 

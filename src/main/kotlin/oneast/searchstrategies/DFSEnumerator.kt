@@ -14,15 +14,15 @@ class DFSEnumerator(
     private val logger: Logger
 ) : SearchStrategy(examples) {
     override fun candidates(c: SearchState): Sequence<SearchState> {
-        val checks = Checks(c, examples)
-        return if (checks.pos.ok) recCandidates(c, checks, sizeBound, c.numFillableHoles())
+        val unification = OneUnification(c, examples.posNoSubexprs)
+        return if (unification.ok) recCandidates(c, unification, sizeBound, c.numFillableHoles())
         else emptySequence()
     }
 
     /**
      * As long as seed [c] passes positive examples, states returned by this function do as well.
      *
-     * [checks] is the running check for [c]. Each expansion refines it in place and rewinds
+     * [unification] is the running check for [c]. Each expansion refines it in place and rewinds
      * afterwards, so the whole subtree shares one set of equivalence classes rather than rebuilding
      * them per candidate. Rewinding happens before an expansion rather than after, which is what
      * makes this safe to consume lazily: a subtree that is abandoned half-way leaves the check
@@ -30,7 +30,7 @@ class DFSEnumerator(
      */
     private fun recCandidates(
         c: SearchState,
-        checks: Checks,
+        unification: OneUnification,
         currSizeBound: Int,
         holesRemaining: Int
     ): Sequence<SearchState> {
@@ -41,10 +41,10 @@ class DFSEnumerator(
         if (currSizeBound - holesRemaining < 0) return emptySequence()
 
         val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
-        val mark = checks.mark()
+        val mark = unification.mark()
         return hole
             .expansions(
-                unification = checks.pos,
+                unification = unification,
                 labelArities = c.labelArities,
                 vars = c.types[iToFill].variables().size,
                 canBeVar = hole != c.types[iToFill],
@@ -54,22 +54,18 @@ class DFSEnumerator(
             )
             .asSequence()
             .flatMap { expansion ->
-                checks.rewindTo(mark)
+                unification.rewindTo(mark)
                 logger.count("Total candidates")
                 val newCandidate = c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, expansion) }
-                val stillPasses = checks.refine(iToFill, hole, expansion)
-                when {
-                    checks.someNegexPasses() -> emptySequence()
-                    stillPasses ->
-                        recCandidates(
-                            newCandidate,
-                            checks,
-                            currSizeBound = currSizeBound - 1,
-                            holesRemaining = holesRemaining - 1 + expansion.numFillableHoles()
-                        )
-                    else ->
-                        retryWithoutBadLabels(newCandidate, checks.pos.badLabels(), currSizeBound)
-                }
+                // TODO: prune using negative examples.
+                if (unification.refine(hole, expansion))
+                    recCandidates(
+                        newCandidate,
+                        unification,
+                        currSizeBound = currSizeBound - 1,
+                        holesRemaining = holesRemaining - 1 + expansion.numFillableHoles()
+                    )
+                else retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound)
             }
     }
 
@@ -104,9 +100,9 @@ class DFSEnumerator(
                 newArities = c.labelArities.filterNot { (l, _) -> l in badLabels }
             ) { blankBadLabels(it) }
         // The labels changed everywhere at once, so this subtree needs a check of its own.
-        val checks = Checks(blanked, examples)
-        return if (checks.pos.ok)
-            recCandidates(blanked, checks, currSizeBound - 1, blanked.numFillableHoles())
+        val unification = OneUnification(blanked, examples.posNoSubexprs)
+        return if (unification.ok)
+            recCandidates(blanked, unification, currSizeBound - 1, blanked.numFillableHoles())
         else emptySequence()
     }
 }

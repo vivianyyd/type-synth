@@ -2,7 +2,6 @@ package oneast
 
 import query.App
 import query.Example
-import query.Examples
 import query.Name
 
 /**
@@ -10,8 +9,8 @@ import query.Name
  * environment's holes.
  *
  * A hole stands for an unknown type expression, so each of its instantiations unifies like an
- * ordinary type variable — with the difference that we remember what it was equated with, since
- * that is the evidence the search uses to guess how to fill the hole.
+ * ordinary type variable. What those variables end up equal to is the evidence the search uses to
+ * guess how to fill the hole.
  *
  * The check is *incremental*: refining a hole into a type is the only way a search state changes,
  * and it changes the constraints only where that hole was instantiated. So [refine] merges the new
@@ -34,21 +33,15 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
     val ok: Boolean
         get() = !graph.failed
 
-    /** Whether the examples type-check without any hole having to stand for anything in particular. */
-    val passedWithNoConstraints: Boolean
-        get() = ok && !graph.anyHoleConstrained()
-
     /** The labels whose mismatch caused the most recent failure, if that is what caused it. */
     fun badLabels(): Set<Int> = graph.clash
 
-    /** Everything unification determined [hole] must be equal to, one entry per instantiation. */
-    fun holeEquals(hole: THole): List<ConstraintTy> {
-        if (!ok) return emptyList()
-        val instances = graph.instancesOf(hole) ?: return emptyList()
-        val equals = ArrayList<ConstraintTy>(instances.size)
-        for (i in 0 until instances.size) graph.constraintOn(instances[i])?.let { equals.add(it) }
-        return equals
-    }
+    /**
+     * Groups of holes that must be filled with the same type, because some instantiation of each
+     * was unified with some instantiation of the others. Only groups of more than one hole. After a
+     * [refine], this still includes the hole that was filled.
+     */
+    fun equalHoles(): List<Set<THole>> = if (ok) graph.equalHoles() else emptyList()
 
     /**
      * The type constructor every instantiation of [hole] was unified with. Asking this way avoids
@@ -105,7 +98,6 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
     fun refine(hole: THole, replacement: Type): Boolean {
         if (graph.failed) return false
         val instances = graph.instancesOf(hole) ?: return true
-        graph.retireHole(hole)
         for (i in 0 until instances.size) {
             val instance = instances[i]
             val filled = instantiate(replacement, graph.instantiationOf(instance))
@@ -134,67 +126,4 @@ sealed interface HoleConstructor {
 
     /** Every instantiation unified with a constructor was unified with this label, at one arity. */
     data class Label(val label: Int) : HoleConstructor
-}
-
-/**
- * The checks the enumerator carries as it descends: the positive examples must stay satisfiable,
- * and no negative example may become satisfiable without help from a hole.
- *
- * All of them are refined and rewound together, so descending one level of the search costs one
- * refinement of each rather than a full re-check.
- */
-class Checks(state: SearchState, examples: Examples) {
-    val pos = OneUnification(state, examples.posNoSubexprs)
-
-    private val neg = Array(examples.neg.size) { OneUnification(state, listOf(examples.neg[it])) }
-
-    /** For each negative example, which of the state's types it mentions. */
-    private val negMentions = Array(neg.size) { i ->
-        BooleanArray(state.types.size).also { mentions ->
-            examples.neg[i].names.forEach { mentions[state.names.getValue(it)] = true }
-        }
-    }
-
-    /** Whether each negative example currently type-checks without relying on any hole. */
-    private val negPasses = BooleanArray(neg.size) { neg[it].passedWithNoConstraints }
-
-    private var passing = negPasses.count { it }
-
-    /** Everything [rewindTo] needs to return every check to how it was when [mark] was called. */
-    class Mark internal constructor(
-        internal val pos: Int,
-        internal val neg: IntArray,
-        internal val negPasses: BooleanArray,
-        internal val passing: Int,
-    )
-
-    /** Whether some negative example type-checks without relying on any hole. */
-    fun someNegexPasses() = passing > 0
-
-    fun mark() = Mark(pos.mark(), IntArray(neg.size) { neg[it].mark() }, negPasses.copyOf(), passing)
-
-    /** Undoes every refinement made since [mark] was taken. */
-    fun rewindTo(mark: Mark) {
-        pos.rewindTo(mark.pos)
-        for (i in neg.indices) neg[i].rewindTo(mark.neg[i])
-        mark.negPasses.copyInto(negPasses)
-        passing = mark.passing
-    }
-
-    /**
-     * Refines every check that mentions the type at [typeIndex] — a hole in any other type cannot
-     * affect them — and reports whether the positive examples still type-check.
-     */
-    fun refine(typeIndex: Int, hole: THole, replacement: Type): Boolean {
-        for (i in neg.indices) {
-            if (!negMentions[i][typeIndex]) continue
-            neg[i].refine(hole, replacement)
-            val passes = neg[i].passedWithNoConstraints
-            if (passes != negPasses[i]) {
-                negPasses[i] = passes
-                passing += if (passes) 1 else -1
-            }
-        }
-        return pos.refine(hole, replacement)
-    }
 }

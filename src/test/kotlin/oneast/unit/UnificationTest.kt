@@ -376,18 +376,16 @@ class UnificationTest {
 
     /**
      * f : a -> a -> I applied to two blanks makes both blanks equal to f's variable, and so to each
-     * other. Each must be reported as equal to the other blank, not to the variable: the search
-     * gives blanks that are equal to each other the same label.
+     * other. The search gives blanks that are equal to each other the same label.
      */
     @Test
-    fun `a blank reports another blank in its class before a shared variable`() {
+    fun `blanks equal through a shared variable are equal to each other`() {
         val num = Blank(labelOnly = true)
         val tru = Blank(labelOnly = true)
         val context = makeContext("f" to Arrow(a, Arrow(a, I)), "Num" to num, "true" to tru)
         val u = OneUnification(context, listOf(App(App(f, Name("Num")), Name("true"))))
         assertTrue(u.ok)
-        assertEquals(listOf(tru), u.holeEquals(num).map { (it as InstantiationTy).hole })
-        assertEquals(listOf(num), u.holeEquals(tru).map { (it as InstantiationTy).hole })
+        assertEquals(listOf(setOf(num, tru)), u.equalHoles())
     }
 
     /**

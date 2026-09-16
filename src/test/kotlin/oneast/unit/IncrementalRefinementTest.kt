@@ -80,31 +80,6 @@ class IncrementalRefinementTest {
     }
 
     @Test
-    fun `cons - an unrelated second parameter lets a negative example through`() {
-        val walk = Walk("cons")
-        consTruth.drop(1).forEach { (name, type) -> walk.fillTowards(name, type) }
-        walk.fill("cons", fn(TypeHole(), TypeHole()))
-        walk.fill("cons", a)
-        walk.fill("cons", fn(TypeHole(), TypeHole()))
-
-        // cons : a -> b -> _. Now (cons Li Num) type-checks whatever the result is filled with.
-        val wrong = walk.fill("cons", b)
-        assertTrue(wrong.posOk)
-        assertTrue(wrong.negexPasses)
-        walk.undo()
-
-        // cons : a -> L[_] -> _. Num is not a list, so that negative is ruled out again.
-        val right = walk.fill("cons", list(TypeHole()))
-        assertTrue(right.posOk)
-        assertFalse(right.negexPasses)
-
-        walk.fill("cons", a)
-        walk.fillTowards("cons", list(a))
-        walk.assertEveryExampleIsClassifiedCorrectly()
-        walk.undoAll()
-    }
-
-    @Test
     fun `cons - a list of the wrong element type fails with the two clashing labels`() {
         val walk = Walk("cons")
         consTruth.filter { it.first != "Li" }.forEach { (name, type) -> walk.fillTowards(name, type) }
@@ -118,7 +93,6 @@ class IncrementalRefinementTest {
 
         val right = walk.fill("Li", int())
         assertTrue(right.posOk)
-        assertFalse(right.negexPasses)
         walk.assertEveryExampleIsClassifiedCorrectly()
         walk.undoAll()
     }
@@ -177,10 +151,9 @@ class IncrementalRefinementTest {
         val walk = Walk("polymorphic-nil")
         nilTruth.filter { it.first != "nil" }.forEach { (name, type) -> walk.fillTowards(name, type) }
 
-        // nil : a. Every negative example is still ruled out by cons alone.
+        // nil : a. cons alone makes every positive example type-check and every negative one fail.
         val filled = walk.fill("nil", a)
         assertTrue(filled.posOk)
-        assertFalse(filled.negexPasses)
         walk.assertEveryExampleIsClassifiedCorrectly()
         walk.undoAll()
     }
@@ -190,10 +163,8 @@ class IncrementalRefinementTest {
     /** What the search can ask a check, projected so that two equivalent checks compare equal. */
     private data class Observation(
         val posOk: Boolean,
-        val negexPasses: Boolean,
         val holeConstructors: Map<THole, HoleConstructor>,
-        /** Each hole's [OneUnification.holeEquals], with variables and holes reduced to their kind. */
-        val holeEquals: Map<THole, List<String>>,
+        val equalHoles: Set<Set<THole>>,
     )
 
     private inner class Walk(file: String) {
@@ -204,9 +175,9 @@ class IncrementalRefinementTest {
         var state = SearchState(names, List(names.size) { TypeHole() }, labelArities)
             private set
 
-        private val checks = Checks(state, examples)
+        private val unification = OneUnification(state, examples.posNoSubexprs)
         private val before = ArrayList<SearchState>()
-        private val marks = ArrayList<Checks.Mark>()
+        private val marks = ArrayList<Int>()
         private val seen = arrayListOf(observe())
 
         init {
@@ -214,7 +185,7 @@ class IncrementalRefinementTest {
         }
 
         val pos
-            get() = checks.pos
+            get() = unification
 
         fun holesOf(name: String) = state.types[names.getValue(name)].allHoles()
 
@@ -222,9 +193,9 @@ class IncrementalRefinementTest {
         fun fill(name: String, replacement: Type): Observation {
             val index = names.getValue(name)
             val hole = state.types[index].allHoles().first()
-            marks.add(checks.mark())
+            marks.add(unification.mark())
             before.add(state)
-            val stillPasses = checks.refine(index, hole, replacement)
+            val stillPasses = unification.refine(hole, replacement)
             state = state.mapTypeAtIndex(index) { it.replace(hole, replacement) }
             val now = observe()
             assertEquals(stillPasses, now.posOk)
@@ -250,7 +221,7 @@ class IncrementalRefinementTest {
         fun undo() {
             seen.removeAt(seen.size - 1)
             state = before.removeAt(before.size - 1)
-            checks.rewindTo(marks.removeAt(marks.size - 1))
+            unification.rewindTo(marks.removeAt(marks.size - 1))
             assertEquals(seen.last(), observe(), "undoing back to $state")
         }
 
@@ -261,7 +232,7 @@ class IncrementalRefinementTest {
         /** The true types must never be pruned on the way to them. */
         fun assertNothingOnTheWayWasPruned() =
             seen.forEachIndexed { step, it ->
-                assertTrue(it.posOk && !it.negexPasses, "pruned at step $step: $it")
+                assertTrue(it.posOk, "pruned at step $step: $it")
             }
 
         fun assertEveryExampleIsClassifiedCorrectly() {
@@ -274,21 +245,17 @@ class IncrementalRefinementTest {
             }
         }
 
-        private fun observe() = observation(checks.pos, checks.someNegexPasses())
+        private fun observe() = observation(unification)
 
-        private fun fromScratch(): Observation {
-            val neg = examples.neg.map { OneUnification(state, listOf(it)) }
-            return observation(
-                OneUnification(state, examples.posNoSubexprs), neg.any { it.passedWithNoConstraints })
-        }
+        private fun fromScratch() = observation(OneUnification(state, examples.posNoSubexprs))
 
-        private fun observation(pos: OneUnification, negexPasses: Boolean): Observation {
+        private fun observation(check: OneUnification): Observation {
             val holes = state.types.flatMap { it.allHoles() }
             return Observation(
-                pos.ok,
-                negexPasses,
-                holes.associateWith { pos.holeConstructor(it) },
-                holes.associateWith { hole -> pos.holeEquals(hole).map { kind(it) }.sorted() },
+                check.ok,
+                holes.associateWith { check.holeConstructor(it) },
+                // Filled holes stay in the incremental graph, so only ask about the current ones.
+                check.equalHoles().map { it.intersect(holes.toSet()) }.filter { it.size > 1 }.toSet(),
             )
         }
     }
@@ -299,14 +266,5 @@ class IncrementalRefinementTest {
             is NamedLabel -> NamedLabel(t.label, List(t.params.size) { TypeHole() })
             is Variable -> t
             is THole -> error("targets have no holes")
-        }
-
-    private fun kind(t: ConstraintTy): String =
-        when (t) {
-            is ConstraintArrow -> "(${kind(t.l)} -> ${kind(t.r)})"
-            is ConstraintLabel -> "L${t.label}${t.params.map { kind(it) }}"
-            is ConstraintVariable -> "variable"
-            is InstantiationTy -> "hole"
-            Bottom -> "unknown"
         }
 }

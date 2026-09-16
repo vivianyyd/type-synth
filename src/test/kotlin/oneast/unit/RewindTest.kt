@@ -23,9 +23,8 @@ class RewindTest {
         assertTrue(graph.failed, "rewinding to a point after the failure must not clear it")
     }
 
-    /** type() instantiates the environment again, appending to holes that already have instances. */
     @Test
-    fun `typing an expression does not disturb the recorded hole instances`() {
+    fun `typing an expression does not disturb the check`() {
         val hole = TypeHole()
         val I = NamedLabel(0, listOf())
         val context = SearchState(
@@ -35,8 +34,8 @@ class RewindTest {
         )
         val example = App(Name("f"), Name("x"))
         val u = OneUnification(context, listOf(example))
-        val before = u.holeEquals(hole)
+        val before = u.holeConstructor(hole) to u.equalHoles()
         u.type(example)
-        assertEquals(before, u.holeEquals(hole), "type() must leave the check as it found it")
+        assertEquals(before, u.holeConstructor(hole) to u.equalHoles())
     }
 }
