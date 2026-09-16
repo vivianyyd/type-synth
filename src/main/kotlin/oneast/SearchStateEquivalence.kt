@@ -17,15 +17,12 @@ import util.Logger
  */
 fun SearchState.equivalentTo(other: SearchState, logger: Logger? = null): Boolean {
     if (this.names.keys != other.names.keys) return false
-    val labelMap = HashMap<Int, Int>()
-    val labelMapRev = HashMap<Int, Int>()
+    val labels = Renaming()
     var equivalent = true
     for (name in this.names.keys) {
         val t1 = this.types[this.names.getValue(name)]
         val t2 = other.types[other.names.getValue(name)]
-        val varMap = HashMap<Int, Int>()
-        val varMapRev = HashMap<Int, Int>()
-        if (!matchTypes(t1, t2, labelMap, labelMapRev, varMap, varMapRev)) {
+        if (!matchTypes(t1, t2, labels, Renaming())) {
             if (logger == null) return false
             else {
                 logger.log("Mismatch for $name: $t1 and $t2")
@@ -36,54 +33,65 @@ fun SearchState.equivalentTo(other: SearchState, logger: Logger? = null): Boolea
     return equivalent
 }
 
-fun equalInEmptyLabelContext(a: ConstraintTy, b: ConstraintTy): Boolean {
-    fun ConstraintTy.toNode(): Type =
-        when (this) {
-            is ConstraintArrow -> Arrow(this.l.toNode(), this.r.toNode())
-            is ConstraintLabel -> NamedLabel(this.label, this.params.map { it.toNode() })
-            is ConstraintVariable -> Variable(this.v)
-            is InstantiationTy -> TypeHole()
-            Bottom -> error("Can't compare types that contain bottom")
-        }
-    return matchTypes(a.toNode(), b.toNode(), HashMap(), HashMap(), HashMap(), HashMap())
+fun equalInEmptyLabelContext(a: ConstraintTy, b: ConstraintTy): Boolean =
+    matchTypes(a.toType(), b.toType(), Renaming(), Renaming())
+
+/** Whether [a] and [b] are the same type up to renaming variables. Labels must be the same. */
+fun equalUpToVariableRenaming(a: Type, b: Type): Boolean =
+    matchTypes(a, b, SameIds, Renaming())
+
+/** [this] as a [Type], with each hole instance as a fresh hole. */
+fun ConstraintTy.toType(): Type =
+    when (this) {
+        is ConstraintArrow -> Arrow(l.toType(), r.toType())
+        is ConstraintLabel -> NamedLabel(label, params.map { it.toType() })
+        is ConstraintVariable -> Variable(v)
+        is InstantiationTy -> TypeHole()
+        Bottom -> error("Can't compare types that contain bottom")
+    }
+
+/** How ids on one side of a comparison may correspond to ids on the other. */
+private sealed interface Correspondence {
+    /** Whether [from] may correspond to [to], remembering the pairing if so. */
+    fun pair(from: Int, to: Int): Boolean
+}
+
+/** Each id corresponds only to itself. */
+private object SameIds : Correspondence {
+    override fun pair(from: Int, to: Int) = from == to
+}
+
+/** Ids may be renamed, as long as the renaming is consistent and one-to-one. */
+private class Renaming : Correspondence {
+    private val forward = HashMap<Int, Int>()
+    private val backward = HashMap<Int, Int>()
+
+    override fun pair(from: Int, to: Int): Boolean {
+        forward[from]?.let { return it == to }
+        if (to in backward) return false
+        forward[from] = to
+        backward[to] = from
+        return true
+    }
 }
 
 private fun matchTypes(
     t1: Type,
     t2: Type,
-    labelMap: MutableMap<Int, Int>,
-    labelMapRev: MutableMap<Int, Int>,
-    varMap: MutableMap<Int, Int>,
-    varMapRev: MutableMap<Int, Int>
-): Boolean = when {
-    t1 is THole && t2 is THole -> true
-    t1 is Variable && t2 is Variable -> bindBijective(t1.v, t2.v, varMap, varMapRev)
-    t1 is Arrow && t2 is Arrow ->
-        matchTypes(t1.l, t2.l, labelMap, labelMapRev, varMap, varMapRev) &&
-            matchTypes(t1.r, t2.r, labelMap, labelMapRev, varMap, varMapRev)
-    t1 is NamedLabel && t2 is NamedLabel ->
-        t1.params.size == t2.params.size &&
-            bindBijective(t1.label, t2.label, labelMap, labelMapRev) &&
-            t1.params.zip(t2.params).all { (p1, p2) ->
-                matchTypes(p1, p2, labelMap, labelMapRev, varMap, varMapRev)
-            }
-    else -> false
-}
-
-private fun bindBijective(
-    k: Int,
-    v: Int,
-    map: MutableMap<Int, Int>,
-    mapRev: MutableMap<Int, Int>
-): Boolean {
-    val existing = map[k]
-    if (existing != null) return existing == v
-    val existingRev = mapRev[v]
-    if (existingRev != null) return false
-    map[k] = v
-    mapRev[v] = k
-    return true
-}
+    labels: Correspondence,
+    variables: Correspondence
+): Boolean =
+    when {
+        t1 is THole && t2 is THole -> true
+        t1 is Variable && t2 is Variable -> variables.pair(t1.v, t2.v)
+        t1 is Arrow && t2 is Arrow ->
+            matchTypes(t1.l, t2.l, labels, variables) && matchTypes(t1.r, t2.r, labels, variables)
+        t1 is NamedLabel && t2 is NamedLabel ->
+            t1.params.size == t2.params.size &&
+                labels.pair(t1.label, t2.label) &&
+                t1.params.zip(t2.params).all { (p1, p2) -> matchTypes(p1, p2, labels, variables) }
+        else -> false
+    }
 
 
 /** Total node count: each Variable, Hole, Arrow, and NamedLabel counts as 1. */
@@ -137,22 +145,15 @@ data class StateDiff(val cost: Int, val expectedSize: Int) {
  * binding is deterministic.
  */
 fun SearchState.diffTo(actual: SearchState): StateDiff {
-    val labelMap = HashMap<Int, Int>()
-    val labelMapRev = HashMap<Int, Int>()
+    val labels = Renaming()
     var cost = 0
     val allNames = (this.names.keys + actual.names.keys).sorted()
     for (name in allNames) {
         val expIdx = this.names[name]
         val actIdx = actual.names[name]
         cost += when {
-            expIdx != null && actIdx != null -> {
-                val varMap = HashMap<Int, Int>()
-                val varMapRev = HashMap<Int, Int>()
-                diffTypes(
-                    this.types[expIdx], actual.types[actIdx],
-                    labelMap, labelMapRev, varMap, varMapRev
-                )
-            }
+            expIdx != null && actIdx != null ->
+                diffTypes(this.types[expIdx], actual.types[actIdx], labels, Renaming())
             expIdx != null -> this.types[expIdx].nodeCount()
             else -> actual.types[actIdx!!].nodeCount()
         }
@@ -160,29 +161,19 @@ fun SearchState.diffTo(actual: SearchState): StateDiff {
     return StateDiff(cost = cost, expectedSize = this.nodeCount())
 }
 
-private fun diffTypes(
-    t1: Type,
-    t2: Type,
-    labelMap: MutableMap<Int, Int>,
-    labelMapRev: MutableMap<Int, Int>,
-    varMap: MutableMap<Int, Int>,
-    varMapRev: MutableMap<Int, Int>
-): Int = when {
+private fun diffTypes(t1: Type, t2: Type, labels: Renaming, variables: Renaming): Int = when {
     t1 is THole && t2 is THole -> 0
     t1 is THole -> t2.nodeCount()
     t2 is THole -> t1.nodeCount()
-    t1 is Variable && t2 is Variable ->
-        if (bindBijective(t1.v, t2.v, varMap, varMapRev)) 0 else 1
+    t1 is Variable && t2 is Variable -> if (variables.pair(t1.v, t2.v)) 0 else 1
     t1 is Arrow && t2 is Arrow ->
-        diffTypes(t1.l, t2.l, labelMap, labelMapRev, varMap, varMapRev) +
-            diffTypes(t1.r, t2.r, labelMap, labelMapRev, varMap, varMapRev)
+        diffTypes(t1.l, t2.l, labels, variables) + diffTypes(t1.r, t2.r, labels, variables)
     t1 is NamedLabel && t2 is NamedLabel ->
         if (t1.params.size != t2.params.size) t1.nodeCount() + t2.nodeCount()
         else {
-            val headCost =
-                if (bindBijective(t1.label, t2.label, labelMap, labelMapRev)) 0 else 1
+            val headCost = if (labels.pair(t1.label, t2.label)) 0 else 1
             headCost + t1.params.zip(t2.params).sumOf { (p1, p2) ->
-                diffTypes(p1, p2, labelMap, labelMapRev, varMap, varMapRev)
+                diffTypes(p1, p2, labels, variables)
             }
         }
     else -> t1.nodeCount() + t2.nodeCount()
