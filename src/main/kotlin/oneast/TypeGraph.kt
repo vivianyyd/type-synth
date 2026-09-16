@@ -469,7 +469,10 @@ class TypeGraph {
 
     /**
      * The type denoted by [node], as far as unification has determined it. A class reads back as
-     * the first of these it has: a constructor; a type variable; a hole; otherwise [Bottom].
+     * the first of these it has: a constructor; a hole; a type variable; otherwise [Bottom].
+     *
+     * Holes outrank variables because the search groups holes by what they are equal to: two holes
+     * in one class must be filled the same way, and reporting a variable they share would hide that.
      *
      */
     fun typeAt(node: Int): ConstraintTy = typeAt(node, ignoring = NONE)
@@ -483,19 +486,26 @@ class TypeGraph {
             return if (key[c] == ARROW) ConstraintArrow(typeAt(args[off]), typeAt(args[off + 1]))
             else ConstraintLabel(key[c], List(argLen[c]) { typeAt(args[off + it]) })
         }
-        val v = rigidAt[r]
-        if (v != NONE) return ConstraintVariable(key[v], inst[v])
         val h = liveHoleIn(r, ignoring)
         if (h != NONE) return InstantiationTy(holeOf[h]!!, inst[h])
+        val v = rigidAt[r]
+        if (v != NONE) return ConstraintVariable(key[v], inst[v])
         return Bottom
     }
 
     /**
-     * What unification learned about the hole instance [node], or null if it was never unified with
-     * anything and so is unconstrained.
+     * What unification learned about the hole instance [node]: its class's constructor, another
+     * hole in its class, or a type variable in its class. Null if the class has none of those.
+     *
+     * A class that holds only this hole and anonymous variables says nothing, and whether it holds
+     * any anonymous variables at all depends on the order holes were filled in. So it is reported
+     * as nothing, rather than as [Bottom].
      */
-    fun constraintOn(node: Int): ConstraintTy? =
-        if (classSize[find(node)] > 1) typeAt(node, ignoring = node) else null
+    fun constraintOn(node: Int): ConstraintTy? {
+        val r = find(node)
+        val known = ctorAt[r] != NONE || liveHoleIn(r, ignoring = node) != NONE || rigidAt[r] != NONE
+        return if (known) typeAt(node, ignoring = node) else null
+    }
 
     /**
      * Whether the check leaned on any live hole standing for something in particular. Being equal
