@@ -36,52 +36,105 @@ class TypeGraph {
         /** The label id stored for the arrow type constructor. Label ids are never negative. */
         private const val ARROW = -2
 
-        // Journal opcodes. Each entry is an opcode and up to two values, as described in [rewindTo].
+        /** Starting length of the per-node arrays. They double whenever they fill up. */
+        private const val INITIAL_NODES = 64
+
+        /**
+         * Starting length of [rigidNodes], which has a slot per instantiation and grows as needed.
+         */
+        private const val INITIAL_INSTANTIATIONS = 16
+
+        /**
+         * Starting capacity of the lists kept per hole (its instances) and per instantiation (its
+         * type variables). Most have only a few entries; the lists grow if not.
+         */
+        private const val SHORT_LIST = 4
+
+        // Journal opcodes. A journal entry is an opcode and two values, a and b, which are 0 when
+        // the opcode does not use them. Each opcode below records one kind of change, and says what
+        // a and b hold and what undoing the change does.
+
+        /**
+         * Class root a was merged into another class. Undo: a is a root again, with its own size.
+         */
         private const val UNION = 0
+
+        /**
+         * Class root a gained a constructor; b is what it had before, always NONE. Undo: restore b.
+         */
         private const val SET_CTOR = 1
+
+        /** Class root a's type variable node changed from b. Undo: restore b. */
         private const val SET_RIGID = 2
+
+        /** Class root a's entry into its list of hole nodes changed from b. Undo: restore b. */
         private const val SET_HOLE = 3
+
+        /** Class root a became marked as containing a label-only blank. Undo: clear the mark. */
         private const val SET_LABEL_ONLY = 4
+
+        /**
+         * The hole lists through hole nodes a and b were joined, by swapping their next nodes.
+         * Undo: swap back.
+         */
         private const val SWAP_HOLES = 5
+
+        /**
+         * A type variable node was created for instantiation a. Undo: forget it, the last pair in
+         * a's list.
+         */
         private const val NEW_RIGID = 6
+
+        /** Hole node a was created as its hole's first instance. Undo: forget the hole. */
         private const val NEW_HOLE = 7
-        private const val RETIRE_HOLE = 8
-        private const val SET_NEXT = 9
-        private const val ADD_INSTANCE = 10
+
+        /**
+         * Hole node a was created as a further instance of its hole. Undo: remove it from the
+         * instances.
+         */
+        private const val ADD_INSTANCE = 8
+
+        /** The hole of instance node a was filled. Undo: the hole is unfilled again. */
+        private const val RETIRE_HOLE = 9
+
+        /** Hole node a's next node in its hole list changed from b. Undo: restore b. */
+        private const val SET_NEXT = 10
+
+        /** Unification failed. Undo: it has not failed. */
         private const val FAILED = 11
     }
 
     // ---------------------------------------------------------------- node storage
 
     /** CTOR: label id ([ARROW] for arrows). RIGID: variable id. */
-    private var key = IntArray(64)
+    private var key = IntArray(INITIAL_NODES)
 
     /** RIGID, HOLE: the instantiation the node belongs to. */
-    private var inst = IntArray(64)
+    private var inst = IntArray(INITIAL_NODES)
 
     /** CTOR: where this node's arguments start in [args], and how many there are. */
-    private var argOff = IntArray(64)
-    private var argLen = IntArray(64)
+    private var argOff = IntArray(INITIAL_NODES)
+    private var argLen = IntArray(INITIAL_NODES)
 
     /** HOLE: the hole this node instantiates, needed to report constraints back to the search. */
-    private var holeOf = arrayOfNulls<THole>(64)
+    private var holeOf = arrayOfNulls<THole>(INITIAL_NODES)
 
     // ------------------------------------------------------- class state (valid at roots)
 
-    private var parent = IntArray(64)
-    private var classSize = IntArray(64)
-    private var ctorAt = IntArray(64)
-    private var rigidAt = IntArray(64)
-    private var holeAt = IntArray(64)
+    private var parent = IntArray(INITIAL_NODES)
+    private var classSize = IntArray(INITIAL_NODES)
+    private var ctorAt = IntArray(INITIAL_NODES)
+    private var rigidAt = IntArray(INITIAL_NODES)
+    private var holeAt = IntArray(INITIAL_NODES)
 
     /** The HOLE nodes of a class, as a circular list, so two lists splice in one swap. */
-    private var nextHole = IntArray(64)
+    private var nextHole = IntArray(INITIAL_NODES)
 
     /** Whether a class contains a [Blank] that may only ever become a label. */
-    private var labelOnly = BooleanArray(64)
+    private var labelOnly = BooleanArray(INITIAL_NODES)
 
     /** Scratch for [occurs], stamped with [stamp] so it never needs clearing. */
-    private var seen = IntArray(64)
+    private var seen = IntArray(INITIAL_NODES)
     private var stamp = 0
 
     private var count = 0
@@ -96,7 +149,7 @@ class TypeGraph {
     private val stack = IntVec()
 
     /** For each instantiation, the nodes of its type variables, as (variable, node) pairs. */
-    private var rigidNodes = arrayOfNulls<IntVec>(16)
+    private var rigidNodes = arrayOfNulls<IntVec>(INITIAL_INSTANTIATIONS)
 
     /** Where one hole was instantiated, and whether a refinement has since replaced that hole. */
     private class Instances(val nodes: IntVec) {
@@ -115,6 +168,7 @@ class TypeGraph {
 
     // ---------------------------------------------------------------- node construction
 
+    /** A new node, alone in its own class, with nothing known about it yet. */
     private fun alloc(): Int {
         if (count == parent.size) grow(count * 2)
         val n = count++
@@ -150,7 +204,8 @@ class TypeGraph {
     /** The node for [Variable] [v] at instantiation [i]; shared by every occurrence of it. */
     fun rigid(v: Int, i: Int): Int {
         if (i >= rigidNodes.size) rigidNodes = rigidNodes.copyOf(maxOf(i + 1, rigidNodes.size * 2))
-        val pairs = rigidNodes[i] ?: IntVec(4).also { rigidNodes[i] = it }
+        val pairs = rigidNodes[i] ?: IntVec(SHORT_LIST).also { rigidNodes[i] = it }
+        // Pairs are stored flat: the variable at even positions, its node right after it.
         for (k in 0 until pairs.size step 2) if (pairs[k] == v) return pairs[k + 1]
         val n = alloc()
         key[n] = v
@@ -170,7 +225,7 @@ class TypeGraph {
         labelOnly[n] = hole is Blank && hole.labelOnly
         val instances = holeInstances[hole]
         if (instances == null) {
-            holeInstances[hole] = Instances(IntVec(4).also { it.add(n) })
+            holeInstances[hole] = Instances(IntVec(SHORT_LIST).also { it.add(n) })
             log(NEW_HOLE, n)
         } else {
             instances.nodes.add(n)
@@ -193,7 +248,7 @@ class TypeGraph {
         val n = alloc()
         key[n] = ARROW
         argOff[n] = args.size
-        argLen[n] = 2
+        argLen[n] = 2 // an arrow's arguments are what it takes, then what it returns
         args.add(from, to)
         ctorAt[n] = n
         return n
@@ -208,14 +263,19 @@ class TypeGraph {
     /** The label of the constructor of [node]'s class. Requires it to be a label. */
     fun labelOf(node: Int) = key[ctorAt[find(node)]]
 
-    /** Whether the classes of [x] and [y] have the same constructor with the same number of arguments. */
+    /**
+     * Whether the classes of [x] and [y] have the same constructor with the same number of
+     * arguments.
+     */
     fun sameConstructor(x: Int, y: Int): Boolean {
         val cx = ctorAt[find(x)]
         val cy = ctorAt[find(y)]
         return key[cx] == key[cy] && argLen[cx] == argLen[cy]
     }
 
-    /** The nodes instantiating [hole], in instantiation order, or null if it has been refined away. */
+    /**
+     * The nodes instantiating [hole], in instantiation order, or null if it has been refined away.
+     */
     fun instancesOf(hole: THole): IntVec? = holeInstances[hole]?.takeIf { it.live }?.nodes
 
     /** Forgets [hole], which a refinement has replaced with a type. */
@@ -263,6 +323,7 @@ class TypeGraph {
                 fail()
                 return null
             }
+            // The arrow's first argument is what it takes, and its second is what it returns.
             return if (merge(args[argOff[c]], arg)) args[argOff[c] + 1] else null
         }
         val result = freshVar()
@@ -399,6 +460,8 @@ class TypeGraph {
 
     /** Whether class [v] or class [w] appears strictly inside the term rooted at [c]. */
     private fun occurs(v: Int, w: Int, c: Int): Boolean {
+        // Every call uses a new stamp, so marks left by earlier calls never match. On the rare
+        // wrap-around, clear the marks and start again from 1.
         if (stamp == Int.MAX_VALUE) {
             seen.fill(0)
             stamp = 0
@@ -419,6 +482,7 @@ class TypeGraph {
 
     // ---------------------------------------------------------------- undo
 
+    /** Appends a journal entry. See the opcodes for what [a] and [b] mean for each. */
     private fun log(op: Int, a: Int = 0, b: Int = 0) {
         journalOp.add(op)
         journalA.add(a)
@@ -429,9 +493,7 @@ class TypeGraph {
     fun mark(): Int = journalOp.size
 
     /**
-     * Undoes everything done since [mark] was taken, newest first. Each entry restores what one
-     * change overwrote; its two values are the node or class it changed and, where needed, the
-     * value that was there before.
+     * Undoes everything done since [mark] was taken, newest first, as each opcode describes.
      */
     fun rewindTo(mark: Int) {
         while (journalOp.size > mark) {

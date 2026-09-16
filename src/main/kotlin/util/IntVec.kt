@@ -1,6 +1,9 @@
 package util
 
-/** A growable array of ints, without the boxing of `MutableList<Int>`. */
+/**
+ * A growable array of ints, without the boxing of `MutableList<Int>`. [capacity] is only where it
+ * starts; it doubles whenever it fills up.
+ */
 class IntVec(capacity: Int = 16) {
     private var data = IntArray(capacity)
 
