@@ -254,8 +254,7 @@ class IncrementalRefinementTest {
             return Observation(
                 check.ok,
                 holes.associateWith { check.holeConstructor(it) },
-                // Filled holes stay in the incremental graph, so only ask about the current ones.
-                check.equalHoles().map { it.intersect(holes.toSet()) }.filter { it.size > 1 }.toSet(),
+                check.equalHoles(holes).toSet(),
             )
         }
     }

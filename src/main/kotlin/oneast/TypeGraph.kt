@@ -242,10 +242,15 @@ class TypeGraph {
         return key[cx] == key[cy] && argLen[cx] == argLen[cy]
     }
 
-    /** The holes that have an instance in each class, for classes where there is more than one. */
-    fun equalHoles(): List<Set<THole>> {
+    /**
+     * The subsets of [holes] whose instances share a class, for classes holding more than one of
+     * them. Asking about named holes rather than about every hole the graph remembers is what keeps
+     * a refined hole, whose instances are still wired into their classes, out of the answer.
+     */
+    fun equalHoles(holes: Iterable<THole>): List<Set<THole>> {
         val byClass = HashMap<Int, MutableSet<THole>>()
-        for ((hole, nodes) in holeInstances) {
+        for (hole in holes) {
+            val nodes = holeInstances[hole] ?: continue
             for (i in 0 until nodes.size) byClass.getOrPut(find(nodes[i])) { HashSet() }.add(hole)
         }
         return byClass.values.filter { it.size > 1 }

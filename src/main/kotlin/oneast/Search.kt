@@ -32,9 +32,10 @@ class Search(
     private fun assignLabelClasses(s: SearchState): SearchState? {
         val u = posUnification(s)
         val uf = IntUnionFind()
+        val holes = s.types.flatMap { it.allHoles() }
 
         // Make equivalence classes of blanks
-        u.equalHoles().forEach { group ->
+        u.equalHoles(holes).forEach { group ->
             val blanks = group.filterIsInstance<Blank>()
             if (blanks.isEmpty()) return@forEach
             if (blanks.size != group.size) return null
@@ -63,8 +64,7 @@ class Search(
         val holeToLabel = mutableMapOf<Int, Int>()
 
         // Populate with bindings to existing labels
-        val holes = s.types.flatMap { it.allHoles() }.filterIsInstance<Blank>()
-        holes.forEach {
+        holes.filterIsInstance<Blank>().forEach {
             val label =
                 when (val constructor = u.holeConstructor(it)) {
                     HoleConstructor.None -> return@forEach

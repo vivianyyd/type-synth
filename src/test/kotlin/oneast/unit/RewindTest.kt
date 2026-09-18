@@ -34,8 +34,8 @@ class RewindTest {
         )
         val example = App(Name("f"), Name("x"))
         val u = OneUnification(context, listOf(example))
-        val before = u.holeConstructor(hole) to u.equalHoles()
+        val before = u.holeConstructor(hole) to u.equalHoles(listOf(hole))
         u.type(example)
-        assertEquals(before, u.holeConstructor(hole) to u.equalHoles())
+        assertEquals(before, u.holeConstructor(hole) to u.equalHoles(listOf(hole)))
     }
 }
