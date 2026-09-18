@@ -40,13 +40,12 @@ fun equalInEmptyLabelContext(a: ConstraintTy, b: ConstraintTy): Boolean =
 fun equalUpToVariableRenaming(a: Type, b: Type): Boolean =
     matchTypes(a, b, SameIds, Renaming())
 
-/** [this] as a [Type], with each hole instance as a fresh hole. */
+/** [this] as a [Type]. */
 fun ConstraintTy.toType(): Type =
     when (this) {
         is ConstraintArrow -> Arrow(l.toType(), r.toType())
         is ConstraintLabel -> NamedLabel(label, params.map { it.toType() })
         is ConstraintVariable -> Variable(v)
-        is InstantiationTy -> TypeHole()
         Bottom -> error("Can't compare types that contain bottom")
     }
 
