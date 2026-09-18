@@ -181,7 +181,7 @@ class IncrementalRefinementTest {
 
         private val unification = OneUnification(state, examples.posNoSubexprs)
         private val before = ArrayList<SearchState>()
-        private val marks = ArrayList<Int>()
+        private val marks = ArrayList<TypeGraph.Mark>()
         private val seen = arrayListOf(observe())
 
         init {

@@ -140,6 +140,21 @@ class TypeGraph {
     var clash: Set<Int> = emptySet()
         private set
 
+    /**
+     * A point the graph can be [rewindTo]. It is a journal position, plus the number of nodes and
+     * of constructor arguments there were when it was taken: undoing the recorded changes is not
+     * enough on its own, because allocating a node records nothing to undo.
+     */
+    class Mark internal constructor(
+        internal val journal: Int,
+        internal val nodes: Int,
+        internal val args: Int,
+    )
+
+    /** How many nodes the graph holds. For tests and for diagnosing memory use. */
+    val nodes: Int
+        get() = count
+
     // ---------------------------------------------------------------- node construction
 
     /** A new node, alone in its own class, with nothing known about it yet. */
@@ -398,12 +413,31 @@ class TypeGraph {
         journalB.add(b)
     }
 
-    /** A point to which the graph can later be [rewindTo]: the length of the journal. */
-    fun mark(): Int = journalOp.size
+    /** A point to which the graph can later be [rewindTo]. */
+    fun mark(): Mark = Mark(journalOp.size, count, args.size)
 
-    /** Undoes everything done since [mark] was taken, newest first, as each opcode describes. */
-    fun rewindTo(mark: Int) {
-        while (journalOp.size > mark) {
+    /**
+     * Undoes everything done since [mark] was taken, newest first, as each opcode describes, and
+     * then drops the nodes and constructor arguments allocated since then.
+     *
+     * Dropping them is sound because nothing that survives the undo can point at them. A node
+     * index is stored in exactly two kinds of place. Either the write is journalled and has just
+     * been undone — [parent] by `UNION`, [ctorAt] by `SET_CTOR`, [rigidAt] by `SET_RIGID`,
+     * [rigidNodes] by `NEW_RIGID`, [holeInstances] by `NEW_INSTANCE` — or it was written once when
+     * the *referring* node was allocated and is never touched again: a node's own slot on its
+     * class, its [argOff]/[argLen], and its arguments in [args]. A write of the second kind can
+     * only name nodes that already existed, so a node allocated before the mark never names one
+     * allocated after it. The remaining node indices live in [pending] and [stack], which are
+     * cleared by whatever is using them, and no caller holds one across a rewind.
+     *
+     * So this does not over-delete: every node it drops is unreachable, and it drops nothing that
+     * existed at [mark].
+     */
+    fun rewindTo(mark: Mark) {
+        check(mark.journal <= journalOp.size && mark.nodes <= count && mark.args <= args.size) {
+            "This mark has already been rewound past; the state it named is gone."
+        }
+        while (journalOp.size > mark.journal) {
             val op = journalOp.removeLast()
             val a = journalA.removeLast()
             val b = journalB.removeLast()
@@ -428,6 +462,12 @@ class TypeGraph {
                 FAILED -> failed = false
             }
         }
+        // Only holeOf has to be cleared: it is the one column holding references, so it is the one
+        // that would keep a THole of an abandoned branch alive. Reusing a slot reinitialises the
+        // rest of what is read about a node.
+        holeOf.fill(null, mark.nodes, count)
+        count = mark.nodes
+        args.truncateTo(mark.args)
     }
 
     // ---------------------------------------------------------------- reading types back out
