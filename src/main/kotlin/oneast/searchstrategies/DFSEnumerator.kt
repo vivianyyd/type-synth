@@ -13,17 +13,20 @@ class DFSEnumerator(
     private val depthBound: Int,
     private val logger: Logger
 ) : SearchStrategy(examples) {
-    // TODO can also implement a stateful version where we mutate the tree by picking a hole which
-    //   has a parent pointer, for each of the expansions, modify the parent and recurse. when done,
-    //   restore tree to original state
     override fun candidates(c: SearchState): Sequence<SearchState> {
-        val u = posUnification(c)
-        return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles())
+        val unification = posUnification(c)
+        return if (unification.ok) recCandidates(c, unification, sizeBound, c.numFillableHoles())
         else emptySequence()
     }
 
     /**
      * As long as seed [c] passes positive examples, states returned by this function do as well.
+     *
+     * [unification] is the running check for [c]. Each expansion refines it in place and rewinds
+     * afterwards, so the whole subtree shares one set of equivalence classes rather than rebuilding
+     * them per candidate. Rewinding happens before an expansion rather than after, which is what
+     * makes this safe to consume lazily: a subtree that is abandoned half-way leaves the check
+     * dirty, and whoever resumes cleans it up first.
      */
     private fun recCandidates(
         c: SearchState,
@@ -38,6 +41,7 @@ class DFSEnumerator(
         if (currSizeBound - holesRemaining < 0) return emptySequence()
 
         val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
+        val mark = unification.mark()
         return hole
             .expansions(
                 unification = unification,
@@ -49,52 +53,56 @@ class DFSEnumerator(
                 mustBeLeaf = currSizeBound - holesRemaining <= 1 || depth >= depthBound
             )
             .asSequence()
-            .map {
+            .flatMap { expansion ->
+                unification.rewindTo(mark)
                 logger.count("Total candidates")
-                it.numFillableHoles() to c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) }
-            }
-            .filterNot { (_, newCandidate) -> failsNegexWithNoHoleConstraints(newCandidate) }
-            .flatMap { (introducedHoles, newCandidate) ->
-                val u = posUnification(newCandidate)
-                if (u.ok)
+                val newCandidate = c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, expansion) }
+                // TODO: prune using negative examples.
+                if (unification.refine(hole, expansion))
                     recCandidates(
                         newCandidate,
-                        u,
+                        unification,
                         currSizeBound = currSizeBound - 1,
-                        holesRemaining = holesRemaining - 1 + introducedHoles
+                        holesRemaining = holesRemaining - 1 + expansion.numFillableHoles()
                     )
-                else if (emitLabelBlanks && u.badLabels().isNotEmpty()) {
-                    // A bad label that is committed cannot be rewritten, so there is no solution.
-                    if (u.badLabels().any { it in newCandidate.committedLabels })
-                        return@flatMap emptySequence<SearchState>()
-                    // If we failed because we tried to unify distinct labels, we should regenerate those labels.
-                    // TODO: Not sure how to guarantee termination. I think it holds because we only backtrack
-                    //       if there are distinct labels to merge. Does this introduce duplicates?
-                    fun replaceBadLabelsWithBlanks(t: Type): Type =
-                        when (t) {
-                            is Arrow ->
-                                Arrow(
-                                    replaceBadLabelsWithBlanks(t.l),
-                                    replaceBadLabelsWithBlanks(t.r)
-                                )
-                            is NamedLabel ->
-                                if (t.label in u.badLabels()) Blank(labelOnly = true)
-                                else
-                                    t.copy(params = t.params.map { replaceBadLabelsWithBlanks(it) })
-                            is THole,
-                            is Variable -> t
-                        }
-
-                    val badLabelsBlanked = newCandidate.mapTypesAndSetLabelArities(
-                        newArities = newCandidate.labelArities.filterNot { (l, _) -> l in u.badLabels() }
-                    ) { replaceBadLabelsWithBlanks(it) }
-                    recCandidates(
-                        badLabelsBlanked,
-                        u,
-                        currSizeBound = currSizeBound - 1,
-                        holesRemaining = badLabelsBlanked.numFillableHoles()
-                    )
-                } else emptySequence()
+                else retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound)
             }
+    }
+
+    /**
+     * If we failed only because two distinct labels had to be equal, those labels were guesses we
+     * are free to take back: blank them out and enumerate them again.
+     *
+     * TODO: Not sure how to guarantee termination. I think it holds because we only backtrack if
+     *       there are distinct labels to merge. Does this introduce duplicates?
+     */
+    private fun retryWithoutBadLabels(
+        c: SearchState,
+        badLabels: Set<Int>,
+        currSizeBound: Int
+    ): Sequence<SearchState> {
+        if (!emitLabelBlanks || badLabels.isEmpty()) return emptySequence()
+        // A bad label that is committed cannot be rewritten, so there is no solution.
+        if (badLabels.any { it in c.committedLabels }) return emptySequence()
+
+        fun blankBadLabels(t: Type): Type =
+            when (t) {
+                is Arrow -> Arrow(blankBadLabels(t.l), blankBadLabels(t.r))
+                is NamedLabel ->
+                    if (t.label in badLabels) Blank(labelOnly = true)
+                    else t.copy(params = t.params.map { blankBadLabels(it) })
+                is THole,
+                is Variable -> t
+            }
+
+        val blanked =
+            c.mapTypesAndSetLabelArities(
+                newArities = c.labelArities.filterNot { (l, _) -> l in badLabels }
+            ) { blankBadLabels(it) }
+        // The labels changed everywhere at once, so this subtree needs a check of its own.
+        val unification = posUnification(blanked)
+        return if (unification.ok)
+            recCandidates(blanked, unification, currSizeBound - 1, blanked.numFillableHoles())
+        else emptySequence()
     }
 }
