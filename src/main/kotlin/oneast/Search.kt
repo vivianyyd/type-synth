@@ -33,15 +33,17 @@ class Search(
         val u = posUnification(s)
         val uf = IntUnionFind()
         val holes = s.types.flatMap { it.allHoles() }
+        val blanks = holes.filterIsInstance<Blank>()
+        // An outline has no type holes left. If one is here, a blank it was unified with could still
+        // turn into anything, so nothing can be concluded about that blank's label.
+        if (blanks.size != holes.size) return null
+        require(blanks.all { it.labelOnly })
 
-        // Make equivalence classes of blanks
-        u.equalHoles(holes).forEach { group ->
-            val blanks = group.filterIsInstance<Blank>()
-            if (blanks.isEmpty()) return@forEach
-            if (blanks.size != group.size) return null
-            require(blanks.all { it.labelOnly })
-            blanks.zipWithNext { x, y -> uf.union(x.id, y.id) }
-        }
+        // Make equivalence classes of blanks. Tying each blank to the class of each of its
+        // instantiations puts blanks that share a class in one set, and also joins two classes that
+        // a single blank was instantiated in, which its other members then share a label with.
+        // Class ids are negated: hole ids are never negative, so the two cannot collide.
+        blanks.forEach { blank -> u.classesOf(blank).forEach { uf.union(blank.id, -1 - it) } }
 
         // TODO It's not really clear why we need this if we've done the previous step properly but
         //   we do sooo that is bad. Do we still need it if all primitives of a single type are the
@@ -64,7 +66,7 @@ class Search(
         val holeToLabel = mutableMapOf<Int, Int>()
 
         // Populate with bindings to existing labels
-        holes.filterIsInstance<Blank>().forEach {
+        blanks.forEach {
             val label =
                 when (val constructor = u.holeConstructor(it)) {
                     HoleConstructor.None -> return@forEach

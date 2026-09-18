@@ -164,7 +164,11 @@ class IncrementalRefinementTest {
     private data class Observation(
         val posOk: Boolean,
         val holeConstructors: Map<THole, HoleConstructor>,
-        val equalHoles: Set<Set<THole>>,
+        /**
+         * Which pairs of holes have an instantiation in one class. Stated as pairs of holes because
+         * class ids are not comparable between two graphs, and this has to be.
+         */
+        val sharingAClass: Set<Set<THole>>,
     )
 
     private inner class Walk(file: String) {
@@ -251,10 +255,18 @@ class IncrementalRefinementTest {
 
         private fun observation(check: OneUnification): Observation {
             val holes = state.types.flatMap { it.allHoles() }
+            val classes = holes.associateWith { check.classesOf(it).toSet() }
             return Observation(
                 check.ok,
                 holes.associateWith { check.holeConstructor(it) },
-                check.equalHoles(holes).toSet(),
+                holes.flatMap { a ->
+                    holes.mapNotNull { b ->
+                        if (a !== b && classes.getValue(a).any { it in classes.getValue(b) })
+                            setOf(a, b)
+                        else null
+                    }
+                }
+                    .toSet(),
             )
         }
     }

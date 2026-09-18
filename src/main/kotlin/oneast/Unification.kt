@@ -37,15 +37,20 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
     fun badLabels(): Set<Int> = graph.clash
 
     /**
-     * Groups of [holes] that must be filled with the same type, because some instantiation of each
-     * was unified with some instantiation of the others. Only groups of more than one hole.
+     * The unification class of each instantiation of [hole]. Opaque ids: they say only which
+     * instantiations landed together, they are comparable only within this check, and only until it
+     * changes.
      *
-     * The caller names the holes because a [refine] cannot take the hole it filled out of the graph:
-     * its instances are wired into their classes and a rewind has to bring them back. Naming the
-     * holes the state still has is what keeps the answer the same as a check built from scratch.
+     * Two instantiations being unified does not make their holes equal — an instantiation of a hole
+     * is a fresh variable, so `h1@3 == h2@4` holds with `h1 = a` and `h2 = int`. What it forces is
+     * that the holes' outermost constructors agree, which for a [Blank] is the whole question,
+     * because a Blank becomes a label. That is what [Search] uses this for.
      */
-    fun equalHoles(holes: Iterable<THole>): List<Set<THole>> =
-        if (ok) graph.equalHoles(holes) else emptyList()
+    fun classesOf(hole: THole): IntArray {
+        if (!ok) return IntArray(0)
+        val instances = graph.instancesOf(hole) ?: return IntArray(0)
+        return IntArray(instances.size) { graph.find(instances[it]) }
+    }
 
     /**
      * The type constructor every instantiation of [hole] was unified with. Asking this way avoids

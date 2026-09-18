@@ -385,7 +385,7 @@ class UnificationTest {
         val context = makeContext("f" to Arrow(a, Arrow(a, I)), "Num" to num, "true" to tru)
         val u = OneUnification(context, listOf(App(App(f, Name("Num")), Name("true"))))
         assertTrue(u.ok)
-        assertEquals(listOf(setOf(num, tru)), u.equalHoles(listOf(num, tru)))
+        assertEquals(u.classesOf(num).single(), u.classesOf(tru).single())
     }
 
     /**
