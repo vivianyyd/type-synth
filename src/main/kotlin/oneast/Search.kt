@@ -39,11 +39,16 @@ class Search(
         if (blanks.size != holes.size) return null
         require(blanks.all { it.labelOnly })
 
-        // Make equivalence classes of blanks. Tying each blank to the class of each of its
-        // instantiations puts blanks that share a class in one set, and also joins two classes that
-        // a single blank was instantiated in, which its other members then share a label with.
-        // Class ids are negated: hole ids are never negative, so the two cannot collide.
-        blanks.forEach { blank -> u.classesOf(blank).forEach { uf.union(blank.id, -1 - it) } }
+        // Make equivalence classes of blanks: in each class, tie every blank to the first blank
+        // seen there. A blank instantiated in two classes takes part in both ties, so blanks that
+        // are connected only through it end up in one class as well.
+        val firstBlankInClass = HashMap<Int, Int>()
+        blanks.forEach { blank ->
+            for (cls in u.classesOf(blank)) {
+                val first = firstBlankInClass.putIfAbsent(cls, blank.id)
+                if (first != null) uf.union(blank.id, first)
+            }
+        }
 
         // TODO It's not really clear why we need this if we've done the previous step properly but
         //   we do sooo that is bad. Do we still need it if all primitives of a single type are the

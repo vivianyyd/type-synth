@@ -299,7 +299,6 @@ data class NamedLabel(val label: Int, override val params: List<Type>) : Constru
 sealed class THole : Type {
     companion object {
         var nextId = 0
-
     }
 
     val id = nextId++
