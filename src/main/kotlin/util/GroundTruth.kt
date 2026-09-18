@@ -14,14 +14,16 @@ class CheckingGroundTruthOracle(secret: Map<String, Type>) : GroundTruth, Oracle
 
     override fun valid(example: Example): Boolean = OneUnification(truth, listOf(example)).ok
 
+    // type() builds the expression in a graph of its own, so passing the expressions this is about
+    // to be asked about would only check them twice.
     override fun equal(a: Example, b: Example): Boolean {
-        val u = OneUnification(truth, listOf(a, b))
+        val u = OneUnification(truth, emptyList())
         val ta = u.type(a)
         val tb = u.type(b)
         return ta != null && tb != null && equalInEmptyLabelContext(ta, tb)
     }
 
-    override fun dummy(e: Example): Int = OneUnification(truth, listOf(e)).type(e).hashCode()
+    override fun dummy(e: Example): Int = OneUnification(truth, emptyList()).type(e).hashCode()
 }
 
 private fun Type.labels(): Set<Pair<Int, Int>> =

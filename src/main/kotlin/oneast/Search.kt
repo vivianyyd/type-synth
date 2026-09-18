@@ -230,12 +230,11 @@ class Search(
                 } // else emptySequence()
             }
 
-        return finalResults.filter { c ->
-            if (!(posUnification(c).ok))
-                error(
-                    "Enumerator should never return something that fails posexs at concretization stage"
-                )
-            true // TODO: prune using negative examples.
+        // TODO: prune using negative examples.
+        return finalResults.onEach { c ->
+            check(posUnification(c).ok) {
+                "Enumerator should never return something that fails posexs at concretization stage"
+            }
         }
     }
 

@@ -14,7 +14,7 @@ class DFSEnumerator(
     private val logger: Logger
 ) : SearchStrategy(examples) {
     override fun candidates(c: SearchState): Sequence<SearchState> {
-        val unification = OneUnification(c, examples.posNoSubexprs)
+        val unification = posUnification(c)
         return if (unification.ok) recCandidates(c, unification, sizeBound, c.numFillableHoles())
         else emptySequence()
     }
@@ -100,7 +100,7 @@ class DFSEnumerator(
                 newArities = c.labelArities.filterNot { (l, _) -> l in badLabels }
             ) { blankBadLabels(it) }
         // The labels changed everywhere at once, so this subtree needs a check of its own.
-        val unification = OneUnification(blanked, examples.posNoSubexprs)
+        val unification = posUnification(blanked)
         return if (unification.ok)
             recCandidates(blanked, unification, currSizeBound - 1, blanked.numFillableHoles())
         else emptySequence()
