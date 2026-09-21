@@ -107,9 +107,7 @@ class Search(
                     sizeBound = size,
                     depthBound = depth,
                 )
-                    .filter { s ->
-                        examples.neg.all { !OneUnification(s, listOf(it)).passedWithNoConstraints }
-                    }
+                // TODO: prune using negative examples.
             }
 
         val withLabelClasses = initialOutlines.mapNotNull { assignLabelClasses(it) }.toSet()
@@ -234,12 +232,11 @@ class Search(
                 } // else emptySequence()
             }
 
-        return finalResults.filter { c ->
-            if (!(posUnification(c).ok))
-                error(
-                    "Enumerator should never return something that fails posexs at concretization stage"
-                )
-            examples.neg.all { !OneUnification(c, listOf(it)).ok }
+        // TODO: prune using negative examples.
+        return finalResults.onEach { c ->
+            check(posUnification(c).ok) {
+                "Enumerator should never return something that fails posexs at concretization stage"
+            }
         }
     }
 

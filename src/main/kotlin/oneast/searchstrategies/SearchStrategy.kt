@@ -12,7 +12,4 @@ abstract class SearchStrategy(private val examples: Examples) {
     abstract fun candidates(c: SearchState): Sequence<SearchState>
 
     protected fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
-
-    protected fun failsNegexWithNoHoleConstraints(s: SearchState) =
-        examples.neg.any { OneUnification(s, listOf(it)).passedWithNoConstraints }
 }
