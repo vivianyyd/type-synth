@@ -63,38 +63,44 @@ class DFSEnumerator(
                         currSizeBound = currSizeBound - 1,
                         holesRemaining = holesRemaining - 1 + introducedHoles
                     )
-                else if (emitLabelBlanks && u.badLabels().isNotEmpty()) {
-                    // A bad label that is committed cannot be rewritten, so there is no solution.
-                    if (u.badLabels().any { it in newCandidate.committedLabels })
-                        return@flatMap emptySequence<SearchState>()
-                    // If we failed because we tried to unify distinct labels, we should regenerate those labels.
-                    // TODO: Not sure how to guarantee termination. I think it holds because we only backtrack
-                    //       if there are distinct labels to merge. Does this introduce duplicates?
-                    fun replaceBadLabelsWithBlanks(t: Type): Type =
-                        when (t) {
-                            is Arrow ->
-                                Arrow(
-                                    replaceBadLabelsWithBlanks(t.l),
-                                    replaceBadLabelsWithBlanks(t.r)
-                                )
-                            is NamedLabel ->
-                                if (t.label in u.badLabels()) Blank(labelOnly = true)
-                                else
-                                    t.copy(params = t.params.map { replaceBadLabelsWithBlanks(it) })
-                            is THole,
-                            is Variable -> t
-                        }
-
-                    val badLabelsBlanked = newCandidate.mapTypesAndSetLabelArities(
-                        newArities = newCandidate.labelArities.filterNot { (l, _) -> l in u.badLabels() }
-                    ) { replaceBadLabelsWithBlanks(it) }
-                    recCandidates(
-                        badLabelsBlanked,
-                        u,
-                        currSizeBound = currSizeBound - 1,
-                        holesRemaining = badLabelsBlanked.numFillableHoles()
-                    )
-                } else emptySequence()
+                else retryWithoutBadLabels(newCandidate, u.badLabels(), currSizeBound)
             }
+    }
+
+    /**
+     * If we failed only because two distinct labels had to be equal, those labels were guesses we
+     * are free to take back: blank them out and enumerate them again.
+     *
+     * TODO: Not sure how to guarantee termination. I think it holds because we only backtrack if
+     *       there are distinct labels to merge. Does this introduce duplicates?
+     */
+    private fun retryWithoutBadLabels(
+        c: SearchState,
+        badLabels: Set<Int>,
+        currSizeBound: Int
+    ): Sequence<SearchState> {
+        if (!emitLabelBlanks || badLabels.isEmpty()) return emptySequence()
+        // A bad label that is committed cannot be rewritten, so there is no solution.
+        if (badLabels.any { it in c.committedLabels }) return emptySequence()
+
+        fun blankBadLabels(t: Type): Type =
+            when (t) {
+                is Arrow -> Arrow(blankBadLabels(t.l), blankBadLabels(t.r))
+                is NamedLabel ->
+                    if (t.label in badLabels) Blank(labelOnly = true)
+                    else t.copy(params = t.params.map { blankBadLabels(it) })
+                is THole,
+                is Variable -> t
+            }
+
+        val blanked =
+            c.mapTypesAndSetLabelArities(
+                newArities = c.labelArities.filterNot { (l, _) -> l in badLabels }
+            ) { blankBadLabels(it) }
+        // The labels changed everywhere at once, so this subtree needs a check of its own.
+        val unification = posUnification(blanked)
+        return if (unification.ok)
+            recCandidates(blanked, unification, currSizeBound - 1, blanked.numFillableHoles())
+        else emptySequence()
     }
 }
