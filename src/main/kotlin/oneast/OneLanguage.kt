@@ -311,53 +311,6 @@ data class NamedLabel(val label: Int, override val params: List<Type>) : Constru
 sealed class THole : Type {
     companion object {
         var nextId = 0
-
-        /** So the numbers are smaller for readability. Only call me between phases */
-        fun resetIds() {
-            nextId = 0
-        }
-
-        /**
-         * Antiunifies types in [exprs], *ignoring Instantiations and Bottom*. Only considers Variables
-         * and Constructors.
-         */
-        fun antiunify(exprs: List<ConstraintTy>, defaultAntiunifier: () -> Type): Type? {
-            if (exprs.isEmpty()) return defaultAntiunifier()
-            if (exprs.any { it is ConstraintVariable }) return defaultAntiunifier()
-
-            val constructors = exprs.filterIsInstance<ConstraintTypeConstructor>()
-
-            if (constructors.isEmpty() ||
-                constructors.any { a -> constructors.any { b -> !a.match(b) } }
-            )
-                return defaultAntiunifier()
-
-            // We know they match now
-            return when (constructors.first()) {
-                is ConstraintArrow -> {
-                    antiunify(constructors.map { (it as ConstraintArrow).l }, defaultAntiunifier)
-                        ?.let { l ->
-                            antiunify(
-                                constructors.map { (it as ConstraintArrow).r }, defaultAntiunifier
-                            )
-                                ?.let { r -> Arrow(l, r) }
-                        }
-                }
-                is ConstraintLabel -> {
-                    val params =
-                        List(constructors.first().params.size) { i ->
-                            antiunify(
-                                constructors.map { (it as ConstraintLabel).params[i] },
-                                defaultAntiunifier
-                            )
-                        }
-                            .filterNotNull()
-                    if (params.size != constructors.first().params.size) null
-                    else NamedLabel((constructors.first() as ConstraintLabel).label, params)
-                }
-            }
-        }
-
     }
 
     val id = nextId++
