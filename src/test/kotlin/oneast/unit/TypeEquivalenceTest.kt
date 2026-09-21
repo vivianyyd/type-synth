@@ -4,7 +4,6 @@ import oneast.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
-import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 /** Tests for the type-level comparisons in `SearchStateEquivalence.kt`. */
@@ -90,16 +89,6 @@ class TypeEquivalenceTest {
     fun `toType keeps labels and structure`() {
         val t = ConstraintLabel(3, listOf(ConstraintVariable(0, 0), ConstraintLabel(1, listOf())))
         assertTrue(equalUpToVariableRenaming(l(3, a, l(1)), t.toType()))
-    }
-
-    @Test
-    fun `toType makes each hole instance a fresh hole`() {
-        val hole = TypeHole()
-        val one = InstantiationTy(hole, 0).toType()
-        val two = InstantiationTy(hole, 0).toType()
-        assertTrue(one is THole && two is THole)
-        assertNotSame(one, two)
-        assertTrue(equalUpToVariableRenaming(one, two))
     }
 
     @Test

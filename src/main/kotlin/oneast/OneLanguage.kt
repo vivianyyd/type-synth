@@ -83,8 +83,6 @@ class SearchState(
 
     fun numFillableHoles() = types.sumOf { it.numFillableHoles() }
 
-    fun blanks() = types.flatMap { it.blanks() }
-
     fun noHoles() = types.all { it.noHoles() }
 
     fun typeOf(name: String): Type {
@@ -194,8 +192,6 @@ sealed interface Type {
 
     fun maxParamDepth(countArrow: Boolean): Int
 
-    fun instantiate(instId: Int): ConstraintTy
-
     fun noHoles(): Boolean = allHoles().isEmpty()
 
     fun allHoles(): List<THole>
@@ -232,8 +228,6 @@ data class Variable(val v: Int) : Type {
     override fun allHoles() = emptyList<THole>()
 
     override fun allHolesWithDepth(topLevel: Boolean) = emptyList<Pair<THole, Int>>()
-
-    override fun instantiate(instId: Int): ConstraintTy = ConstraintVariable(v, instId)
 
     override fun shallowestFillableHole(topLevel: Boolean) = null
 
@@ -275,9 +269,6 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
     override fun maxParamDepth(countArrow: Boolean) =
         (if (countArrow) 1 else 0) + max(l.maxParamDepth(true), r.maxParamDepth(countArrow))
 
-    override fun instantiate(instId: Int): ConstraintTy =
-        ConstraintArrow(l.instantiate(instId), r.instantiate(instId))
-
     override fun replace(hole: THole, replacement: Type) =
         Arrow(l.replace(hole, replacement), r.replace(hole, replacement))
 
@@ -299,9 +290,6 @@ data class NamedLabel(val label: Int, override val params: List<Type>) : Constru
         // 1 plus the max depth of any child, or 0 if this node is a leaf
         params.maxOfOrNull { it.maxParamDepth(countArrow) }?.let { it + 1 } ?: 0
 
-    override fun instantiate(instId: Int): ConstraintTy =
-        ConstraintLabel(label, params.map { it.instantiate(instId) })
-
     override fun replace(hole: THole, replacement: Type) =
         copy(params = params.map { it.replace(hole, replacement) })
 
@@ -320,8 +308,6 @@ sealed class THole : Type {
     override fun allHoles() = listOf(this)
 
     override fun allHolesWithDepth(topLevel: Boolean) = listOf(this to 0)
-
-    override fun instantiate(instId: Int): ConstraintTy = InstantiationTy(this, instId)
 
     override fun variables() = emptySet<Int>()
 
@@ -420,41 +406,17 @@ class Blank(val labelOnly: Boolean) : THole() {
     override fun toString() = if (labelOnly) ".L" else "."
 }
 
-sealed interface ConstraintTy {
-    fun variables(): List<ConstraintVariable>
-}
+sealed interface ConstraintTy
 
 object Bottom : ConstraintTy {
-    override fun variables() = emptyList<ConstraintVariable>()
-
     override fun toString(): String = "⊥"
 }
 
-// TODO Consider whether I want two different types of instantiations for TypeHoles vs
-//   UnnamedLabels. UnnamedLabels behave differently from TypeHoles because while their
-//   instantiated types can differ, they always have the same root. Does it matter?
-data class InstantiationTy(val hole: THole, val instId: Int) : ConstraintTy {
-    override fun variables() = emptyList<ConstraintVariable>()
-
-    override fun toString(): String = "_${hole.id}-$instId"
-}
-
 data class ConstraintVariable(val v: Int, val instId: Int) : ConstraintTy {
-    private val variables by lazy { listOf(this) }
-
-    override fun variables() = variables
-
     override fun toString(): String = "V$v-$instId"
 }
 
-sealed class ConstraintTypeConstructor(open val params: List<ConstraintTy>) : ConstraintTy {
-    /** Whether this node shallow matches with [other]. */
-    abstract fun match(other: ConstraintTypeConstructor): Boolean
-
-    private val variables by lazy { params.flatMap { it.variables() } }
-
-    override fun variables(): List<ConstraintVariable> = variables
-}
+sealed class ConstraintTypeConstructor(open val params: List<ConstraintTy>) : ConstraintTy
 
 data class ConstraintArrow(override val params: List<ConstraintTy>) :
     ConstraintTypeConstructor(params) {
@@ -467,15 +429,10 @@ data class ConstraintArrow(override val params: List<ConstraintTy>) :
 
     constructor(l: ConstraintTy, r: ConstraintTy) : this(listOf(l, r))
 
-    override fun match(other: ConstraintTypeConstructor) = other is ConstraintArrow
-
     override fun toString(): String = "($l) -> ($r)"
 }
 
 data class ConstraintLabel(val label: Int, override val params: List<ConstraintTy>) :
     ConstraintTypeConstructor(params) {
-    override fun match(other: ConstraintTypeConstructor) =
-        other is ConstraintLabel && label == other.label && params.size == other.params.size
-
     override fun toString(): String = "L$label$params"
 }
