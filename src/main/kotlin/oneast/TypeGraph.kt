@@ -3,12 +3,17 @@ package oneast
 import util.IntVec
 
 /**
- * A store of type terms under syntactic unification.
+ * A store of type terms under syntactic unification, with an undo journal.
  *
  * Terms are nodes, identified by [Int]. A node's own shape never changes; what changes is which
  * nodes are known to denote the same type, which is tracked by union-find. Each *class* (union-find
  * root) remembers the constructor and the type variable it contains, so a merge only has to look at
  * the two roots.
+ *
+ * Every write is journalled, so [rewindTo] restores an earlier state exactly. That is what makes
+ * checking a refinement cheap: a child search state differs from its parent only in that one hole
+ * has grown into a type, so it can be checked by merging that growth into the parent's graph
+ * (O(occurrences of the hole)) rather than re-deriving the whole thing (O(size of all examples)).
  *
  * A node is one of:
  * - a constructor: an arrow or a label applied to argument nodes. Arrows are labels whose id is
@@ -42,6 +47,43 @@ class TypeGraph {
          * type variables). Most have only a few entries; the lists grow if not.
          */
         private const val SHORT_LIST = 4
+
+        // Journal opcodes. A journal entry is an opcode and two values, a and b, which are 0 when
+        // the opcode does not use them. Each opcode below records one kind of change, and says what
+        // a and b hold and what undoing the change does.
+
+        /**
+         * Class root a was merged into another class. Undo: a is a root again, with its own size.
+         */
+        private const val UNION = 0
+
+        /**
+         * Class root a gained a constructor; b is what it had before, always NONE. Undo: restore b.
+         */
+        private const val SET_CTOR = 1
+
+        /**
+         * Class root a gained a type variable; b is what it had before, always NONE. Undo: restore b.
+         */
+        private const val SET_RIGID = 2
+
+        /** Class root a became marked as containing a label-only blank. Undo: clear the mark. */
+        private const val SET_LABEL_ONLY = 3
+
+        /**
+         * A type variable node was created for instantiation a. Undo: forget it, the last pair in
+         * a's list.
+         */
+        private const val NEW_RIGID = 4
+
+        /**
+         * Hole node a was created as an instance of its hole. Undo: remove it from the hole's
+         * instances, and forget the hole if that leaves none.
+         */
+        private const val NEW_INSTANCE = 5
+
+        /** Unification failed. Undo: it has not failed. */
+        private const val FAILED = 6
     }
 
     // ---------------------------------------------------------------- node storage
@@ -55,6 +97,9 @@ class TypeGraph {
     /** For a constructor: where its arguments start in [args], and how many there are. */
     private var argOff = IntArray(INITIAL_NODES)
     private var argLen = IntArray(INITIAL_NODES)
+
+    /** For a hole node, the hole it instantiates. */
+    private var holeOf = arrayOfNulls<THole>(INITIAL_NODES)
 
     // ------------------------------------------------------- class state (valid at roots)
 
@@ -73,6 +118,11 @@ class TypeGraph {
     private var count = 0
     private val args = IntVec()
 
+    /** The journal: one entry per change, as three parallel columns. */
+    private val journalOp = IntVec()
+    private val journalA = IntVec()
+    private val journalB = IntVec()
+
     private val pending = IntVec()
     private val stack = IntVec()
 
@@ -82,13 +132,16 @@ class TypeGraph {
     /** The nodes instantiating each hole, in the order they were created. */
     private val holeInstances = HashMap<THole, IntVec>()
 
-    /** True once a merge has failed. */
+    /** True once a merge has failed; cleared by rewinding past the failure. */
     var failed = false
         private set
 
     /** The two labels whose mismatch caused the most recent failure, if that is what it was. */
     var clash: Set<Int> = emptySet()
         private set
+
+    /** A point the graph can be [rewindTo]: a position in its journal. */
+    class Mark internal constructor(internal val journal: Int)
 
     // ---------------------------------------------------------------- node construction
 
@@ -101,6 +154,7 @@ class TypeGraph {
         ctorAt[n] = NONE
         rigidAt[n] = NONE
         labelOnly[n] = false
+        holeOf[n] = null
         return n
     }
 
@@ -109,6 +163,7 @@ class TypeGraph {
         inst = inst.copyOf(n)
         argOff = argOff.copyOf(n)
         argLen = argLen.copyOf(n)
+        holeOf = holeOf.copyOf(n)
         parent = parent.copyOf(n)
         classSize = classSize.copyOf(n)
         ctorAt = ctorAt.copyOf(n)
@@ -130,6 +185,7 @@ class TypeGraph {
         inst[n] = i
         rigidAt[n] = n
         pairs.add(v, n)
+        log(NEW_RIGID, i)
         return n
     }
 
@@ -137,8 +193,10 @@ class TypeGraph {
     fun hole(hole: THole, i: Int): Int {
         val n = alloc()
         inst[n] = i
+        holeOf[n] = hole
         labelOnly[n] = hole is Blank && hole.labelOnly
         holeInstances.getOrPut(hole) { IntVec(SHORT_LIST) }.add(n)
+        log(NEW_INSTANCE, n)
         return n
     }
 
@@ -214,7 +272,7 @@ class TypeGraph {
 
     /**
      * Unifies the types denoted by [a] and [b]. Returns false, and leaves [failed] set, if they are
-     * incompatible.
+     * incompatible; the caller is expected to rewind rather than to keep using the graph.
      */
     fun merge(a: Int, b: Int): Boolean {
         if (failed) return false
@@ -241,8 +299,13 @@ class TypeGraph {
         return true
     }
 
-    /** Records a type error. */
+    /**
+     * Records a type error. Journalled rather than remembered as a position, because a merge can
+     * fail without having written anything, and then the state before the failure and the state
+     * after it are the same position — so a rewind to that position could not tell them apart.
+     */
     private fun fail(): Boolean {
+        log(FAILED)
         failed = true
         return false
     }
@@ -269,7 +332,8 @@ class TypeGraph {
      * escapes this: there, structure enters only when a variable is bound, so one check per
      * binding covers every case.
      *
-     * The check runs before any write, so a rejected merge leaves nothing behind.
+     * The check runs before any write, so a rejected merge leaves nothing behind and the invariant
+     * holds even while a failed [merge] is unwinding.
      */
     private fun link(x: Int, y: Int): Boolean {
         val big: Int
@@ -285,14 +349,18 @@ class TypeGraph {
         if (ctor != NONE && occurs(big, small, ctor)) return false
 
         if (ctorAt[big] == NONE && ctorAt[small] != NONE) {
+            log(SET_CTOR, big, ctorAt[big])
             ctorAt[big] = ctorAt[small]
         }
         if (rigidAt[big] == NONE && rigidAt[small] != NONE) {
+            log(SET_RIGID, big, rigidAt[big])
             rigidAt[big] = rigidAt[small]
         }
         if (labelOnly[small] && !labelOnly[big]) {
+            log(SET_LABEL_ONLY, big)
             labelOnly[big] = true
         }
+        log(UNION, small)
         parent[small] = big
         classSize[big] += classSize[small]
         // A blank that stands for a label can never turn out to be a function.
@@ -319,6 +387,47 @@ class TypeGraph {
             if (inner != NONE) for (i in 0 until argLen[inner]) stack.add(args[argOff[inner] + i])
         }
         return false
+    }
+
+    // ---------------------------------------------------------------- undo
+
+    /** Appends a journal entry. See the opcodes for what [a] and [b] mean for each. */
+    private fun log(op: Int, a: Int = 0, b: Int = 0) {
+        journalOp.add(op)
+        journalA.add(a)
+        journalB.add(b)
+    }
+
+    /** A point to which the graph can later be [rewindTo]. */
+    fun mark(): Mark = Mark(journalOp.size)
+
+    /** Undoes everything done since [mark] was taken, newest first, as each opcode describes. */
+    fun rewindTo(mark: Mark) {
+        while (journalOp.size > mark.journal) {
+            val op = journalOp.removeLast()
+            val a = journalA.removeLast()
+            val b = journalB.removeLast()
+            when (op) {
+                UNION -> {
+                    classSize[parent[a]] -= classSize[a]
+                    parent[a] = a
+                }
+                SET_CTOR -> ctorAt[a] = b
+                SET_RIGID -> rigidAt[a] = b
+                SET_LABEL_ONLY -> labelOnly[a] = false
+                NEW_RIGID -> rigidNodes[a]!!.run {
+                    removeLast()
+                    removeLast()
+                }
+                NEW_INSTANCE -> {
+                    val hole = holeOf[a]!!
+                    val instances = holeInstances.getValue(hole)
+                    instances.removeLast()
+                    if (instances.isEmpty()) holeInstances.remove(hole)
+                }
+                FAILED -> failed = false
+            }
+        }
     }
 
     // ---------------------------------------------------------------- reading types back out
