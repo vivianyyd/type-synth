@@ -20,7 +20,7 @@ class CheckingGroundTruthOracle(secret: Map<String, Type>) : GroundTruth, Oracle
         val u = OneUnification(truth, emptyList())
         val ta = u.type(a)
         val tb = u.type(b)
-        return ta != null && tb != null && equalInEmptyLabelContext(ta, tb)
+        return ta != null && tb != null && equalUpToVariableRenaming(ta, tb)
     }
 
     override fun dummy(e: Example): Int = OneUnification(truth, emptyList()).type(e).hashCode()

@@ -33,9 +33,6 @@ fun SearchState.equivalentTo(other: SearchState, logger: Logger? = null): Boolea
     return equivalent
 }
 
-fun equalInEmptyLabelContext(a: Type, b: Type): Boolean =
-    matchTypes(a, b, Renaming(), Renaming())
-
 /** Whether [a] and [b] are the same type up to renaming variables. Labels must be the same. */
 fun equalUpToVariableRenaming(a: Type, b: Type): Boolean =
     matchTypes(a, b, SameIds, Renaming())

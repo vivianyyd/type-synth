@@ -76,19 +76,4 @@ class TypeEquivalenceTest {
         assertFalse(equalUpToVariableRenaming(Arrow(a, b), l(0, a, b)))
         assertFalse(equalUpToVariableRenaming(a, l(0)))
     }
-
-    // ----- equalInEmptyLabelContext -----
-    @Test
-    fun `labels may be renamed in an empty label context`() {
-        val x = l(0, a)
-        val y = l(7, Variable(4))
-        assertTrue(equalInEmptyLabelContext(x, y))
-    }
-
-    @Test
-    fun `label renaming in an empty label context must be consistent`() {
-        val x = Arrow(l(0), l(0))
-        val y = Arrow(l(7), l(8))
-        assertFalse(equalInEmptyLabelContext(x, y))
-    }
 }
