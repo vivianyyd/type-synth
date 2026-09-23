@@ -24,6 +24,12 @@ class IntVec(capacity: Int = 16) {
 
     fun removeLast() = data[--size]
 
+    /** Drops everything from [n] on. The capacity is kept, so regrowing to here is free. */
+    fun truncateTo(n: Int) {
+        require(n <= size) { "cannot truncate a vec of $size up to $n" }
+        size = n
+    }
+
     fun isEmpty() = size == 0
 
     fun clear() {

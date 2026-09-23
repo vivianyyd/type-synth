@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import query.App
 import query.Name
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -21,6 +22,47 @@ class RewindTest {
         val here = graph.mark()
         graph.rewindTo(here)
         assertTrue(graph.failed, "rewinding to a point after the failure must not clear it")
+    }
+
+    /**
+     * Undoing the recorded changes is not enough: allocating a node records nothing to undo, so a
+     * rewind has to drop the nodes too or an abandoned branch is kept forever.
+     */
+    @Test
+    fun `a rewind gives the nodes back`() {
+        val graph = TypeGraph()
+        val outer = graph.ctor(0, IntArray(0))
+        val before = graph.nodes
+        val mark = graph.mark()
+        val hole = graph.hole(TypeHole(), 0)
+        graph.merge(hole, graph.ctor(1, intArrayOf(graph.arrow(outer, graph.freshVar()))))
+        assertTrue(graph.nodes > before, "the merge should have allocated something")
+        graph.rewindTo(mark)
+        assertEquals(before, graph.nodes, "a rewind must drop what it undid")
+        assertTrue(graph.acyclic())
+        // And the reused slots behave like new ones.
+        val again = graph.hole(TypeHole(), 0)
+        assertEquals(before, again, "the next node should reuse the slot just freed")
+        assertTrue(graph.merge(again, outer))
+    }
+
+    /** Rewinding twice to the same mark is what the enumerator does for each sibling expansion. */
+    @Test
+    fun `rewinding to the same mark twice is allowed, rewinding forward is not`() {
+        val graph = TypeGraph()
+        val mark = graph.mark()
+        graph.merge(graph.freshVar(), graph.ctor(0, IntArray(0)))
+        graph.rewindTo(mark)
+        val stale = graph.mark()
+        graph.freshVar()
+        graph.rewindTo(stale)
+        graph.rewindTo(stale)
+        assertEquals(0, graph.nodes)
+        graph.freshVar()
+        val deeper = graph.mark()
+        graph.freshVar()
+        graph.rewindTo(mark)
+        assertFailsWith<IllegalStateException> { graph.rewindTo(deeper) }
     }
 
     @Test

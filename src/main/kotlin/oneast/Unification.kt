@@ -100,7 +100,7 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
     /** A point the check can later be [rewindTo]. */
     fun mark(): TypeGraph.Mark = graph.mark()
 
-    /** Undoes every refinement made since [mark] was taken. */
+    /** Undoes every refinement made since [mark] was taken, and frees what it allocated. */
     fun rewindTo(mark: TypeGraph.Mark) = graph.rewindTo(mark)
 
     /** Re-checks the state in which [hole] has become [replacement]. Returns whether it still [ok]s. */
