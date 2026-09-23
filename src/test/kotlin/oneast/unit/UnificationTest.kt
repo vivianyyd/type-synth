@@ -392,12 +392,11 @@ class UnificationTest {
      * Unification picks which variable names a class arbitrarily, so types are compared up to
      * renaming variables.
      */
-    private fun assertSameType(expected: Type, actual: ConstraintTy?) {
+    private fun assertSameType(expected: Type, actual: Type?) {
         assertNotNull(actual)
-        val type = actual.toType()
         assertTrue(
-            equalUpToVariableRenaming(expected, type),
-            "Expected $expected up to renaming variables, but was $type"
+            equalUpToVariableRenaming(expected, actual),
+            "Expected $expected up to renaming variables, but was $actual"
         )
     }
 }

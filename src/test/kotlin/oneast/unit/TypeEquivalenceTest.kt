@@ -2,7 +2,6 @@ package oneast.unit
 
 import oneast.*
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -78,37 +77,18 @@ class TypeEquivalenceTest {
         assertFalse(equalUpToVariableRenaming(a, l(0)))
     }
 
-    // ----- ConstraintTy.toType -----
-    @Test
-    fun `toType drops instantiation ids`() {
-        val t = ConstraintArrow(ConstraintVariable(0, 1), ConstraintVariable(0, 2))
-        assertTrue(equalUpToVariableRenaming(Arrow(a, a), t.toType()))
-    }
-
-    @Test
-    fun `toType keeps labels and structure`() {
-        val t = ConstraintLabel(3, listOf(ConstraintVariable(0, 0), ConstraintLabel(1, listOf())))
-        assertTrue(equalUpToVariableRenaming(l(3, a, l(1)), t.toType()))
-    }
-
-    @Test
-    fun `toType rejects bottom`() {
-        assertFailsWith<IllegalStateException> { Bottom.toType() }
-        assertFailsWith<IllegalStateException> { ConstraintArrow(Bottom, Bottom).toType() }
-    }
-
     // ----- equalInEmptyLabelContext -----
     @Test
     fun `labels may be renamed in an empty label context`() {
-        val x = ConstraintLabel(0, listOf(ConstraintVariable(0, 0)))
-        val y = ConstraintLabel(7, listOf(ConstraintVariable(4, 9)))
+        val x = l(0, a)
+        val y = l(7, Variable(4))
         assertTrue(equalInEmptyLabelContext(x, y))
     }
 
     @Test
     fun `label renaming in an empty label context must be consistent`() {
-        val x = ConstraintArrow(ConstraintLabel(0, listOf()), ConstraintLabel(0, listOf()))
-        val y = ConstraintArrow(ConstraintLabel(7, listOf()), ConstraintLabel(8, listOf()))
+        val x = Arrow(l(0), l(0))
+        val y = Arrow(l(7), l(8))
         assertFalse(equalInEmptyLabelContext(x, y))
     }
 }

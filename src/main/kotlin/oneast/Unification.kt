@@ -73,8 +73,11 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
         }
     }
 
-    /** The type [ex] has in this environment, or null if it does not type-check. */
-    fun type(ex: Example): ConstraintTy? {
+    /**
+     * The type [ex] has in this environment. Null if it does not type-check, or if unification did
+     * not determine some part of it — see [TypeGraph.typeAt].
+     */
+    fun type(ex: Example): Type? {
         val fresh = OneUnification(environment, emptyList())
         return fresh.build(ex)?.let { fresh.graph.typeAt(it) }
     }

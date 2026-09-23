@@ -405,34 +405,3 @@ class Blank(val labelOnly: Boolean) : THole() {
 
     override fun toString() = if (labelOnly) ".L" else "."
 }
-
-sealed interface ConstraintTy
-
-object Bottom : ConstraintTy {
-    override fun toString(): String = "⊥"
-}
-
-data class ConstraintVariable(val v: Int, val instId: Int) : ConstraintTy {
-    override fun toString(): String = "V$v-$instId"
-}
-
-sealed class ConstraintTypeConstructor(open val params: List<ConstraintTy>) : ConstraintTy
-
-data class ConstraintArrow(override val params: List<ConstraintTy>) :
-    ConstraintTypeConstructor(params) {
-    init {
-        require(params.size == 2)
-    }
-
-    val l = params[0]
-    val r = params[1]
-
-    constructor(l: ConstraintTy, r: ConstraintTy) : this(listOf(l, r))
-
-    override fun toString(): String = "($l) -> ($r)"
-}
-
-data class ConstraintLabel(val label: Int, override val params: List<ConstraintTy>) :
-    ConstraintTypeConstructor(params) {
-    override fun toString(): String = "L$label$params"
-}

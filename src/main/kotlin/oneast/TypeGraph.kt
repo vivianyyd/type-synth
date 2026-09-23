@@ -467,18 +467,25 @@ class TypeGraph {
 
     /**
      * The type denoted by [node], as far as unification has determined it: its class's constructor,
-     * else its type variable, else [Bottom].
+     * else its type variable.
+     *
+     * Null if any class below [node] has neither, which is unification never having determined what
+     * that part is — the result of applying something not known to be a function, say. There is no
+     * type to report for it, and reporting one anyway would make two unrelated unknowns look equal.
      */
-    fun typeAt(node: Int): ConstraintTy {
-        val r = find(node)
-        val c = ctorAt[r]
+    fun typeAt(node: Int): Type? {
+        val root = find(node)
+        val c = ctorAt[root]
         if (c != NONE) {
             val off = argOff[c]
-            return if (key[c] == ARROW) ConstraintArrow(typeAt(args[off]), typeAt(args[off + 1]))
-            else ConstraintLabel(key[c], List(argLen[c]) { typeAt(args[off + it]) })
+            if (key[c] == ARROW)
+                return Arrow(typeAt(args[off]) ?: return null, typeAt(args[off + 1]) ?: return null)
+            val params = ArrayList<Type>(argLen[c])
+            for (i in 0 until argLen[c]) params.add(typeAt(args[off + i]) ?: return null)
+            return NamedLabel(key[c], params)
         }
-        val v = rigidAt[r]
-        return if (v != NONE) ConstraintVariable(key[v], inst[v]) else Bottom
+        val v = rigidAt[root]
+        return if (v != NONE) Variable(key[v]) else null
     }
 
     /**
