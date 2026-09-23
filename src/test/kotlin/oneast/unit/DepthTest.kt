@@ -57,13 +57,6 @@ class DepthTest {
         )
 
     @Test
-    fun `Type allHolesWithDepth`() {
-        types.forEach { (ty, holesWithDepth) ->
-            assertEquals(holesWithDepth, ty.allHolesWithDepth(topLevel = true).toSet())
-        }
-    }
-
-    @Test
     fun `Type shallowestFillableHole`() {
         types.forEach { (ty, holesWithDepth) ->
             val shallowest =

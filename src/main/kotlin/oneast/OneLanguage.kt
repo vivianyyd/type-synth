@@ -137,47 +137,6 @@ class SearchState(
 }
 
 sealed interface Type {
-    private fun lastParamVariables(): Set<Int> =
-        when (this) {
-            is Arrow -> r.lastParamVariables()
-            is NamedLabel,
-            is THole,
-            is Variable -> variables()
-        }
-
-    private fun variablesBeforeLastParam(rightPath: Boolean = true): Set<Int> =
-        when (this) {
-            is Arrow ->
-                if (rightPath)
-                    l.variablesBeforeLastParam(rightPath = false) /* == variables() */ +
-                        r.variablesBeforeLastParam(rightPath = true)
-                else variables()
-            is NamedLabel,
-            is THole,
-            is Variable -> if (rightPath) emptySet() else variables()
-        }
-
-    /**
-     * A valid *top-level* type cannot be concrete and have a fresh variable in the output type. It
-     * also can't just be any arbitrary variable. The latter should never happen since we will not
-     * enumerate Variables if the hole is a root, so we skip that check here. This is obviously not
-     * true for any subterm of a type so idk maybe there should be some extra class somewhere but
-     * whatever
-     *
-     * Correction 4/20/26: Actually, we do want to support having fresh variables in the output, for
-     * example for functions on_exit: unit -> 'a and Left: 'a -> Either 'a 'b. As consequence, we no
-     * longer call this
-     */
-    fun invalid() = noHoles() && freshVariableInOutput()
-
-    private fun freshVariableInOutput() =
-        when (this) {
-            is Arrow -> (lastParamVariables() - variablesBeforeLastParam()).isNotEmpty()
-            is NamedLabel,
-            is THole,
-            is Variable -> false
-        }
-
     fun maxParamDepth(countArrow: Boolean): Int
 
     fun noHoles(): Boolean = allHoles().isEmpty()
@@ -187,8 +146,6 @@ sealed interface Type {
     fun numFillableHoles() = allHoles().filterIsInstance<TypeHole>().size
 
     fun blanks() = allHoles().filterIsInstance<Blank>()
-
-    fun allHolesWithDepth(topLevel: Boolean): List<Pair<THole, Int>>
 
     fun shallowestFillableHole(topLevel: Boolean): Pair<TypeHole, Int>?
 
@@ -215,8 +172,6 @@ data class Variable(val v: Int) : Type {
 
     override fun allHoles() = emptyList<THole>()
 
-    override fun allHolesWithDepth(topLevel: Boolean) = emptyList<Pair<THole, Int>>()
-
     override fun shallowestFillableHole(topLevel: Boolean) = null
 
     override fun variables() = setOf(this.v)
@@ -227,11 +182,6 @@ data class Variable(val v: Int) : Type {
 }
 
 data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
-    override fun allHolesWithDepth(topLevel: Boolean) =
-        (l.allHolesWithDepth(topLevel = false) + r.allHolesWithDepth(topLevel = topLevel)).map {
-            it.first to it.second + (if (topLevel) 0 else 1)
-        }
-
     private fun lastParam(): Type {
         fun lastParam(t: Type): Type =
             when (t) {
@@ -265,9 +215,6 @@ data class Arrow(val l: Type, val r: Type) : Constructor(listOf(l, r)) {
 
 /** Could also be called DefinedLabel? */
 data class NamedLabel(val label: Int, override val params: List<Type>) : Constructor(params) {
-    override fun allHolesWithDepth(topLevel: Boolean) =
-        params.flatMap { it.allHolesWithDepth(topLevel).map { it.first to it.second + 1 } }
-
     override fun shallowestFillableHole(topLevel: Boolean) =
         params
             .mapNotNull { it.shallowestFillableHole(topLevel) }
@@ -294,8 +241,6 @@ sealed class THole : Type {
     override fun maxParamDepth(countArrow: Boolean) = 0
 
     override fun allHoles() = listOf(this)
-
-    override fun allHolesWithDepth(topLevel: Boolean) = listOf(this to 0)
 
     override fun variables() = emptySet<Int>()
 
