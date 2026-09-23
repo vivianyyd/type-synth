@@ -235,9 +235,9 @@ class Search(
                         depthBound = currentDepthBound,
                     )
                 } // else emptySequence()
+            }.filter { s ->
+                examples.neg.all { !OneUnification(s, listOf(it)).ok }
             }
-
-        // TODO: prune using negative examples.
         return finalResults.onEach { c ->
             check(posUnification(c).ok) {
                 "Enumerator should never return something that fails posexs at concretization stage"
