@@ -13,7 +13,7 @@ class SearchState(
     val labelArities: Map<Int, Int>,
     /**
      * The first [numCommittedTypes] entries of [types] are committed: their types are immutable
-     * across any subsequent search. All mutating helpers below ([mapTypes], [mapTypesOrNull],
+     * across any subsequent search. All mutating helpers below ([mapTypes],
      * [mapTypesAndSetLabelArities], [mapTypeAtIndex]) only apply transforms to indices
      * `>= numCommittedTypes`.
      */
@@ -121,18 +121,6 @@ class SearchState(
             numCommittedTypes = numCommittedTypes,
             committedLabels = committedLabels
         )
-
-    fun mapTypesOrNull(transform: (Type) -> Type?): SearchState? {
-        val newTypes = safeMapTypes(transform)
-        return if (null in newTypes) null else
-            SearchState(
-                names = names,
-                types = newTypes.requireNoNulls(),
-                labelArities = labelArities,
-                numCommittedTypes = numCommittedTypes,
-                committedLabels = committedLabels
-            )
-    }
 
     fun mapTypeAtIndex(i: Int, transform: (Type) -> Type): SearchState {
         require(i >= numCommittedTypes) { "Cannot modify committed type at index $i" }
