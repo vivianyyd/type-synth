@@ -48,23 +48,19 @@ class TypeGraph {
          */
         private const val SHORT_LIST = 4
 
-        // Journal opcodes. A journal entry is an opcode and two values, a and b, which are 0 when
-        // the opcode does not use them. Each opcode below records one kind of change, and says what
-        // a and b hold and what undoing the change does.
+        // Journal opcodes. A journal entry is an opcode and one value, a, which is 0 when the
+        // opcode does not use it. Each opcode below records one kind of change, and says what a
+        // holds and what undoing the change does.
 
         /**
          * Class root a was merged into another class. Undo: a is a root again, with its own size.
          */
         private const val UNION = 0
 
-        /**
-         * Class root a gained a constructor; b is what it had before, always NONE. Undo: restore b.
-         */
+        /** Class root a gained a constructor, having had none. Undo: it has none again. */
         private const val SET_CTOR = 1
 
-        /**
-         * Class root a gained a type variable; b is what it had before, always NONE. Undo: restore b.
-         */
+        /** Class root a gained a type variable, having had none. Undo: it has none again. */
         private const val SET_RIGID = 2
 
         /** Class root a became marked as containing a label-only blank. Undo: clear the mark. */
@@ -118,10 +114,9 @@ class TypeGraph {
     private var count = 0
     private val args = IntVec()
 
-    /** The journal: one entry per change, as three parallel columns. */
+    /** The journal: one entry per change, as two parallel columns. */
     private val journalOp = IntVec()
     private val journalA = IntVec()
-    private val journalB = IntVec()
 
     private val pending = IntVec()
     private val stack = IntVec()
@@ -364,11 +359,11 @@ class TypeGraph {
         if (ctor != NONE && occurs(big, small, ctor)) return false
 
         if (ctorAt[big] == NONE && ctorAt[small] != NONE) {
-            log(SET_CTOR, big, ctorAt[big])
+            log(SET_CTOR, big)
             ctorAt[big] = ctorAt[small]
         }
         if (rigidAt[big] == NONE && rigidAt[small] != NONE) {
-            log(SET_RIGID, big, rigidAt[big])
+            log(SET_RIGID, big)
             rigidAt[big] = rigidAt[small]
         }
         if (labelOnly[small] && !labelOnly[big]) {
@@ -406,11 +401,10 @@ class TypeGraph {
 
     // ---------------------------------------------------------------- undo
 
-    /** Appends a journal entry. See the opcodes for what [a] and [b] mean for each. */
-    private fun log(op: Int, a: Int = 0, b: Int = 0) {
+    /** Appends a journal entry. See the opcodes for what [a] means for each. */
+    private fun log(op: Int, a: Int = 0) {
         journalOp.add(op)
         journalA.add(a)
-        journalB.add(b)
     }
 
     /** A point to which the graph can later be [rewindTo]. */
@@ -440,14 +434,13 @@ class TypeGraph {
         while (journalOp.size > mark.journal) {
             val op = journalOp.removeLast()
             val a = journalA.removeLast()
-            val b = journalB.removeLast()
             when (op) {
                 UNION -> {
                     classSize[parent[a]] -= classSize[a]
                     parent[a] = a
                 }
-                SET_CTOR -> ctorAt[a] = b
-                SET_RIGID -> rigidAt[a] = b
+                SET_CTOR -> ctorAt[a] = NONE
+                SET_RIGID -> rigidAt[a] = NONE
                 SET_LABEL_ONLY -> labelOnly[a] = false
                 NEW_RIGID -> rigidNodes[a]!!.run {
                     removeLast()
