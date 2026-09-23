@@ -11,6 +11,14 @@ import query.Name
  * A hole stands for an unknown type expression, so each of its instantiations unifies like an
  * ordinary type variable. What those variables end up equal to is the evidence the search uses to
  * guess how to fill the hole.
+ *
+ * The check is *incremental*: refining a hole into a type is the only way a search state changes,
+ * and it changes the constraints only where that hole was instantiated. So [refine] merges the new
+ * structure into the graph built for the parent state, in time proportional to the number of
+ * instantiations of that one hole, instead of re-deriving constraints for every example. [mark] and
+ * [rewindTo] undo a refinement, so an entire DFS over refinements shares a single check.
+ *
+ * [type] reports against the environment this was constructed with, not against any refinement.
  */
 class OneUnification(private val environment: SearchState, examples: List<Example>) {
     private val graph = TypeGraph()
@@ -87,6 +95,25 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
             is THole -> graph.hole(t, inst)
         }
 
+    // ------------------------------------------------------------------ incremental refinement
+
+    /** A point the check can later be [rewindTo]. */
+    fun mark(): TypeGraph.Mark = graph.mark()
+
+    /** Undoes every refinement made since [mark] was taken. */
+    fun rewindTo(mark: TypeGraph.Mark) = graph.rewindTo(mark)
+
+    /** Re-checks the state in which [hole] has become [replacement]. Returns whether it still [ok]s. */
+    fun refine(hole: THole, replacement: Type): Boolean {
+        if (graph.failed) return false
+        val instances = graph.instancesOf(hole) ?: return true
+        for (i in 0 until instances.size) {
+            val instance = instances[i]
+            val filled = instantiate(replacement, graph.instantiationOf(instance))
+            if (!graph.merge(instance, filled)) return false
+        }
+        return true
+    }
 }
 
 /** What [OneUnification.holeConstructor] learned about the outermost constructor of a hole. */

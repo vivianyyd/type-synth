@@ -2,6 +2,9 @@ package oneast.unit
 
 import oneast.*
 import org.junit.jupiter.api.Test
+import query.App
+import query.Name
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -18,5 +21,21 @@ class RewindTest {
         val here = graph.mark()
         graph.rewindTo(here)
         assertTrue(graph.failed, "rewinding to a point after the failure must not clear it")
+    }
+
+    @Test
+    fun `typing an expression does not disturb the check`() {
+        val hole = TypeHole()
+        val I = NamedLabel(0, listOf())
+        val context = SearchState(
+            names = mapOf("f" to 0, "x" to 1),
+            types = listOf(Arrow(hole, I), I),
+            labelArities = mapOf(0 to 0)
+        )
+        val example = App(Name("f"), Name("x"))
+        val u = OneUnification(context, listOf(example))
+        val before = u.holeConstructor(hole) to u.classesOf(hole).toList()
+        u.type(example)
+        assertEquals(before, u.holeConstructor(hole) to u.classesOf(hole).toList())
     }
 }

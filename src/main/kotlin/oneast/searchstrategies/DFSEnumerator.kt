@@ -13,9 +13,6 @@ class DFSEnumerator(
     private val depthBound: Int,
     private val logger: Logger
 ) : SearchStrategy(examples) {
-    // TODO can also implement a stateful version where we mutate the tree by picking a hole which
-    //   has a parent pointer, for each of the expansions, modify the parent and recurse. when done,
-    //   restore tree to original state
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
         return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles())
@@ -24,6 +21,12 @@ class DFSEnumerator(
 
     /**
      * As long as seed [c] passes positive examples, states returned by this function do as well.
+     *
+     * [unification] is the running check for [c]. Each expansion refines it in place and rewinds
+     * afterwards, so the whole subtree shares one set of equivalence classes rather than rebuilding
+     * them per candidate. Rewinding happens before an expansion rather than after, which is what
+     * makes this safe to consume lazily: a subtree that is abandoned half-way leaves the check
+     * dirty, and whoever resumes cleans it up first.
      */
     private fun recCandidates(
         c: SearchState,
@@ -38,6 +41,7 @@ class DFSEnumerator(
         if (currSizeBound - holesRemaining < 0) return emptySequence()
 
         val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
+        val mark = unification.mark()
         return hole
             .expansions(
                 unification = unification,
@@ -49,21 +53,19 @@ class DFSEnumerator(
                 mustBeLeaf = currSizeBound - holesRemaining <= 1 || depth >= depthBound
             )
             .asSequence()
-            .map {
+            .flatMap { expansion ->
+                unification.rewindTo(mark)
                 logger.count("Total candidates")
-                it.numFillableHoles() to c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, it) }
-            }
-            .flatMap { (introducedHoles, newCandidate) ->
+                val newCandidate = c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, expansion) }
                 // TODO: prune using negative examples.
-                val u = posUnification(newCandidate)
-                if (u.ok)
+                if (unification.refine(hole, expansion))
                     recCandidates(
                         newCandidate,
-                        u,
+                        unification,
                         currSizeBound = currSizeBound - 1,
-                        holesRemaining = holesRemaining - 1 + introducedHoles
+                        holesRemaining = holesRemaining - 1 + expansion.numFillableHoles()
                     )
-                else retryWithoutBadLabels(newCandidate, u.badLabels(), currSizeBound)
+                else retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound)
             }
     }
 

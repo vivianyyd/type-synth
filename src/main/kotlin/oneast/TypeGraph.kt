@@ -223,6 +223,9 @@ class TypeGraph {
     /** The nodes instantiating [hole], or null if it has none. */
     fun instancesOf(hole: THole): IntVec? = holeInstances[hole]
 
+    /** Which instantiation of its component's type [node] belongs to. */
+    fun instantiationOf(node: Int) = inst[node]
+
     /** Whether [node]'s class is known to have a constructor. */
     fun hasConstructor(node: Int) = ctorAt[find(node)] != NONE
 
