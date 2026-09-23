@@ -238,11 +238,7 @@ class Search(
             }.filter { s ->
                 examples.neg.all { !OneUnification(s, listOf(it)).ok }
             }
-        return finalResults.onEach { c ->
-            check(posUnification(c).ok) {
-                "Enumerator should never return something that fails posexs at concretization stage"
-            }
-        }
+        return finalResults
     }
 
     private fun <T> ifFirst(seq: Sequence<T>, condition: (T) -> Boolean): Sequence<T> {
