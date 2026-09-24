@@ -33,22 +33,9 @@ fun SearchState.equivalentTo(other: SearchState, logger: Logger? = null): Boolea
     return equivalent
 }
 
-fun equalInEmptyLabelContext(a: ConstraintTy, b: ConstraintTy): Boolean =
-    matchTypes(a.toType(), b.toType(), Renaming(), Renaming())
-
 /** Whether [a] and [b] are the same type up to renaming variables. Labels must be the same. */
 fun equalUpToVariableRenaming(a: Type, b: Type): Boolean =
     matchTypes(a, b, SameIds, Renaming())
-
-/** [this] as a [Type], with each hole instance as a fresh hole. */
-fun ConstraintTy.toType(): Type =
-    when (this) {
-        is ConstraintArrow -> Arrow(l.toType(), r.toType())
-        is ConstraintLabel -> NamedLabel(label, params.map { it.toType() })
-        is ConstraintVariable -> Variable(v)
-        is InstantiationTy -> TypeHole()
-        Bottom -> error("Can't compare types that contain bottom")
-    }
 
 /** How ids on one side of a comparison may correspond to ids on the other. */
 private sealed interface Correspondence {

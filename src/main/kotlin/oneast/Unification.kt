@@ -3,134 +3,139 @@ package oneast
 import query.App
 import query.Example
 import query.Name
-import util.Counter
-
-typealias Binding = Pair<ConstraintVariable, ConstraintTy>
 
 /**
- * This unification does not persist state after evaluating a candidate, and cannot be used more
- * than once.
+ * Type-checks [examples] against an [environment], and reports what that told us about the
+ * environment's holes.
+ *
+ * A hole stands for an unknown type expression, so each of its instantiations unifies like an
+ * ordinary type variable. What those variables end up equal to is the evidence the search uses to
+ * guess how to fill the hole.
+ *
+ * The check is *incremental*: refining a hole into a type is the only way a search state changes,
+ * and it changes the constraints only where that hole was instantiated. So [refine] merges the new
+ * structure into the graph built for the parent state, in time proportional to the number of
+ * instantiations of that one hole, instead of re-deriving constraints for every example. [mark] and
+ * [rewindTo] undo a refinement, so an entire DFS over refinements shares a single check.
+ *
+ * [type] reports against the environment this was constructed with, not against any refinement.
  */
-class OneUnification(private val candidate: SearchState, exs: List<Example>) {
-    private val insts = Counter() // Number of times any top-level type has been instantiated
+class OneUnification(private val environment: SearchState, examples: List<Example>) {
+    private val graph = TypeGraph()
 
-    private val holeConstraints = mutableMapOf<Int, MutableList<ConstraintTy>>() // holeId
-    private val badLabels = mutableSetOf<Int>()  // Labels that were unified with mismatching labels
+    /** How many times a component type has been instantiated so far. Each use of a name is one. */
+    private var instantiations = 0
 
-    // The order of these declarations matters; [insts] and [holeConstraints] must be instantiated
-    // before they are used to compute types
-    val ok = exs.all { type(it) != null }
+    init {
+        examples.all { build(it) != null }
+    }
 
-    val passedWithNoConstraints = ok && holeConstraints.isEmpty()
+    val ok: Boolean
+        get() = !graph.failed
 
-    fun holeEquals(hole: THole): List<ConstraintTy> = holeEquals(hole.id)
-
-    private fun holeEquals(hole: Int): List<ConstraintTy> =
-        if (ok) holeConstraints[hole] ?: listOf() else listOf()
-
-    fun badLabels(): Set<Int> = badLabels
-
-    fun type(ex: Example): ConstraintTy? =
-        when (ex) {
-            // instantiate immediately. later, consider doing this lazily if it's slow
-            is Name -> candidate.typeOf(ex.name).instantiate(insts.get())
-            is App ->
-                type(ex.fn)?.let { f ->
-                    type(ex.arg)?.let { arg ->
-                        when (f) {
-                            is ConstraintArrow -> unify(f.l, arg)?.let { applyBindings(f.r, it) }
-                            is InstantiationTy -> {
-                                /* since we continue deriving constraints after seeing f, introduce
-                                a bottom type which doesn't correspond to any node. once this
-                                hole expands into concrete type options, we'll derive constraints
-                                on the function inputs/outputs accordingly - but that must happen
-                                in a future pass. */
-                                holeConstraint(f, ConstraintArrow(arg, Bottom))?.let { Bottom }
-                            }
-                            is ConstraintVariable,
-                            is Bottom -> Bottom // we are applying an unbound variable
-                            else -> null
-                        }
-                    }
-                }
-        }
-
-    private fun holeConstraint(inst: InstantiationTy, t: ConstraintTy): List<Binding>? =
-        // unifying a Blank that must be a Label with an Arrow should fail
-        if (inst.hole is Blank && inst.hole.labelOnly && t is ConstraintArrow) null
-        else {
-            holeConstraints.getOrPut(inst.hole.id) { mutableListOf() }.add(t)
-            listOf()
-        }
+    /** The labels whose mismatch caused the most recent failure, if that is what caused it. */
+    fun badLabels(): Set<Int> = graph.clash
 
     /**
-     * Returns a list of bindings resulting from unifying [arg] with [param], or null if they are
-     * incompatible.
+     * The unification class of each instantiation of [hole]. Opaque ids: they say only which
+     * instantiations landed together, they are comparable only within this check, and only until it
+     * changes.
+     *
+     * Two instantiations being unified does not make their holes equal — an instantiation of a hole
+     * is a fresh variable, so `h1@3 == h2@4` holds with `h1 = a` and `h2 = int`. What it forces is
+     * that the holes' outermost constructors agree, which for a [Blank] is the whole question,
+     * because a Blank becomes a label. That is what [Search] uses this for.
      */
-    private fun unify(param: ConstraintTy, arg: ConstraintTy): List<Binding>? =
-        when (param) {
-            Bottom -> emptyList()
-            is ConstraintVariable ->
-                when (param) {
-                    arg -> listOf()
-                    in arg.variables() -> null
-                    else -> listOf(Binding(param, arg))
-                }
-            is ConstraintTypeConstructor ->
-                when (arg) {
-                    Bottom -> emptyList()
-                    is ConstraintTypeConstructor -> {
-                        if (param.match(arg)) {
-                            var bindings: MutableList<Binding>? = mutableListOf()
-                            param.params.zip(arg.params).forEach {
-                                if (bindings != null) {
-                                    val l = applyBindings(it.first, bindings!!)
-                                    val r = applyBindings(it.second, bindings!!)
-                                    val u = unify(l, r)
-                                    if (u == null) bindings = null else bindings!!.addAll(u)
-                                }
-                            }
-                            bindings
-                        } else {
-                            if (param is ConstraintLabel && arg is ConstraintLabel) {
-                                badLabels.add(param.label)
-                                badLabels.add(arg.label)
-                            }
-                            null
-                        }
-                    }
-                    is ConstraintVariable ->
-                        // e.g. a function expects param (int -> int) and we pass ('a -> 'a)
-                        when (arg) {
-                            param -> listOf()
-                            in param.variables() -> null
-                            else -> listOf(Binding(arg, param))
-                        }
-                    is InstantiationTy -> if (arg == param) listOf() else holeConstraint(arg, param)
-                }
-            is InstantiationTy -> if (arg == param) listOf() else holeConstraint(param, arg)
-        }
+    fun classesOf(hole: THole): IntArray {
+        if (!ok) return IntArray(0)
+        val instances = graph.instancesOf(hole) ?: return IntArray(0)
+        return IntArray(instances.size) { graph.find(instances[it]) }
+    }
 
-    private fun applyBinding(
-        t: ConstraintTy,
-        v: ConstraintVariable,
-        sub: ConstraintTy
-    ): ConstraintTy {
-        if (t.variables().isEmpty()) return t
-        return when (t) {
-            Bottom -> t
-            is ConstraintVariable -> if (t == v) sub else t
-            is ConstraintTypeConstructor -> {
-                val reboundParams = t.params.map { applyBinding(it, v, sub) }
-                when (t) {
-                    is ConstraintArrow -> t.copy(params = reboundParams)
-                    is ConstraintLabel -> t.copy(params = reboundParams)
-                }
-            }
-            is InstantiationTy -> error("variables() should be empty")
+    /**
+     * The type constructor every instantiation of [hole] was unified with. Asking this way avoids
+     * building the constraint types just to compare their outermost constructors.
+     */
+    fun holeConstructor(hole: THole): HoleConstructor {
+        if (!ok) return HoleConstructor.None
+        val instances = graph.instancesOf(hole) ?: return HoleConstructor.None
+        var first: Int? = null
+        for (i in 0 until instances.size) {
+            val node = instances[i]
+            if (!graph.hasConstructor(node)) continue
+            if (first == null) first = node
+            else if (!graph.sameConstructor(first, node)) return HoleConstructor.Conflicting
+        }
+        return when {
+            first == null -> HoleConstructor.None
+            graph.isArrow(first) -> HoleConstructor.Arrow
+            else -> HoleConstructor.Label(graph.labelOf(first))
         }
     }
 
-    private fun applyBindings(t: ConstraintTy, bindings: List<Binding>): ConstraintTy =
-        bindings.fold(t) { acc, (v, sub) -> applyBinding(acc, v, sub) }
+    /**
+     * The type [ex] has in this environment. Null if it does not type-check, or if unification did
+     * not determine some part of it — see [TypeGraph.typeAt].
+     */
+    fun type(ex: Example): Type? {
+        val fresh = OneUnification(environment, emptyList())
+        return fresh.build(ex)?.let { fresh.graph.typeAt(it) }
+    }
+
+    /** Adds [ex] to the graph. Returns the node for its type, or null if it does not type-check. */
+    private fun build(ex: Example): Int? =
+        when (ex) {
+            is Name -> instantiate(environment.typeOf(ex.name), instantiations++)
+            is App -> build(ex.fn)?.let { f -> build(ex.arg)?.let { a -> graph.apply(f, a) } }
+        }
+
+    private fun instantiate(t: Type, inst: Int): Int =
+        when (t) {
+            is Variable -> graph.rigid(t.v, inst)
+            is Arrow -> graph.arrow(instantiate(t.l, inst), instantiate(t.r, inst))
+            is NamedLabel ->
+                graph.ctor(t.label, IntArray(t.params.size) { instantiate(t.params[it], inst) })
+            is THole -> graph.hole(t, inst)
+        }
+
+    // ------------------------------------------------------------------ incremental refinement
+
+    /** A point the check can later be [rewindTo]. */
+    fun mark(): TypeGraph.Mark = graph.mark()
+
+    /** Undoes every refinement made since [mark] was taken, and frees what it allocated. */
+    fun rewindTo(mark: TypeGraph.Mark) = graph.rewindTo(mark)
+
+    /** Re-checks the state in which [hole] has become [replacement]. Returns whether it still [ok]s. */
+    fun refine(hole: THole, replacement: Type): Boolean {
+        if (graph.failed) return false
+        val instances = graph.instancesOf(hole) ?: return true
+        for (i in 0 until instances.size) {
+            val instance = instances[i]
+            val filled = instantiate(replacement, graph.instantiationOf(instance))
+            if (!graph.merge(instance, filled)) return false
+        }
+        return true
+    }
+}
+
+/** What [OneUnification.holeConstructor] learned about the outermost constructor of a hole. */
+sealed interface HoleConstructor {
+    /** No instantiation of the hole was unified with a constructor. */
+    object None : HoleConstructor {
+        override fun toString() = "None"
+    }
+
+    /** Instantiations of the hole were unified with different constructors. */
+    object Conflicting : HoleConstructor {
+        override fun toString() = "Conflicting"
+    }
+
+    /** Every instantiation unified with a constructor was unified with an arrow. */
+    object Arrow : HoleConstructor {
+        override fun toString() = "Arrow"
+    }
+
+    /** Every instantiation unified with a constructor was unified with this label, at one arity. */
+    data class Label(val label: Int) : HoleConstructor
 }

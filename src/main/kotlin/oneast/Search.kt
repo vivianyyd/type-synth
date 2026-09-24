@@ -32,15 +32,21 @@ class Search(
     private fun assignLabelClasses(s: SearchState): SearchState? {
         val u = posUnification(s)
         val uf = IntUnionFind()
+        val holes = s.types.flatMap { it.allHoles() }
+        val blanks = holes.filterIsInstance<Blank>()
+        // An outline has no type holes left. If one is here, a blank it was unified with could still
+        // turn into anything, so nothing can be concluded about that blank's label.
+        if (blanks.size != holes.size) return null
+        require(blanks.all { it.labelOnly })
 
-        // Make equivalence classes of blanks
-        s.blanks().forEach { blank ->
-            u.holeEquals(blank).forEach { other ->
-                if (other is InstantiationTy) {
-                    if (other.hole !is Blank) return null
-                    require(blank.labelOnly && other.hole.labelOnly)
-                    uf.union(blank.id, other.hole.id)
-                }
+        // Make equivalence classes of blanks: in each class, tie every blank to the first blank
+        // seen there. A blank instantiated in two classes takes part in both ties, so blanks that
+        // are connected only through it end up in one class as well.
+        val firstBlankInClass = HashMap<Int, Int>()
+        blanks.forEach { blank ->
+            for (cls in u.classesOf(blank)) {
+                val first = firstBlankInClass.putIfAbsent(cls, blank.id)
+                if (first != null) uf.union(blank.id, first)
             }
         }
 
@@ -65,17 +71,16 @@ class Search(
         val holeToLabel = mutableMapOf<Int, Int>()
 
         // Populate with bindings to existing labels
-        val holes = s.types.flatMap { it.allHoles() }.filterIsInstance<Blank>()
-        holes.forEach {
-            val constructors = u.holeEquals(it).filterIsInstance<ConstraintTypeConstructor>()
-            if (constructors.isNotEmpty()) {
-                if (constructors.any { !it.match(constructors.first()) || it is ConstraintArrow })
-                    return null
-                val label = (constructors.first() as ConstraintLabel).label
-                val canonical = uf.find(it.id) ?: it.id
-                if (canonical in holeToLabel && holeToLabel[canonical] != label) return null
-                else if (canonical !in holeToLabel) holeToLabel[canonical] = label
-            }
+        blanks.forEach {
+            val label =
+                when (val constructor = u.holeConstructor(it)) {
+                    HoleConstructor.None -> return@forEach
+                    HoleConstructor.Conflicting, HoleConstructor.Arrow -> return null
+                    is HoleConstructor.Label -> constructor.label
+                }
+            val canonical = uf.find(it.id) ?: it.id
+            if (canonical in holeToLabel && holeToLabel[canonical] != label) return null
+            else if (canonical !in holeToLabel) holeToLabel[canonical] = label
         }
 
         // Iterate through types and substitute labels for blanks - either the hole's equivalence
@@ -107,9 +112,7 @@ class Search(
                     sizeBound = size,
                     depthBound = depth,
                 )
-                    .filter { s ->
-                        examples.neg.all { !OneUnification(s, listOf(it)).passedWithNoConstraints }
-                    }
+                // TODO: prune using negative examples.
             }
 
         val withLabelClasses = initialOutlines.mapNotNull { assignLabelClasses(it) }.toSet()
@@ -232,14 +235,13 @@ class Search(
                         depthBound = currentDepthBound,
                     )
                 } // else emptySequence()
+            }.filter { s ->
+                examples.neg.all { !OneUnification(s, listOf(it)).ok }
             }
-
-        return finalResults.filter { c ->
-            if (!(posUnification(c).ok))
-                error(
-                    "Enumerator should never return something that fails posexs at concretization stage"
-                )
-            examples.neg.all { !OneUnification(c, listOf(it)).ok }
+        return finalResults.onEach { c ->
+            check(posUnification(c).ok) {
+                "Enumerator should never return something that fails posexs at concretization stage"
+            }
         }
     }
 

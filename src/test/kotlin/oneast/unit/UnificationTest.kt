@@ -7,6 +7,7 @@ import query.App
 import query.Example
 import query.Name
 import testutil.loadQueryFromFile
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -374,15 +375,28 @@ class UnificationTest {
     }
 
     /**
+     * f : a -> a -> I applied to two blanks makes both blanks equal to f's variable, and so to each
+     * other. The search gives blanks that are equal to each other the same label.
+     */
+    @Test
+    fun `blanks equal through a shared variable are equal to each other`() {
+        val num = Blank(labelOnly = true)
+        val tru = Blank(labelOnly = true)
+        val context = makeContext("f" to Arrow(a, Arrow(a, I)), "Num" to num, "true" to tru)
+        val u = OneUnification(context, listOf(App(App(f, Name("Num")), Name("true"))))
+        assertTrue(u.ok)
+        assertEquals(u.classesOf(num).single(), u.classesOf(tru).single())
+    }
+
+    /**
      * Unification picks which variable names a class arbitrarily, so types are compared up to
      * renaming variables.
      */
-    private fun assertSameType(expected: Type, actual: ConstraintTy?) {
+    private fun assertSameType(expected: Type, actual: Type?) {
         assertNotNull(actual)
-        val type = actual.toType()
         assertTrue(
-            equalUpToVariableRenaming(expected, type),
-            "Expected $expected up to renaming variables, but was $type"
+            equalUpToVariableRenaming(expected, actual),
+            "Expected $expected up to renaming variables, but was $actual"
         )
     }
 }
