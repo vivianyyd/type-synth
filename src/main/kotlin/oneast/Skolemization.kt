@@ -30,7 +30,7 @@ fun SearchState.skolemize(): SearchState {
     }
 
     val fresh = Counter()
-    fresh.ensureGt((labelArities.keys + types.flatMap { it.labels() }).maxOrNull() ?: -1)
+    fresh.ensureGt(maxOf(labelArities.keys.maxOrNull() ?: -1, types.maxOfOrNull { it.maxLabel() } ?: -1))
     val skolems = HashMap<THole, NamedLabel>()
 
     fun Type.skolemize(args: List<Variable>): Type =
@@ -51,10 +51,10 @@ fun SearchState.skolemize(): SearchState {
     )
 }
 
-private fun Type.labels(): List<Int> =
+private fun Type.maxLabel(): Int =
     when (this) {
-        is Arrow -> l.labels() + r.labels()
-        is NamedLabel -> listOf(label) + params.flatMap { it.labels() }
+        is Arrow -> maxOf(l.maxLabel(), r.maxLabel())
+        is NamedLabel -> params.fold(label) { max, p -> maxOf(max, p.maxLabel()) }
         is THole,
-        is Variable -> emptyList()
+        is Variable -> -1
     }

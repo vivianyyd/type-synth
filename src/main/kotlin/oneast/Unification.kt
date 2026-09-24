@@ -82,6 +82,19 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
         return fresh.build(ex)?.let { fresh.graph.typeAt(it) }
     }
 
+    /**
+     * Whether [ex] type-checks alongside the examples already here. Leaves the check as it was, so
+     * one environment can be tried against many examples without being rebuilt for each.
+     */
+    fun typeChecks(ex: Example): Boolean {
+        val mark = mark()
+        val used = instantiations
+        val ok = build(ex) != null
+        rewindTo(mark)
+        instantiations = used
+        return ok
+    }
+
     /** Adds [ex] to the graph. Returns the node for its type, or null if it does not type-check. */
     private fun build(ex: Example): Int? =
         when (ex) {

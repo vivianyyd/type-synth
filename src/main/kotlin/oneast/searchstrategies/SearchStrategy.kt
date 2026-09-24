@@ -20,7 +20,7 @@ abstract class SearchStrategy(private val examples: Examples) {
      */
     protected fun acceptsANegative(s: SearchState): Boolean {
         if (examples.neg.isEmpty()) return false
-        val hardest = s.skolemize()
-        return examples.neg.any { OneUnification(hardest, listOf(it)).ok }
+        val hardest = OneUnification(s.skolemize(), emptyList())
+        return examples.neg.any { hardest.typeChecks(it) }
     }
 }

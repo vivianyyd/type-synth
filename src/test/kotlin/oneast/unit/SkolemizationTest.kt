@@ -100,6 +100,15 @@ class SkolemizationTest {
     }
 
     @Test
+    fun `one check can try many examples without them interfering`() {
+        val holes = consWhoseResultIs(TypeHole()).skolemize()
+        val check = OneUnification(holes, emptyList())
+        for (ex in listOf(bad, good, bad, Name("cons"), good))
+            assertEquals(ok(holes, ex), check.typeChecks(ex), "$ex")
+        assertTrue(check.ok)
+    }
+
+    @Test
     fun `a state without holes is its own hardest filling`() {
         val filled = consWhoseResultIs(list(a))
         assertEquals(filled.types, filled.skolemize().types)

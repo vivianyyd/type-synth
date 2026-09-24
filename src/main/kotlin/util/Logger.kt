@@ -61,6 +61,8 @@ class Logger(
 
     private val counts = mutableMapOf<String, Int>()
 
+    /** Synchronized because label arities are solved in parallel, and each solver call counts. */
+    @Synchronized
     fun count(value: String) {
         if (verbosity > 4) {
             if (value in counts) counts[value] = counts[value]!! + 1 else counts[value] = 1

@@ -34,18 +34,19 @@ class DFSEnumerator(
         currSizeBound: Int,
         holesRemaining: Int
     ): Sequence<SearchState> {
-        // While emitting label blanks, the search can still blank a label out again, and the labels'
-        // arities are decided afterwards. Neither is a filling, so negative examples wait until then.
-        if (!emitLabelBlanks && acceptsANegative(c)) {
-            logger.count("Pruned by negative examples")
-            return emptySequence()
-        }
-
         if (c.noHoles()) return sequenceOf(c)
 
         if (c.noFillableHoles()) return sequenceOf(c)
 
         if (currSizeBound - holesRemaining < 0) return emptySequence()
+
+        // Only worth checking where there is a subtree to cut: Search checks the states returned
+        // above. And only once labels are settled: while emitting label blanks, the search can still
+        // blank a label out again, and label arities are decided afterwards. Neither is a filling.
+        if (!emitLabelBlanks && acceptsANegative(c)) {
+            logger.count("Pruned by negative examples")
+            return emptySequence()
+        }
 
         val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
         val mark = unification.mark()
