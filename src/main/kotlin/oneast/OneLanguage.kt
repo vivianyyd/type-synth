@@ -366,21 +366,7 @@ class TypeHole : THole() {
         val fnExpansion = Arrow(TypeHole(), TypeHole())
         val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
 
-        val constructors =
-            if (!emitConstructors) null
-            else when (val constructor = unification.holeConstructor(this)) {
-                HoleConstructor.None -> {
-                    // Unsound version:
-                    if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
-                    // Sound version
-                    // if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
-                    // else labelExpansions + fnExpansion
-                }
-                HoleConstructor.Conflicting -> null
-                HoleConstructor.Arrow -> listOf(fnExpansion)
-                is HoleConstructor.Label -> labelExpansions.filter { it.label == constructor.label }
-            }
-        return constructors.orEmpty() + variableExps
+        return variableExps + fnExpansion + labelExpansions
     }
 
     override fun toString() = "_"
