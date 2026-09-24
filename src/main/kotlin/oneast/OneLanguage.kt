@@ -371,10 +371,10 @@ class TypeHole : THole() {
             else when (val constructor = unification.holeConstructor(this)) {
                 HoleConstructor.None -> {
                     // Unsound version:
-                    if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
+                    // if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
                     // Sound version
-                    // if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
-                    // else labelExpansions + fnExpansion
+                    if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
+                    else labelExpansions + fnExpansion
                 }
                 HoleConstructor.Conflicting -> null
                 HoleConstructor.Arrow -> listOf(fnExpansion)
