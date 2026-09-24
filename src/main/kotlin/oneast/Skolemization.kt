@@ -1,31 +1,20 @@
 package oneast
 
-import query.Example
 import util.Counter
-
-/**
- * Whether [ex] type-checks however this state's holes are filled, so that nothing the search does
- * below this state can make it stop type-checking. This is what licenses pruning with a negative
- * example.
- *
- * Checking [ex] against the holes themselves cannot tell. A hole unifies like a fresh variable at
- * each use, which forgets what the hole's type variables were at that use. With
- * `cons : a -> L[a] -> _`, `compare (cons 0 nil) (cons true nil)` type-checks, because the two
- * results are unrelated variables, but it stops type-checking once the hole becomes `L[a]`.
- *
- * The [skolemize]d state does not forget, and it is the hardest filling there is: [ex] type-checks
- * under every filling if and only if it type-checks under that one (Theorem 2, refinement
- * stability).
- *
- * A filling replaces holes, with anything, in any number of steps. Nothing else is covered: not
- * changing a label's arity, and not turning labels back into blanks.
- */
-fun SearchState.typeChecksUnderEveryFill(ex: Example): Boolean =
-    OneUnification(skolemize(), listOf(ex)).ok
 
 /**
  * This state with each hole replaced by a label of its own, which appears nowhere else, applied to
  * the variables of the type the hole is in.
+ *
+ * It is the hardest filling there is: a program type-checks however this state's holes are filled
+ * if and only if it type-checks in the skolemized state (Theorem 2, refinement stability). So if a
+ * negative example type-checks here, nothing the search does by filling holes can reject it.
+ * Nothing else is covered: not changing a label's arity, and not turning labels back into blanks.
+ *
+ * Checking against the holes themselves cannot tell. A hole unifies like a fresh variable at each
+ * use, which forgets what the hole's type variables were at that use. With
+ * `cons : a -> L[a] -> _`, `compare (cons 0 nil) (cons true nil)` type-checks, because the two
+ * results are unrelated variables, but it stops type-checking once the hole becomes `L[a]`.
  *
  * The arguments are what make this the hardest filling. A filling may mention those variables
  * (`a -> _` can become `a -> a`), so what a hole stands for is a function of them. A label unifies

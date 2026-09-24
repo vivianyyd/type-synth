@@ -34,6 +34,13 @@ class DFSEnumerator(
         currSizeBound: Int,
         holesRemaining: Int
     ): Sequence<SearchState> {
+        // While emitting label blanks, the search can still blank a label out again, and the labels'
+        // arities are decided afterwards. Neither is a filling, so negative examples wait until then.
+        if (!emitLabelBlanks && acceptsANegative(c)) {
+            logger.count("Pruned by negative examples")
+            return emptySequence()
+        }
+
         if (c.noHoles()) return sequenceOf(c)
 
         if (c.noFillableHoles()) return sequenceOf(c)
@@ -57,7 +64,6 @@ class DFSEnumerator(
                 unification.rewindTo(mark)
                 logger.count("Total candidates")
                 val newCandidate = c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, expansion) }
-                // TODO: prune using negative examples.
                 if (unification.refine(hole, expansion))
                     recCandidates(
                         newCandidate,

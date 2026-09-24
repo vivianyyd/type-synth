@@ -69,7 +69,7 @@ class SkolemizationTest {
     fun `a program that checks against the hole but not under every filling`() {
         val holes = consWhoseResultIs(TypeHole())
         assertTrue(ok(holes, bad), "Against the hole, the two results are unrelated variables")
-        assertFalse(holes.typeChecksUnderEveryFill(bad))
+        assertFalse(ok(holes.skolemize(), bad))
         // The filling that witnesses it,
         assertFalse(ok(consWhoseResultIs(list(a)), bad))
         // though not every filling does.
@@ -79,7 +79,7 @@ class SkolemizationTest {
     @Test
     fun `a program that checks under every filling`() {
         val holes = consWhoseResultIs(TypeHole())
-        assertTrue(holes.typeChecksUnderEveryFill(good))
+        assertTrue(ok(holes.skolemize(), good))
         for (filling in listOf(list(a), int(), a, fn(a, a), list(list(a))))
             assertTrue(ok(consWhoseResultIs(filling), good), "Filled with $filling")
     }
@@ -95,7 +95,7 @@ class SkolemizationTest {
 
         val holes = wrapWhoseResultIs(TypeHole())
         assertTrue(ok(holes, program))
-        assertFalse(holes.typeChecksUnderEveryFill(program))
+        assertFalse(ok(holes.skolemize(), program))
         assertFalse(ok(wrapWhoseResultIs(list(a)), program), "L[a] = a is an infinite type")
     }
 
@@ -103,7 +103,7 @@ class SkolemizationTest {
     fun `a state without holes is its own hardest filling`() {
         val filled = consWhoseResultIs(list(a))
         assertEquals(filled.types, filled.skolemize().types)
-        assertEquals(ok(filled, good), filled.typeChecksUnderEveryFill(good))
-        assertEquals(ok(filled, bad), filled.typeChecksUnderEveryFill(bad))
+        assertEquals(ok(filled, good), ok(filled.skolemize(), good))
+        assertEquals(ok(filled, bad), ok(filled.skolemize(), bad))
     }
 }
