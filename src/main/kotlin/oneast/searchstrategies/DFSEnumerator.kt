@@ -43,6 +43,13 @@ class DFSEnumerator(
     ): Sequence<SearchState> {
         if (c.noHoles()) return sequenceOf(c)
 
+        // Search checks finished states. Outlines, which have only blanks left, are checked here,
+        // before label arities are solved for.
+        if (c.acceptsANegative(examples.neg, labelsSettled)) {
+            logger.count("Pruned by negative examples")
+            return emptySequence()
+        }
+
         if (c.noFillableHoles()) return sequenceOf(c)
 
         if (currSizeBound - holesRemaining < 0) return emptySequence()
@@ -64,21 +71,14 @@ class DFSEnumerator(
                 unification.rewindTo(mark)
                 logger.count("Total candidates")
                 val newCandidate = c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, expansion) }
-                when {
-                    newCandidate.acceptsANegative(examples.neg, labelsSettled) -> {
-                        logger.count("Pruned by negative examples")
-                        emptySequence()
-                    }
-                    !unification.refine(hole, expansion) ->
-                        retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound)
-                    else ->
-                        recCandidates(
-                            newCandidate,
-                            unification,
-                            currSizeBound = currSizeBound - 1,
-                            holesRemaining = holesRemaining - 1 + expansion.numFillableHoles()
-                        )
-                }
+                if (unification.refine(hole, expansion))
+                    recCandidates(
+                        newCandidate,
+                        unification,
+                        currSizeBound = currSizeBound - 1,
+                        holesRemaining = holesRemaining - 1 + expansion.numFillableHoles()
+                    )
+                else retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound)
             }
     }
 
