@@ -3,15 +3,111 @@ package oneast.unit
 import oneast.*
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import query.App
 import query.Example
 import query.Name
 import testutil.loadQueryFromFile
+import testutil.parseSearchState
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class UnificationTest {
+
+    companion object {
+        @JvmStatic
+        fun oneBlankTwoLabels() =
+            listOf(
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V0, V1] -> V0 -> V1 -> L0[V1, _] ; true=L2[]",
+                    "put (put Eib Num true) Num true"
+                ),
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V0, V1] -> V0 -> V1 -> L0[V1, _] ; true=L2[]",
+                    "put (put Ebi true Num) true Num"
+                ),
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V1, V0] -> V0 -> V1 -> L0[V0, _] ; true=L2[]",
+                    "put (put Eib Num true) Num true"
+                ),
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V1, V0] -> V0 -> V1 -> L0[V0, _] ; true=L2[]",
+                    "put (put Ebi true Num) true Num"
+                ),
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V1, V0] -> V0 -> V1 -> L0[V1, V1] ; true=L2[]",
+                    "put (put Eib Num true) Num true"
+                ),
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V1, V0] -> V0 -> V1 -> L0[V1, V1] ; true=L2[]",
+                    "put (put Ebi true Num) true Num"
+                ),
+                Arguments.of(
+                    "dictchain",
+                    "b=L0[] ; chain=L1[V0, V0] -> L1[V0, V0] -> L1[V0, V0] ; dbb=L1[., .] ; dbi=L1[., .] ; dib=L1[., .] ; dii=L1[., .] ; i=L2[] ; put=L1[V0, V1] -> V0 -> V1 -> L1[_, _]",
+                    "put (chain dib dbb) i b"
+                ),
+                Arguments.of(
+                    "dictchain",
+                    "b=L0[] ; chain=L1[V0, V1] -> L1[V1, V2] -> L1[V0, V0] ; dbb=L1[., .] ; dbi=L1[., .] ; dib=L1[., .] ; dii=L1[., .] ; i=L2[] ; put=L1[V0, V1] -> V0 -> V1 -> L1[_, _]",
+                    "put (chain dib dbb) i b"
+                ),
+                Arguments.of(
+                    "dictchain",
+                    "b=L0[] ; chain=L1[V0, V0] -> L1[V0, V0] -> L1[V0, V0] ; dbb=L1[., .] ; dbi=L1[., .] ; dib=L1[., .] ; dii=L1[., .] ; i=L2[] ; put=L1[V1, V0] -> V0 -> V1 -> L1[_, _]",
+                    "put (chain dib dbb) i b"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V1] -> L0[V0] ; i=L2[] ; put=L0[V1] -> V0 -> V1 -> L0[V1]",
+                    "put (chain (put ({}) i b) (put ({}) b i)) i i"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V0] ; i=L2[] ; put=L0[V0] -> V0 -> V1 -> L0[V0]",
+                    "chain (chain (put ({}) i b) (put ({}) b i))"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V0] ; i=L2[] ; put=L0[V0] -> V0 -> V1 -> L0[V0]",
+                    "chain (chain (put ({}) b i) (put ({}) i i))"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V0] ; i=L2[] ; put=L0[V0] -> V0 -> V1 -> L0[V0]",
+                    "chain (put ({}) b i) (put (put ({}) i i) i i)"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V0] ; i=L2[] ; put=L0[V0] -> V0 -> V1 -> L0[V0]",
+                    "chain (put ({}) i b) (put (put ({}) b b) b b)"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V1] ; i=L2[] ; put=L0[V1] -> V0 -> V1 -> L0[V1]",
+                    "chain (chain (put ({}) i b) (put ({}) b i))"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V1] ; i=L2[] ; put=L0[V1] -> V0 -> V1 -> L0[V1]",
+                    "put (chain (put ({}) i b) (put ({}) b i)) i i"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V1] ; i=L2[] ; put=L0[V1] -> V0 -> V1 -> L0[V1]",
+                    "chain (put ({}) i b) (chain (put ({}) b i) (put ({}) i b))"
+                ),
+            )
+    }
 
     private val a = Variable(0)
     private val b = Variable(1)
@@ -386,6 +482,23 @@ class UnificationTest {
         val u = OneUnification(context, listOf(App(App(f, Name("Num")), Name("true"))))
         assertTrue(u.ok)
         assertEquals(u.classesOf(num).single(), u.classesOf(tru).single())
+    }
+
+    /**
+     * Each of these needs one blank to be two different labels, so it cannot type-check however the
+     * state's holes are filled. The unifier on main accepted all of them: it recorded what a hole
+     * was unified with instead of unifying it, and never compared the records. In the first,
+     * `put (put Eib Num true) Num true` makes Eib's second blank `true`'s label L2 (inner put),
+     * and then `Num`'s label L1 (outer put), and main recorded both.
+     *
+     * Found by running the search on main and on TypeGraph and checking the states where they
+     * disagreed.
+     */
+    @ParameterizedTest
+    @MethodSource("oneBlankTwoLabels")
+    fun `rejects a blank that has to be two different labels`(benchmark: String, state: String, program: String) {
+        val example = loadQueryFromFile(benchmark).examples.posNoSubexprs.single { it.toString() == program }
+        assertFail(parseSearchState(state), example)
     }
 
     /**
