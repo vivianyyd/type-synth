@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import testutil.loadQueryFromFile
 import util.GroundTruth
 import util.Logger
+import util.io.cvc.clearCVC
 
 class SexpTests {
     companion object {
@@ -65,6 +66,9 @@ class SexpTests {
     @MethodSource("testNames")
 //    @Disabled
     fun test(testName: String) {
+        // Solver files are named by state id, which restarts every run, so a file left over from an
+        // earlier run can be read as this run's result.
+        clearCVC()
         val query = loadQueryFromFile(testName)
         val languageGroundTruth: GroundTruth = query.oracle
         val configuration = defaultConfig(testName)
