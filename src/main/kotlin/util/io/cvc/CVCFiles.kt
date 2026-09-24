@@ -7,7 +7,9 @@ fun callCVC(content: String, testName: String): Boolean {
     val inPath = join("src", "main", "python", "input", "generated", "cvc-$testName.py")
     val outPath = join("src", "main", "python", "output", "cvc-$testName.py")
     write(inPath, content)
-    val out = "python3 $inPath".runCommand() ?: throw Exception("I'm sad")
+    // cardinality.py lives in src/main/python/input, not alongside the generated files
+    val out = "env PYTHONPATH=${join("src", "main", "python", "input")} python3 $inPath".runCommand()
+        ?: throw Exception("I'm sad")
     if ("no solution" !in out) {
         write(outPath, out)
         return true
@@ -60,5 +62,5 @@ fun readCVC(name: String): String? {
 
 fun clearCVC() {
     deleteAll(join("src", "main", "python", "output"))
-    deleteAll(join("src", "main", "python", "input", "generated")) { it.name != "cardinality.py" }
+    deleteAll(join("src", "main", "python", "input", "generated"))
 }
