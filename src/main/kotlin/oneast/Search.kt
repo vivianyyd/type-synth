@@ -112,7 +112,10 @@ class Search(
                     sizeBound = size,
                     depthBound = depth,
                 )
-                // TODO: prune using negative examples.
+                    .filterNot { s ->
+                        s.acceptsANegative(examples.neg, labelsSettled = false)
+                            .also { if (it) logger.count("Outlines pruned by negative examples") }
+                    }
             }
 
         val withLabelClasses = initialOutlines.mapNotNull { assignLabelClasses(it) }.toSet()

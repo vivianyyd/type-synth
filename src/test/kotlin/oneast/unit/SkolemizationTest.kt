@@ -108,6 +108,28 @@ class SkolemizationTest {
         assertTrue(check.ok)
     }
 
+    /**
+     * A negative example that type-checks only because two uses of a label agree: once the label is
+     * given parameters, those can differ.
+     */
+    @Test
+    fun `unsettled labels can still tell two values apart`() {
+        val s = state("compare" to fn(a, fn(a, int())), "zero" to int(), "one" to int())
+        val program = app("compare", Name("zero"), Name("one"))
+        assertTrue(ok(s.skolemize(), program))
+        assertFalse(ok(s.uncommittedLabelsAsHoles().skolemize(), program))
+        // Unless the label is committed, and so can never be given parameters.
+        assertTrue(ok(s.commitAll().uncommittedLabelsAsHoles().skolemize(), program))
+    }
+
+    /** A negative example that type-checks because of a type variable, which no label change touches. */
+    @Test
+    fun `unsettled labels do not change what a type variable accepts`() {
+        val s = state("put" to fn(a, int()), "zero" to int())
+        val program = app("put", Name("zero"))
+        assertTrue(ok(s.uncommittedLabelsAsHoles().skolemize(), program))
+    }
+
     @Test
     fun `a state without holes is its own hardest filling`() {
         val filled = consWhoseResultIs(list(a))

@@ -13,6 +13,13 @@ class DFSEnumerator(
     private val depthBound: Int,
     private val logger: Logger
 ) : SearchStrategy(examples) {
+    /**
+     * Whether the search has stopped changing labels other than by filling holes. While it emits
+     * label blanks, it is outlining: it blanks out labels that clash, and label arities are decided
+     * after it returns.
+     */
+    private val labelsSettled = !emitLabelBlanks
+
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
         return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles())
@@ -40,14 +47,6 @@ class DFSEnumerator(
 
         if (currSizeBound - holesRemaining < 0) return emptySequence()
 
-        // Only worth checking where there is a subtree to cut: Search checks the states returned
-        // above. And only once labels are settled: while emitting label blanks, the search can still
-        // blank a label out again, and label arities are decided afterwards. Neither is a filling.
-        if (!emitLabelBlanks && acceptsANegative(c)) {
-            logger.count("Pruned by negative examples")
-            return emptySequence()
-        }
-
         val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
         val mark = unification.mark()
         return hole
@@ -65,14 +64,21 @@ class DFSEnumerator(
                 unification.rewindTo(mark)
                 logger.count("Total candidates")
                 val newCandidate = c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, expansion) }
-                if (unification.refine(hole, expansion))
-                    recCandidates(
-                        newCandidate,
-                        unification,
-                        currSizeBound = currSizeBound - 1,
-                        holesRemaining = holesRemaining - 1 + expansion.numFillableHoles()
-                    )
-                else retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound)
+                when {
+                    newCandidate.acceptsANegative(examples.neg, labelsSettled) -> {
+                        logger.count("Pruned by negative examples")
+                        emptySequence()
+                    }
+                    !unification.refine(hole, expansion) ->
+                        retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound)
+                    else ->
+                        recCandidates(
+                            newCandidate,
+                            unification,
+                            currSizeBound = currSizeBound - 1,
+                            holesRemaining = holesRemaining - 1 + expansion.numFillableHoles()
+                        )
+                }
             }
     }
 

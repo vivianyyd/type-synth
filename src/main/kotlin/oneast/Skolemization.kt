@@ -1,6 +1,19 @@
 package oneast
 
+import query.Example
 import util.Counter
+
+/**
+ * Whether some of [negatives] type-checks in every state the search can still reach from this one,
+ * so that none of those can be a solution. Until [labelsSettled], the search can still change
+ * labels as well as fill holes.
+ */
+fun SearchState.acceptsANegative(negatives: List<Example>, labelsSettled: Boolean): Boolean {
+    if (negatives.isEmpty()) return false
+    val widest = if (labelsSettled) this else uncommittedLabelsAsHoles()
+    val hardest = OneUnification(widest.skolemize(), emptyList())
+    return negatives.any { hardest.typeChecks(it) }
+}
 
 /**
  * This state with each hole replaced by a label of its own, which appears nowhere else, applied to
@@ -10,6 +23,7 @@ import util.Counter
  * if and only if it type-checks in the skolemized state (Theorem 2, refinement stability). So if a
  * negative example type-checks here, nothing the search does by filling holes can reject it.
  * Nothing else is covered: not changing a label's arity, and not turning labels back into blanks.
+ * For those, skolemize [uncommittedLabelsAsHoles] instead.
  *
  * Checking against the holes themselves cannot tell. A hole unifies like a fresh variable at each
  * use, which forgets what the hole's type variables were at that use. With
@@ -49,6 +63,27 @@ fun SearchState.skolemize(): SearchState {
         numCommittedTypes = numCommittedTypes,
         committedLabels = committedLabels
     )
+}
+
+/**
+ * This state with each label that is not committed, along with its parameters, replaced by a hole
+ * of its own.
+ *
+ * While outlining, the search changes labels without filling holes: it blanks out labels that
+ * clash, and it decides label arities afterwards, which rewrites each label's parameters. From
+ * this state, every one of those changes is a filling, so [skolemize] still covers them.
+ * Committed labels never change, and neither do type variables or arrows.
+ */
+fun SearchState.uncommittedLabelsAsHoles(): SearchState {
+    fun Type.forget(): Type =
+        when (this) {
+            is Arrow -> Arrow(l.forget(), r.forget())
+            is NamedLabel ->
+                if (label in committedLabels) copy(params = params.map { it.forget() }) else TypeHole()
+            is THole,
+            is Variable -> this
+        }
+    return mapTypes { it.forget() }
 }
 
 private fun Type.maxLabel(): Int =
