@@ -366,7 +366,8 @@ class TypeHole : THole() {
         val fnExpansion = Arrow(TypeHole(), TypeHole())
         val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
 
-        return variableExps + fnExpansion + labelExpansions
+        return variableExps + fnExpansion +
+            (if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else labelExpansions)
     }
 
     override fun toString() = "_"
