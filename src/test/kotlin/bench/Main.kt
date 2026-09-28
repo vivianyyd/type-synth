@@ -4,6 +4,7 @@ import com.squareup.moshi.Moshi
 import oneast.SearchState
 import oneast.mismatches
 import oneast.run
+import util.stateFromContext
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
@@ -294,7 +295,14 @@ private fun runOne(opts: Options) {
             Stats.stop()
 
             val expected = problem.expected
-            val mismatches = expected?.let { e -> solutions.map { it.mismatches(e) ?: listOf("different names") } }
+            // The expected context can have names that no example mentions, which aren't solved for
+            val mismatches =
+                expected?.let { e ->
+                    solutions.map { s ->
+                        s.mismatches(stateFromContext(e.asMap().filterKeys { it in s.names }))
+                            ?: listOf("different names")
+                    }
+                }
             linkedMapOf(
                 "status" to
                     when {
