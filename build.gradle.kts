@@ -60,6 +60,13 @@ tasks.named<JavaExec>("run") {
     standardInput = System.`in`
 }
 
+tasks.register<JavaExec>("bench") {
+    group = "verification"
+    description = "Benchmark the search. ./gradlew bench --args=--help for options"
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("bench.MainKt")
+}
+
 tasks.register<JavaExec>("runGeneratePrompt") {
     group = "application"
     description = "Run GeneratePrompt main function"

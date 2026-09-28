@@ -1,14 +1,16 @@
 package oneast
 
+import bench.Count
+import bench.Debug
+import bench.Phase
+import bench.Stats
 import query.*
-import util.Logger
 import kotlin.math.min
 
 class Engine(
     private val query: AbstractQuery,
     private val languageGroundTruth: (Example) -> Boolean,
     private val config: Configuration,
-    private val logger: Logger
 ) {
     private val names = query.examples.names
     private val posExamples = query.examples.posWithSubexprs.toMutableList()
@@ -62,7 +64,8 @@ class Engine(
             }
             is SingleRound -> if (newNames.isNotEmpty()) scheduled.add(newNames)
         }
-        logger.log("Schedule: $scheduled")
+        Stats.note("schedule", scheduled.toList())
+        Debug.log { "Schedule: $scheduled" }
     }
 
     private fun nameIsApplied(name: String, exs: Examples): Boolean {
@@ -108,32 +111,39 @@ class Engine(
         return nextExamples to nextState
     }
 
-    private fun solveQuery(examples: Examples, state: SearchState, outerDepthBound: Int): Sequence<SearchState> {
-        val solver = Search(state, examples, query.oracle, config.copy(depthBound = outerDepthBound), logger)
-        return solver.solutions()
-    }
-
     private fun searchRec(state: SearchState, round: Int, outerDepthBound: Int): Sequence<SearchState> = sequence {
-        val nextQueryAndSeed = buildNextQuery(state, round)
-
-        if (nextQueryAndSeed == null) {
+        val nextQuery = buildNextQuery(state, round)
+        if (nextQuery == null) {
             yield(state)
             return@sequence
         }
-        logger.log("Current query: ${nextQueryAndSeed.second} with depth bound $outerDepthBound")
+        val (examples, seed) = nextQuery
+        Debug.log { "Current query: $seed with depth bound $outerDepthBound" }
+        val statsId =
+            Stats.newQuery(
+                round, outerDepthBound, scheduled[round], examples.posNoSubexprs.size, examples.neg.size
+            )
+        val search = Search(seed, examples, query.oracle, config.copy(depthBound = outerDepthBound), statsId)
 
-        for (solution in solveQuery(nextQueryAndSeed.first, nextQueryAndSeed.second, outerDepthBound)) {
-            logger.log("Looking for counterexamples for potential solution $solution")
+        for (solution in search.solutions()) {
+            Debug.log { "Looking for counterexamples for potential solution $solution" }
             val ctrex =
-                CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth) { s, e ->
-                    OneUnification(s, listOf(e)).ok
+                Stats.phase(statsId, Phase.CEGIS) {
+                    CEGISCheck(examples, solution, languageGroundTruth) { s, e ->
+                        OneUnification(s, listOf(e)).ok
+                    }
+                        .counterexample()
+                        ?.also { Stats.inc(if (it.second) Count.CEGIS_POS else Count.CEGIS_NEG) }
                 }
-                    .counterexample()
             if (ctrex == null) {
-                logger.log("Found no counterexamples")
+                Debug.log { "Found no counterexamples" }
                 yieldAll(searchRec(solution, round + 1, outerDepthBound))
             } else {
-                logger.log("Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}")
+                Debug.log { "Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}" }
+                Stats.event(
+                    "counterexample",
+                    mapOf("query" to statsId, "positive" to ctrex.second, "example" to ctrex.first)
+                )
                 if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
             }
         }

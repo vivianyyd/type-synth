@@ -2,7 +2,6 @@ package oneast.searchstrategies
 
 import oneast.*
 import query.Examples
-import util.Logger
 
 fun main() {
     val elems = listOf("a", "b", "c")
@@ -61,7 +60,6 @@ class Partitioner(
     private val emitConstructors: Boolean,
     private val sizeBound: Int,
     private val depthBound: Int,
-    private val logger: Logger
 ) : SearchStrategy(examples) {
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)

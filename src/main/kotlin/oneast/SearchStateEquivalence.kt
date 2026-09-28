@@ -1,7 +1,5 @@
 package oneast
 
-import util.Logger
-
 /**
  * Returns true iff [this] and [other] denote the same state up to:
  *  - bijective renaming of label IDs (global across all types in the state), and
@@ -15,22 +13,26 @@ import util.Logger
  * (label / variable) renaming is forced by the corresponding label or variable
  * on the other side.
  */
-fun SearchState.equivalentTo(other: SearchState, logger: Logger? = null): Boolean {
-    if (this.names.keys != other.names.keys) return false
+fun SearchState.equivalentTo(other: SearchState): Boolean =
+    mismatches(other, stopAtFirst = true)?.isEmpty() ?: false
+
+/**
+ * The names whose types keep [this] from being equivalent to [other], described for a reader, or
+ * null if the two states do not have the same names.
+ */
+fun SearchState.mismatches(other: SearchState, stopAtFirst: Boolean = false): List<String>? {
+    if (this.names.keys != other.names.keys) return null
     val labels = Renaming()
-    var equivalent = true
+    val mismatches = mutableListOf<String>()
     for (name in this.names.keys) {
         val t1 = this.types[this.names.getValue(name)]
         val t2 = other.types[other.names.getValue(name)]
         if (!matchTypes(t1, t2, labels, Renaming())) {
-            if (logger == null) return false
-            else {
-                logger.log("Mismatch for $name: $t1 and $t2")
-                equivalent = false
-            }
+            mismatches.add("$name: $t1 and $t2")
+            if (stopAtFirst) break
         }
     }
-    return equivalent
+    return mismatches
 }
 
 /** Whether [a] and [b] are the same type up to renaming variables. Labels must be the same. */

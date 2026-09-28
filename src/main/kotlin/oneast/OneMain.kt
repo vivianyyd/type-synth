@@ -1,19 +1,18 @@
 package oneast
 
+import bench.Debug
+import oneast.searchstrategies.DFSEnumerator
 import oneast.searchstrategies.SearchStrategy
 import query.AbstractQuery
 import query.Examples
 import util.GroundTruth
-import util.Logger
-import util.lines
 
 fun run(
     query: AbstractQuery,
     languageGroundTruth: GroundTruth,
     configuration: Configuration,
-    logger: Logger
 ): List<SearchState> {
-    val engine = Engine(query, languageGroundTruth::valid, configuration, logger)
+    val engine = Engine(query, languageGroundTruth::valid, configuration)
 
     val solutions = mutableListOf<SearchState>()
 
@@ -21,46 +20,54 @@ fun run(
         Solutions.AllSolutions -> engine.search()
         is Solutions.NumSolutions -> engine.search().take(configuration.numSols.value)
     }.forEach {
-        logger.log("SOLUTION: ${it.asMap()}")
+        Debug.log { "SOLUTION: ${it.asMap()}" }
         solutions.add(it)
     }
-    logger.finish()
     return solutions
 }
 
 sealed interface SchedulingInfo
 
 object SingleRound : SchedulingInfo {
-    override fun toString() = "Single round"
+    override fun toString() = "SingleRound"
 }
 
-data class Auto(val namesPerRound: Int = 5) : SchedulingInfo {
-    override fun toString() = "Auto with $namesPerRound names per round"
+data class Auto(val namesPerRound: Int = 5) : SchedulingInfo
+
+data class CustomSchedule(val customSchedule: List<List<String>>) : SchedulingInfo
+
+/** How the search fills holes. */
+enum class SearchStrategyKind {
+    DFS {
+        override fun create(
+            examples: Examples,
+            emitLabelBlanks: Boolean,
+            emitConstructors: Boolean,
+            sizeBound: Int,
+            depthBound: Int
+        ) = DFSEnumerator(examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound)
+    };
+
+    abstract fun create(
+        examples: Examples,
+        emitLabelBlanks: Boolean,
+        emitConstructors: Boolean,
+        sizeBound: Int,
+        depthBound: Int
+    ): SearchStrategy
 }
 
-data class CustomSchedule(val customSchedule: List<List<String>>) : SchedulingInfo {
-    override fun toString() = "Custom schedule: $customSchedule"
-}
-
+/**
+ * Everything that picks between versions of the search. Keep it plain data: benchmarks record it
+ * as it is, so an option that is not in here cannot be told apart from another in the results.
+ */
 data class Configuration(
-    val name: String,
-    val searchStrategy: (Examples, Boolean, Boolean, Int, Int, Logger) -> SearchStrategy,
+    val searchStrategy: SearchStrategyKind = SearchStrategyKind.DFS,
     val sizeBound: Int,
     val depthBound: Int,
     val scheduleInfo: SchedulingInfo = Auto(5),
     val numSols: Solutions
-) {
-    override fun toString(): String =
-        listOf(
-            name,
-            "Search strategy: $searchStrategy",
-            "Size bound: $sizeBound",
-            "Depth bound: $depthBound",
-            "Schedule: $scheduleInfo",
-            "Searching for $numSols solutions"
-        )
-            .lines() + "\n=====\n"
-}
+)
 
 sealed class Solutions {
     object AllSolutions : Solutions() {

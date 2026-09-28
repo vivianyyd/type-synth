@@ -10,7 +10,7 @@ interface GroundTruth {
 /** Computes types of applications based on types of named values, given as [secret] */
 class CheckingGroundTruthOracle(secret: Map<String, Type>) : GroundTruth, Oracle {
     // This doesn't enforce the invariant that a label must have the same arity always
-    private val truth = stateFromContext(secret)
+    val truth = stateFromContext(secret)
 
     override fun valid(example: Example): Boolean = OneUnification(truth, listOf(example)).ok
 

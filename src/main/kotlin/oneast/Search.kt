@@ -1,20 +1,22 @@
 package oneast
 
+import bench.*
 import dependencyanalysis.ParameterwiseDependencyAnalysis
 import query.Examples
 import util.*
 import java.util.stream.Collectors
 
-/** Lazily produces ALL solutions for [examples] from this [seed]. */
+/**
+ * Lazily produces ALL solutions for [examples] from this [seed]. Charges its work to query
+ * [statsId] (see [Stats.newQuery]).
+ */
 class Search(
     private val seed: SearchState,
     private val examples: Examples,
     private val oracle: Oracle,
     private val config: Configuration,
-    private val logger: Logger
+    private val statsId: Int = -1,
 ) {
-    private val names = seed.names.keys
-
     private fun allCandidates(
         c: SearchState,
         emitLabelBlanks: Boolean,
@@ -22,8 +24,8 @@ class Search(
         sizeBound: Int,
         depthBound: Int,
     ): Sequence<SearchState> =
-        config
-            .searchStrategy(examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, logger)
+        config.searchStrategy
+            .create(examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound)
             .candidates(c)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
@@ -103,8 +105,8 @@ class Search(
     }
 
     private fun concreteSeeds(size: Int, depth: Int): List<SearchState> {
-        val initialOutlines =
-            logger.time("Initial outlines") {
+        val withLabelClasses =
+            Stats.phase(statsId, Phase.OUTLINE) {
                 allCandidates(
                     seed,
                     emitLabelBlanks = true,
@@ -112,40 +114,41 @@ class Search(
                     sizeBound = size,
                     depthBound = depth,
                 )
-            }
-
-        val withLabelClasses = initialOutlines.mapNotNull { assignLabelClasses(it) }.toSet()
-
-        logger.log(withLabelClasses.countedLines("Seeds before label arities"))
-
-        val seedsWithDeps =
-            logger.time("Dependency analysis") {
-                // Phase 1: compute dependency analyses sequentially (memoized by arities)
-                val dependencyAnalyses =
-                    mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
-                withLabelClasses.map { s ->
-                    val arities = s.fnArities()
-                    val dep =
-                        dependencyAnalyses.getOrPut(arities) {
-                            ParameterwiseDependencyAnalysis(examples, arities, oracle)
+                    .mapNotNull {
+                        Stats.inc(Count.OUTLINES)
+                        assignLabelClasses(it).also { s ->
+                            if (s == null) Stats.inc(Count.PRUNED_LABEL_CLASSES)
                         }
-                    s to dep
-                }
+                    }
+                    .toSet()
             }
 
-        val labelAritySols =
-            logger.time("Solving for label arities") {
-                // Phase 2: run labelArities() calls in parallel
-                seedsWithDeps
-                    .parallelStream()
-                    .map { (s, dep) ->
-                        logger.count("Solver call")
-                        val la = labelArities(s, dep)
-                        s to la
+        Debug.log { withLabelClasses.countedLines("Seeds before label arities") }
+
+        return Stats.phase(statsId, Phase.ARITY) { solveLabelArities(withLabelClasses) }
+    }
+
+    private fun solveLabelArities(withLabelClasses: Set<SearchState>): List<SearchState> {
+        // Phase 1: compute dependency analyses sequentially (memoized by arities)
+        val dependencyAnalyses = mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
+        val seedsWithDeps =
+            withLabelClasses.map { s ->
+                val arities = s.fnArities()
+                val dep =
+                    dependencyAnalyses.getOrPut(arities) {
+                        ParameterwiseDependencyAnalysis(examples, arities, oracle)
                     }
-                    .filter { (_, la) -> la != null }
-                    .collect(Collectors.toList())
+                s to dep
             }
+
+        // Phase 2: run labelArities() calls in parallel
+        val labelAritySols =
+            seedsWithDeps
+                .parallelStream()
+                .map { (s, dep) -> s to labelArities(s, dep) }
+                .filter { (_, la) -> la != null }
+                .collect(Collectors.toList())
+        Stats.add(Count.ARITY_UNSAT, (seedsWithDeps.size - labelAritySols.size).toLong())
 
         val splitLabelArities = labelAritySols
             .flatMap { (s, la) ->
@@ -187,6 +190,7 @@ class Search(
 //            }.collect(Collectors.toList())
 //        }
 
+        Stats.add(Count.SEEDS, resolvedLabelArities.size.toLong())
         return resolvedLabelArities
     }
 
@@ -199,7 +203,6 @@ class Search(
         // We start by searching for the functions, and try to deduce the nullaries from them.
         val candidatesNullariesDeduced =
             seeds.asSequence().flatMap {
-                logger.count("Seeds")
                 allCandidates(
                     it,
                     emitLabelBlanks = false,
@@ -236,43 +239,47 @@ class Search(
                 } // else emptySequence()
             }.filter { s ->
                 examples.neg.all { !OneUnification(s, listOf(it)).ok }
+                    .also { if (!it) Stats.inc(Count.PRUNED_NEG_FINAL) }
             }
         return finalResults
     }
 
+    /**
+     * Charges its work to concretizing, except for the parts that are outlining and solving for
+     * label arities.
+     */
     fun solutions(): Sequence<SearchState> = sequence {
 //        val seen = mutableSetOf<SearchState>()
         for (seedDepth in 0..config.depthBound) {
-            var seeds =
-                logger.time("Depth $seedDepth outlining $names") {
-                    concreteSeeds(config.sizeBound, seedDepth)
-                }
+            var seeds = concreteSeeds(config.sizeBound, seedDepth)
             // Only try concretizing the new seeds
             // TODO this doesn't work right now since holes use physical equals!
 //            seeds = (seeds.toSet() - seen).toList()
 //            seen.addAll(seeds)
 
             if (seeds.isEmpty()) continue
-            logger.log(seeds.countedLines("Concrete seeds"))
+            Debug.log { seeds.countedLines("Concrete seeds") }
 
             val maxMinSize = seeds.maxOf { it.numFillableHoles() }
-            logger.log("Max min size: $maxMinSize")
+            Debug.log { "Max min size: $maxMinSize" }
             if (maxMinSize > config.sizeBound)
-                logger.log("Warning: the largest seed contains more holes than the size bound")
+                Debug.log { "Warning: the largest seed contains more holes than the size bound" }
 
             for (depth in 1..config.depthBound) {
-                logger.start("Depth $depth concretizing $names")
                 // If largest seed is greater than the size bound, just try size bound for smaller seeds
                 for (size in maxMinSize.coerceAtMost(config.sizeBound)..config.sizeBound) {
-                    logger.start("Size $size concretizing $names")
-                    val sols = concretizationSearch(seeds, size, depth).iterator()
-                    yieldAll(sols)
-                    logger.stop("Size $size concretizing $names")
+                    for (solution in concretizationSearch(seeds, size, depth)) {
+                        Stats.inc(Count.SOLUTIONS)
+                        Stats.event(
+                            "solution",
+                            mapOf("seedDepth" to seedDepth, "depth" to depth, "size" to size)
+                        )
+                        yield(solution)
+                    }
                 }
-                logger.stop("Depth $depth concretizing $names")
             }
         }
-    }
+    }.inPhase(statsId, Phase.CONCRETIZE)
 
     private fun Type.addParamHoles(labelArities: Map<Int, Int>, underArrow: Boolean = false): Type =
         when (this) {

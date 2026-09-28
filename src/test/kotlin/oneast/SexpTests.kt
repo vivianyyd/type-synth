@@ -1,14 +1,10 @@
 package oneast
 
-import oneast.searchstrategies.DFSEnumerator
-import org.junit.jupiter.api.Disabled
+import bench.Debug
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import testutil.loadQueryFromFile
-import util.GroundTruth
-import util.Logger
-import util.io.cvc.clearCVC
 
 class SexpTests {
     companion object {
@@ -23,32 +19,25 @@ class SexpTests {
                 "polymorphic-dictchain",
                 "polymorphic-nil",
             )
+
+        val defaultConfig =
+            Configuration(
+                sizeBound = 20,
+                depthBound = 4,
+                scheduleInfo = SingleRound,
+                numSols = Solutions.NumSolutions(1)
+            )
     }
 
-    private fun defaultLogger(
-        config: Configuration,
-        logName: String = config.name.replace("[^A-Za-z0-9]".toRegex(), "-")
-    ) =
-        Logger(
-            configuration = config,
-            logFilename = "$logName-willBeOverwritten.log",
-            logToFile = true,
-            verbosity = 5
-        )
-
-    private fun defaultConfig(name: String) =
-        Configuration(
-            name = name,
-            searchStrategy = ::DFSEnumerator,
-            sizeBound = 20,
-            depthBound = 4,
-            scheduleInfo = SingleRound,
-            numSols = Solutions.NumSolutions(1)
-        )
-
     @Test
-//    @Disabled
-    fun `just one`() = test("cons")
+    fun `just one`() {
+        Debug.enabled = true
+        try {
+            test("cons")
+        } finally {
+            Debug.enabled = false
+        }
+    }
 
     @ParameterizedTest
     @MethodSource("testNames")
@@ -64,16 +53,8 @@ class SexpTests {
 
     @ParameterizedTest
     @MethodSource("testNames")
-//    @Disabled
     fun test(testName: String) {
-        // Solver files are named by state id, which restarts every run, so a file left over from an
-        // earlier run can be read as this run's result.
-        clearCVC()
         val query = loadQueryFromFile(testName)
-        val languageGroundTruth: GroundTruth = query.oracle
-        val configuration = defaultConfig(testName)
-        val logger = defaultLogger(configuration)
-
-        assert(run(query, languageGroundTruth, configuration, logger).isNotEmpty())
+        assert(run(query, query.oracle, defaultConfig).isNotEmpty())
     }
 }

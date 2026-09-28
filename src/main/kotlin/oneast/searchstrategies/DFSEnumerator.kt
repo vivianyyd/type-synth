@@ -1,8 +1,9 @@
 package oneast.searchstrategies
 
+import bench.Count
+import bench.Stats
 import oneast.*
 import query.Examples
-import util.Logger
 
 /** Fills one hole at a time, shallowest first, in DFS style. */
 class DFSEnumerator(
@@ -11,7 +12,6 @@ class DFSEnumerator(
     private val emitConstructors: Boolean,
     private val sizeBound: Int,
     private val depthBound: Int,
-    private val logger: Logger
 ) : SearchStrategy(examples) {
     /**
      * Whether the search has stopped changing labels other than by filling holes. While it emits
@@ -23,7 +23,10 @@ class DFSEnumerator(
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
         return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles())
-        else emptySequence()
+        else {
+            Stats.inc(Count.PRUNED_POS)
+            emptySequence()
+        }
     }
 
     /**
@@ -44,7 +47,8 @@ class DFSEnumerator(
         // Before either return below, so that outlines, including those with no blanks left, are
         // checked before label arities are solved for.
         if (c.acceptsANegative(examples.neg, labelsSettled)) {
-            logger.count("Pruned by negative examples")
+            Stats.inc(Count.PRUNED_NEG)
+            Stats.trace("prunedNeg") { c }
             return emptySequence()
         }
 
@@ -69,16 +73,21 @@ class DFSEnumerator(
             .asSequence()
             .flatMap { expansion ->
                 unification.rewindTo(mark)
-                logger.count("Total candidates")
+                Stats.inc(Count.CANDIDATES)
                 val newCandidate = c.mapTypeAtIndex(iToFill) { typ -> typ.replace(hole, expansion) }
-                if (unification.refine(hole, expansion))
+                if (unification.refine(hole, expansion)) {
+                    Stats.trace("candidate") { newCandidate }
                     recCandidates(
                         newCandidate,
                         unification,
                         currSizeBound = currSizeBound - 1,
                         holesRemaining = holesRemaining - 1 + expansion.numFillableHoles()
                     )
-                else retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound)
+                } else {
+                    Stats.inc(Count.PRUNED_POS)
+                    Stats.trace("prunedPos") { newCandidate }
+                    retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound)
+                }
             }
     }
 
@@ -112,10 +121,15 @@ class DFSEnumerator(
             c.mapTypesAndSetLabelArities(
                 newArities = c.labelArities.filterNot { (l, _) -> l in badLabels }
             ) { blankBadLabels(it) }
+        Stats.inc(Count.RELABELED)
+        Stats.trace("relabeled") { blanked }
         // The labels changed everywhere at once, so this subtree needs a check of its own.
         val unification = posUnification(blanked)
         return if (unification.ok)
             recCandidates(blanked, unification, currSizeBound - 1, blanked.numFillableHoles())
-        else emptySequence()
+        else {
+            Stats.inc(Count.PRUNED_POS)
+            emptySequence()
+        }
     }
 }
