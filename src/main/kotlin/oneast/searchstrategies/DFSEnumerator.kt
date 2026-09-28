@@ -41,14 +41,14 @@ class DFSEnumerator(
         currSizeBound: Int,
         holesRemaining: Int
     ): Sequence<SearchState> {
-        if (c.noHoles()) return sequenceOf(c)
-
-        // Search checks finished states. Outlines, which have only blanks left, are checked here,
-        // before label arities are solved for.
+        // Before either return below, so that outlines, including those with no blanks left, are
+        // checked before label arities are solved for.
         if (c.acceptsANegative(examples.neg, labelsSettled)) {
             logger.count("Pruned by negative examples")
             return emptySequence()
         }
+
+        if (c.noHoles()) return sequenceOf(c)
 
         if (c.noFillableHoles()) return sequenceOf(c)
 
