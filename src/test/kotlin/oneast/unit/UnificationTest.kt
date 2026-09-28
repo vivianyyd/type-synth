@@ -12,6 +12,7 @@ import query.Name
 import testutil.loadQueryFromFile
 import testutil.parseSearchState
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -482,6 +483,27 @@ class UnificationTest {
         val u = OneUnification(context, listOf(App(App(f, Name("Num")), Name("true"))))
         assertTrue(u.ok)
         assertEquals(u.classesOf(num).single(), u.classesOf(tru).single())
+    }
+
+    /**
+     * The same, but with the blanks inside the parameter and the variable in the argument. g takes
+     * a B1 -> B2, and f : a -> a is one, so B1 = a = B2. The unifier on main recorded a against
+     * each blank without relating the blanks, so it gave them different labels, on 33 of hofs's
+     * outlines. If f : a -> b, nothing relates them.
+     */
+    @Test
+    fun `blanks equal through a variable of an argument are equal to each other`() {
+        val b1 = Blank(labelOnly = true)
+        val b2 = Blank(labelOnly = true)
+        val same = OneUnification(makeContext("f" to Arrow(a, a), "g" to Arrow(Arrow(b1, b2), I)), listOf(App(g, f)))
+        assertTrue(same.ok)
+        assertEquals(same.classesOf(b1).single(), same.classesOf(b2).single())
+
+        val c1 = Blank(labelOnly = true)
+        val c2 = Blank(labelOnly = true)
+        val apart = OneUnification(makeContext("f" to Arrow(a, b), "g" to Arrow(Arrow(c1, c2), I)), listOf(App(g, f)))
+        assertTrue(apart.ok)
+        assertNotEquals(apart.classesOf(c1).single(), apart.classesOf(c2).single())
     }
 
     /**
