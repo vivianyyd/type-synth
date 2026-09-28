@@ -13,13 +13,6 @@ class DFSEnumerator(
     private val depthBound: Int,
     private val logger: Logger
 ) : SearchStrategy(examples) {
-    /**
-     * Whether the search has stopped changing labels other than by filling holes. While it emits
-     * label blanks, it is outlining: it blanks out labels that clash, and label arities are decided
-     * after it returns.
-     */
-    private val labelsSettled = !emitLabelBlanks
-
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
         return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles())
@@ -43,7 +36,7 @@ class DFSEnumerator(
     ): Sequence<SearchState> {
         // Before either return below, so that outlines, including those with no blanks left, are
         // checked before label arities are solved for.
-        if (c.acceptsANegative(examples.neg, labelsSettled)) {
+        if (acceptsANegative(c)) {
             logger.count("Pruned by negative examples")
             return emptySequence()
         }

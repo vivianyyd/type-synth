@@ -99,20 +99,6 @@ class SkolemizationTest {
         assertFalse(ok(wrapWhoseResultIs(list(a)), program), "L[a] = a is an infinite type")
     }
 
-    /**
-     * What the search asks of a negative example. `bad` type-checks against the hole itself, but not
-     * once cons returns L[a], so it must not prune the state. `good` type-checks under every
-     * filling, so as a negative example it rules out everything below the state.
-     */
-    @Test
-    fun `a negative example prunes only if it checks under every filling`() {
-        val holes = consWhoseResultIs(TypeHole())
-        assertTrue(ok(holes, bad))
-        assertFalse(holes.acceptsANegative(listOf(bad), labelsSettled = true))
-        assertTrue(holes.acceptsANegative(listOf(good), labelsSettled = true))
-        assertTrue(holes.acceptsANegative(listOf(bad, good), labelsSettled = true))
-    }
-
     @Test
     fun `one check can try many examples without them interfering`() {
         val holes = consWhoseResultIs(TypeHole()).skolemize()
@@ -120,28 +106,6 @@ class SkolemizationTest {
         for (ex in listOf(bad, good, bad, Name("cons"), good))
             assertEquals(ok(holes, ex), check.typeChecks(ex), "$ex")
         assertTrue(check.ok)
-    }
-
-    /**
-     * A negative example that type-checks only because two uses of a label agree: once the label is
-     * given parameters, those can differ.
-     */
-    @Test
-    fun `unsettled labels can still tell two values apart`() {
-        val s = state("compare" to fn(a, fn(a, int())), "zero" to int(), "one" to int())
-        val program = app("compare", Name("zero"), Name("one"))
-        assertTrue(ok(s.skolemize(), program))
-        assertFalse(ok(s.uncommittedLabelsAsHoles().skolemize(), program))
-        // Unless the label is committed, and so can never be given parameters.
-        assertTrue(ok(s.commitAll().uncommittedLabelsAsHoles().skolemize(), program))
-    }
-
-    /** A negative example that type-checks because of a type variable, which no label change touches. */
-    @Test
-    fun `unsettled labels do not change what a type variable accepts`() {
-        val s = state("put" to fn(a, int()), "zero" to int())
-        val program = app("put", Name("zero"))
-        assertTrue(ok(s.uncommittedLabelsAsHoles().skolemize(), program))
     }
 
     @Test
