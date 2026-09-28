@@ -202,6 +202,8 @@ private fun runChild(opts: Options, b: Benchmark, runId: String, repeat: Int, di
             .start()
     // The run times itself out; this is in case it can't.
     if (!proc.waitFor(opts.timeoutSec + 60, TimeUnit.SECONDS)) proc.destroyForcibly().waitFor()
+    // Runs print nothing unless debugging or failing
+    File(dir, "$runId.log").let { if (it.length() == 0L) it.delete() }
 
     val recordFile = File(dir, "$runId.json")
     if (!recordFile.isFile) {

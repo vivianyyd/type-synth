@@ -27,7 +27,8 @@ time unless `--jobs N`, which is fine for checking answers but skews timings.
 - `batch.json`: variant, notes, git commit/branch/subject, machine, options.
 - `changes.patch`: uncommitted changes to the code, if there were any.
 - `<benchmark>.json`: one record per run (below). With `--repeat`, `<benchmark>.<i>.json`.
-- `<benchmark>.log`: the run's output. `--debug` fills it with what the search is doing.
+- `<benchmark>.log`: the run's output, if it printed any: what the search is doing with `--debug`,
+  or why it failed.
 - `<benchmark>.trace.jsonl.gz`: with `--trace`, one line per candidate:
   `{query, phase, kind, state}`, where kind is `candidate` (passed the positive examples),
   `prunedPos`, `prunedNeg` or `relabeled`.
