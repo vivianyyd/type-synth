@@ -99,6 +99,20 @@ class SkolemizationTest {
         assertFalse(ok(wrapWhoseResultIs(list(a)), program), "L[a] = a is an infinite type")
     }
 
+    /**
+     * What the search asks of a negative example. `bad` type-checks against the hole itself, but not
+     * once cons returns L[a], so it must not prune the state. `good` type-checks under every
+     * filling, so as a negative example it rules out everything below the state.
+     */
+    @Test
+    fun `a negative example prunes only if it checks under every filling`() {
+        val holes = consWhoseResultIs(TypeHole())
+        assertTrue(ok(holes, bad))
+        assertFalse(holes.acceptsANegative(listOf(bad), labelsSettled = true))
+        assertTrue(holes.acceptsANegative(listOf(good), labelsSettled = true))
+        assertTrue(holes.acceptsANegative(listOf(bad, good), labelsSettled = true))
+    }
+
     @Test
     fun `one check can try many examples without them interfering`() {
         val holes = consWhoseResultIs(TypeHole()).skolemize()

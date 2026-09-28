@@ -46,6 +46,20 @@ class RewindTest {
         assertTrue(graph.merge(again, outer))
     }
 
+    /** Constructor arguments are stored apart from the nodes, so a rewind has to drop them too. */
+    @Test
+    fun `a rewind gives the constructor arguments back`() {
+        val graph = TypeGraph()
+        val x = graph.freshVar()
+        graph.arrow(x, x)
+        val before = graph.arguments
+        val mark = graph.mark()
+        graph.merge(graph.hole(TypeHole(), 0), graph.ctor(1, intArrayOf(graph.arrow(x, graph.freshVar()))))
+        assertTrue(graph.arguments > before, "building the terms should have stored arguments")
+        graph.rewindTo(mark)
+        assertEquals(before, graph.arguments, "a rewind must drop the arguments it undid")
+    }
+
     /** Rewinding twice to the same mark is what the enumerator does for each sibling expansion. */
     @Test
     fun `rewinding to the same mark twice is allowed, rewinding forward is not`() {

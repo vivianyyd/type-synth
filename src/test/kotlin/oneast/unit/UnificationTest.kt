@@ -507,6 +507,51 @@ class UnificationTest {
     }
 
     /**
+     * A blank that may only become a label can never be a function, however it comes to meet one.
+     * Here it meets one through pair's variable, which the other argument makes a function, in
+     * either order.
+     */
+    @Test
+    fun `a label-only blank is never a function`() {
+        val pair = Name("pair")
+        val id = Name("id")
+        val x = Name("x")
+        fun context(x: Blank) = makeContext("pair" to Arrow(a, Arrow(a, I)), "id" to Arrow(a, a), "x" to x)
+        assertFail(context(Blank(labelOnly = true)), App(App(pair, id), x))
+        assertFail(context(Blank(labelOnly = true)), App(App(pair, x), id))
+        // A blank that may be any type can be a function.
+        assertOk(context(Blank(labelOnly = false)), App(App(pair, id), x))
+        assertOk(context(Blank(labelOnly = false)), App(App(pair, x), id))
+    }
+
+    /**
+     * f's result is I at one use and B at the other, so no constructor can fill f's hole. A variable
+     * still can, since each use of f has a variable of its own, so the hole must offer variables
+     * rather than nothing.
+     */
+    @Test
+    fun `a hole no constructor fits can still be a variable`() {
+        val hole = TypeHole()
+        val context =
+            makeContext("f" to Arrow(a, hole), "gi" to Arrow(I, I), "gb" to Arrow(B, B), "i" to I, "b" to B)
+        val examples = listOf(App(Name("gi"), App(f, Name("i"))), App(Name("gb"), App(f, Name("b"))))
+        val u = OneUnification(context, examples)
+        assertTrue(u.ok)
+        assertEquals(HoleConstructor.Conflicting, u.holeConstructor(hole))
+        val expansions = hole.expansions(
+            unification = u,
+            labelArities = labelArities,
+            vars = 1,
+            canBeVar = true,
+            emitLabelBlanks = false,
+            emitConstructors = true,
+            mustBeLeaf = false
+        )
+        assertEquals(listOf<Type>(a, b), expansions)
+        assertTrue(u.refine(hole, a))
+    }
+
+    /**
      * Each of these needs one blank to be two different labels, so it cannot type-check however the
      * state's holes are filled. The unifier on main accepted all of them: it recorded what a hole
      * was unified with instead of unifying it, and never compared the records. In the first,

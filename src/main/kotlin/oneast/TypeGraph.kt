@@ -150,6 +150,10 @@ class TypeGraph {
     val nodes: Int
         get() = count
 
+    /** How many constructor arguments the graph holds. For tests and for diagnosing memory use. */
+    val arguments: Int
+        get() = args.size
+
     // ---------------------------------------------------------------- node construction
 
     /** A new node, alone in its own class, with nothing known about it yet. */
