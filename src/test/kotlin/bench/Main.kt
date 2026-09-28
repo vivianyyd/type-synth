@@ -20,10 +20,11 @@ import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
 private const val USAGE =
-    """Usage: ./gradlew bench --args="[options] [benchmark or suite ...]"
+    """Usage: ./gradlew bench -q --args="[benchmark or suite ...] [options]"
 
 Runs each benchmark in a JVM of its own and writes one JSON record per run to
 <out>/<batch>/<benchmark>.json. With no benchmarks given, runs the sexp suite.
+Any order. Quote values with spaces in single quotes.
 
   --variant NAME     version of the search to run (default: default)
   --notes TEXT       free text recorded with every run
@@ -32,7 +33,7 @@ Runs each benchmark in a JVM of its own and writes one JSON record per run to
   --jobs N           runs at once; more than 1 skews timings (default: 1)
   --trace            also write every candidate to <benchmark>.trace.jsonl.gz
   --debug            print what the search does to <benchmark>.log
-  --jvm-args "ARGS"  for each run's JVM (default: -Xmx4g)
+  --jvm-args 'ARGS'  for each run's JVM, replacing the default (default: -Xmx4g)
   --out DIR          (default: bench-results)
   --list             list benchmarks, suites and variants"""
 

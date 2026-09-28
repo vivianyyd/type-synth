@@ -20,6 +20,41 @@ Each run gets a JVM of its own, so that nothing carries over between runs (stati
 JIT, the heap), a run can be timed out, and a crash takes down only that run. Runs are one at a
 time unless `--jobs N`, which is fine for checking answers but skews timings.
 
+## `./gradlew bench` options
+
+```
+./gradlew bench -q --args="[NAME ...] [OPTION ...]"
+```
+
+NAME is a benchmark or suite (default `sexp`). Any order. Quote values with spaces in single
+quotes. Last occurrence of an option wins.
+
+```
+--variant NAME      variant from Variants.kt                  (default: default)
+--notes TEXT        recorded with every run
+--timeout SECONDS   per run, including loading                (default: 600)
+--repeat N          run each benchmark N times                (default: 1)
+--jobs N            runs at once; skews timings               (default: 1)
+--trace             write candidates to NAME.trace.jsonl.gz
+--debug             write search progress to NAME.log
+--jvm-args 'ARGS'   JVM options per run, replaces default     (default: -Xmx4g)
+--out DIR           results directory                         (default: bench-results)
+--list              print benchmarks, suites, variants; run nothing
+--help              print options
+```
+
+Suites: `sexp`, `sexp-unsolved`, `ocaml`. Variants: `default`, `single-round`, `auto3`. Defined in
+`src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
+
+System properties (via `--jvm-args`): `-Dtypesynth.debug` (same as `--debug`),
+`-Dtypesynth.cvcDir=DIR` (keep solver files in DIR).
+
+Example:
+
+```
+./gradlew bench -q --args="dictchain hofs --variant auto3 --repeat 3 --notes 'smaller arity queries'"
+```
+
 ## What gets written
 
 `bench-results/<date>_<commit>[+dirty]_<variant>/` (gitignored; copy batches worth keeping):
