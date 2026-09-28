@@ -175,6 +175,17 @@ DEFAULT_SHOW = ["status", "wall", "outline", "arity", "concretize", "unattribute
                 "candidates", "prunedPos", "prunedNeg", "stop"]
 
 
+def wrong_answer(record):
+    """Each solution next to the expected answer, with the names whose types differ marked."""
+    expected = record["expected"]
+    for i, (solution, differs) in enumerate(zip(record["solutions"], record["mismatches"])):
+        if len(record["solutions"]) > 1:
+            print(f"Solution {i + 1}:")
+        table(["", "name", "returned", "expected"],
+              [["*" if n in differs else "", n, t, expected.get(n, "-")] for n, t in solution.items()])
+    print("(* differs from expected)")
+
+
 def cmd_show(args):
     batch = load_batch(args.batch)
     meta = batch[0]
@@ -183,6 +194,10 @@ def cmd_show(args):
     rs = by_benchmark(rows(batch))
     table(["benchmark"] + [METRICS.get(m, (m,))[0] for m in metrics],
           [[name] + [show_value(m, r.get(m)) for m in metrics] for name, r in rs.items()])
+    for record in sorted(batch[1], key=lambda r: r["runId"]):
+        if record["status"] == "wrong":
+            print(f"\n{record['runId']} is wrong:")
+            wrong_answer(record)
 
 
 def cmd_rounds(args):

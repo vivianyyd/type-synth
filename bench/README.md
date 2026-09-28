@@ -8,7 +8,7 @@
 ./gradlew bench --args=--help
 
 bench/analyze.py ls                               # every batch
-bench/analyze.py show latest                      # one row per benchmark
+bench/analyze.py show latest                      # one row per benchmark; wrong answers in full
 bench/analyze.py rounds latest hofs               # one row per round of one run
 bench/analyze.py compare latest~1 latest          # side by side, B/A ratios, geometric mean
 bench/analyze.py latex BATCH_A BATCH_B --metrics wall,candidates --labels before,after
@@ -34,7 +34,7 @@ time unless `--jobs N`, which is fine for checking answers but skews timings.
 
 A record holds the batch, the configuration, `status` (`correct`, `wrong`, `solved` when there is
 no expected answer, `no-solution`, `timeout`, `error`, `crashed`), the solutions, the expected
-answer and how each solution differs from it, and `stats`:
+answer, the names whose types differ from it in each solution (`mismatches`), and `stats`:
 
 - `wallMs`: from starting the search to its answer; loading the benchmark is `loadMs`.
 - `counters`: totals. `phases`: time and counts per phase (`outline`, `arity`, `concretize`,

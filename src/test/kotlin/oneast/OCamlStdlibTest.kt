@@ -64,7 +64,7 @@ class OCamlStdlibTest {
                 assert(sols.isNotEmpty()) { "No solution found for module $task" }
                 assert(sols.any { it.equivalentTo(expected) }) {
                     "None of\n${sols.lines()}\nmatch expected context\n$expected\n" +
-                        sols.joinToString("\n") { it.mismatches(expected).toString() }
+                        sols.joinToString("\n") { "Differs in ${it.mismatches(expected)}" }
                 }
             }
         }

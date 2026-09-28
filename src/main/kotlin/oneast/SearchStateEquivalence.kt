@@ -17,8 +17,9 @@ fun SearchState.equivalentTo(other: SearchState): Boolean =
     mismatches(other, stopAtFirst = true)?.isEmpty() ?: false
 
 /**
- * The names whose types keep [this] from being equivalent to [other], described for a reader, or
- * null if the two states do not have the same names.
+ * The names whose types keep [this] from being equivalent to [other], or null if the two states do
+ * not have the same names. Labels are renamed consistently across all names, so a name can be
+ * listed because of how an earlier name used a label.
  */
 fun SearchState.mismatches(other: SearchState, stopAtFirst: Boolean = false): List<String>? {
     if (this.names.keys != other.names.keys) return null
@@ -28,7 +29,7 @@ fun SearchState.mismatches(other: SearchState, stopAtFirst: Boolean = false): Li
         val t1 = this.types[this.names.getValue(name)]
         val t2 = other.types[other.names.getValue(name)]
         if (!matchTypes(t1, t2, labels, Renaming())) {
-            mismatches.add("$name: $t1 and $t2")
+            mismatches.add(name)
             if (stopAtFirst) break
         }
     }

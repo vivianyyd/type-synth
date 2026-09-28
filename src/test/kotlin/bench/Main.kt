@@ -166,6 +166,7 @@ private fun runBatch(opts: Options) {
                 val line = summaryLine(record)
                 synchronized(System.out) {
                     println("[%2d/%d] %s".format(done.incrementAndGet(), runs.size, line))
+                    if (record["status"] == "wrong") print(wrongAnswer(record))
                 }
                 record
             }
@@ -231,6 +232,26 @@ private fun summaryLine(record: Map<*, *>): String {
         record["runId"], record["status"], time,
         count("candidates"), count("prunedPos"), count("prunedNeg"), count("solverCalls")
     )
+}
+
+/** Each solution next to the expected answer, with the names whose types differ marked. */
+private fun wrongAnswer(record: Map<*, *>): String {
+    val expected = record["expected"] as Map<*, *>
+    val solutions = record["solutions"] as List<*>
+    val mismatches = record["mismatches"] as List<*>
+    return solutions.indices.joinToString("") { i ->
+        val solution = solutions[i] as Map<*, *>
+        val differs = mismatches[i] as List<*>
+        val names = solution.keys.map { it.toString() }
+        val nameWidth = maxOf(4, names.maxOf { it.length })
+        val gotWidth = maxOf(8, solution.values.maxOf { it.toString().length })
+        val row = "        %s %-${nameWidth}s  %-${gotWidth}s  %s\n"
+        (if (solutions.size > 1) "        Solution ${i + 1}:\n" else "") +
+            row.format(" ", "name", "returned", "expected") +
+            names.joinToString("") { n ->
+                row.format(if (n in differs) "*" else " ", n, solution[n], expected[n])
+            }
+    } + "        (* differs from expected)\n"
 }
 
 private const val SCHEMA = 1
