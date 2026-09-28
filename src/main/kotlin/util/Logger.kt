@@ -75,6 +75,10 @@ class Logger(
         )
     }
 
+    /** How many times [value] was [count]ed. Only counted above verbosity 4. */
+    @Synchronized
+    fun countOf(value: String): Int = counts[value] ?: 0
+
     fun finish() {
         while (!stages.empty()) {
             val (s, _) = stages.peek()

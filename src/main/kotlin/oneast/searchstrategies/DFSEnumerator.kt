@@ -1,6 +1,7 @@
 package oneast.searchstrategies
 
 import oneast.*
+import query.Example
 import query.Examples
 import util.Logger
 
@@ -11,7 +12,12 @@ class DFSEnumerator(
     private val emitConstructors: Boolean,
     private val sizeBound: Int,
     private val depthBound: Int,
-    private val logger: Logger
+    private val logger: Logger,
+    /**
+     * Whether a node re-checks only the negative examples its last fill can have changed the
+     * verdict on, rather than all of them. Only there to test that doing so changes nothing.
+     */
+    private val checkOnlyAffectedNegatives: Boolean = true
 ) : SearchStrategy(examples) {
     /**
      * Whether the search has stopped changing labels other than by filling holes. While it emits
@@ -22,8 +28,24 @@ class DFSEnumerator(
 
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
-        return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles())
+        // Nothing has checked the seed yet.
+        return if (u.ok)
+            recCandidates(c, u, sizeBound, c.numFillableHoles(), examples.neg, negativesAt(c))
         else emptySequence()
+    }
+
+    /**
+     * For each type index of [c], the negative examples that mention a name whose type it is.
+     *
+     * Type-checking an example instantiates only the types of the names it mentions, so filling a
+     * hole in one type can change the verdict only on the negatives listed at its index. Every way
+     * the search changes a state keeps [SearchState.names], so this holds for all of [c]'s subtree.
+     */
+    private fun negativesAt(c: SearchState): List<List<Example>> {
+        if (!checkOnlyAffectedNegatives) return List(c.types.size) { examples.neg }
+        return c.types.indices.map { i ->
+            examples.neg.filter { ex -> ex.names.any { c.names[it] == i } }
+        }
     }
 
     /**
@@ -34,16 +56,23 @@ class DFSEnumerator(
      * them per candidate. Rewinding happens before an expansion rather than after, which is what
      * makes this safe to consume lazily: a subtree that is abandoned half-way leaves the check
      * dirty, and whoever resumes cleans it up first.
+     *
+     * [negatives] are those whose verdict can differ from the one they had at [c]'s parent. The
+     * parent accepted none of the negatives, or it would have no children, so a negative left out
+     * still is not accepted. That is only so for a parent that changed in one type; when more
+     * changed, or there is no parent, pass all of them.
      */
     private fun recCandidates(
         c: SearchState,
         unification: OneUnification,
         currSizeBound: Int,
-        holesRemaining: Int
+        holesRemaining: Int,
+        negatives: List<Example>,
+        negativesAt: List<List<Example>>
     ): Sequence<SearchState> {
         // Before either return below, so that outlines, including those with no blanks left, are
         // checked before label arities are solved for.
-        if (c.acceptsANegative(examples.neg, labelsSettled)) {
+        if (c.acceptsANegative(negatives, labelsSettled)) {
             logger.count("Pruned by negative examples")
             return emptySequence()
         }
@@ -76,9 +105,11 @@ class DFSEnumerator(
                         newCandidate,
                         unification,
                         currSizeBound = currSizeBound - 1,
-                        holesRemaining = holesRemaining - 1 + expansion.numFillableHoles()
+                        holesRemaining = holesRemaining - 1 + expansion.numFillableHoles(),
+                        negatives = negativesAt[iToFill],
+                        negativesAt = negativesAt
                     )
-                else retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound)
+                else retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound, negativesAt)
             }
     }
 
@@ -92,7 +123,8 @@ class DFSEnumerator(
     private fun retryWithoutBadLabels(
         c: SearchState,
         badLabels: Set<Int>,
-        currSizeBound: Int
+        currSizeBound: Int,
+        negativesAt: List<List<Example>>
     ): Sequence<SearchState> {
         if (!emitLabelBlanks || badLabels.isEmpty()) return emptySequence()
         // A bad label that is committed cannot be rewritten, so there is no solution.
@@ -112,10 +144,18 @@ class DFSEnumerator(
             c.mapTypesAndSetLabelArities(
                 newArities = c.labelArities.filterNot { (l, _) -> l in badLabels }
             ) { blankBadLabels(it) }
-        // The labels changed everywhere at once, so this subtree needs a check of its own.
+        // The labels changed everywhere at once, so this subtree needs a check of its own, and so
+        // do the negatives.
         val unification = posUnification(blanked)
         return if (unification.ok)
-            recCandidates(blanked, unification, currSizeBound - 1, blanked.numFillableHoles())
+            recCandidates(
+                blanked,
+                unification,
+                currSizeBound - 1,
+                blanked.numFillableHoles(),
+                examples.neg,
+                negativesAt
+            )
         else emptySequence()
     }
 }
