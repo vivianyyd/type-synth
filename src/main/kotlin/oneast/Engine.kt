@@ -253,11 +253,4 @@ private class Scorer(private val examples: List<Example>) {
     }
 
     // true objective: number of fully covered examples
-    fun countFullyCovered(): Int {
-        var count = 0
-        for (i in 0 until m) {
-            if (coverage[i] >= examples[i].names.size) count++
-        }
-        return count
-    }
 }

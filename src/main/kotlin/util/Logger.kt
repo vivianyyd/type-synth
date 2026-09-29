@@ -1,5 +1,6 @@
 package util
 
+import oneast.Configuration
 import java.io.File
 import java.io.PrintStream
 import java.time.LocalTime
@@ -12,7 +13,7 @@ TODO log file that has a list of runs in CSV format that this appends to
  */
 
 class Logger(
-    configuration: Config,
+    configuration: Configuration,
     logToFile: Boolean,
     logFilename: String = "type.log",
     private val printImmediately: Boolean = false,

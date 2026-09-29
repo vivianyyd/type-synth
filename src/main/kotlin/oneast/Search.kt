@@ -240,25 +240,6 @@ class Search(
         return finalResults
     }
 
-    private fun <T> ifFirst(seq: Sequence<T>, condition: (T) -> Boolean): Sequence<T> {
-        val iterator = seq.iterator()
-
-        return if (!iterator.hasNext()) {
-            emptySequence()
-        } else {
-            val first = iterator.next()
-
-            if (condition(first)) {
-                sequence {
-                    yield(first)
-                    yieldAll(iterator)
-                }
-            } else {
-                emptySequence()
-            }
-        }
-    }
-
     fun solutions(): Sequence<SearchState> = sequence {
 //        val seen = mutableSetOf<SearchState>()
         for (seedDepth in 0..config.depthBound) {
