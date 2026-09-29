@@ -47,8 +47,8 @@ class SexpTests {
         )
 
     @Test
-    @Disabled
-    fun `just one`() = test("hofs")
+//    @Disabled
+    fun `just one`() = test("cons")
 
     @ParameterizedTest
     @MethodSource("testNames")

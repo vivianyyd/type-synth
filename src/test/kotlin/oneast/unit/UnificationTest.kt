@@ -3,14 +3,112 @@ package oneast.unit
 import oneast.*
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import query.App
 import query.Example
 import query.Name
 import testutil.loadQueryFromFile
+import testutil.parseSearchState
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class UnificationTest {
+
+    companion object {
+        @JvmStatic
+        fun oneBlankTwoLabels() =
+            listOf(
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V0, V1] -> V0 -> V1 -> L0[V1, _] ; true=L2[]",
+                    "put (put Eib Num true) Num true"
+                ),
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V0, V1] -> V0 -> V1 -> L0[V1, _] ; true=L2[]",
+                    "put (put Ebi true Num) true Num"
+                ),
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V1, V0] -> V0 -> V1 -> L0[V0, _] ; true=L2[]",
+                    "put (put Eib Num true) Num true"
+                ),
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V1, V0] -> V0 -> V1 -> L0[V0, _] ; true=L2[]",
+                    "put (put Ebi true Num) true Num"
+                ),
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V1, V0] -> V0 -> V1 -> L0[V1, V1] ; true=L2[]",
+                    "put (put Eib Num true) Num true"
+                ),
+                Arguments.of(
+                    "dictput",
+                    "Ebi=L0[., .] ; Eib=L0[., .] ; Eii=L0[., .] ; Num=L1[] ; put=L0[V1, V0] -> V0 -> V1 -> L0[V1, V1] ; true=L2[]",
+                    "put (put Ebi true Num) true Num"
+                ),
+                Arguments.of(
+                    "dictchain",
+                    "b=L0[] ; chain=L1[V0, V0] -> L1[V0, V0] -> L1[V0, V0] ; dbb=L1[., .] ; dbi=L1[., .] ; dib=L1[., .] ; dii=L1[., .] ; i=L2[] ; put=L1[V0, V1] -> V0 -> V1 -> L1[_, _]",
+                    "put (chain dib dbb) i b"
+                ),
+                Arguments.of(
+                    "dictchain",
+                    "b=L0[] ; chain=L1[V0, V1] -> L1[V1, V2] -> L1[V0, V0] ; dbb=L1[., .] ; dbi=L1[., .] ; dib=L1[., .] ; dii=L1[., .] ; i=L2[] ; put=L1[V0, V1] -> V0 -> V1 -> L1[_, _]",
+                    "put (chain dib dbb) i b"
+                ),
+                Arguments.of(
+                    "dictchain",
+                    "b=L0[] ; chain=L1[V0, V0] -> L1[V0, V0] -> L1[V0, V0] ; dbb=L1[., .] ; dbi=L1[., .] ; dib=L1[., .] ; dii=L1[., .] ; i=L2[] ; put=L1[V1, V0] -> V0 -> V1 -> L1[_, _]",
+                    "put (chain dib dbb) i b"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V1] -> L0[V0] ; i=L2[] ; put=L0[V1] -> V0 -> V1 -> L0[V1]",
+                    "put (chain (put ({}) i b) (put ({}) b i)) i i"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V0] ; i=L2[] ; put=L0[V0] -> V0 -> V1 -> L0[V0]",
+                    "chain (chain (put ({}) i b) (put ({}) b i))"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V0] ; i=L2[] ; put=L0[V0] -> V0 -> V1 -> L0[V0]",
+                    "chain (chain (put ({}) b i) (put ({}) i i))"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V0] ; i=L2[] ; put=L0[V0] -> V0 -> V1 -> L0[V0]",
+                    "chain (put ({}) b i) (put (put ({}) i i) i i)"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V0] ; i=L2[] ; put=L0[V0] -> V0 -> V1 -> L0[V0]",
+                    "chain (put ({}) i b) (put (put ({}) b b) b b)"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V1] ; i=L2[] ; put=L0[V1] -> V0 -> V1 -> L0[V1]",
+                    "chain (chain (put ({}) i b) (put ({}) b i))"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V1] ; i=L2[] ; put=L0[V1] -> V0 -> V1 -> L0[V1]",
+                    "put (chain (put ({}) i b) (put ({}) b i)) i i"
+                ),
+                Arguments.of(
+                    "polymorphic-dictchain",
+                    "({})=L0[.] ; b=L1[] ; chain=L0[V0] -> L0[V0] -> L0[V1] ; i=L2[] ; put=L0[V1] -> V0 -> V1 -> L0[V1]",
+                    "chain (put ({}) i b) (chain (put ({}) b i) (put ({}) i b))"
+                ),
+            )
+    }
 
     private val a = Variable(0)
     private val b = Variable(1)
@@ -374,15 +472,111 @@ class UnificationTest {
     }
 
     /**
+     * f : a -> a -> I applied to two blanks makes both blanks equal to f's variable, and so to each
+     * other. The search gives blanks that are equal to each other the same label.
+     */
+    @Test
+    fun `blanks equal through a shared variable are equal to each other`() {
+        val num = Blank(labelOnly = true)
+        val tru = Blank(labelOnly = true)
+        val context = makeContext("f" to Arrow(a, Arrow(a, I)), "Num" to num, "true" to tru)
+        val u = OneUnification(context, listOf(App(App(f, Name("Num")), Name("true"))))
+        assertTrue(u.ok)
+        assertEquals(u.classesOf(num).single(), u.classesOf(tru).single())
+    }
+
+    /**
+     * The same, but with the blanks inside the parameter and the variable in the argument. g takes
+     * a B1 -> B2, and f : a -> a is one, so B1 = a = B2. The unifier on main recorded a against
+     * each blank without relating the blanks, so it gave them different labels, on 33 of hofs's
+     * outlines. If f : a -> b, nothing relates them.
+     */
+    @Test
+    fun `blanks equal through a variable of an argument are equal to each other`() {
+        val b1 = Blank(labelOnly = true)
+        val b2 = Blank(labelOnly = true)
+        val same = OneUnification(makeContext("f" to Arrow(a, a), "g" to Arrow(Arrow(b1, b2), I)), listOf(App(g, f)))
+        assertTrue(same.ok)
+        assertEquals(same.classesOf(b1).single(), same.classesOf(b2).single())
+
+        val c1 = Blank(labelOnly = true)
+        val c2 = Blank(labelOnly = true)
+        val apart = OneUnification(makeContext("f" to Arrow(a, b), "g" to Arrow(Arrow(c1, c2), I)), listOf(App(g, f)))
+        assertTrue(apart.ok)
+        assertNotEquals(apart.classesOf(c1).single(), apart.classesOf(c2).single())
+    }
+
+    /**
+     * A blank that may only become a label can never be a function, however it comes to meet one.
+     * Here it meets one through pair's variable, which the other argument makes a function, in
+     * either order.
+     */
+    @Test
+    fun `a label-only blank is never a function`() {
+        val pair = Name("pair")
+        val id = Name("id")
+        val x = Name("x")
+        fun context(x: Blank) = makeContext("pair" to Arrow(a, Arrow(a, I)), "id" to Arrow(a, a), "x" to x)
+        assertFail(context(Blank(labelOnly = true)), App(App(pair, id), x))
+        assertFail(context(Blank(labelOnly = true)), App(App(pair, x), id))
+        // A blank that may be any type can be a function.
+        assertOk(context(Blank(labelOnly = false)), App(App(pair, id), x))
+        assertOk(context(Blank(labelOnly = false)), App(App(pair, x), id))
+    }
+
+    /**
+     * f's result is I at one use and B at the other, so no constructor can fill f's hole. A variable
+     * still can, since each use of f has a variable of its own, so the hole must offer variables
+     * rather than nothing.
+     */
+    @Test
+    fun `a hole no constructor fits can still be a variable`() {
+        val hole = TypeHole()
+        val context =
+            makeContext("f" to Arrow(a, hole), "gi" to Arrow(I, I), "gb" to Arrow(B, B), "i" to I, "b" to B)
+        val examples = listOf(App(Name("gi"), App(f, Name("i"))), App(Name("gb"), App(f, Name("b"))))
+        val u = OneUnification(context, examples)
+        assertTrue(u.ok)
+        assertEquals(HoleConstructor.Conflicting, u.holeConstructor(hole))
+        val expansions = hole.expansions(
+            unification = u,
+            labelArities = labelArities,
+            vars = 1,
+            canBeVar = true,
+            emitLabelBlanks = false,
+            emitConstructors = true,
+            mustBeLeaf = false
+        )
+        assertEquals(listOf<Type>(a, b), expansions)
+        assertTrue(u.refine(hole, a))
+    }
+
+    /**
+     * Each of these needs one blank to be two different labels, so it cannot type-check however the
+     * state's holes are filled. The unifier on main accepted all of them: it recorded what a hole
+     * was unified with instead of unifying it, and never compared the records. In the first,
+     * `put (put Eib Num true) Num true` makes Eib's second blank `true`'s label L2 (inner put),
+     * and then `Num`'s label L1 (outer put), and main recorded both.
+     *
+     * Found by running the search on main and on TypeGraph and checking the states where they
+     * disagreed.
+     */
+    @ParameterizedTest
+    @MethodSource("oneBlankTwoLabels")
+    fun `rejects a blank that has to be two different labels`(benchmark: String, state: String, program: String) {
+        val example = loadQueryFromFile(benchmark).examples.posNoSubexprs.single { it.toString() == program }
+        assertFail(parseSearchState(state), example)
+    }
+
+    /**
      * Unification picks which variable names a class arbitrarily, so types are compared up to
      * renaming variables.
      */
-    private fun assertSameType(expected: Type, actual: ConstraintTy?) {
+    private fun assertSameType(expected: Type, actual: Type?) {
         assertNotNull(actual)
-        val type = actual.toType()
         assertTrue(
-            equalUpToVariableRenaming(expected, type),
-            "Expected $expected up to renaming variables, but was $type"
+            equalUpToVariableRenaming(expected, actual),
+            "Expected $expected up to renaming variables, but was $actual"
         )
     }
 }

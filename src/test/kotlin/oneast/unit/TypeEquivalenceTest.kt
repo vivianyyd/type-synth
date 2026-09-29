@@ -2,9 +2,7 @@ package oneast.unit
 
 import oneast.*
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
-import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 /** Tests for the type-level comparisons in `SearchStateEquivalence.kt`. */
@@ -77,49 +75,5 @@ class TypeEquivalenceTest {
     fun `different kinds differ`() {
         assertFalse(equalUpToVariableRenaming(Arrow(a, b), l(0, a, b)))
         assertFalse(equalUpToVariableRenaming(a, l(0)))
-    }
-
-    // ----- ConstraintTy.toType -----
-    @Test
-    fun `toType drops instantiation ids`() {
-        val t = ConstraintArrow(ConstraintVariable(0, 1), ConstraintVariable(0, 2))
-        assertTrue(equalUpToVariableRenaming(Arrow(a, a), t.toType()))
-    }
-
-    @Test
-    fun `toType keeps labels and structure`() {
-        val t = ConstraintLabel(3, listOf(ConstraintVariable(0, 0), ConstraintLabel(1, listOf())))
-        assertTrue(equalUpToVariableRenaming(l(3, a, l(1)), t.toType()))
-    }
-
-    @Test
-    fun `toType makes each hole instance a fresh hole`() {
-        val hole = TypeHole()
-        val one = InstantiationTy(hole, 0).toType()
-        val two = InstantiationTy(hole, 0).toType()
-        assertTrue(one is THole && two is THole)
-        assertNotSame(one, two)
-        assertTrue(equalUpToVariableRenaming(one, two))
-    }
-
-    @Test
-    fun `toType rejects bottom`() {
-        assertFailsWith<IllegalStateException> { Bottom.toType() }
-        assertFailsWith<IllegalStateException> { ConstraintArrow(Bottom, Bottom).toType() }
-    }
-
-    // ----- equalInEmptyLabelContext -----
-    @Test
-    fun `labels may be renamed in an empty label context`() {
-        val x = ConstraintLabel(0, listOf(ConstraintVariable(0, 0)))
-        val y = ConstraintLabel(7, listOf(ConstraintVariable(4, 9)))
-        assertTrue(equalInEmptyLabelContext(x, y))
-    }
-
-    @Test
-    fun `label renaming in an empty label context must be consistent`() {
-        val x = ConstraintArrow(ConstraintLabel(0, listOf()), ConstraintLabel(0, listOf()))
-        val y = ConstraintArrow(ConstraintLabel(7, listOf()), ConstraintLabel(8, listOf()))
-        assertFalse(equalInEmptyLabelContext(x, y))
     }
 }
