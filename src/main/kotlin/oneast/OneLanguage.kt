@@ -159,6 +159,15 @@ sealed interface Type {
             is Arrow -> 1 + r.fnArity()
             else -> 1
         }
+
+    /** Each label in this type, with its number of parameters. */
+    fun labels(): Set<Pair<Int, Int>> =
+        when (this) {
+            is Arrow -> l.labels() + r.labels()
+            is NamedLabel -> params.flatMap { it.labels() }.toSet() + (label to params.size)
+            is THole,
+            is Variable -> emptySet()
+        }
 }
 
 sealed class Constructor(open val params: List<Type>) : Type {

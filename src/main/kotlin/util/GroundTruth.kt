@@ -26,14 +26,6 @@ class CheckingGroundTruthOracle(secret: Map<String, Type>) : GroundTruth, Oracle
     override fun dummy(e: Example): Int = OneUnification(truth, emptyList()).type(e).hashCode()
 }
 
-private fun Type.labels(): Set<Pair<Int, Int>> =
-    when (this) {
-        is Arrow -> l.labels() + r.labels()
-        is NamedLabel -> params.flatMap { it.labels() }.toSet() + (label to params.size)
-        is THole,
-        is Variable -> emptySet()
-    }
-
 fun stateFromContext(context: Map<String, Type>): SearchState {
     val labelArities = context.values.flatMap { it.labels() }.toSet().toMap()
     val (names, types) = context.toList().unzip()

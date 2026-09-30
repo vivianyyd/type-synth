@@ -25,9 +25,19 @@ object Variants {
         )
             .associateBy { it.name }
 
+    /** `deepen-arities=N`, which is not in [all] since it takes a bound N. */
+    const val DEEPEN = "deepen-arities="
+    const val DEEPEN_DESCRIPTION = "Try every label arity up to N, without the solver"
+
+    private fun one(name: String): Variant {
+        if (!name.startsWith(DEEPEN)) return all[name] ?: error("No variant named $name. Try --list")
+        val bound = name.removePrefix(DEEPEN).toIntOrNull() ?: error("$name needs a number after =")
+        return Variant("$DEEPEN$bound", DEEPEN_DESCRIPTION) { it.copy(labelArities = LabelArities.Deepened(bound)) }
+    }
+
     /** [names] is one variant, or several separated by commas. */
     fun get(names: String): Variant {
-        val vs = names.split(",").map { all[it.trim()] ?: error("No variant named $it. Try --list") }
+        val vs = names.split(",").map { one(it.trim()) }
         return vs.singleOrNull()
             ?: Variant(vs.joinToString("+") { it.name }, vs.joinToString("; ") { it.description }) { c ->
                 vs.fold(c) { acc, v -> v.configure(acc) }
@@ -49,4 +59,9 @@ fun Configuration.toJson(): Map<String, Any?> =
             },
         "numSols" to numSols.toString(),
         "soundExpansions" to soundExpansions,
+        "labelArities" to
+            when (val la = labelArities) {
+                LabelArities.Solved -> mapOf("kind" to "solved")
+                is LabelArities.Deepened -> mapOf("kind" to "deepened", "bound" to la.bound)
+            },
     )

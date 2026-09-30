@@ -118,6 +118,7 @@ private fun list() {
     Benchmarks.suites.forEach { (name, bs) -> println("  $name: ${bs.joinToString { it.name }}") }
     println("Variants:")
     Variants.all.values.forEach { println("  ${it.name}: ${it.description}") }
+    println("  ${Variants.DEEPEN}N: ${Variants.DEEPEN_DESCRIPTION}")
 }
 
 private fun runBatch(opts: Options) {

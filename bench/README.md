@@ -43,7 +43,8 @@ quotes. Last occurrence of an option wins.
 --help              print options
 ```
 
-Suites: `sexp`, `sexp-unsolved`, `ocaml`. Variants: `default`, `single-round`, `auto3`, `sound`. Defined in
+Suites: `sexp`, `sexp-unsolved`, `ocaml`. Variants: `default`, `single-round`, `auto3`, `sound`,
+`deepen-arities=N` (any bound N, e.g. `deepen-arities=2`). Defined in
 `src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
 
 System properties (via `--jvm-args`): `-Dtypesynth.debug` (same as `--debug`),
@@ -105,10 +106,31 @@ With no recording running (as in the tests), all of these do nothing.
 
 ## Versions to compare
 
-An alternative worth keeping side by side goes in `Configuration`
-(`src/main/kotlin/oneast/OneMain.kt`), with a variant for it in
-`src/test/kotlin/bench/Variants.kt`. Then one commit can run the whole ablation. Keep
-`Configuration` plain data, since it is recorded as is. Anything else can just be a commit or a
-branch: every run records its commit, and `compare-refs.sh` runs several.
+There are two ways to compare versions of the search: build both into the code and pick one with
+`--variant`, or keep each on its own commit or branch and run each.
+
+**A variant** fits an alternative you will keep comparing against as the code changes, such as a
+row of an ablation. Put the choice in `Configuration` (`src/main/kotlin/oneast/OneMain.kt`) and
+add a variant for it in `src/test/kotlin/bench/Variants.kt`. Then any later commit can run both
+sides, and alongside other variants, without merging anything:
+
+```sh
+./gradlew bench -q --args="sexp"                                  # solver picks label arities
+./gradlew bench -q --args="sexp --variant deepen-arities=2"        # every arity up to 2
+./gradlew bench -q --args="sexp --variant deepen-arities=2,sound"  # combined with another variant
+bench/analyze.py compare latest~1 latest
+```
+
+Keep `Configuration` plain data, since it is recorded as is; that is how records from different
+variants are told apart.
+
+**A commit or branch** fits a change that replaces the old way, or a one-off experiment you won't
+keep both sides of. Every run records its commit, and `compare-refs.sh` runs the same benchmarks
+at several refs (e.g. `bench/compare-refs.sh main my-branch -- sexp`). A branch only compares
+against the code it forked from: to compare it again after other changes, it has to be rebased
+or merged.
+
+The two combine: `compare-refs.sh main my-branch -- sexp --variant deepen-arities=2` compares two
+commits under one variant.
 
 Benchmarks and suites are in `src/test/kotlin/bench/Benchmarks.kt`.
