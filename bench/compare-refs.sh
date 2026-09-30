@@ -5,7 +5,7 @@
 #   bench/compare-refs.sh REF... [-- BENCH_ARGS...]
 #   bench/compare-refs.sh main skolemize -- sexp --timeout 300
 #
-# BENCH_ARGS are passed to ./gradlew bench --args, joined by spaces. Then compare with
+# BENCH_ARGS are passed to ./gradlew bench as they are, quoting kept. Then compare with
 #   bench/analyze.py compare <batch of first ref> <batch of second ref>
 set -euo pipefail
 
@@ -20,11 +20,21 @@ for ref in "${refs[@]}"; do
     { echo "$ref has no bench harness"; exit 1; }
 done
 
+# --args is one string that Gradle splits at spaces outside quotes, with no escapes
+gradle_quote() {
+  if [[ $1 != *"'"* ]]; then printf "'%s'" "$1"
+  elif [[ $1 != *'"'* ]]; then printf '"%s"' "$1"
+  else echo "Can't pass an argument with both kinds of quote: $1" >&2; exit 1
+  fi
+}
+args=()
+for a in "$@"; do args+=("$(gradle_quote "$a")"); done
+
 for ref in "${refs[@]}"; do
   wt=$(mktemp -d "${TMPDIR:-/tmp}/type-synth-worktree-XXXX")
   git worktree add --detach "$wt" "$ref" >/dev/null
   echo "== $ref ($(git rev-parse --short "$ref")) in $wt"
   # The first --notes is overridden by one in BENCH_ARGS
-  (cd "$wt" && ./gradlew bench -q --args="--out $root/bench-results --notes ref:$ref $*") || true
+  (cd "$wt" && ./gradlew bench -q --args="--out $(gradle_quote "$root/bench-results") --notes $(gradle_quote "ref:$ref") ${args[*]}") || true
   git worktree remove --force "$wt"
 done

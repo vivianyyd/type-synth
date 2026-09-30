@@ -203,6 +203,9 @@ def cmd_show(args):
 def cmd_rounds(args):
     _, runs = load_batch(args.batch)
     record = next((r for r in runs if r["runId"] == args.benchmark), None) or sys.exit("No such run")
+    if not record.get("stats"):
+        error = (record.get("error") or "").partition("\n")[0]
+        sys.exit(f"{args.benchmark} has no stats ({record['status']}) {error}".rstrip())
     body = []
     for q in record["stats"]["queries"]:
         ph = q["phases"]
