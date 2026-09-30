@@ -90,7 +90,7 @@ Records are self-contained JSON, so anything can read them, e.g. pandas:
 Work is charged to whichever phase is running, not to whichever phase built the sequence doing it.
 `Stats.phase(query, phase) { ... }` charges an eager block, and `seq.inPhase(query, phase)` charges
 each step of the sequence's iterator. Phases nest, and time is exclusive, so the per-phase times
-add up to the wall-clock time. Never `yield` inside `Stats.phase`.
+add up to the wall-clock time.
 
 ## Changing what is measured
 

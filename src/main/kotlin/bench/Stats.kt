@@ -90,8 +90,10 @@ object Stats {
     fun newQuery(round: Int, outerDepth: Int, names: List<String>, numPos: Int, numNeg: Int): Int =
         recording?.newQuery(round, outerDepth, names, numPos, numNeg) ?: -1
 
-    /** Never yield from inside [block]: the phase would stay entered while the caller runs. */
-    inline fun <T> phase(query: Int, phase: Phase, block: () -> T): T {
+    /**
+     * Not inline, so that [block] can't yield: the phase would stay entered while the caller runs.
+     */
+    fun <T> phase(query: Int, phase: Phase, block: () -> T): T {
         val r = recording ?: return block()
         r.enter(r.cell(query, phase))
         try {
