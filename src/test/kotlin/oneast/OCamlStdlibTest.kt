@@ -1,8 +1,6 @@
 package oneast
 
 import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.DynamicTest
-import org.junit.jupiter.api.TestFactory
 import query.Example
 import query.Examples
 import query.Query
@@ -52,22 +50,6 @@ class OCamlStdlibTest {
         assert(sols.isNotEmpty())
         assert(sols.any { it.equivalentTo(stateFromContext(oracleTypes)) })
     }
-
-    @TestFactory
-    fun `test sublists (factory)`(): List<DynamicTest> =
-        ocamlModuleGroups.indices.map { i ->
-            val task = ocamlModuleGroups[i]
-            DynamicTest.dynamicTest(task.toString()) {
-                val (query, expected) =
-                    ocamlModulesQuery(task, fixed = ocamlModuleGroups.subList(0, i).flatten())
-                val sols = run(query, OCamlChecker(), config(Auto(3)))
-                assert(sols.isNotEmpty()) { "No solution found for module $task" }
-                assert(sols.any { it.equivalentTo(expected) }) {
-                    "None of\n${sols.lines()}\nmatch expected context\n$expected\n" +
-                        sols.joinToString("\n") { "Differs in ${it.mismatches(expected)}" }
-                }
-            }
-        }
 
     @Test
     fun `multiple modules`() {

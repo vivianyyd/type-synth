@@ -65,7 +65,7 @@ Example:
 - `<benchmark>.log`: the run's output, if it printed any: what the search is doing with `--debug`,
   or why it failed.
 - `<benchmark>.trace.jsonl.gz`: with `--trace`, one line per candidate:
-  `{query, phase, kind, state}`, where kind is `candidate` (passed the positive examples),
+  `{search, phase, kind, state}`, where kind is `candidate` (passed the positive examples),
   `prunedPos`, `prunedNeg` or `relabeled`.
 
 A record holds the batch, the configuration, `status` (`correct`, `wrong`, `solved` when there is
@@ -75,9 +75,9 @@ answer, the names whose types differ from it in each solution (`mismatches`), an
 - `wallMs`: from starting the search to its answer; loading the benchmark is `loadMs`.
 - `counters`: totals. `phases`: time and counts per phase (`outline`, `arity`, `concretize`,
   `cegis`). `unattributedMs`: time in no phase, which should stay small.
-- `queries`: one per problem the engine hands to the search (a round, at an outer depth bound),
+- `searches`: one per problem the engine hands to the search (a round, at an outer depth bound),
   with its names, number of examples, and time and counts per phase.
-- `events`: each solution a query found, with the seed depth, depth and size it was found at,
+- `events`: each solution a search found, with the seed depth, depth and size it was found at,
   and each counterexample CEGIS added.
 - `info.schedule`: the rounds the engine decided on.
 
@@ -88,14 +88,14 @@ Records are self-contained JSON, so anything can read them, e.g. pandas:
 ## Timing lazy code
 
 Work is charged to whichever phase is running, not to whichever phase built the sequence doing it.
-`Stats.phase(query, phase) { ... }` charges an eager block, and `seq.inPhase(query, phase)` charges
+`Stats.phase(search, phase) { ... }` charges an eager block, and `seq.inPhase(search, phase)` charges
 each step of the sequence's iterator. Phases nest, and time is exclusive, so the per-phase times
 add up to the wall-clock time.
 
 ## Changing what is measured
 
 - A counter: add it to `Count` in `src/main/kotlin/bench/Stats.kt`, and `Stats.inc(Count.X)` where
-  it happens. It goes to the phase and query running at the time. Cheap enough for hot loops.
+  it happens. It goes to the phase and search running at the time. Cheap enough for hot loops.
 - A phase: add it to `Phase`, and wrap the code in `Stats.phase` or `inPhase`.
 - A one-off fact about the run: `Stats.note(key, value)`. Something that happens at a moment:
   `Stats.event(kind, fields)`.

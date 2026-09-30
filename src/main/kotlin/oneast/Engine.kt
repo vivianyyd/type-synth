@@ -112,24 +112,35 @@ class Engine(
     }
 
     private fun searchRec(state: SearchState, round: Int, outerDepthBound: Int): Sequence<SearchState> = sequence {
-        val nextQuery = buildNextQuery(state, round)
-        if (nextQuery == null) {
+        val nextQueryAndSeed = buildNextQuery(state, round)
+
+        if (nextQueryAndSeed == null) {
             yield(state)
             return@sequence
         }
-        val (examples, seed) = nextQuery
-        Debug.log { "Current query: $seed with depth bound $outerDepthBound" }
+        Debug.log { "Current query: ${nextQueryAndSeed.second} with depth bound $outerDepthBound" }
         val statsId =
-            Stats.newQuery(
-                round, outerDepthBound, scheduled[round], examples.posNoSubexprs.size, examples.neg.size
+            Stats.newSearch(
+                round,
+                outerDepthBound,
+                scheduled[round],
+                nextQueryAndSeed.first.posNoSubexprs.size,
+                nextQueryAndSeed.first.neg.size
             )
-        val search = Search(seed, examples, query.oracle, config.copy(depthBound = outerDepthBound), statsId)
+        val search =
+            Search(
+                nextQueryAndSeed.second,
+                nextQueryAndSeed.first,
+                query.oracle,
+                config.copy(depthBound = outerDepthBound),
+                statsId
+            )
 
         for (solution in search.solutions()) {
             Debug.log { "Looking for counterexamples for potential solution $solution" }
             val ctrex =
                 Stats.phase(statsId, Phase.CEGIS) {
-                    CEGISCheck(examples, solution, languageGroundTruth) { s, e ->
+                    CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth) { s, e ->
                         OneUnification(s, listOf(e)).ok
                     }
                         .counterexample()
@@ -142,7 +153,7 @@ class Engine(
                 Debug.log { "Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}" }
                 Stats.event(
                     "counterexample",
-                    mapOf("query" to statsId, "positive" to ctrex.second, "example" to ctrex.first)
+                    mapOf("search" to statsId, "positive" to ctrex.second, "example" to ctrex.first)
                 )
                 if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
             }

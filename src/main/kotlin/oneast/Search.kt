@@ -7,8 +7,8 @@ import util.*
 import java.util.stream.Collectors
 
 /**
- * Lazily produces ALL solutions for [examples] from this [seed]. Charges its work to query
- * [statsId] (see [Stats.newQuery]).
+ * Lazily produces ALL solutions for [examples] from this [seed]. Charges its work to search
+ * [statsId] (see [Stats.newSearch]).
  */
 class Search(
     private val seed: SearchState,

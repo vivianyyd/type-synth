@@ -3,7 +3,7 @@ package bench
 import java.io.Writer
 import java.util.concurrent.atomic.AtomicLongArray
 
-/** What a query spends its time on. Anything outside of these is charged to no phase. */
+/** What a search spends its time on. Anything outside of these is charged to no phase. */
 enum class Phase(val key: String) {
     OUTLINE("outline"),
     ARITY("arity"),
@@ -39,15 +39,15 @@ enum class Count(val key: String, val nanos: Boolean = false) {
     CEGIS_NEG("cegisNeg"),
 }
 
-/** The time and counts charged to one phase of one query. */
-class Cell(val query: Int, val phase: Phase?) {
+/** The time and counts charged to one phase of one search. */
+class Cell(val search: Int, val phase: Phase?) {
     val counts = AtomicLongArray(Count.values().size)
     /** Only the thread driving the search touches this. */
     var nanos = 0L
 }
 
-/** One synthesis problem the engine hands to the search: one round, at one outer depth bound. */
-class QueryStats(
+/** One run of [oneast.Search]: the problem the engine hands it for one round, at one outer depth bound. */
+class SearchStats(
     val id: Int,
     val round: Int,
     val outerDepth: Int,
@@ -59,7 +59,7 @@ class QueryStats(
 }
 
 /**
- * Counts and times what the search does, per phase of each query. Records nothing unless a
+ * Counts and times what the search does, per phase of each search. Records nothing unless a
  * [Recording] is started, so tests that don't benchmark pay only a null check per call.
  *
  * Time is charged to whichever phase is running, not to whichever phase created a lazy sequence.
@@ -86,16 +86,16 @@ object Stats {
         recording?.current?.counts?.addAndGet(c.ordinal, n)
     }
 
-    /** Returns the id to charge the query's phases to, or -1 when not recording. */
-    fun newQuery(round: Int, outerDepth: Int, names: List<String>, numPos: Int, numNeg: Int): Int =
-        recording?.newQuery(round, outerDepth, names, numPos, numNeg) ?: -1
+    /** Returns the id to charge the search's phases to, or -1 when not recording. */
+    fun newSearch(round: Int, outerDepth: Int, names: List<String>, numPos: Int, numNeg: Int): Int =
+        recording?.newSearch(round, outerDepth, names, numPos, numNeg) ?: -1
 
     /**
      * Not inline, so that [block] can't yield: the phase would stay entered while the caller runs.
      */
-    fun <T> phase(query: Int, phase: Phase, block: () -> T): T {
+    fun <T> phase(search: Int, phase: Phase, block: () -> T): T {
         val r = recording ?: return block()
-        r.enter(r.cell(query, phase))
+        r.enter(r.cell(search, phase))
         try {
             return block()
         } finally {
@@ -119,12 +119,12 @@ object Stats {
     }
 }
 
-/** Charges every step of this sequence's iterator to [phase] of [query]. */
-fun <T> Sequence<T>.inPhase(query: Int, phase: Phase): Sequence<T> {
+/** Charges every step of this sequence's iterator to [phase] of [search]. */
+fun <T> Sequence<T>.inPhase(search: Int, phase: Phase): Sequence<T> {
     val seq = this
     return Sequence {
         val r = Stats.recording ?: return@Sequence seq.iterator()
-        val cell = r.cell(query, phase)
+        val cell = r.cell(search, phase)
         val it = seq.iterator()
         object : Iterator<T> {
             override fun hasNext(): Boolean {
@@ -162,12 +162,12 @@ class Recording(val trace: Writer?) {
     @Volatile
     private var lastSwitch = startNanos
 
-    private val queries = ArrayList<QueryStats>()
+    private val searches = ArrayList<SearchStats>()
     private val events = ArrayList<Map<String, Any?>>()
     val info: MutableMap<String, Any?> = java.util.Collections.synchronizedMap(LinkedHashMap())
 
-    fun cell(query: Int, phase: Phase): Cell =
-        if (query < 0) none else synchronized(queries) { queries[query] }.cells[phase.ordinal]
+    fun cell(search: Int, phase: Phase): Cell =
+        if (search < 0) none else synchronized(searches) { searches[search] }.cells[phase.ordinal]
 
     fun enter(cell: Cell) {
         val now = System.nanoTime()
@@ -185,17 +185,17 @@ class Recording(val trace: Writer?) {
         current = stack.last()
     }
 
-    fun newQuery(round: Int, outerDepth: Int, names: List<String>, numPos: Int, numNeg: Int): Int =
-        synchronized(queries) {
-            queries.add(QueryStats(queries.size, round, outerDepth, names, numPos, numNeg))
-            queries.size - 1
+    fun newSearch(round: Int, outerDepth: Int, names: List<String>, numPos: Int, numNeg: Int): Int =
+        synchronized(searches) {
+            searches.add(SearchStats(searches.size, round, outerDepth, names, numPos, numNeg))
+            searches.size - 1
         }
 
     fun event(kind: String, fields: Map<String, Any?>) {
         val e = LinkedHashMap<String, Any?>()
         e["ms"] = millisSince(startNanos)
         e["kind"] = kind
-        current.let { if (it.query >= 0) e["query"] = it.query }
+        current.let { if (it.search >= 0) e["search"] = it.search }
         e.putAll(fields)
         synchronized(events) { events.add(e) }
     }
@@ -206,7 +206,7 @@ class Recording(val trace: Writer?) {
         trace!!.write(
             Json.write(
                 mapOf(
-                    "query" to c.query,
+                    "search" to c.search,
                     "phase" to c.phase?.key,
                     "kind" to kind,
                     "state" to state.toString()
@@ -226,7 +226,7 @@ class Recording(val trace: Writer?) {
         val runningExtra = now - lastSwitch
         fun nanos(c: Cell) = c.nanos + if (c === running) runningExtra else 0L
 
-        val qs = synchronized(queries) { queries.toList() }
+        val ss = synchronized(searches) { searches.toList() }
         val totalCounts = LongArray(Count.values().size)
         val phaseNanos = LongArray(Phase.values().size)
         val phaseCounts = Array(Phase.values().size) { LongArray(Count.values().size) }
@@ -244,15 +244,15 @@ class Recording(val trace: Writer?) {
         fun cellJson(nanos: Long, counts: LongArray) =
             linkedMapOf<String, Any?>("ms" to nanos / 1_000_000.0) + countsJson(counts, keepZeros = false)
 
-        val queriesJson =
-            qs.map { q ->
-                var queryNanos = 0L
+        val searchesJson =
+            ss.map { search ->
+                var searchNanos = 0L
                 val phases = LinkedHashMap<String, Any?>()
-                q.cells.forEach { c ->
+                search.cells.forEach { c ->
                     val phase = c.phase!!
                     val n = nanos(c)
                     val counts = countsOf(c)
-                    queryNanos += n
+                    searchNanos += n
                     phaseNanos[phase.ordinal] += n
                     counts.forEachIndexed { i, v ->
                         totalCounts[i] += v
@@ -262,13 +262,13 @@ class Recording(val trace: Writer?) {
                         phases[phase.key] = cellJson(n, counts)
                 }
                 linkedMapOf(
-                    "id" to q.id,
-                    "round" to q.round,
-                    "outerDepth" to q.outerDepth,
-                    "names" to q.names,
-                    "numPos" to q.numPos,
-                    "numNeg" to q.numNeg,
-                    "ms" to queryNanos / 1_000_000.0,
+                    "id" to search.id,
+                    "round" to search.round,
+                    "outerDepth" to search.outerDepth,
+                    "names" to search.names,
+                    "numPos" to search.numPos,
+                    "numNeg" to search.numNeg,
+                    "ms" to searchNanos / 1_000_000.0,
                     "phases" to phases,
                 )
             }
@@ -281,7 +281,7 @@ class Recording(val trace: Writer?) {
             "phases" to
                 Phase.values().associate { it.key to cellJson(phaseNanos[it.ordinal], phaseCounts[it.ordinal]) },
             "info" to synchronized(info) { LinkedHashMap(info) },
-            "queries" to queriesJson,
+            "searches" to searchesJson,
             "events" to synchronized(events) { events.toList() },
         )
     }

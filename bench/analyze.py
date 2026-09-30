@@ -7,7 +7,7 @@ bench-results, or `latest` / `latest~N`.
 
   analyze.py ls                         list batches
   analyze.py show BATCH                 one row per run
-  analyze.py rounds BATCH BENCHMARK     one row per query (round, outer depth) of a run
+  analyze.py rounds BATCH BENCHMARK     one row per search (round, outer depth) of a run
   analyze.py compare BATCH_A BATCH_B    side by side, with B/A ratios
   analyze.py latex BATCH... [--metrics wall,candidates] [--labels A,B]
 
@@ -42,7 +42,7 @@ METRICS = {
     "seeds": ("seeds", str),
     "arityUnsat": ("arity unsat", str),
     "solverCalls": ("solver calls", str),
-    "queries": ("queries", str),
+    "searches": ("searches", str),
     "stop": ("stopped at", str),
 }
 TIMES = ["wall", "outline", "arity", "concretize", "cegis", "unattributed", "solverTime"]
@@ -99,11 +99,13 @@ def row(record):
         for k, v in counters.items():
             if k != "solverMs":
                 r[k] = v
-        r["queries"] = len(stats.get("queries", []))
+        # Older batches call searches queries
+        searches = stats.get("searches", stats.get("queries", []))
+        r["searches"] = len(searches)
         sols = [e for e in stats.get("events", []) if e["kind"] == "solution"]
         if sols:
             s = sols[-1]
-            q = stats["queries"][s["query"]]
+            q = searches[s.get("search", s.get("query"))]
             r["stop"] = (f"round {q['round']} outer depth {q['outerDepth']}: "
                          f"seed depth {s['seedDepth']}, depth {s['depth']}, size {s['size']}")
     return r
@@ -207,7 +209,8 @@ def cmd_rounds(args):
         error = (record.get("error") or "").partition("\n")[0]
         sys.exit(f"{args.benchmark} has no stats ({record['status']}) {error}".rstrip())
     body = []
-    for q in record["stats"]["queries"]:
+    stats = record["stats"]
+    for q in stats.get("searches", stats.get("queries", [])):
         ph = q["phases"]
         c = lambda k: sum(p.get(k, 0) for p in ph.values())
         body.append([
@@ -216,7 +219,7 @@ def cmd_rounds(args):
             *(f"{ph.get(p, {}).get('ms', 0) / 1000:.2f}" for p in ["outline", "arity", "concretize", "cegis"]),
             c("candidates"), c("prunedPos"), c("prunedNeg"), c("solverCalls"), c("solutions"),
         ])
-    table(["query", "round", "outer depth", "names", "+", "-", "time (s)", "outline", "arity", "concretize",
+    table(["search", "round", "outer depth", "names", "+", "-", "time (s)", "outline", "arity", "concretize",
            "cegis", "candidates", "pruned +", "pruned -", "solver calls", "solutions"], body)
 
 
