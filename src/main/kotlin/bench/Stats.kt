@@ -110,9 +110,6 @@ object Stats {
         recording?.info?.put(key, value)
     }
 
-    val tracing: Boolean
-        get() = recording?.trace != null
-
     /** Writes [state] to the candidate trace. Builds nothing unless tracing. */
     inline fun trace(kind: String, state: () -> Any) {
         val r = recording ?: return

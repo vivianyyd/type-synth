@@ -37,50 +37,7 @@ fun callCVC(content: String, testName: String): Boolean {
     return false
 }
 
-fun readInitialCVCresults(): List<Pair<Int, String>> =
-    outputDir
-        .listFiles()!!
-        .filter { it.isFile && "smaller" !in it.name }
-        .mapNotNull {
-            if (it.isFile)
-                it.name.substringAfter("cvc-").substringBeforeLast(".py").toInt() to it.readText()
-            else null
-        }
-        .sortedBy { it.first }
-
-fun readSmallestCVCresults(): List<Pair<Int, String>> {
-    val initOutputs = readInitialCVCresults()
-    val smallerOutputs =
-        outputDir
-            .listFiles()!!
-            .filter { it.isFile && "smaller" in it.name }
-            .eqClasses { f1, f2 ->
-                f1.name.substringBeforeLast("-smaller") == f2.name.substringBeforeLast("-smaller")
-            }
-            .mapNotNull {
-                val bestSoln =
-                    it.maxByOrNull {
-                        it.name.substringAfterLast("-smaller").substringBeforeLast(".py").toInt()
-                    }!! // equivalenceClasses() guarantees nonemptiness of returned classes
-                if (bestSoln.isFile)
-                    bestSoln.name.substringAfter("cvc-").substringBeforeLast("-smaller").toInt() to
-                            bestSoln.readText()
-                else null
-            }
-            .sortedBy { it.first }
-    return (smallerOutputs +
-            initOutputs.filter { init ->
-                smallerOutputs.none { smaller -> init.first == smaller.first }
-            })
-        .sortedBy { it.first }
-}
-
 fun readCVC(name: String): String? {
     val f = File(outputDir, "cvc-$name.py")
     return if (f.isFile) f.readText() else null
-}
-
-fun clearCVC() {
-    deleteAll(outputDir.path)
-    deleteAll(inputDir.path)
 }
