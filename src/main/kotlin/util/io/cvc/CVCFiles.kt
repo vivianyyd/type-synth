@@ -7,15 +7,21 @@ import java.io.File
 import java.nio.file.Files
 
 /**
- * Where solver queries and answers go. Each process gets a directory of its own, so that runs at
- * the same time cannot read or delete each other's files. Set the system property typesynth.cvcDir
- * to keep them somewhere to look at.
+ * Where solver queries and answers go: a new directory per process, deleted at exit. Files are
+ * named by state id, which restarts every process, so a directory used before could hand this run
+ * another run's answers. Set the system property typesynth.cvcDir to put the directory in there
+ * and keep it.
  */
 private val cvcDir: File by lazy {
-    System.getProperty("typesynth.cvcDir")?.let { File(it) }
-        ?: Files.createTempDirectory("type-synth-cvc").toFile().also { dir ->
+    val keepIn = System.getProperty("typesynth.cvcDir")
+    if (keepIn != null) {
+        File(keepIn).mkdirs()
+        Files.createTempDirectory(File(keepIn).toPath(), "run-").toFile()
+    } else {
+        Files.createTempDirectory("type-synth-cvc").toFile().also { dir ->
             Runtime.getRuntime().addShutdownHook(Thread { dir.deleteRecursively() })
         }
+    }
 }
 private val inputDir by lazy { File(cvcDir, "input").apply { mkdirs() } }
 private val outputDir by lazy { File(cvcDir, "output").apply { mkdirs() } }

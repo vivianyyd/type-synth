@@ -47,7 +47,7 @@ Suites: `sexp`, `sexp-unsolved`, `ocaml`. Variants: `default`, `single-round`, `
 `src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
 
 System properties (via `--jvm-args`): `-Dtypesynth.debug` (same as `--debug`),
-`-Dtypesynth.cvcDir=DIR` (keep solver files in DIR).
+`-Dtypesynth.cvcDir=DIR` (keep solver files in a new DIR/run-*).
 
 Example:
 
