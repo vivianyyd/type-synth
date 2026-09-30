@@ -131,7 +131,7 @@ class Search(
     }
 
     private fun solveLabelArities(withLabelClasses: Set<SearchState>): List<SearchState> {
-        // Phase 1: compute dependency analyses sequentially (memoized by arities)
+        // First the dependency analyses, one at a time, memoized by arities
         val dependencyAnalyses = mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
         val seedsWithDeps =
             withLabelClasses.map { s ->
@@ -143,7 +143,7 @@ class Search(
                 s to dep
             }
 
-        // Phase 2: run labelArities() calls in parallel
+        // Then the labelArities() calls, in parallel
         val labelAritySols =
             seedsWithDeps
                 .parallelStream()
