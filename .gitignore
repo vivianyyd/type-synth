@@ -1,7 +1,6 @@
 .gradle/
 .idea/
 build
-src/main/python/input/generated/
 src/main/sketch/concretize/generated
 *results/intermediate
 *__pycache__/
