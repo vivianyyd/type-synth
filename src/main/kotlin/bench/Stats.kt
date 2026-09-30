@@ -119,32 +119,13 @@ object Stats {
     }
 }
 
-/** Charges every step of this sequence's iterator to [phase] of [search]. */
-fun <T> Sequence<T>.inPhase(search: Int, phase: Phase): Sequence<T> {
-    val seq = this
-    return Sequence {
-        val r = Stats.recording ?: return@Sequence seq.iterator()
-        val cell = r.cell(search, phase)
-        val it = seq.iterator()
-        object : Iterator<T> {
-            override fun hasNext(): Boolean {
-                r.enter(cell)
-                try {
-                    return it.hasNext()
-                } finally {
-                    r.exit()
-                }
-            }
+/** Runs every step of this sequence's iterator in [Stats.phase]. */
+fun <T> Sequence<T>.inPhase(search: Int, phase: Phase): Sequence<T> = Sequence {
+    val it = iterator()
+    object : Iterator<T> {
+        override fun hasNext() = Stats.phase(search, phase) { it.hasNext() }
 
-            override fun next(): T {
-                r.enter(cell)
-                try {
-                    return it.next()
-                } finally {
-                    r.exit()
-                }
-            }
-        }
+        override fun next() = Stats.phase(search, phase) { it.next() }
     }
 }
 
