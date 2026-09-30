@@ -202,7 +202,8 @@ private fun runChild(opts: Options, b: Benchmark, runId: String, repeat: Int, di
             .redirectOutput(File(dir, "$runId.log"))
             .start()
     // The run times itself out; this is in case it can't.
-    if (!proc.waitFor(opts.timeoutSec + 60, TimeUnit.SECONDS)) proc.destroyForcibly().waitFor()
+    val killed = !proc.waitFor(opts.timeoutSec + 60, TimeUnit.SECONDS)
+    if (killed) proc.destroyForcibly().waitFor()
     // Runs print nothing unless debugging or failing
     File(dir, "$runId.log").let { if (it.length() == 0L) it.delete() }
 
@@ -215,8 +216,10 @@ private fun runChild(opts: Options, b: Benchmark, runId: String, repeat: Int, di
                     "runId" to runId,
                     "benchmark" to b.name,
                     "repeat" to repeat,
-                    "status" to "crashed",
-                    "error" to "Exited with ${proc.exitValue()} without a record; see $runId.log",
+                    "status" to if (killed) "timeout" else "crashed",
+                    "error" to
+                        if (killed) "Killed ${opts.timeoutSec + 60}s in, having written no record of its own"
+                        else "Exited with ${proc.exitValue()} without a record; see $runId.log",
                     "batch" to RawJson(File(dir, "batch.json").readText()),
                 ),
                 pretty = true
