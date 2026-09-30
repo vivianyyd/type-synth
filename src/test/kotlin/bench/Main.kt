@@ -26,7 +26,7 @@ Runs each benchmark in a JVM of its own and writes one JSON record per run to
 <out>/<batch>/<benchmark>.json. With no benchmarks given, runs the sexp suite.
 Any order. Quote values with spaces in single quotes.
 
-  --variant NAME     version of the search to run (default: default)
+  --variant NAME[,NAME...]  version of the search to run (default: default)
   --notes TEXT       free text recorded with every run
   --timeout SECONDS  per run, including loading the benchmark (default: 600)
   --repeat N         run each benchmark N times (default: 1)

@@ -12,6 +12,8 @@ class DFSEnumerator(
     private val emitConstructors: Boolean,
     private val sizeBound: Int,
     private val depthBound: Int,
+    /** See [oneast.Configuration.soundExpansions]. */
+    private val soundExpansions: Boolean,
 ) : SearchStrategy(examples) {
     /**
      * Whether the search has stopped changing labels other than by filling holes. While it emits
@@ -68,7 +70,8 @@ class DFSEnumerator(
                 canBeVar = hole != c.types[iToFill],
                 emitLabelBlanks = emitLabelBlanks,
                 emitConstructors = emitConstructors,
-                mustBeLeaf = currSizeBound - holesRemaining <= 1 || depth >= depthBound
+                mustBeLeaf = currSizeBound - holesRemaining <= 1 || depth >= depthBound,
+                sound = soundExpansions
             )
             .asSequence()
             .flatMap { expansion ->

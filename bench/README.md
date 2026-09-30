@@ -30,7 +30,7 @@ NAME is a benchmark or suite (default `sexp`). Any order. Quote values with spac
 quotes. Last occurrence of an option wins.
 
 ```
---variant NAME      variant from Variants.kt                  (default: default)
+--variant NAME,...  variants from Variants.kt, in order       (default: default)
 --notes TEXT        recorded with every run
 --timeout SECONDS   per run, including loading                (default: 600)
 --repeat N          run each benchmark N times                (default: 1)
@@ -43,7 +43,7 @@ quotes. Last occurrence of an option wins.
 --help              print options
 ```
 
-Suites: `sexp`, `sexp-unsolved`, `ocaml`. Variants: `default`, `single-round`, `auto3`. Defined in
+Suites: `sexp`, `sexp-unsolved`, `ocaml`. Variants: `default`, `single-round`, `auto3`, `sound`. Defined in
 `src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
 
 System properties (via `--jvm-args`): `-Dtypesynth.debug` (same as `--debug`),

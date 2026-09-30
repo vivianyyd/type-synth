@@ -25,7 +25,9 @@ class Search(
         depthBound: Int,
     ): Sequence<SearchState> =
         config.searchStrategy
-            .create(examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound)
+            .create(
+                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, config.soundExpansions
+            )
             .candidates(c)
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)

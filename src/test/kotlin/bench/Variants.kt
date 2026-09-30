@@ -4,6 +4,7 @@ import oneast.*
 
 /**
  * A version of the search to benchmark, as a change to each benchmark's default configuration.
+ * Variants combine: `--variant sound,auto3` applies both, in order.
  *
  * Add a variant here for each alternative worth keeping side by side, i.e. each row of an
  * ablation. A change that only lives on a branch needs no variant: runs record the commit.
@@ -18,10 +19,20 @@ object Variants {
                 it.copy(scheduleInfo = SingleRound)
             },
             Variant("auto3", "Solve for 3 names per round") { it.copy(scheduleInfo = Auto(3)) },
+            Variant("sound", "Let holes nothing constrains also become arrows or any label") {
+                it.copy(soundExpansions = true)
+            },
         )
             .associateBy { it.name }
 
-    fun get(name: String) = all[name] ?: error("No variant named $name. Try --list")
+    /** [names] is one variant, or several separated by commas. */
+    fun get(names: String): Variant {
+        val vs = names.split(",").map { all[it.trim()] ?: error("No variant named $it. Try --list") }
+        return vs.singleOrNull()
+            ?: Variant(vs.joinToString("+") { it.name }, vs.joinToString("; ") { it.description }) { c ->
+                vs.fold(c) { acc, v -> v.configure(acc) }
+            }
+    }
 }
 
 /** The configuration as it is recorded with each run. */
@@ -37,4 +48,5 @@ fun Configuration.toJson(): Map<String, Any?> =
                 is CustomSchedule -> mapOf("kind" to "custom", "rounds" to s.customSchedule)
             },
         "numSols" to numSols.toString(),
+        "soundExpansions" to soundExpansions,
     )

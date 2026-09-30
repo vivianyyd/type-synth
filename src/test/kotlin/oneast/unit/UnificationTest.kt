@@ -545,7 +545,8 @@ class UnificationTest {
             canBeVar = true,
             emitLabelBlanks = false,
             emitConstructors = true,
-            mustBeLeaf = false
+            mustBeLeaf = false,
+            sound = false
         )
         assertEquals(listOf<Type>(a, b), expansions)
         assertTrue(u.refine(hole, a))

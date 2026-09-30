@@ -44,8 +44,12 @@ enum class SearchStrategyKind {
             emitLabelBlanks: Boolean,
             emitConstructors: Boolean,
             sizeBound: Int,
-            depthBound: Int
-        ) = DFSEnumerator(examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound)
+            depthBound: Int,
+            soundExpansions: Boolean
+        ) =
+            DFSEnumerator(
+                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, soundExpansions
+            )
     };
 
     abstract fun create(
@@ -53,7 +57,8 @@ enum class SearchStrategyKind {
         emitLabelBlanks: Boolean,
         emitConstructors: Boolean,
         sizeBound: Int,
-        depthBound: Int
+        depthBound: Int,
+        soundExpansions: Boolean
     ): SearchStrategy
 }
 
@@ -66,7 +71,13 @@ data class Configuration(
     val sizeBound: Int,
     val depthBound: Int,
     val scheduleInfo: SchedulingInfo = Auto(5),
-    val numSols: Solutions
+    val numSols: Solutions,
+    /**
+     * Whether a hole that nothing constrains may also become an arrow, and, after outlining, any
+     * label. Without this, such a hole only becomes a label blank or a variable, which is faster
+     * but can miss solutions.
+     */
+    val soundExpansions: Boolean = false,
 )
 
 sealed class Solutions {
