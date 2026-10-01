@@ -127,7 +127,12 @@ class Search(
 
         Debug.log { withLabelClasses.countedLines("Seeds before label arities") }
 
-        return Stats.phase(statsId, Phase.ARITY) { solveLabelArities(withLabelClasses) }
+        return Stats.phase(statsId, Phase.ARITY) {
+            when (val la = config.labelArities) {
+                LabelArities.Solved -> solveLabelArities(withLabelClasses)
+                is LabelArities.Deepened -> deepenLabelArities(withLabelClasses, la.bound)
+            }
+        }
     }
 
     private fun solveLabelArities(withLabelClasses: Set<SearchState>): List<SearchState> {
@@ -152,23 +157,13 @@ class Search(
                 .collect(Collectors.toList())
         Stats.add(Count.ARITY_UNSAT, (seedsWithDeps.size - labelAritySols.size).toLong())
 
-        val splitLabelArities = labelAritySols
+        val resolvedLabelArities = withArities(labelAritySols
             .flatMap { (s, la) ->
                 require(la!!.all { (l, a) -> if (l in s.committedLabels) a == s.labelArities[l] else true })
                 val (labels, arities) = la.toList().unzip()
                 lazyCartesianProduct(arities.map { (0..it).toList() })
                     .map { s to labels.zip(it).toMap() }
-            }
-            // Order seeds by whether label arities from previous rounds are preserved
-            .partition { (s, subla) -> s.labelArities.all { (l, a) -> subla[l] == a } }
-            .let { it.first + it.second }
-
-        val resolvedLabelArities =
-            splitLabelArities.map { (s, subla) -> // New label arities overwrite old ones
-                s.mapTypesAndSetLabelArities(subla) { t ->
-                    t.addParamHoles(subla)
-                }
-            }
+            })
 
         // Without ordering seeds by arity preserved
 //        val resolvedLabelArities = logger.time("Solving for label arities") {
@@ -192,8 +187,37 @@ class Search(
 //            }.collect(Collectors.toList())
 //        }
 
-        Stats.add(Count.SEEDS, resolvedLabelArities.size.toLong())
         return resolvedLabelArities
+    }
+
+    /**
+     * Each outline with every choice of arities from 0 to [bound] for its labels. Committed labels
+     * keep their arities, as do labels no type mentions.
+     */
+    private fun deepenLabelArities(outlines: Set<SearchState>, bound: Int): List<SearchState> =
+        withArities(outlines.flatMap { s ->
+            val labels = (s.types.flatMap { it.labels() }.map { it.first }.toSet() - s.committedLabels).toList()
+            val kept = s.labelArities.filterKeys { it !in labels }
+            // lazyCartesianProduct has no choices, not one empty choice, for no labels
+            val choices =
+                if (labels.isEmpty()) sequenceOf(emptyList())
+                else lazyCartesianProduct(labels.map { (0..bound).toList() })
+            choices.map { s to kept + labels.zip(it) }
+        })
+
+    /** [choices] of arities for outlines as seeds. */
+    private fun withArities(choices: List<Pair<SearchState, Map<Int, Int>>>): List<SearchState> {
+        val seeds = choices
+            // Order seeds by whether label arities from previous rounds are preserved
+            .partition { (s, subla) -> s.labelArities.all { (l, a) -> subla[l] == a } }
+            .let { it.first + it.second }
+            .map { (s, subla) -> // New label arities overwrite old ones
+                s.mapTypesAndSetLabelArities(subla) { t ->
+                    t.addParamHoles(subla)
+                }
+            }
+        Stats.add(Count.SEEDS, seeds.size.toLong())
+        return seeds
     }
 
     private fun concretizationSearch(

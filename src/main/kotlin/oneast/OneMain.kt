@@ -78,7 +78,20 @@ data class Configuration(
      * but can miss solutions.
      */
     val soundExpansions: Boolean = false,
+    /** How each outline's labels get their arities before concretizing. */
+    val labelArities: LabelArities = LabelArities.Solved,
 )
+
+sealed class LabelArities {
+    /**
+     * Ask the solver, per outline, how many parameters each label could need, then try every
+     * arity from 0 up to that.
+     */
+    object Solved : LabelArities()
+
+    /** No solver: try every arity from 0 to [bound] for each label. */
+    data class Deepened(val bound: Int) : LabelArities()
+}
 
 sealed class Solutions {
     object AllSolutions : Solutions() {
