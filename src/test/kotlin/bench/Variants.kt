@@ -22,6 +22,9 @@ object Variants {
             Variant("sound", "Let holes nothing constrains also become arrows or any label") {
                 it.copy(soundExpansions = true)
             },
+            Variant("observational", "Decide type equality by swapping expressions in the examples") {
+                it.copy(oracle = OracleKind.Observational)
+            },
         )
             .associateBy { it.name }
 
@@ -64,4 +67,5 @@ fun Configuration.toJson(): Map<String, Any?> =
                 LabelArities.Solved -> mapOf("kind" to "solved")
                 is LabelArities.Deepened -> mapOf("kind" to "deepened", "bound" to la.bound)
             },
+        "oracle" to oracle.name,
     )

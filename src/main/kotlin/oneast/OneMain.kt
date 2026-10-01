@@ -80,7 +80,20 @@ data class Configuration(
     val soundExpansions: Boolean = false,
     /** How each outline's labels get their arities before concretizing. */
     val labelArities: LabelArities = LabelArities.Solved,
+    /** Which oracle answers whether two expressions have the same type. */
+    val oracle: OracleKind = OracleKind.Types,
 )
+
+enum class OracleKind {
+    /** The query's own oracle, which knows the actual types. */
+    Types,
+
+    /**
+     * An [util.ObservationalEquivalenceOracle] over the examples, asking the language's ground truth
+     * instead of looking at types.
+     */
+    Observational,
+}
 
 sealed class LabelArities {
     /**
