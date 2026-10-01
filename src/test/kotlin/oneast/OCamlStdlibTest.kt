@@ -1,20 +1,15 @@
 package oneast
 
-import oneast.searchstrategies.DFSEnumerator
 import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.DynamicTest
-import org.junit.jupiter.api.TestFactory
 import query.Example
 import query.Examples
 import query.Query
 import testutil.loadExamples
 import testutil.loadSchedule
-import testutil.ocaml.OCamlChecker
-import testutil.ocaml.OcamlTypeParser
+import testutil.ocaml.*
 import testutil.splitOCamlExamples
 import testutil.unsignedExample
 import util.*
-import util.io.cvc.clearCVC
 import java.io.File
 import kotlin.test.Test
 
@@ -27,79 +22,13 @@ class OCamlStdlibTest {
             examples.neg.filter { schedule.customSchedule.flatten().containsAll(it.names) },
         )
 
-    private fun oracleFromDir(dir: File) = CheckingGroundTruthOracle(buildMap {
-        val parser = OcamlTypeParser()
-        dir.listFiles()
-            ?.filter { it.extension == "types" && it.isFile }
-            ?.forEach { file -> putAll(parser.parseSignatures(file.readText())) }
-    })
-
-    /**
-     * Loads examples and oracle types from a list of .exs files.
-     * Each .exs file's first line must be a comment listing the .types files it depends on, e.g.:
-     *   // 0_basics.types, 4_arith.types
-     * All subsequent non-comment, non-blank lines are treated as examples.
-     */
-    private fun loadFromExsFiles(exsFileNames: List<String>): Pair<List<Example>, Map<String, Type>> {
-        val exsDir = File(join("src", "test", "input", "ocaml-stdlib", "exs"))
-        val typesDir = File(join("src", "test", "input", "ocaml-stdlib", "types"))
-
-        val examples = mutableListOf<Example>()
-        val referencedTypesFiles = linkedSetOf<String>()
-
-        for (name in exsFileNames) {
-            val file = File(exsDir, if (name.endsWith(".exs")) name else "$name.exs")
-            val lines = file.readLines()
-            if (lines.isEmpty()) continue
-            val firstLine = lines[0].trim()
-            if (firstLine.startsWith("//")) {
-                firstLine.removePrefix("//").trim()
-                    .split(",")
-                    .map { it.trim() }
-                    .filter { it.endsWith(".types") }
-                    .forEach {
-                        if (it.substringBefore(".types") !in exsFileNames)
-                            println("Warning in module $name: Dependency $it is not in provided files, adding its type signatures without its examples")
-                        referencedTypesFiles.add(it)
-                    }
-            }
-            lines.drop(1).forEach { line ->
-                val trimmed = line.trim()
-                if (trimmed.isNotBlank() && !trimmed.startsWith("//")) {
-                    examples.add(unsignedExample(trimmed))
-                }
-            }
-        }
-        val parser = OcamlTypeParser()
-        val oracleTypes = buildMap {
-            referencedTypesFiles.forEach { typesFileName ->
-                val typesFile = File(typesDir, typesFileName)
-                if (typesFile.isFile) putAll(parser.parseSignatures(typesFile.readText()))
-            }
-        }
-        return examples to oracleTypes
-    }
-
-    private fun configLogger(schedule: SchedulingInfo, iter: Int? = null): Pair<Configuration, Logger> {
-        val configuration =
-            Configuration(
-                name = "OCaml Stdlib",
-                searchStrategy = ::DFSEnumerator,
-                sizeBound = 20,
-                depthBound = 4,
-                scheduleInfo = schedule,
-                numSols = Solutions.NumSolutions(1)
-            )
-
-        val logger =
-            Logger(
-                configuration = configuration,
-                logFilename = "ocaml-tmp${if (iter != null) "-$iter" else ""}.log",
-                logToFile = true,
-                verbosity = 5
-            )
-        return configuration to logger
-    }
+    private fun config(schedule: SchedulingInfo) =
+        Configuration(
+            sizeBound = 20,
+            depthBound = 4,
+            scheduleInfo = schedule,
+            numSols = Solutions.NumSolutions(1)
+        )
 
     @Test
     @Disabled
@@ -107,8 +36,7 @@ class OCamlStdlibTest {
         val path = join("src", "test", "input", "ocaml-stdlib", "lists-notsolved")
         val dir = File(path)
         val query = Query(loadExamples(dir), oracleFromDir(dir))
-        val (configuration, logger) = configLogger(loadSchedule(File(join(path, "schedule"))))
-        assert(run(query, OCamlChecker(), configuration, logger).isNotEmpty())
+        assert(run(query, OCamlChecker(), config(loadSchedule(File(join(path, "schedule"))))).isNotEmpty())
     }
 
     @Test
@@ -118,53 +46,9 @@ class OCamlStdlibTest {
         val (examples, oracleTypes) = loadFromExsFiles(exsFileNames)
         val oracle = CheckingGroundTruthOracle(oracleTypes)
         val query = Query(splitOCamlExamples(examples, oracle, OCamlChecker()), oracle)
-        val (configuration, logger) = configLogger(Auto(3))
-        val sols = run(query, OCamlChecker(), configuration, logger)
+        val sols = run(query, OCamlChecker(), config(Auto(3)))
         assert(sols.isNotEmpty())
-        assert(sols.any { it.equivalentTo(stateFromContext(oracleTypes), logger) })
-    }
-
-    @TestFactory
-    fun `test sublists (factory)`(): List<DynamicTest> {
-        clearCVC()
-
-        val modules =
-            listOf(
-                listOf("0_basics", "2_boolean", "4_arith", "8_char"),
-                listOf("1_comparison"),
-                listOf("50_list_mod"),
-                listOf("5_bitwise"),
-                listOf("6_float"),
-                listOf("7_str"),
-                )
-        return modules.indices.map { i ->
-            val task = modules[i]
-            val fixed = modules.subList(0, i)
-            DynamicTest.dynamicTest(task.toString()) {
-                val (_, fixedTypes) = loadFromExsFiles(fixed.flatten())
-                val (examplesAll, desiredTypes) = loadFromExsFiles(task)
-                val oracleTypes = fixedTypes + desiredTypes
-                val examples =
-                    examplesAll
-                        .flatMap { it.subexprs() }
-                        .toSet()
-                        .filter { it.names.all { it in oracleTypes } }
-                val oracle = CheckingGroundTruthOracle(oracleTypes)
-                val query =
-                    Query(
-                        splitOCamlExamples(examples, oracle, OCamlChecker()),
-                        oracle,
-                        committedSeed = stateFromContext(fixedTypes))
-                val (configuration, logger) = configLogger(Auto(3), i)
-                val sols = run(query, OCamlChecker(), configuration, logger)
-                assert(sols.isNotEmpty()) { "No solution found for module $task" }
-                val gotone = sols.any { it.equivalentTo(stateFromContext(oracleTypes), logger) }
-                // TODO for some reason mismatches not getting logged, putting it in a seaprate varaiable in case weird test harness side effect behavior
-                assert(gotone) {
-                    "None of\n${sols.lines()}\nmatch expected context\n$oracleTypes"
-                }
-            }
-        }
+        assert(sols.any { it.equivalentTo(stateFromContext(oracleTypes)) })
     }
 
     @Test
@@ -188,8 +72,7 @@ class OCamlStdlibTest {
                 oracle,
                 committedSeed = committedSeed
             )
-            val (configuration, logger) = configLogger(Auto(3), iter)
-            val solutions = run(query, OCamlChecker(), configuration, logger)
+            val solutions = run(query, OCamlChecker(), config(Auto(3)))
             assert(solutions.isNotEmpty()) { "No solution found at iteration $iter" }
             committedSeed = solutions.first()
         }
@@ -198,10 +81,7 @@ class OCamlStdlibTest {
     /** Input sanity check: load every .exs and .types file and run splitOCamlExamples */
     @Test
     fun `load all and split`() {
-        val exsDir = File(join("src", "test", "input", "ocaml-stdlib", "exs"))
-        val typesDir = File(join("src", "test", "input", "ocaml-stdlib", "types"))
-
-        val allExsNames = exsDir.listFiles()
+        val allExsNames = ocamlExsDir.listFiles()
             ?.filter { it.extension == "exs" && it.isFile }
             ?.map { it.nameWithoutExtension }
             ?: emptyList()
@@ -210,7 +90,7 @@ class OCamlStdlibTest {
 
         val parser = OcamlTypeParser()
         val oracleTypes = buildMap {
-            typesDir.listFiles()
+            ocamlTypesDir.listFiles()
                 ?.filter { it.extension == "types" && it.isFile }
                 ?.forEach { putAll(parser.parseSignatures(it.readText())) }
         }

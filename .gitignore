@@ -1,7 +1,6 @@
 .gradle/
 .idea/
 build
-src/main/python/input/generated/
 src/main/sketch/concretize/generated
 *results/intermediate
 *__pycache__/
@@ -15,3 +14,4 @@ results/logs/big
 *.o
 *.cache*
 tmp.log
+bench-results/

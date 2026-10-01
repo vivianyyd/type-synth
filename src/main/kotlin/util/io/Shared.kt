@@ -25,17 +25,3 @@ fun String.runCommand(workingDir: File = File(System.getProperty("user.dir"))): 
         null
     }
 }
-
-fun deleteAll(path: String, and: (File) -> Boolean = { true }) {
-    val directory = File(path)
-    if (!directory.exists() || !directory.isDirectory) {
-        return
-    }
-    directory.listFiles()?.forEach { file ->
-        if (file.isFile && and(file)) {
-            if (!file.delete()) {
-                println("Failed to delete: ${file.name}")
-            }
-        }
-    }
-}
