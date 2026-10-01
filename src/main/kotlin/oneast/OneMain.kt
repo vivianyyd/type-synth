@@ -12,7 +12,7 @@ fun run(
     languageGroundTruth: GroundTruth,
     configuration: Configuration,
 ): List<SearchState> {
-    val engine = Engine(query, languageGroundTruth::valid, configuration)
+    val engine = Engine(query, languageGroundTruth, configuration)
 
     val solutions = mutableListOf<SearchState>()
 

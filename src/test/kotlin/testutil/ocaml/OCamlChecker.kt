@@ -25,6 +25,10 @@ class OCamlChecker(
 ) : GroundTruth {
     override fun valid(example: Example): Boolean = isValid(example.toString()).isValid
 
+    /** Compiles all of [examples] in one file, which fails if any one of them does. */
+    override fun allValid(examples: Collection<Example>): Boolean =
+        examples.isEmpty() || compile(examples.map { it.toString() }).isValid
+
     private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
 
     private val desugarAtomsToDummies = listOf("Num" to "1", "Str" to "\"s\"", "Char" to "\'a\'", "Flt" to "1.", "Nil" to "[]")
@@ -33,14 +37,16 @@ class OCamlChecker(
         desugarAtomsToDummies.fold(expr) { acc, (from, to) -> acc.replace(from, to) }
 
     /** Check if a single expression is valid OCaml code. */
-    fun isValid(expr: String): TypeCheckResult {
-        val desugaredExpr = desugar(expr)
+    fun isValid(expr: String): TypeCheckResult = compile(listOf(expr))
 
+    /** Compiles each of [exprs] as its own top-level binding, all in one file. */
+    private fun compile(exprs: List<String>): TypeCheckResult {
+        val expr = exprs.joinToString("\n")
         val tempFile = Files.createTempFile("ocaml_check_", ".ml").toFile()
 
         try {
-            // Write preamble + expression
-            tempFile.writeText(preamble + "let _ = ($desugaredExpr)\n")
+            // Write preamble + expressions
+            tempFile.writeText(preamble + exprs.joinToString("") { "let _ = (${desugar(it)})\n" })
 
             // Build command
             val command = buildCommand(tempFile)

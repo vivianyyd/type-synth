@@ -13,6 +13,10 @@ import query.*
  * subexpression valid. The original negative examples are minimal, so if the swap made some strict
  * subexpression invalid, the swapped-in expression fails earlier than the original did.
  *
+ * Everything that must be valid goes to [truth] in one [GroundTruth.allValid] call, and only the
+ * swapped negative examples are checked one at a time. [truth] is asked the same questions over and
+ * over, so it should usually be a [MemoizedGroundTruth].
+ *
  * Expressions that don't occur in any example are only checked for validity, so they are equal to
  * anything else that is valid and doesn't occur either.
  *
@@ -22,36 +26,35 @@ class ObservationalEquivalenceOracle(
     private val examples: Examples,
     private val truth: GroundTruth,
 ) : Oracle {
-    private val validCache = HashMap<Example, Boolean>()
     private val equalCache = HashMap<Pair<Example, Example>, Boolean>()
 
     // One representative of each equivalence class dummy() has seen, indexed by the class's dummy
     private val representatives = mutableListOf<Example>()
 
-    private fun valid(e: Example): Boolean = validCache.getOrPut(e) { truth.valid(e) }
-
-    /** Invalid, but every strict subexpression is valid. A name is always valid. */
-    private fun minimalNegative(e: Example): Boolean =
-        when (e) {
-            is Name -> false
-            // A subexpression of a valid expression is valid, so checking the children is enough.
-            is App -> !valid(e) && valid(e.fn) && valid(e.arg)
-        }
-
     override fun equal(a: Example, b: Example): Boolean {
-        if (!valid(a) || !valid(b)) return false
+        if (!truth.valid(a) || !truth.valid(b)) return false
         if (a == b) return true
         val key = if (a.hashCode() <= b.hashCode()) a to b else b to a
-        return equalCache.getOrPut(key) { substitutable(a, b) && substitutable(b, a) }
+        return equalCache.getOrPut(key) { swappable(a, b) }
     }
 
-    /** Replacing occurrences of [from] with [to] never changes the outcome of any example. */
-    private fun substitutable(from: Example, to: Example): Boolean =
-        examples.posNoSubexprs.all { ex -> substitutions(ex, from, to).all { valid(it) } } &&
-                examples.neg.all { ex -> substitutions(ex, from, to).all { minimalNegative(it) } }
+    /** Swapping occurrences of [a] and [b] in either direction never changes any example's outcome. */
+    private fun swappable(a: Example, b: Example): Boolean {
+        fun swaps(exs: List<Example>) = exs.flatMap { substitutions(it, a, b) + substitutions(it, b, a) }
+        val swappedNeg = swaps(examples.neg)
+        // A name is always valid. The whole of a negative example is never swapped out, since a and b
+        // are valid, so this only happens if a negative example is a name.
+        if (swappedNeg.any { it !is App }) return false
+        val mustBeValid =
+            swaps(examples.posNoSubexprs) +
+                    // Checking the children of a negative example is enough: a subexpression of a
+                    // valid expression is valid.
+                    swappedNeg.flatMap { listOf((it as App).fn, it.arg) }
+        return truth.allValid(mustBeValid) && swappedNeg.none { truth.valid(it) }
+    }
 
     override fun dummy(e: Example): Int {
-        if (!valid(e)) throw Exception("Failed oracle precondition")
+        if (!truth.valid(e)) throw Exception("Failed oracle precondition")
         val i = representatives.indexOfFirst { equal(it, e) }
         if (i != -1) return i
         representatives.add(e)
@@ -63,10 +66,10 @@ class ObservationalEquivalenceOracle(
  * Every way to replace a nonempty set of occurrences of [from] in [ex] with [to]. No occurrence of
  * [from] can contain another, so the occurrences are disjoint.
  */
-fun substitutions(ex: Example, from: Example, to: Example): Sequence<Example> {
+fun substitutions(ex: Example, from: Example, to: Example): List<Example> {
     val n = occurrences(ex, from)
     require(n < Int.SIZE_BITS - 1) { "Too many occurrences of $from in $ex" }
-    return (1 until (1 shl n)).asSequence().map { mask -> replace(ex, from, to, mask, Counter()) }
+    return (1 until (1 shl n)).map { mask -> replace(ex, from, to, mask, Counter()) }
 }
 
 private fun occurrences(ex: Example, target: Example): Int =

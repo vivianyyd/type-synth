@@ -6,13 +6,15 @@ import bench.Phase
 import bench.Stats
 import query.*
 import util.GroundTruth
+import util.MemoizedGroundTruth
 import util.ObservationalEquivalenceOracle
 import util.Oracle
+import util.TimedOracle
 import kotlin.math.min
 
 class Engine(
     private val query: AbstractQuery,
-    private val languageGroundTruth: (Example) -> Boolean,
+    private val languageGroundTruth: GroundTruth,
     private val config: Configuration,
 ) {
     private val names = query.examples.names
@@ -27,26 +29,23 @@ class Engine(
 
     // The ground truth can be slow (e.g. a compiler call), and the observational oracle asks it about
     // the same expressions over and over, across rounds too.
-    private val validity = HashMap<Example, Boolean>()
-    private val memoizedGroundTruth =
-        object : GroundTruth {
-            override fun valid(example: Example) =
-                validity.getOrPut(example) { languageGroundTruth(example) }
-        }
+    private val memoizedGroundTruth = MemoizedGroundTruth(languageGroundTruth)
 
     // Built from all the examples so far, so it is rebuilt whenever a counterexample is added
     private var observationalOracle: ObservationalEquivalenceOracle? = null
 
     private fun oracle(): Oracle =
-        when (config.oracle) {
-            OracleKind.Types -> query.oracle
-            OracleKind.Observational ->
-                observationalOracle
-                    ?: ObservationalEquivalenceOracle(
-                        Examples(posExamples, negExamples), memoizedGroundTruth
-                    )
-                        .also { observationalOracle = it }
-        }
+        TimedOracle(
+            when (config.oracle) {
+                OracleKind.Types -> query.oracle
+                OracleKind.Observational ->
+                    observationalOracle
+                        ?: ObservationalEquivalenceOracle(
+                            Examples(posExamples, negExamples), memoizedGroundTruth
+                        )
+                            .also { observationalOracle = it }
+            }
+        )
 
     init {
         when (val info = config.scheduleInfo) {
@@ -166,7 +165,7 @@ class Engine(
             Debug.log { "Looking for counterexamples for potential solution $solution" }
             val ctrex =
                 Stats.phase(statsId, Phase.CEGIS) {
-                    CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth) { s, e ->
+                    CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth::valid) { s, e ->
                         OneUnification(s, listOf(e)).ok
                     }
                         .counterexample()
