@@ -255,7 +255,7 @@ sealed class THole : Type {
 
     override fun replace(hole: THole, replacement: Type) = if (hole == this) replacement else this
 
-    /** [sound]: see [Configuration.soundExpansions]. */
+    /** [sound]: see [Configuration.soundExpansions]. [labelsGiven]: see [Configuration.givenLabels]. */
     abstract fun expansions(
         unification: OneUnification,
         labelArities: Map<Int, Int>,
@@ -264,7 +264,8 @@ sealed class THole : Type {
         emitLabelBlanks: Boolean,
         emitConstructors: Boolean,
         mustBeLeaf: Boolean,
-        sound: Boolean
+        sound: Boolean,
+        labelsGiven: Boolean
     ): List<Type>
 }
 
@@ -279,11 +280,13 @@ class TypeHole : THole() {
         emitLabelBlanks: Boolean,
         emitConstructors: Boolean,
         mustBeLeaf: Boolean,
-        sound: Boolean
+        sound: Boolean,
+        labelsGiven: Boolean
     ): List<Type> =
         if (mustBeLeaf)
             expansionsNoBound(
-                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors, sound
+                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors, sound,
+                labelsGiven
             )
                 .filter {
                     when (it) {
@@ -296,7 +299,8 @@ class TypeHole : THole() {
                 }
         else
             expansionsNoBound(
-                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors, sound
+                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors, sound,
+                labelsGiven
             )
 
     private fun expansionsNoBound(
@@ -306,7 +310,8 @@ class TypeHole : THole() {
         canBeVar: Boolean,
         emitLabelBlanks: Boolean,
         emitConstructors: Boolean,
-        sound: Boolean
+        sound: Boolean,
+        labelsGiven: Boolean
     ): List<Type> {
         val variableExps = if (canBeVar) (0 until vars + 1).map { Variable(it) } else emptyList()
         val fnExpansion = Arrow(TypeHole(), TypeHole())
@@ -320,7 +325,10 @@ class TypeHole : THole() {
                         if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
                         else labelExpansions + fnExpansion
                     } else {
-                        if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
+                        if (emitLabelBlanks) listOf(Blank(labelOnly = true))
+                        // No outline placed labels, so any hole may be one
+                        else if (labelsGiven) labelExpansions
+                        else null
                     }
                 HoleConstructor.Conflicting -> null
                 HoleConstructor.Arrow -> listOf(fnExpansion)
@@ -347,7 +355,8 @@ class Blank(val labelOnly: Boolean) : THole() {
         emitLabelBlanks: Boolean,
         emitConstructors: Boolean,
         mustBeLeaf: Boolean,
-        sound: Boolean
+        sound: Boolean,
+        labelsGiven: Boolean
     ) = listOf(this)
 
     override fun toString() = if (labelOnly) ".L" else "."

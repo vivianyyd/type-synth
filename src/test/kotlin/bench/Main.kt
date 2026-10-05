@@ -118,7 +118,7 @@ private fun list() {
     Benchmarks.suites.forEach { (name, bs) -> println("  $name: ${bs.joinToString { it.name }}") }
     println("Variants:")
     Variants.all.values.forEach { println("  ${it.name}: ${it.description}") }
-    println("  ${Variants.DEEPEN}N: ${Variants.DEEPEN_DESCRIPTION}")
+    Variants.numbered.forEach { println("  ${it.prefix}N: ${it.description}") }
 }
 
 private fun runBatch(opts: Options) {
@@ -270,7 +270,7 @@ private fun runOne(opts: Options) {
     val dir = opts.dir!!
     val runId = opts.runId!!
     val benchmark = Benchmarks.all[opts.child!!] ?: error("No benchmark ${opts.child}")
-    val config = Variants.get(opts.variant).configure(benchmark.defaults)
+    val variant = Variants.get(opts.variant)
     Debug.enabled = opts.debug
 
     val base =
@@ -279,7 +279,6 @@ private fun runOne(opts: Options) {
             "runId" to runId,
             "benchmark" to benchmark.name,
             "repeat" to opts.repeatIndex,
-            "config" to config.toJson(),
         )
 
     val trace =
@@ -317,6 +316,9 @@ private fun runOne(opts: Options) {
             val loadStart = System.nanoTime()
             val problem = benchmark.load()
             base["loadMs"] = (System.nanoTime() - loadStart) / 1_000_000.0
+            // Some variants depend on the problem, so this waits for it to load
+            val config = variant.configure(benchmark.defaults, problem)
+            base["config"] = config.toJson()
 
             recording = Stats.start(trace)
             val solutions = run(problem.query, problem.groundTruth, config)

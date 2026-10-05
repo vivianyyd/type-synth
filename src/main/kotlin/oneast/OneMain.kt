@@ -45,10 +45,12 @@ enum class SearchStrategyKind {
             emitConstructors: Boolean,
             sizeBound: Int,
             depthBound: Int,
-            soundExpansions: Boolean
+            soundExpansions: Boolean,
+            labelsGiven: Boolean
         ) =
             DFSEnumerator(
-                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, soundExpansions
+                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, soundExpansions,
+                labelsGiven
             )
     };
 
@@ -58,7 +60,8 @@ enum class SearchStrategyKind {
         emitConstructors: Boolean,
         sizeBound: Int,
         depthBound: Int,
-        soundExpansions: Boolean
+        soundExpansions: Boolean,
+        labelsGiven: Boolean
     ): SearchStrategy
 }
 
@@ -80,6 +83,12 @@ data class Configuration(
     val soundExpansions: Boolean = false,
     /** How each outline's labels get their arities before concretizing. */
     val labelArities: LabelArities = LabelArities.Solved,
+    /**
+     * The labels the search may use, mapped to their arities. With these, the search neither
+     * outlines nor picks label arities: it concretizes from the start, and a hole nothing
+     * constrains may become any of these labels. Null: the search makes up labels as it outlines.
+     */
+    val givenLabels: Map<Int, Int>? = null,
 )
 
 sealed class LabelArities {

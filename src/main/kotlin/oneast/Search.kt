@@ -26,7 +26,8 @@ class Search(
     ): Sequence<SearchState> =
         config.searchStrategy
             .create(
-                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, config.soundExpansions
+                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, config.soundExpansions,
+                labelsGiven = config.givenLabels != null
             )
             .candidates(c)
 
@@ -275,6 +276,14 @@ class Search(
      * label arities.
      */
     fun solutions(): Sequence<SearchState> = sequence {
+        val given = config.givenLabels
+        if (given != null) {
+            // No outlining or label arities: the seed goes straight to concretizing
+            Stats.add(Count.SEEDS, 1)
+            val withLabels = seed.mapTypesAndSetLabelArities(seed.labelArities + given) { it }
+            yieldAll(concretize(listOf(withLabels), seedDepth = 0))
+            return@sequence
+        }
 //        val seen = mutableSetOf<SearchState>()
         for (seedDepth in 0..config.depthBound) {
             var seeds = concreteSeeds(config.sizeBound, seedDepth)
@@ -284,28 +293,33 @@ class Search(
 //            seen.addAll(seeds)
 
             if (seeds.isEmpty()) continue
-            Debug.log { seeds.countedLines("Concrete seeds") }
+            yieldAll(concretize(seeds, seedDepth))
+        }
+    }.inPhase(statsId, Phase.CONCRETIZE)
 
-            val maxMinSize = seeds.maxOf { it.numFillableHoles() }
-            Debug.log { "Max min size: $maxMinSize" }
-            if (maxMinSize > config.sizeBound)
-                Debug.log { "Warning: the largest seed contains more holes than the size bound" }
+    /** Concretizes [seeds] at every depth and size within the bounds. */
+    private fun concretize(seeds: List<SearchState>, seedDepth: Int): Sequence<SearchState> = sequence {
+        Debug.log { seeds.countedLines("Concrete seeds") }
 
-            for (depth in 1..config.depthBound) {
-                // If largest seed is greater than the size bound, just try size bound for smaller seeds
-                for (size in maxMinSize.coerceAtMost(config.sizeBound)..config.sizeBound) {
-                    for (solution in concretizationSearch(seeds, size, depth)) {
-                        Stats.inc(Count.SOLUTIONS)
-                        Stats.event(
-                            "solution",
-                            mapOf("seedDepth" to seedDepth, "depth" to depth, "size" to size)
-                        )
-                        yield(solution)
-                    }
+        val maxMinSize = seeds.maxOf { it.numFillableHoles() }
+        Debug.log { "Max min size: $maxMinSize" }
+        if (maxMinSize > config.sizeBound)
+            Debug.log { "Warning: the largest seed contains more holes than the size bound" }
+
+        for (depth in 1..config.depthBound) {
+            // If largest seed is greater than the size bound, just try size bound for smaller seeds
+            for (size in maxMinSize.coerceAtMost(config.sizeBound)..config.sizeBound) {
+                for (solution in concretizationSearch(seeds, size, depth)) {
+                    Stats.inc(Count.SOLUTIONS)
+                    Stats.event(
+                        "solution",
+                        mapOf("seedDepth" to seedDepth, "depth" to depth, "size" to size)
+                    )
+                    yield(solution)
                 }
             }
         }
-    }.inPhase(statsId, Phase.CONCRETIZE)
+    }
 
     private fun Type.addParamHoles(labelArities: Map<Int, Int>, underArrow: Boolean = false): Type =
         when (this) {

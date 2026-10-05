@@ -44,8 +44,9 @@ quotes. Last occurrence of an option wins.
 ```
 
 Suites: `sexp`, `sexp-unsolved`, `ocaml`. Variants: `default`, `single-round`, `auto3`, `sound`,
-`deepen-arities=N` (any bound N, e.g. `deepen-arities=2`). Defined in
-`src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
+`deepen-arities=N` (every arity up to N), `given-labels=N` (no outlining; the expected answer's
+labels plus N spare labels of each arity up to its largest; `given-labels=0` is the exact set).
+Defined in `src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
 
 System properties (via `--jvm-args`): `-Dtypesynth.debug` (same as `--debug`),
 `-Dtypesynth.cvcDir=DIR` (keep solver files in a new DIR/run-*).
