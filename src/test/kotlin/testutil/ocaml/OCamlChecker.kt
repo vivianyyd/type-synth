@@ -7,6 +7,11 @@ import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlin.streams.toList
 
+private val desugarAtomsToDummies = listOf("Num" to "1", "Str" to "\"s\"", "Char" to "\'a\'", "Flt" to "1.", "Nil" to "[]")
+
+/** Replaces the atoms examples use for literals with literals of their types. */
+fun desugarOCaml(expr: String) = desugarAtomsToDummies.fold(expr) { acc, (from, to) -> acc.replace(from, to) }
+
 data class TypeCheckResult(
     val isValid: Boolean,
     val errorMessage: String? = null,
@@ -31,11 +36,6 @@ class OCamlChecker(
 
     private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
 
-    private val desugarAtomsToDummies = listOf("Num" to "1", "Str" to "\"s\"", "Char" to "\'a\'", "Flt" to "1.", "Nil" to "[]")
-
-    private fun desugar(expr: String) =
-        desugarAtomsToDummies.fold(expr) { acc, (from, to) -> acc.replace(from, to) }
-
     /** Check if a single expression is valid OCaml code. */
     fun isValid(expr: String): TypeCheckResult = compile(listOf(expr))
 
@@ -46,7 +46,7 @@ class OCamlChecker(
 
         try {
             // Write preamble + expressions
-            tempFile.writeText(preamble + exprs.joinToString("") { "let _ = (${desugar(it)})\n" })
+            tempFile.writeText(preamble + exprs.joinToString("") { "let _ = (${desugarOCaml(it)})\n" })
 
             // Build command
             val command = buildCommand(tempFile)

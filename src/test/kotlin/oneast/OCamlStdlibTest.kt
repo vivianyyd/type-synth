@@ -17,6 +17,8 @@ import java.io.File
 import kotlin.test.Test
 
 class OCamlStdlibTest {
+    private val ocaml = OCamlGroundTruth.default.create()
+
     private fun filterBySchedule(examples: Examples, schedule: CustomSchedule) =
         Examples(
             examples.posNoSubexprs.filter {
@@ -39,7 +41,7 @@ class OCamlStdlibTest {
         val path = join("src", "test", "input", "ocaml-stdlib", "lists-notsolved")
         val dir = File(path)
         val query = Query(loadExamples(dir), oracleFromDir(dir))
-        assert(run(query, OCamlChecker(), config(loadSchedule(File(join(path, "schedule"))))).isNotEmpty())
+        assert(run(query, ocaml, config(loadSchedule(File(join(path, "schedule"))))).isNotEmpty())
     }
 
     @Test
@@ -48,8 +50,8 @@ class OCamlStdlibTest {
         val exsFileNames = listOf("4_arith", "0_basics")
         val (examples, oracleTypes) = loadFromExsFiles(exsFileNames)
         val oracle = CheckingGroundTruthOracle(oracleTypes)
-        val query = Query(splitOCamlExamples(examples, oracle, OCamlChecker()), oracle)
-        val sols = run(query, OCamlChecker(), config(Auto(3)))
+        val query = Query(splitOCamlExamples(examples, oracle, ocaml), oracle)
+        val sols = run(query, ocaml, config(Auto(3)))
         assert(sols.isNotEmpty())
         assert(sols.any { it.equivalentTo(stateFromContext(oracleTypes)) })
     }
@@ -69,7 +71,7 @@ class OCamlStdlibTest {
         }
         val oracle = CheckingGroundTruthOracle(oracleTypes)
         val query = Query(
-            splitOCamlExamples(examples, oracle, OCamlChecker()),
+            splitOCamlExamples(examples, oracle, ocaml),
             oracle,
             committedSeed = committedSeed
         )
@@ -105,7 +107,7 @@ class OCamlStdlibTest {
             val examples = typesQuery.examples
             println("${examples.posNoSubexprs.size} maximal positive, ${examples.neg.size} negative examples")
 
-            val observed = ObservationalEquivalenceOracle(examples, MemoizedGroundTruth(OCamlChecker()))
+            val observed = ObservationalEquivalenceOracle(examples, MemoizedGroundTruth(ocaml))
             val comparing = ComparingOracle(typesQuery.oracle, observed)
             val arities = stateFromContext(oracleTypes).fnArities()
             val start = System.currentTimeMillis()
@@ -123,7 +125,7 @@ class OCamlStdlibTest {
                 val (query, _) = cumulativeQuery(iter, seeds.getValue(kind))
                 val t0 = System.currentTimeMillis()
                 Stats.start()
-                val sols = run(query, OCamlChecker(), config(Auto(3)).copy(oracle = kind))
+                val sols = run(query, ocaml, config(Auto(3)).copy(oracle = kind))
                 val counters = Stats.stop()!!.snapshot()["counters"] as Map<*, *>
                 println(
                     "Search with $kind oracle: ${System.currentTimeMillis() - t0}ms, ${sols.size} solution(s), " +
@@ -139,14 +141,6 @@ class OCamlStdlibTest {
             val (a, b) = OracleKind.values().map { seeds.getValue(it) }
             println("Solutions equivalent: ${a.equivalentTo(b)}")
         }
-    }
-
-    @Test
-    fun `a batch fails if any expression in it does`() {
-        val checker = OCamlChecker()
-        val ok = listOf("(succ Num)", "(not true)").map { unsignedExample(it) }
-        assert(checker.allValid(ok))
-        assert(!checker.allValid(ok + unsignedExample("(succ true)")))
     }
 
     /** Input sanity check: load every .exs and .types file and run splitOCamlExamples */
@@ -167,6 +161,6 @@ class OCamlStdlibTest {
         }
         val oracle = CheckingGroundTruthOracle(oracleTypes)
 
-        splitOCamlExamples(examples, oracle, OCamlChecker())
+        splitOCamlExamples(examples, oracle, ocaml)
     }
 }

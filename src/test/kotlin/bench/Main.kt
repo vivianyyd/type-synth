@@ -4,6 +4,7 @@ import com.squareup.moshi.Moshi
 import oneast.SearchState
 import oneast.mismatches
 import oneast.run
+import testutil.ocaml.OCamlGroundTruth
 import util.stateFromContext
 import java.io.BufferedWriter
 import java.io.File
@@ -276,7 +277,8 @@ private fun runOne(opts: Options) {
     val dir = opts.dir!!
     val runId = opts.runId!!
     val benchmark = Benchmarks.all[opts.child!!] ?: error("No benchmark ${opts.child}")
-    val config = Variants.get(opts.variant).configure(benchmark.defaults)
+    val variant = Variants.get(opts.variant)
+    val config = variant.configure(benchmark.defaults)
     Debug.enabled = opts.debug
 
     val base =
@@ -321,8 +323,9 @@ private fun runOne(opts: Options) {
     val fields =
         try {
             val loadStart = System.nanoTime()
-            val problem = benchmark.load(config)
+            val problem = benchmark.load(config, variant.ocamlGroundTruth ?: OCamlGroundTruth.default)
             base["loadMs"] = (System.nanoTime() - loadStart) / 1_000_000.0
+            base["groundTruth"] = problem.groundTruth::class.simpleName
 
             recording = Stats.start(trace)
             val solutions = run(problem.query, problem.groundTruth, config)

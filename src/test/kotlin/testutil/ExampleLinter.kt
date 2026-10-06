@@ -2,18 +2,17 @@ package testutil
 
 import query.Example
 import query.Examples
-import testutil.ocaml.OCamlChecker
 import util.CheckingGroundTruthOracle
 import util.GroundTruth
 
 /**
  * Splits valid and invalid [examples], checking against *both* our own typechecker equipped with
- * the declared type signatures, and the ocamlc ground truth. Ensures negative examples are minimal.
+ * the declared type signatures, and OCaml itself. Ensures negative examples are minimal.
  */
 fun splitOCamlExamples(
     examples: Collection<Example>,
     checkerFromTypes: CheckingGroundTruthOracle,
-    groundTruth: OCamlChecker
+    groundTruth: GroundTruth
 ): Examples {
     fun splitExamples(
         examples: Collection<Example>,
@@ -30,15 +29,15 @@ fun splitOCamlExamples(
     /** The ground truth given by the actual OCaml implementation. */
     val (realPos, realNeg) = splitExamples(examples, groundTruth)
 
-    fun assureEq(byCheckerFromTypes: Set<Example>, byOCamlc: Set<Example>, pos: Boolean) =
-        require(byCheckerFromTypes == byOCamlc) {
+    fun assureEq(byCheckerFromTypes: Set<Example>, byOCaml: Set<Example>, pos: Boolean) =
+        require(byCheckerFromTypes == byOCaml) {
             val sign = if (pos) "pos" else "neg"
-            "Warning: Oracle from parsed types disagrees with ocamlc ground truth:\n" +
-                    (byCheckerFromTypes - byOCamlc).let {
-                        if (it.isEmpty()) "" else "checker says $sign but ocamlc disagrees: $it"
+            "Warning: Oracle from parsed types disagrees with the OCaml ground truth:\n" +
+                    (byCheckerFromTypes - byOCaml).let {
+                        if (it.isEmpty()) "" else "checker says $sign but OCaml disagrees: $it"
                     } +
-                    (byOCamlc - byCheckerFromTypes).let {
-                        if (it.isEmpty()) "" else "ocamlc says $sign but checker disagrees: $it"
+                    (byOCaml - byCheckerFromTypes).let {
+                        if (it.isEmpty()) "" else "OCaml says $sign but checker disagrees: $it"
                     }
         }
 

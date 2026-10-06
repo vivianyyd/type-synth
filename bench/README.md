@@ -47,9 +47,14 @@ quotes. Last occurrence of an option wins.
 
 Suites: `sexp`, `sexp-unsolved`, `ocaml` (each module group given the true types of the groups
 before it), `ocaml-chained` (each module group given the search's own answer for the groups before
-it; those groups are solved while loading, so they count toward the timeout and `loadMs`). Variants: `default`, `single-round`, `auto3`, `sound`, `observational`,
-`deepen-arities=N` (any bound N, e.g. `deepen-arities=2`). Defined in
-`src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
+it; those groups are solved while loading, so they count toward the timeout and `loadMs`). Variants:
+`default`, `single-round`, `auto3`, `sound`, `observational`, `ocaml-toplevel`, `deepen-arities=N`
+(any bound N, e.g. `deepen-arities=2`). Defined in `src/test/kotlin/bench/Benchmarks.kt` and
+`Variants.kt`.
+
+OCaml benchmarks ask OCaml whether examples type-check with a server around its type checker
+(`src/test/ocaml/typer.ml`, built into `build/ocaml-typer/` on first use; needs `ocamlfind` and
+`compiler-libs`). `ocaml-toplevel` asks one `ocaml` toplevel instead.
 
 System properties (via `--jvm-args`): `-Dtypesynth.debug` (same as `--debug`),
 `-Dtypesynth.cvcDir=DIR` (keep solver files in a new DIR/run-*).
@@ -73,7 +78,7 @@ Example:
   `{search, phase, kind, state}`, where kind is `candidate` (passed the positive examples),
   `prunedPos`, `prunedNeg` or `relabeled`.
 
-A record holds the batch, the configuration, `status` (`correct`, `wrong`, `solved` when there is
+A record holds the batch, the configuration, the ground truth (`groundTruth`), `status` (`correct`, `wrong`, `solved` when there is
 no expected answer, `no-solution`, `timeout`, `error`, `crashed`), the solutions, the expected
 answer, the names whose types differ from it in each solution (`mismatches`), for `ocaml-chained`
 the rounds those names belong to (`mismatchedRounds`, in order, so the first is where it went wrong),

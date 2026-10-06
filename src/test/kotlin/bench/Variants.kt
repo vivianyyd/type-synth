@@ -1,6 +1,7 @@
 package bench
 
 import oneast.*
+import testutil.ocaml.OCamlGroundTruth
 
 /**
  * A version of the search to benchmark, as a change to each benchmark's default configuration.
@@ -8,8 +9,15 @@ import oneast.*
  *
  * Add a variant here for each alternative worth keeping side by side, i.e. each row of an
  * ablation. A change that only lives on a branch needs no variant: runs record the commit.
+ *
+ * [ocamlGroundTruth] is how OCaml benchmarks ask OCaml about examples, or null to leave it alone.
  */
-class Variant(val name: String, val description: String, val configure: (Configuration) -> Configuration)
+class Variant(
+    val name: String,
+    val description: String,
+    val ocamlGroundTruth: OCamlGroundTruth? = null,
+    val configure: (Configuration) -> Configuration,
+)
 
 object Variants {
     val all: Map<String, Variant> =
@@ -25,6 +33,11 @@ object Variants {
             Variant("observational", "Decide type equality by swapping expressions in the examples") {
                 it.copy(oracle = OracleKind.Observational)
             },
+            Variant(
+                "ocaml-toplevel",
+                "Ask OCaml about examples with ${OCamlGroundTruth.Toplevel.description}",
+                OCamlGroundTruth.Toplevel
+            ) { it },
         )
             .associateBy { it.name }
 
@@ -42,7 +55,11 @@ object Variants {
     fun get(names: String): Variant {
         val vs = names.split(",").map { one(it.trim()) }
         return vs.singleOrNull()
-            ?: Variant(vs.joinToString("+") { it.name }, vs.joinToString("; ") { it.description }) { c ->
+            ?: Variant(
+                vs.joinToString("+") { it.name },
+                vs.joinToString("; ") { it.description },
+                vs.mapNotNull { it.ocamlGroundTruth }.lastOrNull()
+            ) { c ->
                 vs.fold(c) { acc, v -> v.configure(acc) }
             }
     }
