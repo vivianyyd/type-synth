@@ -54,7 +54,8 @@ it; those groups are solved while loading, so they count toward the timeout and 
 
 OCaml benchmarks ask OCaml whether examples type-check with a server around its type checker
 (`src/test/ocaml/typer.ml`, built into `build/ocaml-typer/` on first use; needs `ocamlfind` and
-`compiler-libs`). `ocaml-toplevel` asks one `ocaml` toplevel instead.
+`compiler-libs`). `ocaml-toplevel` asks one `ocaml` toplevel instead, which gives the same answers
+about 25 times slower per check; see `OCamlGroundTruth.kt` for how the ways of asking compare.
 
 System properties (via `--jvm-args`): `-Dtypesynth.debug` (same as `--debug`),
 `-Dtypesynth.cvcDir=DIR` (keep solver files in a new DIR/run-*).
