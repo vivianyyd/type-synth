@@ -234,6 +234,9 @@ class TypeGraph {
     /** The nodes instantiating [hole], or null if it has none. */
     fun instancesOf(hole: THole): IntVec? = holeInstances[hole]
 
+    /** Every hole with an instance in the graph. */
+    fun holes(): Set<THole> = holeInstances.keys
+
     /** Which instantiation of its component's type [node] belongs to. */
     fun instantiationOf(node: Int) = inst[node]
 

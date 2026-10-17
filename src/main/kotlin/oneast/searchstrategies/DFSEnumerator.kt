@@ -24,7 +24,7 @@ class DFSEnumerator(
 
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
-        return if (u.ok) recCandidates(c, u, sizeBound, c.numFillableHoles())
+        return if (u.satisfiable()) recCandidates(c, u, sizeBound, c.numFillableHoles())
         else {
             Stats.inc(Count.PRUNED_POS)
             emptySequence()
@@ -128,7 +128,7 @@ class DFSEnumerator(
         Stats.trace("relabeled") { blanked }
         // The labels changed everywhere at once, so this subtree needs a check of its own.
         val unification = posUnification(blanked)
-        return if (unification.ok)
+        return if (unification.satisfiable())
             recCandidates(blanked, unification, currSizeBound - 1, blanked.numFillableHoles())
         else {
             Stats.inc(Count.PRUNED_POS)
