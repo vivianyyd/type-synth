@@ -315,7 +315,7 @@ private fun runOne(opts: Options) {
     val fields =
         try {
             val loadStart = System.nanoTime()
-            val problem = benchmark.load()
+            val problem = benchmark.load(config)
             base["loadMs"] = (System.nanoTime() - loadStart) / 1_000_000.0
 
             recording = Stats.start(trace)
