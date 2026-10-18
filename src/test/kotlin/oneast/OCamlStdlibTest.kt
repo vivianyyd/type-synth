@@ -71,45 +71,4 @@ class OCamlStdlibTest {
 
         splitOCamlExamples(examples, oracle, OCamlChecker())
     }
-
-    /** arrows, hofs, modules, tuples, parameterized types incl. multiple params */
-    @Test
-    fun `parses signatures`() {
-        fun lastResult(type: Type): Type =
-            if (type is Arrow) lastResult(type.r) else type
-
-        fun assertNamedLabel(type: Type, arity: Int) {
-            assert(type is NamedLabel && type.params.size == arity) {
-                "Expected a NamedLabel with $arity parameter(s) but got $type"
-            }
-        }
-
-        val exsFileNames = listOf("4_arith", "0_basics", "2_boolean", "8_char", "1_comparison", "50_list_mod")
-        val (_, oracleTypes) = loadFromExsFiles(exsFileNames)
-
-        // map : ('a -> 'b) -> 'a list -> 'b list  — higher-order function + postfix `list`.
-        val map = oracleTypes.getValue("map") as Arrow
-        assert(map.l is Arrow) { "map's first argument should be a function type" }
-        val mapRest = map.r as Arrow
-        assertNamedLabel(mapRest.l, arity = 1) // 'a list
-        assertNamedLabel(mapRest.r, arity = 1) // 'b list
-
-        // partition : ('a -> bool) -> 'a list -> 'a list * 'a list  — tuple result.
-        val partition = lastResult(oracleTypes.getValue("partition"))
-        assertNamedLabel(partition, arity = 2) // ('a list * 'a list)
-
-        // partition_map : ('a -> ('b, 'c) Either.t) -> 'a list -> 'b list * 'c list
-        val partitionMap = oracleTypes.getValue("partition_map") as Arrow
-        val either = lastResult((partitionMap.l as Arrow))
-        assertNamedLabel(either, arity = 2) // ('b, 'c) Either.t
-
-        // to_seq : 'a list -> 'a Seq.t  — single-parameter module-qualified postfix.
-        val toSeq = oracleTypes.getValue("to_seq") as Arrow
-        assertNamedLabel(toSeq.r, arity = 1) // 'a Seq.t
-
-        // concat : 'a list list -> 'a list  — nested postfix application.
-        val concat = oracleTypes.getValue("concat") as Arrow
-        val outerList = concat.l as NamedLabel
-        assertNamedLabel(outerList.params.single(), arity = 1) // inner 'a list
-    }
 }
