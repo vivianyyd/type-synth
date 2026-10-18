@@ -62,7 +62,7 @@
 (- (cons (some Num) (cons (some true) nil)))
 (- (cons (to_list (some Num)) (cons Num nil)))
 (- (cons (join (some (some Num))) (cons Num nil)))
-(- (value none Num)))
+(- (value none Num))
 (- (cons (is_none none) (cons Num nil)))
 (- (cons (is_none none) (cons true nil)))
 (- (cons (some (cons Num nil)) (cons (some Num) nil)))
