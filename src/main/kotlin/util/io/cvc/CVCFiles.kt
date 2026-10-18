@@ -41,7 +41,7 @@ private class Worker {
         // So queries can import cardinality.py
         val pb = ProcessBuilder("python3", join("src", "main", "python", "cvc_worker.py"))
             .directory(File(System.getProperty("user.dir")))
-        pb.environment()["PYTHONPATH"] = join("src", "main", "python", "input")
+        pb.environment()["PYTHONPATH"] = join("src", "main", "python")
         proc = pb.start()
         stdin = proc.outputStream.bufferedWriter()
         stdout = proc.inputStream.bufferedReader()
