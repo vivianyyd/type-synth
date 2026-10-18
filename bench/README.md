@@ -18,7 +18,9 @@ bench/compare-refs.sh main my-branch -- sexp      # same benchmarks at several c
 
 Each run gets a JVM of its own, so that nothing carries over between runs (static id counters, the
 JIT, the heap), a run can be timed out, and a crash takes down only that run. Runs are one at a
-time unless `--jobs N`, which is fine for checking answers but skews timings.
+time unless `--jobs N`, which is fine for checking answers but skews timings. It exits non-zero
+if any run is `wrong`, `error` or `crashed`; a `timeout` or `no-solution` is a result, not a
+failure.
 
 ## `./gradlew bench` options
 
