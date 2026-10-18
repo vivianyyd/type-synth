@@ -343,6 +343,11 @@ private fun runOne(opts: Options) {
                 "solutions" to solutions.map { it.toJson() },
                 "expected" to expected?.toJson(),
                 "mismatches" to mismatches,
+                // For each solution, the rounds with a name whose type differs
+                "mismatchedRounds" to
+                    problem.rounds.takeIf { it.isNotEmpty() }?.let { rounds ->
+                        mismatches?.map { m -> rounds.filter { (_, names) -> names.any { it in m } }.map { it.first } }
+                    },
             )
         } catch (e: Throwable) {
             e.printStackTrace()

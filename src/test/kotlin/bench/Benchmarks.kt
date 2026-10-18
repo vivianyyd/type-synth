@@ -4,12 +4,21 @@ import oneast.*
 import query.AbstractQuery
 import testutil.loadQueryFromFile
 import testutil.ocaml.OCamlChecker
+import testutil.ocaml.loadFromExsFiles
 import testutil.ocaml.ocamlModuleGroups
 import testutil.ocaml.ocamlModulesQuery
 import util.GroundTruth
 
-/** A synthesis problem, and the answer it should have if one is known. */
-class Problem(val query: AbstractQuery, val groundTruth: GroundTruth, val expected: SearchState?)
+/**
+ * A synthesis problem, and the answer it should have if one is known. For a problem solved in
+ * [rounds], each round's name and the names it adds, in order.
+ */
+class Problem(
+    val query: AbstractQuery,
+    val groundTruth: GroundTruth,
+    val expected: SearchState?,
+    val rounds: List<Pair<String, Set<String>>> = emptyList()
+)
 
 /**
  * [defaults] is the configuration a variant starts from. [load] gets the configuration the run
@@ -59,8 +68,18 @@ private fun ocamlChained(name: String, i: Int) =
                     ?: error("No solution for ${ocamlModuleNames[j]}, the modules before ${ocamlModuleNames[i]}")
             }
         val (query, expected) = query(i, committed)
-        Problem(query, OCamlChecker(), expected)
+        Problem(query, OCamlChecker(), expected, ocamlRounds(i))
     }
+
+/** For each group of modules up to the [i]th, its name and the names it adds. */
+private fun ocamlRounds(i: Int): List<Pair<String, Set<String>>> {
+    val seen = mutableSetOf<String>()
+    return (0..i).map { j ->
+        val names = loadFromExsFiles(ocamlModuleGroups.subList(0, j + 1).flatten()).second.keys - seen
+        seen += names
+        ocamlModuleNames[j] to names
+    }
+}
 
 private val ocamlModuleNames = listOf("basics", "comparison", "list", "bitwise", "float", "str")
 
