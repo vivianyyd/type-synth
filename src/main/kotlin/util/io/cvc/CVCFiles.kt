@@ -3,47 +3,97 @@ package util.io.cvc
 import bench.Count
 import bench.Stats
 import util.*
+import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.File
+import java.io.IOException
 import java.nio.file.Files
+import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
- * Where solver queries and answers go: a new directory per process, deleted at exit. Files are
- * named by state id, which restarts every process, so a directory used before could hand this run
- * another run's answers. Set the system property typesynth.cvcDir to put the directory in there
- * and keep it.
+ * Set by the system property typesynth.cvcDir to keep every query and answer. Each process gets a
+ * new run-* directory in there, because files are named by state id and state ids restart every
+ * process. Unset, nothing is written.
  */
-private val cvcDir: File by lazy {
-    val keepIn = System.getProperty("typesynth.cvcDir")
-    if (keepIn != null) {
+private val cvcDir: File? by lazy {
+    System.getProperty("typesynth.cvcDir")?.let { keepIn ->
         File(keepIn).mkdirs()
-        Files.createTempDirectory(File(keepIn).toPath(), "run-").toFile()
-    } else {
-        Files.createTempDirectory("type-synth-cvc").toFile().also { dir ->
-            Runtime.getRuntime().addShutdownHook(Thread { dir.deleteRecursively() })
+        Files.createTempDirectory(File(keepIn).toPath(), "run-").toFile().also { dir ->
+            File(dir, "input").mkdirs()
+            File(dir, "output").mkdirs()
         }
     }
 }
-private val inputDir by lazy { File(cvcDir, "input").apply { mkdirs() } }
-private val outputDir by lazy { File(cvcDir, "output").apply { mkdirs() } }
 
-fun callCVC(content: String, testName: String): Boolean {
-    val start = System.nanoTime()
-    val inPath = File(inputDir, "cvc-$testName.py").path
-    val outPath = File(outputDir, "cvc-$testName.py").path
-    write(inPath, content)
-    // cardinality.py lives in src/main/python/input, not alongside the generated files
-    val out = "env PYTHONPATH=${join("src", "main", "python", "input")} python3 $inPath".runCommand(checkExit = true)
-        ?: throw Exception("I'm sad")
-    Stats.inc(Count.SOLVER_CALLS)
-    Stats.add(Count.SOLVER_NANOS, System.nanoTime() - start)
-    if ("no solution" !in out) {
-        write(outPath, out)
-        return true
+/** Must match cvc_worker.py. */
+private const val QUERY_END = "#--- end of query ---"
+private const val ANSWER_END = "#--- end of answer ---"
+
+/** One python3 running cvc_worker.py. Answers one query at a time. */
+private class Worker {
+    private val proc: Process
+    private val stdin: BufferedWriter
+    private val stdout: BufferedReader
+    /** Read on its own thread, so a full stderr pipe can't block the worker. */
+    private val stderr = StringBuffer()
+
+    init {
+        // So queries can import cardinality.py
+        val pb = ProcessBuilder("python3", join("src", "main", "python", "cvc_worker.py"))
+            .directory(File(System.getProperty("user.dir")))
+        pb.environment()["PYTHONPATH"] = join("src", "main", "python", "input")
+        proc = pb.start()
+        stdin = proc.outputStream.bufferedWriter()
+        stdout = proc.inputStream.bufferedReader()
+        Thread {
+            proc.errorStream.bufferedReader().forEachLine { stderr.appendLine(it) }
+        }.apply { isDaemon = true }.start()
+        Runtime.getRuntime().addShutdownHook(Thread { proc.destroy() })
     }
-    return false
+
+    private fun died(): Nothing {
+        proc.waitFor()
+        throw IllegalStateException("The cvc5 worker exited with ${proc.exitValue()}:\n$stderr")
+    }
+
+    /** What the query printed. Throws if the query raised or the worker died. */
+    fun answer(query: String, name: String): String {
+        try {
+            stdin.write(query)
+            if (!query.endsWith("\n")) stdin.write("\n")
+            stdin.write("$QUERY_END\n")
+            stdin.flush()
+        } catch (e: IOException) {
+            died()
+        }
+        val status = stdout.readLine() ?: died()
+        val answer = StringBuilder()
+        while (true) {
+            val line = stdout.readLine() ?: died()
+            if (line == ANSWER_END) break
+            answer.appendLine(line)
+        }
+        if (status != "ok") throw IllegalStateException("cvc5 query $name failed:\n$answer")
+        return answer.toString()
+    }
 }
 
-fun readCVC(name: String): String? {
-    val f = File(outputDir, "cvc-$name.py")
-    return if (f.isFile) f.readText() else null
+/**
+ * Workers not running a query. labelArities runs in parallel, so a call takes an idle worker or
+ * starts a new one. A worker that throws is not put back.
+ */
+private val idle = ConcurrentLinkedQueue<Worker>()
+
+/** What cvc5 printed for the query [content], or null when it has no solution. */
+fun callCVC(content: String, testName: String): String? {
+    val start = System.nanoTime()
+    cvcDir?.let { write(File(it, "input/cvc-$testName.py").path, content) }
+    val worker = idle.poll() ?: Worker()
+    val out = worker.answer(content, testName)
+    idle.add(worker)
+    Stats.inc(Count.SOLVER_CALLS)
+    Stats.add(Count.SOLVER_NANOS, System.nanoTime() - start)
+    if ("no solution" in out) return null
+    cvcDir?.let { write(File(it, "output/cvc-$testName.py").path, out) }
+    return out
 }

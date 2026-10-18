@@ -5,7 +5,6 @@ import dependencyanalysis.ParameterwiseDependencyAnalysis
 import util.PyWriter
 import util.io.cvc.CVCParser
 import util.io.cvc.callCVC
-import util.io.cvc.readCVC
 import util.lines
 
 class LabelConstraints(
@@ -198,25 +197,14 @@ fun labelArities(s: SearchState, deps: ParameterwiseDependencyAnalysis): Map<Int
     fun attempt(preserveValues: Boolean): Map<Int, Int>? {
         val gen = LabelConstraints(s, deps, preserveValues)
         val testID = "${s.id}"
-        callCVC(gen.initialQuery(), testID)
-
+        var solution = CVCParser(callCVC(gen.initialQuery(), testID) ?: return null)
+        // Ask for smaller arities until there is no smaller solution
         var counter = 0
-        var previousSolution = readCVC(testID) ?: return null
-        var lastSuccessful = -1
-        do {
-            val parser = CVCParser(previousSolution)
-            val testName = "$testID-smaller${counter++}"
-            val cont =
-                if (parser.sizes.isNotEmpty()) callCVC(gen.smallerQuery(parser), testName) else false
-            if (cont) {
-                lastSuccessful = counter - 1
-                previousSolution = readCVC(testName)!! // callCVC returns success code stored in cont
-            }
-        } while (cont)
-        val finalSuccessfulOutput =
-            if (lastSuccessful == -1) testID else "$testID-smaller$lastSuccessful"
-
-        return gen.extract(CVCParser(readCVC(finalSuccessfulOutput)!!))
+        while (solution.sizes.isNotEmpty()) {
+            val smaller = callCVC(gen.smallerQuery(solution), "$testID-smaller${counter++}") ?: break
+            solution = CVCParser(smaller)
+        }
+        return gen.extract(solution)
     }
     // Start by trying to preserve existing arities. If fail, try again with overwriting
     // TODO. AllMinSAT, and we should also do both with and without preserving arities
