@@ -20,8 +20,9 @@ python3 -m venv ~/.venvs/type-synth
 
 `cardinality.py` supports both newer cvc5 (`Context.tm`) and older cvc5 (`Context.solver`). A query
 that fails throws: with its traceback if it raised, with the worker's stderr if the worker died (for
-example, cvc5 missing). Before that check existed, a crash looked like a solution with no label
-arities, and every outline was dropped silently (symptom: "No solution found at iteration 0").
+example, cvc5 missing), and with cvc5's output if cvc5 gave up ("failed to solve"). Before that
+check existed, a crash looked like a solution with no label arities, and every outline was dropped
+silently (symptom: "No solution found at iteration 0").
 
 Queries and answers are written to disk only with `-Dtypesynth.cvcDir=DIR`. `./gradlew test`
 doesn't forward system properties, so pass it as `JAVA_TOOL_OPTIONS="-Dtypesynth.cvcDir=DIR"`. For
