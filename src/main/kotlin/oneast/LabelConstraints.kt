@@ -53,16 +53,20 @@ class LabelConstraints(
             decls.addAll(nodes.map { "${py(it)} = Const('${py(it)}', SetSort(IntSort()))" })
         }
         val vars = paramToType.values.filterIsInstance<Variable>().map { py(it) }.toSet().toList()
+        // Committed labels are left out: the query only guesses bounds for the other labels, and
+        // the lower bounds below overestimate, so pinning a committed label's arity can make the
+        // query unsat even though that arity is right. Their sizes would appear nowhere else.
         val lsizes =
-            paramToType.values.filterIsInstance<NamedLabel>().map { pySize(it) }.toSet().toList()
+            paramToType.values.filterIsInstance<NamedLabel>()
+                .filter { it.label !in s.committedLabels }
+                .map { pySize(it) }.toSet().toList()
         declareInts(vars)
         declareInts(lsizes)
 
-        // Committed label arities are always pinned. Non-committed existing arities are pinned only
-        // when [preserveValues] is true.
-        s.labelArities.forEach { (label, arity) ->
-            if (label in s.committedLabels || preserveValues) {
-                constrs.add("${pySize(label)} == $arity")
+        // Non-committed existing arities are pinned only when [preserveValues] is true.
+        if (preserveValues) {
+            s.labelArities.forEach { (label, arity) ->
+                if (pySize(label) in lsizes) constrs.add("${pySize(label)} == $arity")
             }
         }
 
@@ -80,7 +84,7 @@ class LabelConstraints(
         // list label actually can still have size 1.
         val labelsMatchConstrs =
             paramToType
-                .filter { (_, t) -> t is NamedLabel }
+                .filter { (_, t) -> t is NamedLabel && t.label !in s.committedLabels }
                 .map { (n, t) -> "${pySize(t as NamedLabel)} >= Cardinality(${py(n)})" }
 
         // When a variable appears as a top-level parameter, that parameter is a singleton set.

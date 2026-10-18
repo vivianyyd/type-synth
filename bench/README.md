@@ -43,7 +43,10 @@ quotes. Last occurrence of an option wins.
 --help              print options
 ```
 
-Suites: `sexp`, `sexp-unsolved`, `ocaml`. Variants: `default`, `single-round`, `auto3`, `sound`,
+Suites: `sexp`, `sexp-unsolved`, `ocaml` (each module group given the true types of the groups
+before it), `ocaml-chained` (each module group given the search's own answer for the groups before
+it, as `OCamlStdlibTest` does; those groups are solved while loading, so they count toward the
+timeout and `loadMs`). Variants: `default`, `single-round`, `auto3`, `sound`,
 `deepen-arities=N` (any bound N, e.g. `deepen-arities=2`). Defined in
 `src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
 
@@ -71,7 +74,9 @@ Example:
 
 A record holds the batch, the configuration, `status` (`correct`, `wrong`, `solved` when there is
 no expected answer, `no-solution`, `timeout`, `error`, `crashed`), the solutions, the expected
-answer, the names whose types differ from it in each solution (`mismatches`), and `stats`:
+answer, the names whose types differ from it in each solution (`mismatches`), for `ocaml-chained`
+the rounds those names belong to (`mismatchedRounds`, in order, so the first is where it went wrong),
+and `stats`:
 
 - `wallMs`: from starting the search to its answer; loading the benchmark is `loadMs`.
 - `counters`: totals. `phases`: time and counts per phase (`outline`, `arity`, `concretize`,

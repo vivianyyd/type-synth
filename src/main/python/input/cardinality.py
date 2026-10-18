@@ -29,6 +29,8 @@ def Cardinality(s):
     Stared at cvc5 pythonic api SetComplement to write this
     """
     ctx = s.ctx
-    return _to_expr_ref(ctx.solver.mkTerm(Kind.SET_CARD, s.ast), ctx)
+    # Newer cvc5 builds terms with a TermManager (ctx.tm), older ones with the solver
+    tm = ctx.tm if hasattr(ctx, "tm") else ctx.solver
+    return _to_expr_ref(tm.mkTerm(Kind.SET_CARD, s.ast), ctx)
 
 

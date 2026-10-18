@@ -32,7 +32,7 @@ fun callCVC(content: String, testName: String): Boolean {
     val outPath = File(outputDir, "cvc-$testName.py").path
     write(inPath, content)
     // cardinality.py lives in src/main/python/input, not alongside the generated files
-    val out = "env PYTHONPATH=${join("src", "main", "python", "input")} python3 $inPath".runCommand()
+    val out = "env PYTHONPATH=${join("src", "main", "python", "input")} python3 $inPath".runCommand(checkExit = true)
         ?: throw Exception("I'm sad")
     Stats.inc(Count.SOLVER_CALLS)
     Stats.add(Count.SOLVER_NANOS, System.nanoTime() - start)

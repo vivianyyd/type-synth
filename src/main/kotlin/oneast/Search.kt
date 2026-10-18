@@ -159,10 +159,15 @@ class Search(
 
         val resolvedLabelArities = withArities(labelAritySols
             .flatMap { (s, la) ->
-                require(la!!.all { (l, a) -> if (l in s.committedLabels) a == s.labelArities[l] else true })
+                // The solver leaves committed labels out, so they keep their arities
+                require(la!!.keys.none { it in s.committedLabels })
+                val committed = s.labelArities.filterKeys { it in s.committedLabels }
                 val (labels, arities) = la.toList().unzip()
-                lazyCartesianProduct(arities.map { (0..it).toList() })
-                    .map { s to labels.zip(it).toMap() }
+                // lazyCartesianProduct has no choices, not one empty choice, for no labels
+                val choices =
+                    if (labels.isEmpty()) sequenceOf(emptyList())
+                    else lazyCartesianProduct(arities.map { (0..it).toList() })
+                choices.map { s to committed + labels.zip(it) }
             })
 
         // Without ordering seeds by arity preserved
