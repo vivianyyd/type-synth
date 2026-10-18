@@ -45,8 +45,7 @@ quotes. Last occurrence of an option wins.
 
 Suites: `sexp`, `sexp-unsolved`, `ocaml` (each module group given the true types of the groups
 before it), `ocaml-chained` (each module group given the search's own answer for the groups before
-it, as `OCamlStdlibTest` does; those groups are solved while loading, so they count toward the
-timeout and `loadMs`). Variants: `default`, `single-round`, `auto3`, `sound`,
+it; those groups are solved while loading, so they count toward the timeout and `loadMs`). Variants: `default`, `single-round`, `auto3`, `sound`,
 `deepen-arities=N` (any bound N, e.g. `deepen-arities=2`). Defined in
 `src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
 

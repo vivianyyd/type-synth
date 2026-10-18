@@ -51,33 +51,6 @@ class OCamlStdlibTest {
         assert(sols.any { it.equivalentTo(stateFromContext(oracleTypes)) })
     }
 
-    @Test
-    fun `multiple modules`() {
-        val exsFileGroups: List<List<String>> =
-            listOf(
-                listOf("0_basics", "2_boolean", "4_arith", "8_char"),
-                listOf("1_comparison"),
-                listOf("50_list_mod"))
-
-        var committedSeed = SearchState.emptyState
-        for ((iter, _) in exsFileGroups.withIndex()) {
-            val cumulativeFiles = exsFileGroups.subList(0, iter + 1).flatten()
-            val (examplesAll, oracleTypes) = loadFromExsFiles(cumulativeFiles)
-            val examples = examplesAll.flatMap {it.subexprs()}.toSet().filter{
-                it.names.all { it in oracleTypes }
-            }
-            val oracle = CheckingGroundTruthOracle(oracleTypes)
-            val query = Query(
-                splitOCamlExamples(examples, oracle, OCamlChecker()),
-                oracle,
-                committedSeed = committedSeed
-            )
-            val solutions = run(query, OCamlChecker(), config(Auto(3)))
-            assert(solutions.isNotEmpty()) { "No solution found at iteration $iter" }
-            committedSeed = solutions.first()
-        }
-    }
-
     /** Input sanity check: load every .exs and .types file and run splitOCamlExamples */
     @Test
     fun `load all and split`() {

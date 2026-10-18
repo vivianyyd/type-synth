@@ -51,9 +51,9 @@ private fun ocaml(name: String, i: Int) =
     }
 
 /**
- * Solves the [i]th group of modules given the search's own answer for the groups before it, as
- * OCamlStdlibTest does: each group is solved with the examples of every group so far, committed to
- * the first solution for the groups before it. The groups before it are solved while loading, so
+ * Solves the [i]th group of modules given the search's own answer for the groups before it: each
+ * group is solved with the examples of every group so far, committed to the first solution for the
+ * groups before it. The groups before it are solved while loading, so
  * they count toward loadMs and not the record's stats, and an answer they get wrong shows up in
  * the record's mismatches.
  */
