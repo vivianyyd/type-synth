@@ -32,64 +32,29 @@ class Search(
 
     private fun posUnification(s: SearchState) = OneUnification(s, examples.posNoSubexprs)
 
-    /** Find all blanks, which must only be equal to other blanks, and assign them label classes. */
-    private fun assignLabelClasses(s: SearchState): SearchState? {
-        val u = posUnification(s)
-        val uf = IntUnionFind()
+    /**
+     * Replaces the blanks of outline [s] with labels. Blanks in the same group get the same label:
+     * the one the examples require, or else a new one.
+     */
+    private fun assignLabelClasses(s: SearchState): SearchState {
         val holes = s.types.flatMap { it.allHoles() }
         val blanks = holes.filterIsInstance<Blank>()
         // An outline has no type holes left. If one is here, a blank it was unified with could still
         // turn into anything, so nothing can be concluded about that blank's label.
-        if (blanks.size != holes.size) return null
+        require(blanks.size == holes.size) { "An outline has type holes left: $s" }
         require(blanks.all { it.labelOnly })
+        // The search only yields satisfiable states, so the blanks can agree on labels.
+        val groups =
+            posUnification(s).blankGroups() ?: error("The blanks of an outline disagree: $s")
 
-        // Make equivalence classes of blanks: in each class, tie every blank to the first blank
-        // seen there. A blank instantiated in two classes takes part in both ties, so blanks that
-        // are connected only through it end up in one class as well.
-        val firstBlankInClass = HashMap<Int, Int>()
-        blanks.forEach { blank ->
-            for (cls in u.classesOf(blank)) {
-                val first = firstBlankInClass.putIfAbsent(cls, blank.id)
-                if (first != null) uf.union(blank.id, first)
-            }
-        }
-
-        // TODO It's not really clear why we need this if we've done the previous step properly but
-        //   we do sooo that is bad. Do we still need it if all primitives of a single type are the
-        //   same atom?
-        // TODO actually we were indeed doing the previous step wrong... wasn't actually forcing the
-        //   unification thunk so there were no hole constraints. See if we can remove this one now
-        //        for ((n1, i) in s.names) {
-        //            for ((n2, j) in s.names) {
-        //                val t1 = s.types[i]
-        //                val t2 = s.types[j]
-        //                if (i < j && t1 is Blank && t2 is Blank && oracle.equal(Name(n1),
-        // Name(n2)))
-        //                    uf.union(t1.id, t2.id)
-        //            }
-        //        }
-
-        // Set up mapping to assign labels to equivalence classes
         val freshLabel = Counter()
         freshLabel.ensureGt(s.labelArities.keys.maxOrNull() ?: -1)
-        val holeToLabel = mutableMapOf<Int, Int>()
+        val freshLabelOfGroup = mutableMapOf<Int, Int>()
 
-        // Populate with bindings to existing labels
-        blanks.forEach {
-            val label =
-                when (val constructor = u.holeConstructor(it)) {
-                    HoleConstructor.None -> return@forEach
-                    HoleConstructor.Conflicting, HoleConstructor.Arrow -> return null
-                    is HoleConstructor.Label -> constructor.label
-                }
-            val canonical = uf.find(it.id) ?: it.id
-            if (canonical in holeToLabel && holeToLabel[canonical] != label) return null
-            else if (canonical !in holeToLabel) holeToLabel[canonical] = label
+        fun getLabel(b: Blank): Int {
+            val group = groups.groupOf(b)
+            return groups.labelOf(group) ?: freshLabelOfGroup.getOrPut(group) { freshLabel.get() }
         }
-
-        // Iterate through types and substitute labels for blanks - either the hole's equivalence
-        // class' canonical element already has a label, or we make a fresh one
-        fun getLabel(h: Blank) = holeToLabel.getOrPut(uf.find(h.id) ?: h.id) { freshLabel.get() }
 
         fun assignLabels(t: Type): Type =
             when (t) {
@@ -116,11 +81,9 @@ class Search(
                     sizeBound = size,
                     depthBound = depth,
                 )
-                    .mapNotNull {
+                    .map {
                         Stats.inc(Count.OUTLINES)
-                        assignLabelClasses(it).also { s ->
-                            if (s == null) Stats.inc(Count.PRUNED_LABEL_CLASSES)
-                        }
+                        assignLabelClasses(it)
                     }
                     .toSet()
             }
