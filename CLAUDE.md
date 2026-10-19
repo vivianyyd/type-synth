@@ -10,7 +10,7 @@ external tools have to be on `PATH`: a `python3` that can import cvc5, and an OC
 `callCVC` (`src/main/kotlin/util/io/cvc/CVCFiles.kt`) writes each query as a Python script using
 the cvc5 pythonic API. Long-lived workers (`src/main/python/cvc_worker.py`) run the scripts: one
 query at a time per worker, one worker per concurrent call. Workers run `python3` from `PATH` with
-`PYTHONPATH=src/main/python/input`, for `cardinality.py`. Install cvc5 in a venv outside the repo,
+`PYTHONPATH=src/main/python`, for `cardinality.py`. Install cvc5 in a venv outside the repo,
 which isn't gitignored:
 
 ```sh
