@@ -1,7 +1,9 @@
-package oneast
+package testutil.ocaml
 
-import testutil.ocaml.OcamlTypeParser
-import testutil.ocaml.loadFromExsFiles
+import oneast.Arrow
+import oneast.NamedLabel
+import oneast.Type
+import oneast.Variable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

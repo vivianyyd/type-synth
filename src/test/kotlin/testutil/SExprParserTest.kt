@@ -1,7 +1,6 @@
-package util
+package testutil
 
 import org.junit.jupiter.api.Test
-import testutil.parseSExpr
 import kotlin.test.assertEquals
 
 class SExprParserTest {
