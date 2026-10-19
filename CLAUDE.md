@@ -8,9 +8,10 @@ external tools have to be on `PATH`: a `python3` that can import cvc5, and an OC
 ### cvc5 (label arity solver)
 
 `callCVC` (`src/main/kotlin/util/io/cvc/CVCFiles.kt`) writes each query as a Python script using
-the cvc5 pythonic API and runs it with `python3` from `PATH`, with
-`PYTHONPATH=src/main/python/input` so it can import `cardinality.py`. Install cvc5 in a venv
-outside the repo, which isn't gitignored:
+the cvc5 pythonic API. Long-lived workers (`src/main/python/cvc_worker.py`) run the scripts: one
+query at a time per worker, one worker per concurrent call. Workers run `python3` from `PATH` with
+`PYTHONPATH=src/main/python/input`, for `cardinality.py`. Install cvc5 in a venv outside the repo,
+which isn't gitignored:
 
 ```sh
 python3 -m venv ~/.venvs/type-synth
@@ -18,12 +19,12 @@ python3 -m venv ~/.venvs/type-synth
 ```
 
 `cardinality.py` supports both newer cvc5 (`Context.tm`) and older cvc5 (`Context.solver`). A query
-that crashes (cvc5 missing, a Python error) throws with the script's stderr. Before that check
-existed, a crash looked like a solution with no label arities, and every outline was dropped
-silently (symptom: "No solution found at iteration 0").
+that fails throws: with its traceback if it raised, with the worker's stderr if the worker died (for
+example, cvc5 missing). Before that check existed, a crash looked like a solution with no label
+arities, and every outline was dropped silently (symptom: "No solution found at iteration 0").
 
-To keep the generated queries and answers, set `-Dtypesynth.cvcDir=DIR`. `./gradlew test` doesn't
-forward system properties, so pass it as `JAVA_TOOL_OPTIONS="-Dtypesynth.cvcDir=DIR"`. For
+Queries and answers are written to disk only with `-Dtypesynth.cvcDir=DIR`. `./gradlew test`
+doesn't forward system properties, so pass it as `JAVA_TOOL_OPTIONS="-Dtypesynth.cvcDir=DIR"`. For
 `./gradlew bench`, use `--jvm-args '-Xmx4g -Dtypesynth.cvcDir=DIR'`.
 
 ### OCaml (ground truth for the OCaml stdlib examples)
