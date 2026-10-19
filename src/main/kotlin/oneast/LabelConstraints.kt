@@ -17,6 +17,9 @@ class LabelConstraints(
     private val decls = mutableListOf<String>()
     private val constrs = mutableListOf<String>()
 
+    /** The existing arities the query pins: with [preserveValues], those of labels it guesses. */
+    val pinned: Map<Int, Int>
+
     init {
         var fresh = 0
         s.names.keys.forEach { name ->
@@ -62,12 +65,9 @@ class LabelConstraints(
         declareInts(vars)
         declareInts(lsizes)
 
-        // Non-committed existing arities are pinned only when [preserveValues] is true.
-        if (preserveValues) {
-            s.labelArities.forEach { (label, arity) ->
-                if (pySize(label) in lsizes) constrs.add("${pySize(label)} == $arity")
-            }
-        }
+        pinned =
+            if (preserveValues) s.labelArities.filterKeys { pySize(it) in lsizes } else emptyMap()
+        pinned.forEach { (label, arity) -> constrs.add("${pySize(label)} == $arity") }
 
         // All distinct variables must correspond to unique elements in a set
         val varsDistinct =
@@ -191,12 +191,7 @@ class LabelConstraints(
 }
 
 fun labelArities(s: SearchState, deps: ParameterwiseDependencyAnalysis): Map<Int, Int>? {
-    /**
-     * @param [preserveValues] Whether to keep or override existing label arities.
-     */
-    fun attempt(preserveValues: Boolean): Map<Int, Int>? {
-        val gen = LabelConstraints(s, deps, preserveValues)
-        val testID = "${s.id}"
+    fun attempt(gen: LabelConstraints, testID: String): Map<Int, Int>? {
         var solution = CVCParser(callCVC(gen.initialQuery(), testID) ?: return null)
         // Ask for smaller arities until there is no smaller solution
         var counter = 0
@@ -206,12 +201,15 @@ fun labelArities(s: SearchState, deps: ParameterwiseDependencyAnalysis): Map<Int
         }
         return gen.extract(solution)
     }
-    // Start by trying to preserve existing arities. If fail, try again with overwriting
+    // Keep existing arities if possible. If that's unsat and some were pinned, try without them.
     // TODO. AllMinSAT, and we should also do both with and without preserving arities
     //       rather than only allowing overwriting if preserving fails.
     //       i.e. There might be a better soln that does not preserve old arities.
     //       If later we iteratively deepen labels anyway, is the latter necessary?
     //       Could we guarantee if when we add more examples arities only get bigger?
     //       Bc they could only show off more flexibility
-    return attempt(s.labelArities.isNotEmpty()) ?: attempt(false)
+    val pinning = LabelConstraints(s, deps, preserveValues = true)
+    return attempt(pinning, "${s.id}")
+        ?: if (pinning.pinned.isEmpty()) null
+        else attempt(LabelConstraints(s, deps, preserveValues = false), "${s.id}-unpinned")
 }

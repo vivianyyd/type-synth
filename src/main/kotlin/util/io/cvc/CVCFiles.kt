@@ -93,6 +93,9 @@ fun callCVC(content: String, testName: String): String? {
     idle.add(worker)
     Stats.inc(Count.SOLVER_CALLS)
     Stats.add(Count.SOLVER_NANOS, System.nanoTime() - start)
+    // What cvc5.pythonic's solve prints when cvc5 answers unknown
+    if ("failed to solve" in out)
+        throw IllegalStateException("cvc5 gave up on query $testName:\n$out")
     if ("no solution" in out) return null
     cvcDir?.let { write(File(it, "output/cvc-$testName.py").path, out) }
     return out
