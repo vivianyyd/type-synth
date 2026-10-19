@@ -31,13 +31,14 @@ fun loadExamples(dir: File): Examples {
     return Examples(pos, neg)
 }
 
+val sexpDir = File(join("src", "test", "input", "sexp"))
+
 /**
  * Parses test where [name] is the extensionless name of a file containing a ground truth type
  * assignment as SExps in the first line followed by SExps of examples labeled with +/-.
  */
 fun loadQueryFromFile(name: String): Query {
-    val testPath = join("src", "test", "input", "sexp", "$name.sexp")
-    val lines = File(testPath).readLines()
+    val lines = File(sexpDir, "$name.sexp").readLines()
     val (types, exs) = lines.first() to lines.drop(1)
 
     return Query(

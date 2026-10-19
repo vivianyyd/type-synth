@@ -180,6 +180,12 @@ private fun runBatch(opts: Options) {
     println("\n$statuses")
     println("Results in $dir")
     println("  python3 bench/analyze.py show $dir")
+    // Not finding an answer in time is a result; finding a wrong one, or breaking, is a bug
+    val failed = summaries.filter { it["status"] in setOf("wrong", "error", "crashed") }
+    if (failed.isNotEmpty()) {
+        println("Failed: ${failed.joinToString { "${it["runId"]} (${it["status"]})" }}")
+        exitProcess(1)
+    }
 }
 
 /** Runs one benchmark in a JVM of its own, and returns its record. */

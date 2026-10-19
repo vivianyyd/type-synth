@@ -1,6 +1,5 @@
 package testutil
 
-import oneast.Type
 import query.Example
 import query.Examples
 import testutil.ocaml.OCamlChecker
@@ -47,14 +46,4 @@ fun splitOCamlExamples(
     assureEq(checkNeg, realNeg, false)
 
     return Examples(realPos, realNeg)
-}
-
-fun sanityCheck(state: Map<String, Type>, examples: Examples) {
-    val oracle = CheckingGroundTruthOracle(state)
-    examples.posNoSubexprs.forEach {
-        if (it.names.all { it in state } && !oracle.valid(it)) println("Failed posex $it")
-    }
-    examples.neg.forEach {
-        if (it.names.all { it in state } && oracle.valid(it)) println("Failed negex $it")
-    }
 }

@@ -47,13 +47,12 @@ after changing `PATH`, in case it kept the old one.
 
 ```sh
 export PATH=$HOME/.opam/5.4.1/bin:$HOME/.venvs/type-synth/bin:$PATH
-./gradlew --no-daemon test --tests 'oneast.OCamlStdlibTest.multiple modules'   # ~2.5 min
+./gradlew bench -q --args=cons                     # one quick search, end to end
 ./gradlew --no-daemon test
 ./gradlew bench -q --args="ocaml ocaml-chained"    # see bench/README.md
 ```
 
-Failing on `main` for reasons unrelated to setup: `ExamplesTemplateTest` (missing
-`src/test/input/sample.sexp`), `OCamlStdlibTest.parses signatures`, and
-`OCamlStdlibTest.load all and split` (the OCaml type parser).
+Failing on `main` for reasons unrelated to setup: `OCamlStdlibTest.load all and split` (the OCaml
+type parser can't read labelled arguments; `fix-ocaml-type-parser` fixes it).
 
 Sketch (`src/main/kotlin/util/io/sketch`) is no longer called from anywhere, so it isn't needed.

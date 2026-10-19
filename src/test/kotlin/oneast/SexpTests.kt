@@ -3,20 +3,13 @@ package oneast
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import testutil.loadQueryFromFile
+import testutil.sexpDir
 
 class SexpTests {
     companion object {
         @JvmStatic
         fun testNames() =
-            listOf(
-                "cons",
-                "dictchain",
-                "dictput",
-                "hofs",
-                "id-inc",
-                "polymorphic-dictchain",
-                "polymorphic-nil",
-            )
+            sexpDir.listFiles()!!.filter { it.extension == "sexp" }.map { it.nameWithoutExtension }.sorted()
     }
 
     @ParameterizedTest

@@ -18,7 +18,9 @@ bench/compare-refs.sh main my-branch -- sexp      # same benchmarks at several c
 
 Each run gets a JVM of its own, so that nothing carries over between runs (static id counters, the
 JIT, the heap), a run can be timed out, and a crash takes down only that run. Runs are one at a
-time unless `--jobs N`, which is fine for checking answers but skews timings.
+time unless `--jobs N`, which is fine for checking answers but skews timings. It exits non-zero
+if any run is `wrong`, `error` or `crashed`; a `timeout` or `no-solution` is a result, not a
+failure.
 
 ## `./gradlew bench` options
 
@@ -45,8 +47,7 @@ quotes. Last occurrence of an option wins.
 
 Suites: `sexp`, `sexp-unsolved`, `ocaml` (each module group given the true types of the groups
 before it), `ocaml-chained` (each module group given the search's own answer for the groups before
-it, as `OCamlStdlibTest` does; those groups are solved while loading, so they count toward the
-timeout and `loadMs`). Variants: `default`, `single-round`, `auto3`, `sound`,
+it; those groups are solved while loading, so they count toward the timeout and `loadMs`). Variants: `default`, `single-round`, `auto3`, `sound`,
 `deepen-arities=N` (any bound N, e.g. `deepen-arities=2`). Defined in
 `src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
 
