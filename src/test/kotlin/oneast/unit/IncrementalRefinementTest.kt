@@ -257,7 +257,7 @@ class IncrementalRefinementTest {
             val holes = state.types.flatMap { it.allHoles() }
             val classes = holes.associateWith { check.classesOf(it).toSet() }
             return Observation(
-                check.ok,
+                check.satisfiable(),
                 holes.associateWith { check.holeConstructor(it) },
                 holes.flatMap { a ->
                     holes.mapNotNull { b ->

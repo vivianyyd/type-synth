@@ -3,6 +3,7 @@ package oneast
 import query.App
 import query.Example
 import query.Name
+import util.IntUnionFind
 
 /**
  * Type-checks [examples] against an [environment], and reports what that told us about the
@@ -30,11 +31,73 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
         examples.all { build(it) != null }
     }
 
+    /** Whether the examples type-check with the holes and blanks as they are. */
     val ok: Boolean
         get() = !graph.failed
 
-    /** The labels whose mismatch caused the most recent failure, if that is what caused it. */
-    fun badLabels(): Set<Int> = graph.clash
+    /**
+     * Whether the holes and label-only blanks can be filled so that the examples type-check. Use
+     * this for positive examples.
+     *
+     * [ok] alone is not enough, because each use of a blank unifies like a fresh variable but the
+     * blank becomes one label. For example, with `x : .L`, `f : L[] -> I` and `g : M[] -> I`, the
+     * example `pair (f x) (g x)` unifies, but x cannot be both L and M.
+     */
+    fun satisfiable(): Boolean = ok && blankClash() == null
+
+    /**
+     * The labels that caused the most recent failure: two labels that could not be unified, or two
+     * labels one group of blanks would have to be. Empty if labels did not cause the failure.
+     */
+    fun badLabels(): Set<Int> = if (graph.failed) graph.clash else blankClash().orEmpty()
+
+    /**
+     * Checks that the label-only blanks can be given labels. Returns null if they can, and
+     * otherwise the labels they disagree on (empty if a blank is unified with a function).
+     *
+     * Each blank becomes one label everywhere it is used. So:
+     * - two blanks with uses in the same class must become the same label (transitively);
+     * - all labels a group's uses are unified with must have the same name and arity;
+     * - no use of a blank may be unified with a function.
+     * Label arguments are not compared, since each use of a blank gets fresh arguments.
+     *
+     * Blanks that may be any type are not grouped: they can become a type variable, which differs
+     * at each use.
+     */
+    private fun blankClash(): Set<Int>? {
+        // Sorted so that the reported labels do not depend on hash order.
+        val blanks = graph.holes().filter { it is Blank && it.labelOnly }.sortedBy { it.id }
+        if (blanks.isEmpty()) return null
+
+        // Put blanks with uses in the same class into one group.
+        val groups = IntUnionFind()
+        val firstBlankInClass = HashMap<Int, Int>()
+        for (blank in blanks) {
+            groups.add(blank.id)
+            val instances = graph.instancesOf(blank)!!
+            for (i in 0 until instances.size) {
+                val node = instances[i]
+                if (graph.hasConstructor(node) && graph.isArrow(node)) return emptySet()
+                val first = firstBlankInClass.putIfAbsent(graph.find(node), blank.id)
+                if (first != null) groups.union(blank.id, first)
+            }
+        }
+
+        // Check that each group is unified with at most one label.
+        val firstConstructorOfGroup = HashMap<Int, Int>()
+        for (blank in blanks) {
+            val group = groups.find(blank.id)!!
+            val instances = graph.instancesOf(blank)!!
+            for (i in 0 until instances.size) {
+                val node = instances[i]
+                if (!graph.hasConstructor(node)) continue
+                val first = firstConstructorOfGroup.putIfAbsent(group, node) ?: continue
+                if (!graph.sameConstructor(first, node))
+                    return setOf(graph.labelOf(first), graph.labelOf(node))
+            }
+        }
+        return null
+    }
 
     /**
      * The unification class of each instantiation of [hole]. Opaque ids: they say only which
@@ -119,16 +182,19 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
     /** Undoes every refinement made since [mark] was taken, and frees what it allocated. */
     fun rewindTo(mark: TypeGraph.Mark) = graph.rewindTo(mark)
 
-    /** Re-checks the state in which [hole] has become [replacement]. Returns whether it still [ok]s. */
+    /**
+     * Re-checks the state in which [hole] has become [replacement]. Returns whether it is still
+     * [satisfiable].
+     */
     fun refine(hole: THole, replacement: Type): Boolean {
         if (graph.failed) return false
-        val instances = graph.instancesOf(hole) ?: return true
+        val instances = graph.instancesOf(hole) ?: return satisfiable()
         for (i in 0 until instances.size) {
             val instance = instances[i]
             val filled = instantiate(replacement, graph.instantiationOf(instance))
             if (!graph.merge(instance, filled)) return false
         }
-        return true
+        return satisfiable()
     }
 }
 
