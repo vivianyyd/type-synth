@@ -43,17 +43,21 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
      * blank becomes one label. For example, with `x : .L`, `f : L[] -> I` and `g : M[] -> I`, the
      * example `pair (f x) (g x)` unifies, but x cannot be both L and M.
      */
-    fun satisfiable(): Boolean = ok && blankClash() == null
+    fun satisfiable(): Boolean = ok && groupBlanks().clash == null
 
     /**
      * The labels that caused the most recent failure: two labels that could not be unified, or two
      * labels one group of blanks would have to be. Empty if labels did not cause the failure.
      */
-    fun badLabels(): Set<Int> = if (graph.failed) graph.clash else blankClash().orEmpty()
+    fun badLabels(): Set<Int> = if (graph.failed) graph.clash else groupBlanks().clash.orEmpty()
+
+    /** The groups of label-only blanks that must be the same label. Null unless [satisfiable]. */
+    fun blankGroups(): BlankGroups? = if (!ok) null else groupBlanks().takeIf { it.clash == null }
 
     /**
-     * Checks that the label-only blanks can be given labels. Returns null if they can, and
-     * otherwise the labels they disagree on (empty if a blank is unified with a function).
+     * Groups the label-only blanks that must become the same label, and checks that each group can
+     * become one label. If one cannot, [BlankGroups.clash] holds the labels it disagrees on (empty
+     * if a blank is unified with a function).
      *
      * Each blank becomes one label everywhere it is used. So:
      * - two blanks with uses in the same class must become the same label (transitively);
@@ -64,20 +68,22 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
      * Blanks that may be any type are not grouped: they can become a type variable, which differs
      * at each use.
      */
-    private fun blankClash(): Set<Int>? {
+    private fun groupBlanks(): BlankGroups {
         // Sorted so that the reported labels do not depend on hash order.
         val blanks = graph.holes().filter { it is Blank && it.labelOnly }.sortedBy { it.id }
-        if (blanks.isEmpty()) return null
+        if (blanks.isEmpty()) return BlankGroups.none
+        val groups = IntUnionFind()
+        val labels = HashMap<Int, Int>()
 
         // Put blanks with uses in the same class into one group.
-        val groups = IntUnionFind()
         val firstBlankInClass = HashMap<Int, Int>()
         for (blank in blanks) {
             groups.add(blank.id)
             val instances = graph.instancesOf(blank)!!
             for (i in 0 until instances.size) {
                 val node = instances[i]
-                if (graph.hasConstructor(node) && graph.isArrow(node)) return emptySet()
+                if (graph.hasConstructor(node) && graph.isArrow(node))
+                    return BlankGroups(groups, labels, emptySet())
                 val first = firstBlankInClass.putIfAbsent(graph.find(node), blank.id)
                 if (first != null) groups.union(blank.id, first)
             }
@@ -91,12 +97,15 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
             for (i in 0 until instances.size) {
                 val node = instances[i]
                 if (!graph.hasConstructor(node)) continue
-                val first = firstConstructorOfGroup.putIfAbsent(group, node) ?: continue
-                if (!graph.sameConstructor(first, node))
-                    return setOf(graph.labelOf(first), graph.labelOf(node))
+                val first = firstConstructorOfGroup.putIfAbsent(group, node)
+                if (first == null) labels[group] = graph.labelOf(node)
+                else if (!graph.sameConstructor(first, node)) {
+                    val clash = setOf(graph.labelOf(first), graph.labelOf(node))
+                    return BlankGroups(groups, labels, clash)
+                }
             }
         }
-        return null
+        return BlankGroups(groups, labels, clash = null)
     }
 
     /**
@@ -107,7 +116,7 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
      * Two instantiations being unified does not make their holes equal — an instantiation of a hole
      * is a fresh variable, so `h1@3 == h2@4` holds with `h1 = a` and `h2 = int`. What it forces is
      * that the holes' outermost constructors agree, which for a [Blank] is the whole question,
-     * because a Blank becomes a label. That is what [Search] uses this for.
+     * because a Blank becomes a label.
      */
     fun classesOf(hole: THole): IntArray {
         if (!ok) return IntArray(0)
@@ -196,6 +205,27 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
         }
         return satisfiable()
     }
+}
+
+/**
+ * Groups of label-only blanks that must become the same label. See [OneUnification.blankGroups].
+ */
+class BlankGroups internal constructor(
+    private val groups: IntUnionFind,
+    private val labels: Map<Int, Int>,
+    /** The labels the blanks disagree on, or null if they agree. */
+    internal val clash: Set<Int>?,
+) {
+    companion object {
+        /** The result when there are no label-only blanks. */
+        internal val none = BlankGroups(IntUnionFind(), emptyMap(), clash = null)
+    }
+
+    /** The group of [blank]. A blank that no example uses is a group of its own. */
+    fun groupOf(blank: Blank): Int = groups.find(blank.id) ?: blank.id
+
+    /** The label [group] must be, or null if the examples do not determine one. */
+    fun labelOf(group: Int): Int? = labels[group]
 }
 
 /** What [OneUnification.holeConstructor] learned about the outermost constructor of a hole. */

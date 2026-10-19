@@ -25,8 +25,6 @@ enum class Count(val key: String, val nanos: Boolean = false) {
     PRUNED_NEG_FINAL("prunedNegFinal"),
     /** Outlines produced before label classes are assigned. */
     OUTLINES("outlines"),
-    /** Outlines whose blanks could not be given label classes. */
-    PRUNED_LABEL_CLASSES("prunedLabelClasses"),
     /** Outlines with no label arities that fit. */
     ARITY_UNSAT("arityUnsat"),
     /** Seeds handed to concretization, one per choice of label arities. */

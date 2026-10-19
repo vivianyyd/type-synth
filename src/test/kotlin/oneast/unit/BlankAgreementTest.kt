@@ -7,6 +7,8 @@ import query.Example
 import query.Name
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -91,6 +93,26 @@ class BlankAgreementTest {
     fun `a blank is never a function`() {
         val s = state("x" to Blank(labelOnly = true), "f" to Arrow(Arrow(I, I), I))
         assertFalse(OneUnification(s, listOf(app("f", Name("x")))).satisfiable())
+    }
+
+    /**
+     * `eq x y` puts x and y in one group, and `f x` requires that group to be L. z is used in no
+     * example, so it is a group of its own with no required label.
+     */
+    @Test
+    fun `blanks that share a class are grouped with the label they meet`() {
+        val x = Blank(labelOnly = true)
+        val y = Blank(labelOnly = true)
+        val z = Blank(labelOnly = true)
+        val s = state(pair, "eq" to Arrow(a, Arrow(a, I)), "x" to x, "y" to y, "z" to z, "f" to Arrow(NamedLabel(L, listOf()), I))
+        val groups = OneUnification(s, listOf(app("pair", app("eq", Name("x"), Name("y")), app("f", Name("x"))))).blankGroups()!!
+        assertEquals(groups.groupOf(x), groups.groupOf(y))
+        assertEquals(L, groups.labelOf(groups.groupOf(y)))
+        assertNotEquals(groups.groupOf(x), groups.groupOf(z))
+        assertNull(groups.labelOf(groups.groupOf(z)))
+
+        val clash = state(pair, "x" to x, "f" to Arrow(NamedLabel(L, listOf()), I), "g" to Arrow(NamedLabel(M, listOf()), I))
+        assertNull(OneUnification(clash, listOf(fxgx)).blankGroups())
     }
 
     /** Filling a hole can make blanks disagree, and rewinding the filling undoes that. */
