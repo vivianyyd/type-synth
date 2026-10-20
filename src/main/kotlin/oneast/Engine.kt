@@ -41,7 +41,8 @@ class Engine(
                 scheduled.addAll(info.customSchedule)
             }
             is Auto -> {
-                val (fns, nullaries) = newNames.partition { nameIsApplied(it, query.examples) }
+                val functionNames = functions(committedSeed, newNames, query.examples.posNoSubexprs)
+                val (fns, nullaries) = newNames.partition { it in functionNames }
                 val numRounds = (newNames.size + info.namesPerRound - 1) / info.namesPerRound
                 while (scheduled.size < numRounds) {
                     scheduled.add(
@@ -68,18 +69,28 @@ class Engine(
         Debug.log { "Schedule: $scheduled" }
     }
 
-    // Syntactic, so it misses a component that is applied only under another name, as f is in
-    // `let g = f in g x`. That component is then wrongly forced to be a label.
-    private fun nameIsApplied(name: String, exs: Examples): Boolean {
-        fun nameAppliedIn(ex: Example): Boolean = when (ex) {
-            is Name -> false
-            is App -> ((ex.fn is Name && ex.fn.name == name) ||
-                    (nameAppliedIn(ex.fn) || nameAppliedIn(ex.arg)))
-            // Under a binder of the same name, the name is not the component
-            is Lam -> ex.param != name && nameAppliedIn(ex.body)
-            is Let -> nameAppliedIn(ex.value) || (ex.name != name && nameAppliedIn(ex.body))
-        }
-        return exs.posNoSubexprs.any { nameAppliedIn(it) }
+    /**
+     * The names among [newNames] that [examples] use as functions, given [state]'s types: those
+     * whose type unification makes an arrow when it starts as a hole. That includes a name applied
+     * under another name, as f is in `let g = f in g x`, and one passed where a function is
+     * expected.
+     */
+    private fun functions(state: SearchState, newNames: List<String>, examples: List<Example>): Set<String> {
+        val holes = newNames.associateWith { TypeHole() }
+        val check = OneUnification(extend(state, newNames, holes::getValue), examples)
+        return newNames.filterTo(HashSet()) { check.holeConstructor(holes.getValue(it)) == HoleConstructor.Arrow }
+    }
+
+    /** [state] with [newNames] added after its names, each with the type [type] gives it. */
+    private fun extend(state: SearchState, newNames: List<String>, type: (String) -> Type): SearchState {
+        val oldSize = state.names.size
+        return SearchState(
+            names = state.names + newNames.zip(oldSize until oldSize + newNames.size),
+            types = state.types + newNames.map(type),
+            labelArities = state.labelArities,
+            numCommittedTypes = state.numCommittedTypes,
+            committedLabels = state.committedLabels
+        )
     }
 
     /** Returns the next synthesis problem, or null if we are done. */
@@ -89,29 +100,17 @@ class Engine(
         val scheduledRound = scheduled[round]
         // TODO I think enumeration doesn't actually need the subexprs, so we should make a separate
         //   query type which contains only maximal examples so we don't waste so much space
-        val oldSize = state.names.size
-        val newSize = oldSize + scheduledRound.size
-        val newNames = state.names + (scheduledRound.zip(oldSize until newSize))
+        val known = state.names.keys + scheduledRound
 
-        fun takeExs(exs: Collection<Example>) = exs.filter { newNames.keys.containsAll(it.names) }
+        fun takeExs(exs: Collection<Example>) = exs.filter { known.containsAll(it.names) }
         val nextExamples = Examples(takeExs(posExamples), takeExs(negExamples))
 
+        // Importantly, we force names used as functions to be Arrows and the others to be labels.
+        val functionNames = functions(state, scheduledRound, nextExamples.posNoSubexprs)
         val nextState =
-            SearchState(
-                names = newNames,
-                types =
-                List(newSize) { i ->
-                    if (i < oldSize) state.types[i]
-                    // Importantly, we force names that are applied to be Arrows
-                    // and names that are not to be labels.
-                    else if (nameIsApplied(scheduledRound[i - oldSize], nextExamples))
-                        Arrow(TypeHole(), TypeHole())
-                    else Blank(labelOnly = true)
-                },
-                labelArities = state.labelArities,
-                numCommittedTypes = state.numCommittedTypes,
-                committedLabels = state.committedLabels
-            )
+            extend(state, scheduledRound) {
+                if (it in functionNames) Arrow(TypeHole(), TypeHole()) else Blank(labelOnly = true)
+            }
 
         return nextExamples to nextState
     }
