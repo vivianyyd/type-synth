@@ -83,7 +83,7 @@ A record holds the batch, the configuration, the ground truth (`groundTruth`), `
 no expected answer, `no-solution`, `timeout`, `error`, `crashed`), the solutions, the expected
 answer, the names whose types differ from it in each solution (`mismatches`), for `ocaml-chained`
 the rounds those names belong to (`mismatchedRounds`, in order, so the first is where it went wrong),
-and `stats`:
+how close each solution is to the expected answer (`scores`, below), and `stats`:
 
 - `wallMs`: from starting the search to its answer; loading the benchmark is `loadMs`.
 - `counters`: totals. `phases`: time and counts per phase (`outline`, `arity`, `concretize`,
@@ -93,6 +93,17 @@ and `stats`:
 - `events`: each solution a search found, with the seed depth, depth and size it was found at,
   and each counterexample CEGIS added.
 - `info.schedule`: the rounds the engine decided on.
+
+Each of `scores` is `diffTo` (`src/main/kotlin/oneast/SearchStateEquivalence.kt`) from the expected
+answer to that solution, up to renaming labels and variables:
+
+- `cost`: nodes that differ, summed over names; 0 when the solution is right. `expectedSize`: nodes
+  in the expected answer. `ratio`: `cost / expectedSize`, which can be over 1.
+- `exactNames` of `names`: how many names have a type with cost 0.
+- `byName`: each name's `cost` and the `expectedSize` of its expected type.
+
+`analyze.py show` and `compare` show the closest solution's `exact` and `cost` (`--metrics diff`
+for the ratio), and the cost of each name of a wrong answer.
 
 Records are self-contained JSON, so anything can read them, e.g. pandas:
 `pd.DataFrame(analyze.rows(analyze.load_batch("latest")))`, or DuckDB:
