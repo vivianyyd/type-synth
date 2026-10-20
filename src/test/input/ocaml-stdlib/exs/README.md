@@ -21,6 +21,8 @@ covers a place where OCaml is not Hindley-Milner.
   `(f fun x -> x)`.
 - A bound name is an OCaml variable name: a lowercase letter or `_`, then letters, digits, `_`
   or `'`. No OCaml keywords. `_` binds nothing and can't be used.
+- Examples that differ only in their bound names are the same example: `(fun x1 -> f x1)` and
+  `(fun x2 -> f x2)` count once.
 - `Num`, `Str`, `Char`, `Flt` and `Nil` stand for `1`, `"s"`, `'a'`, `1.` and `[]`.
 
 ## Lets: avoid the value restriction
@@ -59,12 +61,11 @@ checks examples exactly as written.
 
 ## Labelled arguments
 
-**Not implemented yet.** The type parser can't read labels on `main`.
-
-Planned handling: our type checker treats a labelled parameter as an ordinary positional one,
-in the order the signature declares it. For `val value : 'a option -> default:'a -> 'a`, our
-type is `'a option -> 'a -> 'a`. When an example is printed for ocamlc, the label is written at
-that argument: `(Option.value o d)` becomes `Option.value o ~default:d`.
+Our types treat a labelled parameter as an ordinary positional one, in the order the signature
+declares it. For `val value : 'a option -> default:'a -> 'a`, our type is
+`'a option -> 'a -> 'a`. When an example is printed for ocamlc, the label is written at that
+argument: `(Option.value o d)` becomes `Option.value o ~default:(d)` (`withLabels` in
+`OCamlChecker.kt`). The labels come from the same `.types` files as the types.
 
 That only works where the component is applied to the labelled argument. So:
 
@@ -80,18 +81,15 @@ applied at least up to its last labelled parameter.**
 
 Wrap it in a lambda if you need it as a value: `(fun o d -> Option.value o d)`.
 
-Until the label is printed, ocamlc sees `Option.value o d` with the label left out. OCaml allows
-that only in a full application whose result type is not a type variable:
-`ListLabels.iter print_int l` (result `unit`) is fine. `Option.value` returns `'a`, so ocamlc
-reads `(Option.value (Option.some Num) Num)` as passing `Num` to the result, not as the
-default, and rejects it. `(Option.value Option.none Num)` is accepted, but as a partial
-application of type `default:(int -> 'b) -> 'b`, not as an `int`.
+Leaving the label out is not a way around this. OCaml allows that only in a full application
+whose result type is not a type variable: `ListLabels.iter print_int l` (result `unit`) is fine,
+but `Option.value` returns `'a`, so ocamlc reads `Option.value (Option.some 1) 1` as passing `1`
+to the result, and rejects it.
 
 ## Optional arguments
 
 Optional parameters (`?name:`) are left out of our types entirely:
-`val create : ?random:bool -> int -> ('a, 'b) t` is `int -> ('a, 'b) t`. **Not implemented yet**
-either.
+`val create : ?random:bool -> int -> ('a, 'b) t` is `int -> ('a, 'b) t`.
 
 **Rule: never pass an optional argument, and apply a component with optional parameters
 directly to the first positional argument after them.** OCaml then fills in the defaults:

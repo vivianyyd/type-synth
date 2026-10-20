@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import testutil.unsignedExample
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 
 class ExampleTest {
@@ -128,6 +129,64 @@ class ExampleTest {
     fun `examples that do not flatten are left out of the flat examples`() {
         val examples = Examples(listOf(App(Lam("x", App(f, x)), y), App(f, y)), emptyList())
         assertEquals(listOf(FlatApp("f"), FlatApp("f", listOf(y))), examples.flatPos("f"))
+    }
+
+    // ---------------------------------------------------------------- equality
+
+    @Test
+    fun `examples are equal up to renaming bound names`() {
+        fun assertSame(a: String, b: String) {
+            assertEquals(unsignedExample(a), unsignedExample(b))
+            assertEquals(unsignedExample(a).hashCode(), unsignedExample(b).hashCode())
+        }
+        assertSame("(fun x -> f x)", "(fun y -> f y)")
+        assertSame("(g (let a = f in a))", "(g (let b = f in b))")
+        assertSame("(fun x y -> x)", "(fun a b -> a)")
+        val examples = Examples(listOf(App(g, Lam("x", x)), App(g, Lam("y", y))), emptyList())
+        assertEquals(1, examples.posNoSubexprs.size)
+    }
+
+    @Test
+    fun `but not up to renaming free names, or which binder a name refers to`() {
+        assertNotEquals(unsignedExample("(fun x -> f x)"), unsignedExample("(fun x -> g x)"))
+        assertNotEquals(unsignedExample("(fun x -> f x)"), unsignedExample("(fun y -> f x)"))
+        assertNotEquals(unsignedExample("(fun x y -> x)"), unsignedExample("(fun x y -> y)"))
+    }
+
+    // ---------------------------------------------------------------- inlining lets
+
+    @Test
+    fun `inlining puts each let's value where its name is used`() {
+        assertEquals(
+            unsignedExample("(pair (f x) (f x))"),
+            unsignedExample("(let y = (f x) in (pair y y))").inlineLets()
+        )
+        assertEquals(
+            unsignedExample("(cons Num Nil)"),
+            unsignedExample("(let g = cons in (let h = g in (h Num Nil)))").inlineLets()
+        )
+        // An unused value is dropped
+        assertEquals(g, unsignedExample("(let y = f in g)").inlineLets())
+    }
+
+    @Test
+    fun `inlining does not let a binder capture the value's names`() {
+        // The lambda's x is not the component x the value uses
+        assertEquals(
+            Lam("x1", App(App(Name("pair"), x), Name("x1"))),
+            unsignedExample("(let y = x in (fun x -> pair y x))").inlineLets()
+        )
+        // A binder of the let's own name hides it
+        assertEquals(
+            unsignedExample("(pair f (fun y -> y))"),
+            unsignedExample("(let y = f in (pair y (fun y -> y)))").inlineLets()
+        )
+    }
+
+    @Test
+    fun `positives are flat with their lets inlined`() {
+        val examples = Examples(listOf(unsignedExample("(let g = f in (g x y))")), emptyList())
+        assertEquals(listOf(FlatApp("f"), FlatApp("f", listOf(x, y))), examples.flatPos("f"))
     }
 
     // ---------------------------------------------------------------- printing

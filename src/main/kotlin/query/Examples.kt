@@ -7,7 +7,8 @@ import util.lines
  *
  * A [Name] is any variable reference. It refers to the nearest enclosing [Lam] or [Let] that binds
  * it, and to a component if there is none, so a binder shadows a component of the same name.
- * [names] are the components a program uses, which are its free names.
+ * [names] are the components a program uses, which are its free names. Two programs are equal when
+ * they are the same up to renaming bound names, so `fun x -> x` equals `fun y -> y`.
  */
 sealed interface Example {
     /** The free names: the components this uses, not counting names bound inside it. */
@@ -67,7 +68,56 @@ sealed interface Example {
         }
         if (names.none { it in bound }) into.add(this)
     }
+
+    /**
+     * This with each let's name replaced by its value, so it has no lets.
+     *
+     * If this type-checks, so does the result: `let x = v in b` type-checks exactly when v and
+     * `b[v/x]` do. The converse fails when a let's name is unused, since its value is dropped. So
+     * this is for positive examples only.
+     */
+    fun inlineLets(): Example =
+        when (this) {
+            is Name -> this
+            is App -> App(fn.inlineLets(), arg.inlineLets())
+            is Lam -> Lam(param, body.inlineLets())
+            is Let -> body.inlineLets().substitute(name, value.inlineLets())
+        }
+
+    /**
+     * This with [value] in place of each free use of [name]. A binder that would capture one of
+     * [value]'s names is renamed first.
+     */
+    fun substitute(name: String, value: Example): Example =
+        when (this) {
+            is Name -> if (this.name == name) value else this
+            is App -> App(fn.substitute(name, value), arg.substitute(name, value))
+            is Lam ->
+                when (param) {
+                    name -> this
+                    in value.names -> {
+                        val fresh = freshName(param, value.names + body.names)
+                        Lam(fresh, body.substitute(param, Name(fresh)).substitute(name, value))
+                    }
+                    else -> Lam(param, body.substitute(name, value))
+                }
+            is Let -> {
+                val newValue = this.value.substitute(name, value)
+                when (this.name) {
+                    name -> Let(this.name, newValue, body)
+                    in value.names -> {
+                        val fresh = freshName(this.name, value.names + body.names)
+                        Let(fresh, newValue, body.substitute(this.name, Name(fresh)).substitute(name, value))
+                    }
+                    else -> Let(this.name, newValue, body.substitute(name, value))
+                }
+            }
+        }
 }
+
+/** [base] with a number added, so that it is not in [taken]. */
+private fun freshName(base: String, taken: Set<String>): String =
+    generateSequence(1) { it + 1 }.map { "$base$it" }.first { it !in taken }
 
 // toString() is OCaml syntax: OCamlChecker type-checks examples by compiling it.
 
@@ -89,6 +139,12 @@ data class Lam(val param: String, val body: Example) : Example {
     override fun toString() = "fun $param -> $body"
 
     override val names by lazy { body.names - param }
+
+    private val key by lazy { alphaKey(this) }
+
+    override fun equals(other: Any?) = other is Lam && key == other.key
+
+    override fun hashCode() = key.hashCode()
 }
 
 /**
@@ -99,7 +155,36 @@ data class Let(val name: String, val value: Example, val body: Example) : Exampl
     override fun toString() = "let $name = $value in $body"
 
     override val names by lazy { value.names + (body.names - name) }
+
+    private val key by lazy { alphaKey(this) }
+
+    override fun equals(other: Any?) = other is Let && key == other.key
+
+    override fun hashCode() = key.hashCode()
 }
+
+/**
+ * [e] with each bound name replaced by how many binders out its own is (its de Bruijn index), so
+ * that two examples have equal keys exactly when they are the same up to renaming bound names.
+ * [bound] are the names bound around [e], innermost last.
+ */
+private fun alphaKey(e: Example, bound: List<String> = emptyList()): Any =
+    when (e) {
+        is Name ->
+            bound.lastIndexOf(e.name).let { if (it < 0) e.name else BoundKey(bound.lastIndex - it) }
+        is App -> AppKey(alphaKey(e.fn, bound), alphaKey(e.arg, bound))
+        is Lam -> LamKey(alphaKey(e.body, bound + e.param))
+        is Let -> LetKey(alphaKey(e.value, bound), alphaKey(e.body, bound + e.name))
+    }
+
+// A free name's key is the name itself, a String, so it is never equal to one of these.
+private data class BoundKey(val index: Int)
+
+private data class AppKey(val fn: Any, val arg: Any)
+
+private data class LamKey(val body: Any)
+
+private data class LetKey(val value: Any, val body: Any)
 
 /**
  * This is more general than the previous query because we can apply the result of applications
@@ -132,7 +217,9 @@ class Examples(posIn: Collection<Example>, negIn: Collection<Example>) {
         }.sorted()
     }
 
-    private val flatPos by lazy { flat(posWithSubexprs) }
+    // Lets are inlined, so that a component applied under a let-bound name, as in
+    // `let f = cons in f x l`, is flat as `cons x l`.
+    private val flatPos by lazy { flat(posWithSubexprs.map { it.inlineLets() }.distinct()) }
     private val flatNeg by lazy { flat(neg) }
 
     fun flatPos(name: String) = flatPos[name] ?: listOf()
