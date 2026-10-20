@@ -6,7 +6,6 @@ val Scanning.open_in : string -> Scanning.in_channel
 val Scanning.open_in_bin : string -> Scanning.in_channel
 val Scanning.close_in : Scanning.in_channel -> unit
 val Scanning.from_string : string -> Scanning.in_channel
-val Scanning.from_bytes : bytes -> Scanning.in_channel
 val Scanning.from_function : (unit -> char) -> Scanning.in_channel
 val Scanning.from_channel : in_channel -> Scanning.in_channel
 val Scanning.end_of_input : Scanning.in_channel -> bool
