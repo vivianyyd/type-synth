@@ -6,8 +6,8 @@ Wherever a batch is expected, give its directory, a unique substring of its name
 bench-results, or `latest` / `latest~N`.
 
   analyze.py ls                         list batches
-  analyze.py show BATCH                 one row per run
-  analyze.py rounds BATCH BENCHMARK     one row per search (round, outer depth) of a run
+  analyze.py show BATCH                 one row per step of each run
+  analyze.py rounds BATCH RUN[/STEP]    one row per search (round, outer depth) of a step
   analyze.py compare BATCH_A BATCH_B    side by side, with B/A ratios
   analyze.py latex BATCH... [--metrics wall,candidates] [--labels A,B]
 
@@ -80,21 +80,31 @@ def load_batch(spec):
     return meta, runs
 
 
-def row(record):
-    """One run as a flat dict of the metrics above."""
-    stats = record.get("stats") or {}
+def steps(record):
+    """A run's steps. Records before schema 2 are one step, with the step's fields at the top level."""
+    return record.get("steps") or [record]
+
+
+def step_name(name, record, step):
+    """[name], with the step's name if the run has more than one."""
+    return name if len(steps(record)) == 1 else f"{name}/{step['step']}"
+
+
+def row(record, step):
+    """One step of a run as a flat dict of the metrics above."""
+    stats = step.get("stats") or {}
     counters = stats.get("counters", {})
     phases = stats.get("phases", {})
     r = {
-        "benchmark": record["benchmark"],
+        "benchmark": step_name(record["benchmark"], record, step),
         "repeat": record.get("repeat", 0),
-        "status": record["status"],
+        "status": step["status"],
         "variant": record["batch"]["variant"],
         "commit": record["batch"]["git"]["commit"][:8],
         "batch": record["batch"]["batchId"],
     }
     # The solution closest to the expected answer. Older records have no scores
-    scores = [s for s in record.get("scores") or [] if s]
+    scores = [s for s in step.get("scores") or [] if s]
     if scores:
         best = min(scores, key=lambda s: s["cost"])
         r["exact"] = f"{best['exactNames']}/{best['names']}"
@@ -125,7 +135,7 @@ def row(record):
 
 
 def rows(batch):
-    return [row(r) for r in batch[1]]
+    return [row(r, s) for r in batch[1] for s in steps(r)]
 
 
 def by_benchmark(rs):
@@ -173,11 +183,11 @@ def cmd_ls(args):
     body = []
     for d in batches():
         meta = json.loads((d / "batch.json").read_text())
-        runs = [row(json.loads(p.read_text())) for p in d.glob("*.json") if p.name != "batch.json"]
+        runs = [json.loads(p.read_text()) for p in d.glob("*.json") if p.name != "batch.json"]
         statuses = {}
         for r in runs:
             statuses[r["status"]] = statuses.get(r["status"], 0) + 1
-        total = sum(r.get("wall", 0) for r in runs)
+        total = sum(row(r, s).get("wall", 0) for r in runs for s in steps(r))
         git = meta["git"]
         body.append([
             d.name, git["branch"], git["commit"][:8] + ("+" if git["dirty"] else ""), meta["variant"],
@@ -190,12 +200,15 @@ DEFAULT_SHOW = ["status", "exact", "cost", "wall", "outline", "arity", "concreti
                 "candidates", "prunedPos", "prunedNeg", "stop"]
 
 
-def wrong_answer(record):
-    """Each solution next to the expected answer, with the names whose types differ marked."""
-    expected = record["expected"]
-    scores = record.get("scores") or [None] * len(record["solutions"])
-    for i, (solution, differs, score) in enumerate(zip(record["solutions"], record["mismatches"], scores)):
-        heading = f"Solution {i + 1}: " if len(record["solutions"]) > 1 else ""
+def wrong_answer(step):
+    """Each solution of a step next to the expected answer, with the names whose types differ marked."""
+    expected = step["expected"]
+    scores = step.get("scores") or [None] * len(step["solutions"])
+    for i, (solution, score) in enumerate(zip(step["solutions"], scores)):
+        # Older records have mismatches instead of scores
+        differs = ([n for n, c in score["byName"].items() if c["cost"] > 0] if score
+                   else step.get("mismatches", [])[i])
+        heading = f"Solution {i + 1}: " if len(step["solutions"]) > 1 else ""
         if score:
             heading += f"{score['exactNames']}/{score['names']} names exact, cost {score['cost']}/{score['expectedSize']}"
         if heading:
@@ -216,19 +229,30 @@ def cmd_show(args):
     table(["benchmark"] + [METRICS.get(m, (m,))[0] for m in metrics],
           [[name] + [show_value(m, r.get(m)) for m in metrics] for name, r in rs.items()])
     for record in sorted(batch[1], key=lambda r: r["runId"]):
-        if record["status"] == "wrong":
-            print(f"\n{record['runId']} is wrong:")
-            wrong_answer(record)
+        # A run still going, or stopped before finishing its record
+        if record["status"] not in {s["status"] for s in steps(record)}:
+            error = (record.get("error") or "").partition("\n")[0]
+            print(f"\n{record['runId']} is {record['status']} after {len(record.get('steps', []))} steps. {error}".rstrip())
+        for step in steps(record):
+            if step["status"] == "wrong":
+                print(f"\n{step_name(record['runId'], record, step)} is wrong:")
+                wrong_answer(step)
 
 
 def cmd_rounds(args):
     _, runs = load_batch(args.batch)
-    record = next((r for r in runs if r["runId"] == args.benchmark), None) or sys.exit("No such run")
-    if not record.get("stats"):
-        error = (record.get("error") or "").partition("\n")[0]
-        sys.exit(f"{args.benchmark} has no stats ({record['status']}) {error}".rstrip())
+    run_id, _, step_spec = args.run.partition("/")
+    record = next((r for r in runs if r["runId"] == run_id), None) or sys.exit("No such run")
+    names = [s.get("step") for s in steps(record)]
+    if not step_spec and len(names) > 1:
+        sys.exit(f"{run_id} has steps {', '.join(names)}: give one, as {run_id}/STEP")
+    step = (next((s for s in steps(record) if s.get("step") == step_spec), None) if step_spec
+            else steps(record)[0]) or sys.exit(f"{run_id} has no step {step_spec}, only {', '.join(names)}")
+    if not step.get("stats"):
+        error = (step.get("error") or record.get("error") or "").partition("\n")[0]
+        sys.exit(f"{args.run} has no stats ({step['status']}) {error}".rstrip())
     body = []
-    stats = record["stats"]
+    stats = step["stats"]
     for q in stats.get("searches", stats.get("queries", [])):
         ph = q["phases"]
         c = lambda k: sum(p.get(k, 0) for p in ph.values())
@@ -321,7 +345,8 @@ def main():
     p.add_argument("--metrics", help=f"comma-separated, from: {', '.join(METRICS)}")
     p = sub.add_parser("rounds")
     p.add_argument("batch")
-    p.add_argument("benchmark", help="the run id, e.g. cons, or cons.1 for a repeat")
+    p.add_argument("run", help="the run id, e.g. cons, or cons.1 for a repeat, and /STEP if it has more than "
+                              "one step, e.g. ocaml-chained/list")
     p = sub.add_parser("compare")
     p.add_argument("a")
     p.add_argument("b")
