@@ -840,9 +840,9 @@ class SearchStateDiffTest {
         assertEquals(2, hole.diffTo(tree).cost)
     }
 
-    // ----- mismatches are the names with nonzero cost -----
+    // ----- Labels are paired across names, in the expected state's order -----
     @Test
-    fun `mismatches pairs labels after a difference in a type, as the diff does`() {
+    fun `labels are paired after a difference in a type`() {
         // L1 is paired with L5 in x even though x's argument differs, so y, which uses L1 for L6,
         // differs too
         val actual = state(
@@ -856,17 +856,22 @@ class SearchStateDiffTest {
             "y" to NamedLabel(6, listOf())
         )
         assertEquals(mapOf("x" to 2, "y" to 1), expected.diffTo(actual).costByName)
-        assertEquals(listOf("x", "y"), actual.mismatches(expected))
     }
 
     @Test
-    fun `mismatches pairs labels in sorted name order, as the diff does`() {
-        // One label used for two: the first name in sorted order takes the pairing, whatever order
-        // the state lists them in
-        val actual = state(mapOf(0 to 0), "y" to NamedLabel(0, listOf()), "x" to NamedLabel(0, listOf()))
-        val expected = state(mapOf(5 to 0, 6 to 0), "y" to NamedLabel(5, listOf()), "x" to NamedLabel(6, listOf()))
-        assertEquals(mapOf("x" to 0, "y" to 1), expected.diffTo(actual).costByName)
-        assertEquals(listOf("y"), actual.mismatches(expected))
-        assertFalse(actual.equivalentTo(expected))
+    fun `a label conflict is charged to the later name in the expected state's order`() {
+        // One label used for two: the first name in the expected state's order takes the pairing,
+        // whatever order actual lists them in
+        val actuals = listOf(
+            state(mapOf(0 to 0), "x" to NamedLabel(0, listOf()), "y" to NamedLabel(0, listOf())),
+            state(mapOf(0 to 0), "y" to NamedLabel(0, listOf()), "x" to NamedLabel(0, listOf()))
+        )
+        val xFirst = state(mapOf(5 to 0, 6 to 0), "x" to NamedLabel(5, listOf()), "y" to NamedLabel(6, listOf()))
+        val yFirst = state(mapOf(5 to 0, 6 to 0), "y" to NamedLabel(6, listOf()), "x" to NamedLabel(5, listOf()))
+        for (actual in actuals) {
+            assertEquals(mapOf("x" to 0, "y" to 1), xFirst.diffTo(actual).costByName)
+            assertEquals(mapOf("y" to 0, "x" to 1), yFirst.diffTo(actual).costByName)
+            assertFalse(actual.equivalentTo(xFirst))
+        }
     }
 }
