@@ -85,33 +85,37 @@ sealed interface Example {
         }
 
     /**
-     * This with [value] in place of each free use of [name]. A binder that would capture one of
-     * [value]'s names is renamed first.
+     * This with [replacement] in place of each free use of [name]. A binder that would capture one
+     * of [replacement]'s names is renamed first.
      */
-    fun substitute(name: String, value: Example): Example =
+    private fun substitute(name: String, replacement: Example): Example =
         when (this) {
-            is Name -> if (this.name == name) value else this
-            is App -> App(fn.substitute(name, value), arg.substitute(name, value))
-            is Lam ->
-                when (param) {
-                    name -> this
-                    in value.names -> {
-                        val fresh = freshName(param, value.names + body.names)
-                        Lam(fresh, body.substitute(param, Name(fresh)).substitute(name, value))
-                    }
-                    else -> Lam(param, body.substitute(name, value))
+            is Name -> if (this.name == name) replacement else this
+            is App -> App(fn.substitute(name, replacement), arg.substitute(name, replacement))
+            is Lam -> body.substituteUnder(param, name, replacement).let { (p, b) -> Lam(p, b) }
+            is Let ->
+                body.substituteUnder(this.name, name, replacement).let { (n, b) ->
+                    Let(n, value.substitute(name, replacement), b)
                 }
-            is Let -> {
-                val newValue = this.value.substitute(name, value)
-                when (this.name) {
-                    name -> Let(this.name, newValue, body)
-                    in value.names -> {
-                        val fresh = freshName(this.name, value.names + body.names)
-                        Let(fresh, newValue, body.substitute(this.name, Name(fresh)).substitute(name, value))
-                    }
-                    else -> Let(this.name, newValue, body.substitute(name, value))
-                }
+        }
+
+    /**
+     * This, as the scope of a binder of [binder], with [replacement] in place of each free use of
+     * [name]. Returns the binder, renamed if it would capture one of [replacement]'s names, and the
+     * new scope.
+     */
+    private fun substituteUnder(
+        binder: String,
+        name: String,
+        replacement: Example
+    ): Pair<String, Example> =
+        when (binder) {
+            name -> binder to this
+            in replacement.names -> {
+                val fresh = freshName(binder, replacement.names + names)
+                fresh to substitute(binder, Name(fresh)).substitute(name, replacement)
             }
+            else -> binder to substitute(name, replacement)
         }
 }
 

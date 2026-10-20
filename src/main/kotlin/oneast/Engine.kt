@@ -75,14 +75,24 @@ class Engine(
      * under another name, as f is in `let g = f in g x`, and one passed where a function is
      * expected.
      */
-    private fun functions(state: SearchState, newNames: List<String>, examples: List<Example>): Set<String> {
+    private fun functions(
+        state: SearchState,
+        newNames: List<String>,
+        examples: List<Example>
+    ): Set<String> {
         val holes = newNames.associateWith { TypeHole() }
         val check = OneUnification(extend(state, newNames, holes::getValue), examples)
-        return newNames.filterTo(HashSet()) { check.holeConstructor(holes.getValue(it)) == HoleConstructor.Arrow }
+        return newNames.filterTo(HashSet()) {
+            check.holeConstructor(holes.getValue(it)) == HoleConstructor.Arrow
+        }
     }
 
     /** [state] with [newNames] added after its names, each with the type [type] gives it. */
-    private fun extend(state: SearchState, newNames: List<String>, type: (String) -> Type): SearchState {
+    private fun extend(
+        state: SearchState,
+        newNames: List<String>,
+        type: (String) -> Type
+    ): SearchState {
         val oldSize = state.names.size
         return SearchState(
             names = state.names + newNames.zip(oldSize until oldSize + newNames.size),

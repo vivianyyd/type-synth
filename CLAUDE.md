@@ -54,7 +54,11 @@ export PATH=$HOME/.opam/5.4.1/bin:$HOME/.venvs/type-synth/bin:$PATH
 ./gradlew bench -q --args="ocaml ocaml-chained"    # see bench/README.md
 ```
 
-Failing on `main` for reasons unrelated to setup: `OCamlStdlibTest.load all and split` (the OCaml
-type parser can't read labelled arguments; `fix-ocaml-type-parser` fixes it).
+Failing for reasons unrelated to setup: `OCamlStdlibTest.load all and split` (some `_mod.types`
+files declare unqualified names, like `value` for `Option.value`), and `SexpTests [7] option`
+(`option.sexp` lists `value none Num` as both positive and negative).
+
+Examples can be lambdas and lets; see `lambdas-and-lets.md`. Rules for writing OCaml examples,
+which keep our checker and ocamlc agreeing, are in `src/test/input/ocaml-stdlib/exs/README.md`.
 
 Sketch (`src/main/kotlin/util/io/sketch`) is no longer called from anywhere, so it isn't needed.

@@ -59,7 +59,7 @@ class OCamlStdlibTest {
             ?.map { it.nameWithoutExtension }
             ?: emptyList()
 
-        val (examples, _) = loadFromExsFiles(allExsNames)
+        val (examples, _, labels) = loadFromExsFiles(allExsNames)
 
         val parser = OcamlTypeParser()
         val oracleTypes = buildMap {
@@ -69,6 +69,6 @@ class OCamlStdlibTest {
         }
         val oracle = CheckingGroundTruthOracle(oracleTypes)
 
-        splitOCamlExamples(examples, oracle, OCamlChecker())
+        splitOCamlExamples(examples, oracle, OCamlChecker(labels = labels))
     }
 }
