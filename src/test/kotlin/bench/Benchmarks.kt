@@ -28,8 +28,6 @@ data class LoadOptions(
     /** Whether ocamlc checks OCaml examples with their lets rewritten. See [OCamlChecker]. */
     val thunkLets: Boolean = false,
 ) {
-    fun ocamlChecker() = OCamlChecker(thunkLets = thunkLets)
-
     fun toJson(): Map<String, Any?> = linkedMapOf("thunkLets" to thunkLets)
 }
 
@@ -62,10 +60,11 @@ private fun sexp(file: String) =
 /** Solves the [i]th group of modules given the true types of the groups before it. */
 private fun ocaml(name: String, i: Int) =
     Benchmark("ocaml-$name", ocamlDefaults) { _, load ->
-        val checker = load.ocamlChecker()
-        val (query, expected) =
+        val (query, expected, checker) =
             ocamlModulesQuery(
-                ocamlModuleGroups[i], fixed = ocamlModuleGroups.subList(0, i).flatten(), checker = checker
+                ocamlModuleGroups[i],
+                fixed = ocamlModuleGroups.subList(0, i).flatten(),
+                thunkLets = load.thunkLets
             )
         Problem(query, checker, expected)
     }
@@ -79,18 +78,21 @@ private fun ocaml(name: String, i: Int) =
  */
 private fun ocamlChained(name: String, i: Int) =
     Benchmark("ocaml-chained-$name", ocamlDefaults) { config, load ->
-        val checker = load.ocamlChecker()
-        fun query(j: Int, committed: SearchState) =
+        fun problem(j: Int, committed: SearchState) =
             ocamlModulesQuery(
-                ocamlModuleGroups.subList(0, j + 1).flatten(), fixed = emptyList(), committed, checker
+                ocamlModuleGroups.subList(0, j + 1).flatten(),
+                fixed = emptyList(),
+                committed,
+                load.thunkLets
             )
 
         val committed =
             (0 until i).fold(SearchState.emptyState) { committed, j ->
-                run(query(j, committed).first, checker, config).firstOrNull()
+                val (query, _, checker) = problem(j, committed)
+                run(query, checker, config).firstOrNull()
                     ?: error("No solution for ${ocamlModuleNames[j]}, the modules before ${ocamlModuleNames[i]}")
             }
-        val (query, expected) = query(i, committed)
+        val (query, expected, checker) = problem(i, committed)
         Problem(query, checker, expected, ocamlRounds(i))
     }
 
@@ -98,7 +100,7 @@ private fun ocamlChained(name: String, i: Int) =
 private fun ocamlRounds(i: Int): List<Pair<String, Set<String>>> {
     val seen = mutableSetOf<String>()
     return (0..i).map { j ->
-        val names = loadFromExsFiles(ocamlModuleGroups.subList(0, j + 1).flatten()).second.keys - seen
+        val names = loadFromExsFiles(ocamlModuleGroups.subList(0, j + 1).flatten()).types.keys - seen
         seen += names
         ocamlModuleNames[j] to names
     }

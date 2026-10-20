@@ -28,7 +28,7 @@ fun oracleFromDir(dir: File) = CheckingGroundTruthOracle(buildMap {
  *   // 0_basics.types, 4_arith.types
  * All subsequent non-comment, non-blank lines are treated as examples.
  */
-fun loadFromExsFiles(exsFileNames: List<String>): Pair<List<Example>, Map<String, Type>> {
+fun loadFromExsFiles(exsFileNames: List<String>): LoadedExs {
     val examples = mutableListOf<Example>()
     val referencedTypesFiles = linkedSetOf<String>()
 
@@ -56,43 +56,62 @@ fun loadFromExsFiles(exsFileNames: List<String>): Pair<List<Example>, Map<String
         }
     }
     val parser = OcamlTypeParser()
-    val oracleTypes = buildMap {
+    val signatures = buildMap {
         referencedTypesFiles.forEach { typesFileName ->
             val typesFile = File(ocamlTypesDir, typesFileName)
-            if (typesFile.isFile) putAll(parser.parseSignatures(typesFile.readText()))
+            if (typesFile.isFile) putAll(parser.parseSignaturesWithLabels(typesFile.readText()))
         }
     }
-    return examples to oracleTypes
+    return LoadedExs(
+        examples,
+        signatures.mapValues { it.value.type },
+        signatures.mapValues { it.value.labels }.filterValues { labels -> labels.any { it != null } }
+    )
 }
+
+/**
+ * What [loadFromExsFiles] read: the examples, the types of the values they use, and the labels of
+ * those with labelled parameters (see [Signature]).
+ */
+data class LoadedExs(
+    val examples: List<Example>,
+    val types: Map<String, Type>,
+    val labels: Map<String, List<String?>>,
+)
 
 /**
  * The problem of finding types for the names in modules [task], given the true types of the names
  * in modules [fixed], along with the answer. [committedSeed] replaces the true types of [fixed] as
- * what the search starts from. [checker] is the ground truth the examples are checked against.
+ * what the search starts from. [thunkLets] is passed to the [OCamlChecker] the examples are
+ * checked against.
  */
 fun ocamlModulesQuery(
     task: List<String>,
     fixed: List<String>,
     committedSeed: SearchState? = null,
-    checker: OCamlChecker = OCamlChecker(),
-): Pair<Query, SearchState> {
-    val (_, fixedTypes) = loadFromExsFiles(fixed)
-    val (examplesAll, desiredTypes) = loadFromExsFiles(task)
-    val oracleTypes = fixedTypes + desiredTypes
+    thunkLets: Boolean = false,
+): OCamlProblem {
+    val fixedLoaded = loadFromExsFiles(fixed)
+    val taskLoaded = loadFromExsFiles(task)
+    val oracleTypes = fixedLoaded.types + taskLoaded.types
     val examples =
-        examplesAll
+        taskLoaded.examples
             .flatMap { it.subexprs() }
             .toSet()
             .filter { it.names.all { it in oracleTypes } }
     val oracle = CheckingGroundTruthOracle(oracleTypes)
+    val checker = OCamlChecker(thunkLets = thunkLets, labels = fixedLoaded.labels + taskLoaded.labels)
     val query =
         Query(
             splitOCamlExamples(examples, oracle, checker),
             oracle,
-            committedSeed = committedSeed ?: stateFromContext(fixedTypes)
+            committedSeed = committedSeed ?: stateFromContext(fixedLoaded.types)
         )
-    return query to stateFromContext(oracleTypes)
+    return OCamlProblem(query, stateFromContext(oracleTypes), checker)
 }
+
+/** A [query], its answer [expected], and the [checker] that is its ground truth. */
+data class OCamlProblem(val query: Query, val expected: SearchState, val checker: OCamlChecker)
 
 /** Groups of modules to solve in order, each given the true types of the groups before it. */
 val ocamlModuleGroups =

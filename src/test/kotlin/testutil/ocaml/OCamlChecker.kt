@@ -25,14 +25,19 @@ data class TypeCheckResult(
  * @param thunkLets Whether examples are checked as [thunkLets] makes them, so that OCaml's value
  *   restriction never applies. Without it, the examples must avoid the value restriction; see
  *   src/test/input/ocaml-stdlib/exs/README.md.
+ * @param labels The labels of each value's parameters, as [withLabels] takes them.
  */
 class OCamlChecker(
     private val packages: List<String> = emptyList(),
     private val opens: List<String> = listOf("Stdlib"),
     private val thunkLets: Boolean = false,
+    private val labels: Map<String, List<String?>> = emptyMap(),
 ) : GroundTruth {
-    override fun valid(example: Example): Boolean =
-        isValid(withDummies(if (thunkLets) thunkLets(example) else example).toString()).isValid
+    override fun valid(example: Example): Boolean = isValid(source(example)).isValid
+
+    /** [example] as OCaml source. */
+    fun source(example: Example): String =
+        withLabels(withDummies(if (thunkLets) thunkLets(example) else example), labels).toString()
 
     private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
 
@@ -86,6 +91,9 @@ class OCamlChecker(
     }
 }
 
+// The rewrites below make examples only for printing as OCaml source. In them, a Name can be any
+// OCaml text, like `()` or `~default:(1)`.
+
 /** OCaml values that the examples name by their type, as `Num` for an int. */
 private val dummies =
     mapOf("Num" to "1", "Str" to "\"s\"", "Char" to "'a'", "Flt" to "1.", "Nil" to "[]")
@@ -119,4 +127,35 @@ private fun thunkLets(e: Example, lets: Set<String>): Example =
         is App -> App(thunkLets(e.fn, lets), thunkLets(e.arg, lets))
         is Lam -> Lam(e.param, thunkLets(e.body, lets - e.param))
         is Let -> Let(e.name, Lam("_", thunkLets(e.value, lets)), thunkLets(e.body, lets + e.name))
+    }
+
+/**
+ * [example] with each argument to a labelled parameter written with its label: with
+ * `val value : 'a option -> default:'a -> 'a`, `Option.value o d` becomes
+ * `Option.value o ~default:(d)`. Our types treat labelled parameters as positional, in the order
+ * they are declared, so this is where the label goes.
+ *
+ * Only a component applied directly is labelled, not one passed as a value or used under another
+ * name. [labels] has, for each component with labelled parameters, the label of each parameter, or
+ * null for an unlabelled one.
+ */
+fun withLabels(example: Example, labels: Map<String, List<String?>>): Example =
+    withLabels(example, labels, emptySet())
+
+/** [bound] are the names bound in scope, which are not components. */
+private fun withLabels(e: Example, labels: Map<String, List<String?>>, bound: Set<String>): Example =
+    when (e) {
+        is Name -> e
+        is App -> {
+            val spine = e.flatten()
+            val ofHead = spine?.takeIf { it.name !in bound }?.let { labels[it.name] }
+            if (ofHead == null) App(withLabels(e.fn, labels, bound), withLabels(e.arg, labels, bound))
+            else
+                spine.args.withIndex().fold(Name(spine.name) as Example) { fn, (i, arg) ->
+                    val labelled = withLabels(arg, labels, bound)
+                    App(fn, ofHead.getOrNull(i)?.let { Name("~$it:($labelled)") } ?: labelled)
+                }
+        }
+        is Lam -> Lam(e.param, withLabels(e.body, labels, bound + e.param))
+        is Let -> Let(e.name, withLabels(e.value, labels, bound), withLabels(e.body, labels, bound + e.name))
     }
