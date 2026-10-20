@@ -3,6 +3,8 @@
   --accent: #2d6cdf; --accent-fg: #ffffff; --hover: #f1f3f6; --code: #f4f4f2;
   --good: #1f8a4c; --bad: #c8372d; --warn: #b7791f; --info: #2d6cdf; --other: #7a5bbf; --none: #8a8f94;
   --good-bg: #e3f4ea; --bad-bg: #fbe5e3; --warn-bg: #fbf0dc; --info-bg: #e3ecfb; --other-bg: #eee8f8; --none-bg: #eeeff0;
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+  --series-5: #e87ba4; --series-6: #008300; --series-7: #6250d6; --series-8: #e34948;
   --font: system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
@@ -12,6 +14,8 @@
     --accent: #6b9bf0; --accent-fg: #0d1117; --hover: #262a2f; --code: #24282d;
     --good: #4cc27f; --bad: #ef6b60; --warn: #e0a84a; --info: #6b9bf0; --other: #a98be6; --none: #8a8f94;
     --good-bg: #183324; --bad-bg: #3a1d1b; --warn-bg: #362b17; --info-bg: #1b2a44; --other-bg: #2a2340; --none-bg: #2a2d31;
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+    --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
   }
 }
 :root[data-theme="dark"] {
@@ -19,6 +23,8 @@
   --accent: #6b9bf0; --accent-fg: #0d1117; --hover: #262a2f; --code: #24282d;
   --good: #4cc27f; --bad: #ef6b60; --warn: #e0a84a; --info: #6b9bf0; --other: #a98be6; --none: #8a8f94;
   --good-bg: #183324; --bad-bg: #3a1d1b; --warn-bg: #362b17; --info-bg: #1b2a44; --other-bg: #2a2340; --none-bg: #2a2d31;
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+  --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
 }
 
 * { box-sizing: border-box; }
@@ -77,6 +83,8 @@ tr.group-start td { border-top: 2px solid var(--border); }
 .s-wrong, .s-error, .s-crashed, .s-unreadable { background: var(--bad-bg); color: var(--bad); }
 .s-no-solution { background: var(--warn-bg); color: var(--warn); }
 .s-timeout { background: var(--other-bg); color: var(--other); }
+.s-running { background: var(--info-bg); color: var(--info); }
+.s-not-reached, .s-not-run { background: transparent; color: var(--muted); border: 1px dashed var(--border); line-height: 16px; }
 .ratio-better { color: var(--good); }
 .ratio-worse { color: var(--bad); }
 .ratio { font-size: 11px; margin-left: 4px; }
@@ -111,3 +119,24 @@ ul.tree summary { cursor: pointer; }
 @media (max-width: 640px) { main { padding: 16px; } header.top { padding: 8px 16px; } }
 .card > h2 .small, .card > h2 .muted { font-weight: 400; }
 .card > h2 select, .card > h2 button, .card > h2 label, .card > h2 summary { font-size: 13px; font-weight: 400; }
+
+/* A run's steps in order, one tile each */
+.chain { display: flex; align-items: stretch; overflow-x: auto; padding: 2px 2px 6px; }
+.chain .link { align-self: center; flex: none; width: 16px; height: 2px; background: var(--border); }
+.tile { flex: none; display: flex; flex-direction: column; gap: 4px; min-width: 150px; max-width: 230px; padding: 8px 10px;
+  background: var(--panel); color: var(--fg); border: 1px solid var(--border); border-left: 4px solid var(--st, var(--none)); border-radius: 8px; }
+a.tile:hover { background: var(--hover); text-decoration: none; }
+.tile.selected { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tile.ghost { background: transparent; border-style: dashed; }
+.tile .name { font-family: var(--mono); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile .facts { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tile .err { font-size: 11px; color: var(--bad); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chain.compact .tile { min-width: 120px; padding: 5px 8px; gap: 3px; }
+.meter { display: flex; gap: 2px; height: 6px; }
+.meter > span { border-radius: 3px; }
+.meter .fill { background: var(--good); }
+.meter .miss { background: var(--bad); }
+.meter .none { background: var(--none-bg); flex: 1; }
+.meter.inline { display: inline-flex; width: 80px; vertical-align: middle; margin-right: 6px; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.runs-list > * + * { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }

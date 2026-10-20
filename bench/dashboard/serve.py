@@ -92,7 +92,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def api_trace(self, q):
         self.send_json(self.results.trace(
-            q["batch"], q["run"], kind=q.get("kind") or None, search=q.get("search") or None,
+            q["batch"], q["run"], step=q.get("step") or None, kind=q.get("kind") or None, search=q.get("search") or None,
             phase=q.get("phase") or None, offset=int(q.get("offset", 0)), limit=int(q.get("limit", 100))))
 
 

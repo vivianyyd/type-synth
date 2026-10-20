@@ -5,12 +5,16 @@ const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v
 
 export const STATUS_COLORS = () => ({
   correct: css("--good"), solved: css("--good"), wrong: css("--bad"), error: css("--bad"), crashed: css("--bad"),
-  unreadable: css("--bad"), "no-solution": css("--warn"), timeout: css("--other"),
+  unreadable: css("--bad"), "no-solution": css("--warn"), timeout: css("--other"), running: css("--info"),
 });
 export const statusColor = (s) => STATUS_COLORS()[s] || css("--none");
 
-// Categorical series colors, chosen to stay apart in light and dark themes.
-export const SERIES = ["#4e79a7", "#f28e2b", "#59a14f", "#e15759", "#76b7b2", "#edc948", "#b07aa1", "#ff9da7", "#9c755f", "#bab0ac"];
+// Categorical colors, in a fixed order (from the CSS, so they follow the theme).
+export const series = (i) => css(`--series-${(i % 8) + 1}`);
+
+// Phases keep their color in every chart; time in no phase is gray.
+const PHASE_SLOT = { outline: 0, arity: 1, concretize: 2, cegis: 3 };
+export const phaseColor = (p) => (p in PHASE_SLOT ? series(PHASE_SLOT[p]) : css("--none"));
 
 export function plot(el, traces, layout = {}, config = {}) {
   if (!window.Plotly) {
@@ -22,13 +26,18 @@ export function plot(el, traces, layout = {}, config = {}) {
     title: typeof a.title === "string" ? { text: a.title, font: { color: muted } } : a.title });
   const base = {
     paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)", font: { family: css("--font"), color: fg, size: 12 },
-    margin: { l: 60, r: 20, t: layout.title ? 40 : 16, b: 60 }, colorway: SERIES, hovermode: "closest",
-    legend: { orientation: "h", y: -0.25, font: { color: fg } },
+    margin: { l: 60, r: 20, t: layout.title ? 64 : 40, b: 60 }, colorway: [0, 1, 2, 3, 4, 5, 6, 7].map(series), hovermode: "closest",
+    bargap: 0.3, barcornerradius: 3, hoverlabel: { bgcolor: css("--panel"), bordercolor: grid, font: { color: fg } },
+    // Above the plot, so long tick labels can't run into it
+    legend: { orientation: "h", x: 0, y: 1.02, yanchor: "bottom", traceorder: "normal", font: { color: fg } },
   };
   const merged = { ...base, ...layout, xaxis: axis(layout.xaxis), yaxis: axis(layout.yaxis) };
   if (typeof layout.title === "string") merged.title = { text: layout.title, font: { size: 14 }, x: 0 };
   window.Plotly.react(el, traces, merged, { responsive: true, displaylogo: false, ...config });
 }
+
+// Bars with a thin surface-colored outline, so stacked segments and neighbors stay apart.
+export const barLine = () => ({ color: css("--panel"), width: 1 });
 
 export function plotDiv(height = 360) {
   return h("div", { class: "plot", style: { height: `${height}px` } });
