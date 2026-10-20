@@ -64,9 +64,4 @@ export PATH=$HOME/.opam/5.4.1/bin:$HOME/.venvs/type-synth/bin:$PATH
 ./gradlew bench -q --args="ocaml ocaml-chained"    # see bench/README.md
 ```
 
-Failing for reasons unrelated to setup:
-
-- `OCamlStdlibTest.load all and split`: the OCaml type parser can't read labelled arguments;
-  `fix-ocaml-type-parser` fixes it.
-
 Sketch (`src/main/kotlin/util/io/sketch`) is no longer called from anywhere, so it isn't needed.
