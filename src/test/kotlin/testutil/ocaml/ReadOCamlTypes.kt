@@ -16,22 +16,29 @@ class OcamlTypeParser {
     private val constructorIds = mutableMapOf<String, Int>()
     private var nextConstructorId = 0
 
+    /** The type constructor names parsed so far, after [parseSignatures]'s `typeName`. */
+    val constructorNames: Set<String> get() = constructorIds.keys
+
     /**
      * Parses one or more signatures (separated by newlines) into a map from value names to [Type]s.
-     * A `//` comment runs to the end of its line.
+     * A `//` comment runs to the end of its line. [typeName] gives the type each type constructor
+     * name stands for, so that two names for one type, like `Char.t` and `char`, are one label.
      */
-    fun parseSignatures(block: String): Map<String, Type> =
-        parseSignaturesWithLabels(block).mapValues { it.value.type }
+    fun parseSignatures(block: String, typeName: (String) -> String = { it }): Map<String, Type> =
+        parseSignaturesWithLabels(block, typeName).mapValues { it.value.type }
 
     /** [parseSignatures], keeping each value's labels. */
-    fun parseSignaturesWithLabels(block: String): Map<String, Signature> {
+    fun parseSignaturesWithLabels(
+        block: String,
+        typeName: (String) -> String = { it }
+    ): Map<String, Signature> {
         val result = LinkedHashMap<String, Signature>()
         block
             .lineSequence()
             .map { it.substringBefore("//").trim() }
             .filter { it.isNotEmpty() }
             .forEach { line ->
-                val (name, signature) = parseSignatureLine(line)
+                val (name, signature) = parseSignatureLine(line, typeName)
                 result[name] = signature
             }
         return result
@@ -40,7 +47,7 @@ class OcamlTypeParser {
     /** Convenience wrapper when only a single signature string is provided. */
     fun parseSignature(signature: String): Map<String, Type> = parseSignatures(signature)
 
-    private fun parseSignatureLine(line: String): Pair<String, Signature> {
+    private fun parseSignatureLine(line: String, typeName: (String) -> String): Pair<String, Signature> {
         val normalized = normalizeLine(line)
         // An operator name can itself contain ':', e.g. `(:=)`, so the separator comes after it.
         val nameEnd = if (normalized.startsWith("(")) normalized.indexOf(')') else 0
@@ -52,7 +59,7 @@ class OcamlTypeParser {
         val typePart = normalized.substring(colonIndex + 1).trim()
 
         val tokens = tokenize(typePart)
-        val variableContext = VariableContext()
+        val variableContext = VariableContext(typeName)
         val labels = mutableListOf<String?>()
         val (type, remaining) = parseArrow(tokens, variableContext, labels)
         require(remaining.isEmpty()) { "Unparsed tokens: $remaining" }
@@ -130,7 +137,7 @@ class OcamlTypeParser {
     ): Pair<Type, List<String>> {
         var (base, rest) = parseAtom(tokens, ctx)
         while (rest.isNotEmpty() && isConstructorName(rest[0])) {
-            base = NamedLabel(constructorId(rest[0]), listOf(base))
+            base = NamedLabel(constructorId(ctx.typeName(rest[0])), listOf(base))
             rest = rest.drop(1)
         }
         return base to rest
@@ -145,7 +152,7 @@ class OcamlTypeParser {
             }
             head == "(" -> parseParenthesized(tokens.drop(1), ctx)
             isConstructorName(head) -> {
-                NamedLabel(constructorId(head), emptyList()) to tokens.drop(1)
+                NamedLabel(constructorId(ctx.typeName(head)), emptyList()) to tokens.drop(1)
             }
             else -> error("Unexpected token '$head'")
         }
@@ -175,7 +182,7 @@ class OcamlTypeParser {
             require(ctor != null && isConstructorName(ctor)) {
                 "Expected type constructor after parenthesized arguments, got $ctor"
             }
-            return NamedLabel(constructorId(ctor), args) to rest.drop(1)
+            return NamedLabel(constructorId(ctx.typeName(ctor)), args) to rest.drop(1)
         }
         require(rest0.firstOrNull() == ")") { "Expected closing parenthesis" }
         return first to rest0.drop(1)
@@ -203,13 +210,14 @@ class OcamlTypeParser {
         token.firstOrNull()?.isLetter() == true
 
     private data class VariableContext(
+        val typeName: (String) -> String,
         val ids: MutableMap<String, Int> = mutableMapOf(),
         var nextId: Int = 0
     ) {
         fun variableId(name: String): Int = ids.getOrPut(name) { nextId++ }
 
         /** A copy, to read a type in without changing this one. */
-        fun scratch() = VariableContext(HashMap(ids), nextId)
+        fun scratch() = VariableContext(typeName, HashMap(ids), nextId)
     }
 }
 

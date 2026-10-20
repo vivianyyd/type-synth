@@ -1,5 +1,7 @@
 // Format
 // type formatter
+// type formatter_out_functions = { out_string : string -> int -> int -> unit; out_width : string -> pos:int -> len:int -> int; out_flush : unit -> unit; out_newline : unit -> unit; out_spaces : int -> unit; out_indent : int -> unit }
+// type formatter_stag_functions = { mark_open_stag : stag -> string; mark_close_stag : stag -> string; print_open_stag : stag -> unit; print_close_stag : stag -> unit }
 val std_formatter : formatter
 val err_formatter : formatter
 val str_formatter : formatter
