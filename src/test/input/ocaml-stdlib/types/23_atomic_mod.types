@@ -1,5 +1,5 @@
 // Atomic
-// TODO: change label t to something unique
+// type !'a t
 // TODO: for the !: https://stackoverflow.com/questions/70450821/ocaml-meaning-of-in-type-a-t#:~:text=%2C%20meaning%20of%20%60!-,+%60%20in%20%60type%20%60!+,type%2Ddeclaration
 // type !'a t
 val make : 'a -> 'a t
