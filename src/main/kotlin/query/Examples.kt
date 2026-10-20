@@ -67,14 +67,6 @@ sealed interface Example {
         }
         if (names.none { it in bound }) into.add(this)
     }
-
-    /** Whether this contains a [Lam] or a [Let]. */
-    fun hasBinders(): Boolean =
-        when (this) {
-            is Name -> false
-            is App -> fn.hasBinders() || arg.hasBinders()
-            is Lam, is Let -> true
-        }
 }
 
 // toString() is OCaml syntax: OCamlChecker type-checks examples by compiling it.

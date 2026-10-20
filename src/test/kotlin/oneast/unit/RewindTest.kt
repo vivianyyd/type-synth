@@ -81,17 +81,14 @@ class RewindTest {
 
     @Test
     fun `typing an expression does not disturb the check`() {
-        val hole = TypeHole()
         val I = NamedLabel(0, listOf())
         val context = SearchState(
             names = mapOf("f" to 0, "x" to 1),
-            types = listOf(Arrow(hole, I), I),
+            types = listOf(Arrow(I, I), I),
             labelArities = mapOf(0 to 0)
         )
-        val example = App(Name("f"), Name("x"))
-        val u = OneUnification(context, listOf(example))
-        val before = u.holeConstructor(hole) to u.classesOf(hole).toList()
-        u.type(example)
-        assertEquals(before, u.holeConstructor(hole) to u.classesOf(hole).toList())
+        val u = OneUnification(context, listOf(App(Name("f"), Name("x"))))
+        assertEquals(null, u.type(App(Name("x"), Name("x"))))
+        assertTrue(u.ok, "an expression that fails to type must not fail the check")
     }
 }

@@ -473,26 +473,25 @@ class TypeGraph {
     // ---------------------------------------------------------------- reading types back out
 
     /**
-     * The type denoted by [node], as far as unification has determined it: its class's constructor,
-     * else its type variable.
-     *
-     * Null if any class below [node] has neither, which is unification never having determined what
-     * that part is — the result of applying something not known to be a function, say. There is no
-     * type to report for it, and reporting one anyway would make two unrelated unknowns look equal.
+     * The type denoted by [node]. Requires a graph with no holes, so that unification has
+     * determined all it can: a class with no constructor is then a type variable, as the parameter
+     * of `fun x -> x` is. Each class is its own variable, numbered from 0 in the order they appear,
+     * so types that are equal up to renaming variables come out equal.
      */
-    fun typeAt(node: Int): Type? {
-        val root = find(node)
-        val c = ctorAt[root]
-        if (c != NONE) {
+    fun typeAt(node: Int): Type {
+        require(holeInstances.isEmpty()) { "Types are only read from graphs with no holes" }
+        val variables = HashMap<Int, Variable>()
+
+        fun read(node: Int): Type {
+            val root = find(node)
+            val c = ctorAt[root]
+            if (c == NONE) return variables.getOrPut(root) { Variable(variables.size) }
             val off = argOff[c]
-            if (key[c] == ARROW)
-                return Arrow(typeAt(args[off]) ?: return null, typeAt(args[off + 1]) ?: return null)
-            val params = ArrayList<Type>(argLen[c])
-            for (i in 0 until argLen[c]) params.add(typeAt(args[off + i]) ?: return null)
-            return NamedLabel(key[c], params)
+            val params = List(argLen[c]) { read(args[off + it]) }
+            return if (key[c] == ARROW) Arrow(params[0], params[1]) else NamedLabel(key[c], params)
         }
-        val v = rigidAt[root]
-        return if (v != NONE) Variable(key[v]) else null
+
+        return read(node)
     }
 
     /**

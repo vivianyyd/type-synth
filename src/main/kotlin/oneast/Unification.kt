@@ -26,7 +26,7 @@ import util.IntUnionFind
 class OneUnification(private val environment: SearchState, examples: List<Example>) {
     private val graph = TypeGraph()
 
-    /** How many times a component type has been instantiated so far. Each use of a name is one. */
+    /** How many times a component type has been instantiated so far. Each use of one is one. */
     private var instantiations = 0
 
     init {
@@ -148,8 +148,8 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
     }
 
     /**
-     * The type [ex] has in this environment. Null if it does not type-check, or if unification did
-     * not determine some part of it — see [TypeGraph.typeAt].
+     * The type [ex] has in this environment, or null if it does not type-check. Requires an
+     * environment with no holes; see [TypeGraph.typeAt].
      */
     fun type(ex: Example): Type? {
         val fresh = OneUnification(environment, emptyList())
@@ -169,13 +169,36 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
         return ok
     }
 
-    /** Adds [ex] to the graph. Returns the node for its type, or null if it does not type-check. */
-    private fun build(ex: Example): Int? =
+    /**
+     * Adds [ex] to the graph, with the names in [scope] bound around it. Returns the node for its
+     * type, or null if it does not type-check.
+     *
+     * A let is Hindley-Milner's: `let x = v in b` type-checks iff v does and b with v in place of
+     * each x does. So each use of x builds v again, instantiating every component in it afresh,
+     * which is what generalizing v's type would allow. A lambda's parameter is one type, shared by
+     * every use, and so is any parameter v mentions, since v is built in the scope of the let.
+     */
+    private fun build(ex: Example, scope: Scope? = null): Int? =
         when (ex) {
-            is Name -> instantiate(environment.typeOf(ex.name), instantiations++)
-            is App -> build(ex.fn)?.let { f -> build(ex.arg)?.let { a -> graph.apply(f, a) } }
-            is Lam, is Let ->
-                throw UnsupportedOperationException("Type checking lambdas and lets is not implemented: $ex")
+            is Name ->
+                when (val local = scope.lookup(ex.name)) {
+                    null -> instantiate(environment.typeOf(ex.name), instantiations++)
+                    is Param -> local.node
+                    is Def -> build(local.value, local.scope)
+                }
+            is App ->
+                build(ex.fn, scope)?.let { f ->
+                    build(ex.arg, scope)?.let { a -> graph.apply(f, a) }
+                }
+            is Lam -> {
+                val param = graph.freshVar()
+                build(ex.body, Scope(ex.param, Param(param), scope))?.let { graph.arrow(param, it) }
+            }
+            is Let -> {
+                // Built once even if the body never uses it, since it has to type-check
+                if (build(ex.value, scope) == null) null
+                else build(ex.body, Scope(ex.name, Def(ex.value, scope), scope))
+            }
         }
 
     private fun instantiate(t: Type, inst: Int): Int =
@@ -210,6 +233,26 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
         return satisfiable()
     }
 }
+
+/** The names bound around an expression being built: [name] is [local], inside [outer]. */
+private class Scope(val name: String, val local: Local, val outer: Scope?)
+
+/** What a name bound by a lambda or a let stands for. */
+private sealed interface Local
+
+/** A lambda's parameter, whose type is [node]. */
+private class Param(val node: Int) : Local
+
+/** A let's name, which stands for [value] in [scope], the scope of the let. */
+private class Def(val value: Example, val scope: Scope?) : Local
+
+/** What [name] is bound to, innermost binding first, or null if it is a component. */
+private tailrec fun Scope?.lookup(name: String): Local? =
+    when {
+        this == null -> null
+        this.name == name -> local
+        else -> outer.lookup(name)
+    }
 
 /**
  * Groups of label-only blanks that must become the same label. See [OneUnification.blankGroups].

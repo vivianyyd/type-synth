@@ -4,6 +4,7 @@ import oneast.*
 import org.junit.jupiter.api.Test
 import query.Examples
 import testutil.loadQueryFromFile
+import testutil.unsignedExample
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -158,6 +159,49 @@ class IncrementalRefinementTest {
         walk.undoAll()
     }
 
+    // ------------------------------------------------------------------- lets and lambdas
+
+    /** g is f behind a lambda and a let, used at an int and at a list of ints. */
+    private val polymorphicLet = Examples(
+        listOf(unsignedExample("(let g = (fun x -> f x) in (cons (g Num) (g Li)))")), emptyList()
+    )
+
+    private val letTruth = listOf(
+        "cons" to consType,
+        "Num" to int(),
+        "Li" to list(int()),
+        "f" to fn(a, a),
+    )
+
+    @Test
+    fun `lets - fill every type, through a let`() {
+        val walk = Walk(polymorphicLet)
+        letTruth.forEach { (name, type) -> walk.fillTowards(name, type) }
+        walk.assertNothingOnTheWayWasPruned()
+        walk.undoAll()
+    }
+
+    @Test
+    fun `lets - each use of a let-bound name has its own instance of the value's type`() {
+        val walk = Walk(polymorphicLet)
+        letTruth.dropLast(1).forEach { (name, type) -> walk.fillTowards(name, type) }
+        // g is used at int and at a list of ints, so f cannot be int -> int
+        assertFalse(walk.fill("f", fn(int(), int())).posOk)
+        walk.undo()
+        assertTrue(walk.fill("f", fn(a, a)).posOk)
+        walk.undoAll()
+    }
+
+    @Test
+    fun `lambdas - a parameter has one type at every use`() {
+        val example = unsignedExample("(fun h -> cons (h Num) (h Li))")
+        val walk = Walk(Examples(listOf(example), emptyList()))
+        // h is applied to an int and a list of ints, but is not let-bound, so nothing fills this
+        letTruth.dropLast(1).forEach { (name, type) -> walk.fillTowards(name, type) }
+        assertFalse(walk.pos.satisfiable())
+        walk.undoAll()
+    }
+
     // ---------------------------------------------------------------------------- harness
 
     /** What the search can ask a check, projected so that two equivalent checks compare equal. */
@@ -171,8 +215,9 @@ class IncrementalRefinementTest {
         val sharingAClass: Set<Set<THole>>,
     )
 
-    private inner class Walk(file: String) {
-        private val examples: Examples = loadQueryFromFile(file).examples
+    private inner class Walk(private val examples: Examples) {
+        constructor(file: String) : this(loadQueryFromFile(file).examples)
+
         private val names = examples.names.withIndex().associate { it.value to it.index }
         private val labelArities = mapOf(I to 0, B to 0, L to 1)
 

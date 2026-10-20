@@ -18,9 +18,9 @@ class CheckingGroundTruthOracle(secret: Map<String, Type>) : GroundTruth, Oracle
     // to be asked about would only check them twice.
     override fun equal(a: Example, b: Example): Boolean {
         val u = OneUnification(truth, emptyList())
+        // Variables are numbered in the order they appear, so types equal up to renaming are equal.
         val ta = u.type(a)
-        val tb = u.type(b)
-        return ta != null && tb != null && equalUpToVariableRenaming(ta, tb)
+        return ta != null && ta == u.type(b)
     }
 
     override fun dummy(e: Example): Int = OneUnification(truth, emptyList()).type(e).hashCode()

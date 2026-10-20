@@ -21,11 +21,7 @@ covers a place where OCaml is not Hindley-Milner.
   `(f fun x -> x)`.
 - A bound name is an OCaml variable name: a lowercase letter or `_`, then letters, digits, `_`
   or `'`. No OCaml keywords. `_` binds nothing and can't be used.
-- `Num`, `Str`, `Char`, `Flt` and `Nil` stand for `1`, `"s"`, `'a'`, `1.` and `[]`. ocamlc sees them
-  replaced as plain text, so no other name may contain those strings: not `xNil`, not `myStr`.
-
-Lambdas and lets are parsed, but not loaded yet: `splitOCamlExamples` drops them until our type
-checker handles them. See `binders-next.md` at the repository root.
+- `Num`, `Str`, `Char`, `Flt` and `Nil` stand for `1`, `"s"`, `'a'`, `1.` and `[]`.
 
 ## Lets: avoid the value restriction
 
