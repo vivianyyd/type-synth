@@ -68,7 +68,7 @@ class SearchStats(
  * [phase] charges an eager block, and [inPhase] charges every step of a sequence's iterator. They
  * nest, and time is exclusive: while an inner phase runs, the outer one's clock is paused.
  *
- * All of this is meant for one run per JVM. Phases are entered and left by the thread driving the
+ * All of this is meant for one recording at a time per JVM. Phases are entered and left by the thread driving the
  * search only; counters may be bumped from any thread, and go to the phase running at the time.
  */
 object Stats {
@@ -76,7 +76,8 @@ object Stats {
     var recording: Recording? = null
         private set
 
-    fun start(trace: Writer? = null): Recording = Recording(trace).also { recording = it }
+    /** Starts recording the search of [step], one step of a run. */
+    fun start(trace: Writer?, step: String): Recording = Recording(trace, step).also { recording = it }
 
     fun stop(): Recording? = recording.also { recording = null }
 
@@ -131,7 +132,8 @@ fun <T> Sequence<T>.inPhase(search: Int, phase: Phase): Sequence<T> = Sequence {
     }
 }
 
-class Recording(val trace: Writer?) {
+/** [trace] is shared by the steps of a run, so its lines say which [step] they're from. */
+class Recording(val trace: Writer?, val step: String) {
     val startNanos = System.nanoTime()
 
     /** Charged with whatever runs outside every phase. */
@@ -189,6 +191,7 @@ class Recording(val trace: Writer?) {
         trace!!.write(
             Json.write(
                 mapOf(
+                    "step" to step,
                     "search" to c.search,
                     "phase" to c.phase?.key,
                     "kind" to kind,

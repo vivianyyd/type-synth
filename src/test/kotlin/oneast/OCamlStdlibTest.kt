@@ -124,7 +124,7 @@ class OCamlStdlibTest {
             val solutions = OracleKind.values().associateWith { kind ->
                 val (query, _) = cumulativeQuery(iter, seeds.getValue(kind))
                 val t0 = System.currentTimeMillis()
-                Stats.start()
+                Stats.start(null, "$kind")
                 val sols = run(query, ocaml, config(Auto(3)).copy(oracle = kind))
                 val counters = Stats.stop()!!.snapshot()["counters"] as Map<*, *>
                 println(

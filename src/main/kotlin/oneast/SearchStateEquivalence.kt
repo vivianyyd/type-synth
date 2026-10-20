@@ -13,15 +13,7 @@ package oneast
  * (label / variable) renaming is forced by the corresponding label or variable
  * on the other side.
  */
-fun SearchState.equivalentTo(other: SearchState): Boolean = mismatches(other).isEmpty()
-
-/**
- * The names whose types keep [this] from being equivalent to [other]: those with a nonzero cost in
- * [diffTo], including names only one state has. Labels are renamed consistently across all names,
- * so a name can be listed because of how a name before it (in [other]'s order) used a label.
- */
-fun SearchState.mismatches(other: SearchState): List<String> =
-    other.diffTo(this).costByName.filterValues { it > 0 }.keys.toList()
+fun SearchState.equivalentTo(other: SearchState): Boolean = other.diffTo(this).cost == 0
 
 /** Whether [a] and [b] are the same type up to renaming variables. Labels must be the same. */
 fun equalUpToVariableRenaming(a: Type, b: Type): Boolean =

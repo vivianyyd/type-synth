@@ -3,33 +3,28 @@ package bench
 import oneast.*
 import query.AbstractQuery
 import testutil.loadQueryFromFile
-import testutil.ocaml.OCamlGroundTruth
-import testutil.ocaml.loadFromExsFiles
 import testutil.ocaml.ocamlModuleGroups
 import testutil.ocaml.ocamlModulesQuery
 import util.GroundTruth
 
-/**
- * A synthesis problem, and the answer it should have if one is known. For a problem solved in
- * [rounds], each round's name and the names it adds, in order.
- */
-class Problem(
-    val query: AbstractQuery,
-    val groundTruth: GroundTruth,
-    val expected: SearchState?,
-    val rounds: List<Pair<String, Set<String>>> = emptyList()
-)
+/** A synthesis problem, and the answer it should have if one is known. */
+class Problem(val query: AbstractQuery, val groundTruth: GroundTruth, val expected: SearchState?)
 
 /**
- * [defaults] is the configuration a variant starts from. [load] gets the configuration the run
- * uses, for benchmarks that search while loading, and how to ask OCaml about examples, which
- * benchmarks that aren't OCaml ignore.
+ * One search of a benchmark. [load] builds its problem from the answer the steps before it
+ * committed to and the run's ground truth, which a step that checks examples another way ignores.
  */
-class Benchmark(
-    val name: String,
-    val defaults: Configuration,
-    val load: (Configuration, OCamlGroundTruth) -> Problem
-)
+class Step(val name: String, val load: (committed: SearchState, groundTruth: GroundTruth) -> Problem)
+
+/**
+ * Searches solved in order, in one run, each committing to its first solution for the next.
+ * [defaults] is the configuration a variant starts from.
+ */
+class Benchmark(val name: String, val defaults: Configuration, val steps: List<Step>)
+
+/** A benchmark of one step, named like the benchmark. */
+private fun oneStep(name: String, defaults: Configuration, load: (groundTruth: GroundTruth) -> Problem) =
+    Benchmark(name, defaults, listOf(Step(name) { _, groundTruth -> load(groundTruth) }))
 
 private val sexpDefaults =
     Configuration(
@@ -42,55 +37,38 @@ private val sexpDefaults =
 private val ocamlDefaults = sexpDefaults.copy(scheduleInfo = Auto(3))
 
 private fun sexp(file: String) =
-    Benchmark(file, sexpDefaults) { _, _ ->
+    oneStep(file, sexpDefaults) { _ ->
         val query = loadQueryFromFile(file)
         Problem(query, query.oracle, query.oracle.truth)
     }
 
+private val ocamlModuleNames = listOf("basics", "comparison", "list", "bitwise", "float", "str")
+
 /** Solves the [i]th group of modules given the true types of the groups before it. */
 private fun ocaml(name: String, i: Int) =
-    Benchmark("ocaml-$name", ocamlDefaults) { _, ocaml ->
-        val groundTruth = ocaml.create()
+    oneStep("ocaml-$name", ocamlDefaults) { groundTruth ->
         val (query, expected) =
             ocamlModulesQuery(ocamlModuleGroups[i], fixed = ocamlModuleGroups.subList(0, i).flatten(), groundTruth = groundTruth)
         Problem(query, groundTruth, expected)
     }
 
 /**
- * Solves the [i]th group of modules given the search's own answer for the groups before it: each
- * group is solved with the examples of every group so far, committed to the first solution for the
- * groups before it. The groups before it are solved while loading, so
- * they count toward loadMs and not the record's stats, and an answer they get wrong shows up in
- * the record's mismatches.
+ * Solves the groups of modules in order, each given the search's own answer for the groups before
+ * it: step i has the examples of every group up to the ith, committed to the answer of the step
+ * before it.
  */
-private fun ocamlChained(name: String, i: Int) =
-    Benchmark("ocaml-chained-$name", ocamlDefaults) { config, ocaml ->
-        val groundTruth = ocaml.create()
-        fun query(j: Int, committed: SearchState) =
-            ocamlModulesQuery(
-                ocamlModuleGroups.subList(0, j + 1).flatten(), fixed = emptyList(), committed, groundTruth
-            )
-
-        val committed =
-            (0 until i).fold(SearchState.emptyState) { committed, j ->
-                run(query(j, committed).first, groundTruth, config).firstOrNull()
-                    ?: error("No solution for ${ocamlModuleNames[j]}, the modules before ${ocamlModuleNames[i]}")
+private val ocamlChained =
+    Benchmark(
+        "ocaml-chained",
+        ocamlDefaults,
+        ocamlModuleNames.mapIndexed { i, name ->
+            Step(name) { committed, groundTruth ->
+                val (query, expected) =
+                    ocamlModulesQuery(ocamlModuleGroups.subList(0, i + 1).flatten(), fixed = emptyList(), committed, groundTruth)
+                Problem(query, groundTruth, expected)
             }
-        val (query, expected) = query(i, committed)
-        Problem(query, groundTruth, expected, ocamlRounds(i))
-    }
-
-/** For each group of modules up to the [i]th, its name and the names it adds. */
-private fun ocamlRounds(i: Int): List<Pair<String, Set<String>>> {
-    val seen = mutableSetOf<String>()
-    return (0..i).map { j ->
-        val names = loadFromExsFiles(ocamlModuleGroups.subList(0, j + 1).flatten()).second.keys - seen
-        seen += names
-        ocamlModuleNames[j] to names
-    }
-}
-
-private val ocamlModuleNames = listOf("basics", "comparison", "list", "bitwise", "float", "str")
+        }
+    )
 
 object Benchmarks {
     val suites: Map<String, List<Benchmark>> =
@@ -108,10 +86,9 @@ object Benchmarks {
                     .map(::sexp),
             "sexp-unsolved" to listOf("list-and-dict", "option", "pair").map(::sexp),
             "ocaml" to ocamlModuleNames.mapIndexed { i, name -> ocaml(name, i) },
-            "ocaml-chained" to ocamlModuleNames.mapIndexed { i, name -> ocamlChained(name, i) },
         )
 
-    val all: Map<String, Benchmark> = suites.values.flatten().associateBy { it.name }
+    val all: Map<String, Benchmark> = (suites.values.flatten() + ocamlChained).associateBy { it.name }
 
     /** Each of [names] is a benchmark or a suite. */
     fun resolve(names: List<String>): List<Benchmark> =

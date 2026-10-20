@@ -1,13 +1,16 @@
 package bench
 
+import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
+import oneast.Configuration
 import oneast.SearchState
 import oneast.StateDiff
 import oneast.diffTo
-import oneast.mismatches
 import oneast.nodeCount
 import oneast.run
+import okio.Buffer
 import testutil.ocaml.OCamlGroundTruth
+import util.GroundTruth
 import util.stateFromContext
 import java.io.BufferedWriter
 import java.io.File
@@ -15,24 +18,24 @@ import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.io.Writer
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.GZIPOutputStream
-import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
 private const val USAGE =
     """Usage: ./gradlew bench -q --args="[benchmark or suite ...] [options]"
 
 Runs each benchmark in a JVM of its own and writes one JSON record per run to
-<out>/<batch>/<benchmark>.json. With no benchmarks given, runs the sexp suite.
+<out>/<batch>/<benchmark>.json. A benchmark's steps are solved in order in its JVM, each
+committing to the answer of the step before. With no benchmarks given, runs the sexp suite.
 Any order. Quote values with spaces in single quotes.
 
   --variant NAME[,NAME...]  version of the search to run (default: default)
   --notes TEXT       free text recorded with every run
-  --timeout SECONDS  per run, including loading the benchmark (default: 600)
+  --timeout SECONDS  per step, including loading it (default: 600)
   --repeat N         run each benchmark N times (default: 1)
   --jobs N           runs at once; more than 1 skews timings (default: 1)
   --trace            also write every candidate to <benchmark>.trace.jsonl.gz
@@ -120,6 +123,9 @@ fun main(args: Array<String>) {
 private fun list() {
     println("Suites:")
     Benchmarks.suites.forEach { (name, bs) -> println("  $name: ${bs.joinToString { it.name }}") }
+    println("Benchmarks of more than one step:")
+    Benchmarks.all.values.filter { it.steps.size > 1 }
+        .forEach { b -> println("  ${b.name}: ${b.steps.joinToString { it.name }}") }
     println("Variants:")
     Variants.all.values.forEach { println("  ${it.name}: ${it.description}") }
     println("  ${Variants.DEEPEN}N: ${Variants.DEEPEN_DESCRIPTION}")
@@ -169,10 +175,18 @@ private fun runBatch(opts: Options) {
             pool.submit<Map<*, *>> {
                 val runId = if (opts.repeat > 1) "${b.name}.$r" else b.name
                 val record = runChild(opts, b, runId, r, dir)
-                val line = summaryLine(record)
                 synchronized(System.out) {
-                    println("[%2d/%d] %s".format(done.incrementAndGet(), runs.size, line))
-                    if (record["status"] == "wrong") print(wrongAnswer(record))
+                    val counter = "[%2d/%d]".format(done.incrementAndGet(), runs.size)
+                    val steps = (record["steps"] as? List<*>).orEmpty().filterIsInstance<Map<*, *>>()
+                    for (step in steps) {
+                        val name = if (b.steps.size == 1) runId else "$runId/${step["step"]}"
+                        println("$counter ${summaryLine(name, step)}")
+                        if (step["status"] == "wrong") print(wrongAnswer(step))
+                    }
+                    // The parent's verdict on a run that stopped without finishing its record
+                    (record["error"] as? String)?.let {
+                        println("$counter %-28s %-11s %s".format(runId, record["status"], it.lineSequence().first()))
+                    }
                 }
                 record
             }
@@ -212,13 +226,18 @@ private fun runChild(opts: Options, b: Benchmark, runId: String, repeat: Int, di
             .redirectErrorStream(true)
             .redirectOutput(File(dir, "$runId.log"))
             .start()
-    // The run times itself out; this is in case it can't.
-    val killed = !proc.waitFor(opts.timeoutSec + 60, TimeUnit.SECONDS)
+    // The run times out each step itself; this is in case it can't.
+    val killAfterSec = opts.timeoutSec * b.steps.size + 60
+    val killed = !proc.waitFor(killAfterSec, TimeUnit.SECONDS)
     if (killed) proc.destroyForcibly().waitFor()
     // Runs print nothing unless debugging or failing
     File(dir, "$runId.log").let { if (it.length() == 0L) it.delete() }
 
     val recordFile = File(dir, "$runId.json")
+    val status = if (killed) "timeout" else "crashed"
+    val error =
+        if (killed) "Killed ${killAfterSec}s in, having not finished its record"
+        else "Exited with ${proc.exitValue()} without finishing its record; see $runId.log"
     if (!recordFile.isFile) {
         recordFile.writeText(
             Json.write(
@@ -227,49 +246,67 @@ private fun runChild(opts: Options, b: Benchmark, runId: String, repeat: Int, di
                     "runId" to runId,
                     "benchmark" to b.name,
                     "repeat" to repeat,
-                    "status" to if (killed) "timeout" else "crashed",
-                    "error" to
-                        if (killed) "Killed ${opts.timeoutSec + 60}s in, having written no record of its own"
-                        else "Exited with ${proc.exitValue()} without a record; see $runId.log",
+                    "status" to status,
+                    "error" to error,
                     "batch" to RawJson(File(dir, "batch.json").readText()),
                 ),
                 pretty = true
-            )
+            ) + "\n"
         )
+    } else {
+        // Keep the steps it finished
+        val fields = readFields(recordFile)
+        if (fields["status"]?.let { (it as RawJson).text.trim() } == "\"running\"") {
+            val record = linkedMapOf<String, Any?>()
+            fields.forEach { (k, v) ->
+                record[k] = if (k == "status") status else v
+                if (k == "status") record["error"] = error
+            }
+            recordFile.writeText(Json.write(record, pretty = true) + "\n")
+        }
     }
     return Moshi.Builder().build().adapter(Map::class.java).fromJson(recordFile.readText())!!
 }
 
-private fun summaryLine(record: Map<*, *>): String {
-    val stats = record["stats"] as? Map<*, *>
+/** The top-level fields of a record, each as the JSON it was written as. */
+private fun readFields(file: File): Map<String, Any?> {
+    val reader = JsonReader.of(Buffer().writeUtf8(file.readText()))
+    val fields = linkedMapOf<String, Any?>()
+    reader.beginObject()
+    while (reader.hasNext()) fields[reader.nextName()] = RawJson(reader.nextSource().use { it.readUtf8() })
+    reader.endObject()
+    return fields
+}
+
+/** One step of a run, called [name]. */
+private fun summaryLine(name: String, step: Map<*, *>): String {
+    val stats = step["stats"] as? Map<*, *>
     val counters = stats?.get("counters") as? Map<*, *>
     fun count(key: String) = (counters?.get(key) as? Number)?.toLong() ?: 0
     val time = (stats?.get("wallMs") as? Number)?.let { "%8.1fs".format(it.toDouble() / 1000) } ?: " ".repeat(9)
-    return "%-24s %-11s %s  candidates=%d prunedPos=%d prunedNeg=%d solverCalls=%d%s".format(
-        record["runId"], record["status"], time,
+    return "%-28s %-11s %s  candidates=%d prunedPos=%d prunedNeg=%d solverCalls=%d%s".format(
+        name, step["status"], time,
         count("candidates"), count("prunedPos"), count("prunedNeg"), count("solverCalls"),
-        bestScore(record)?.let { "  ${describeScore(it)}" } ?: ""
+        bestScore(step)?.let { "  ${describeScore(it)}" } ?: ""
     )
 }
 
 /** The score of the solution closest to the expected answer, if there is one to compare with. */
-private fun bestScore(record: Map<*, *>): Map<*, *>? =
-    (record["scores"] as? List<*>)?.filterIsInstance<Map<*, *>>()?.minByOrNull { (it["cost"] as Number).toInt() }
+private fun bestScore(step: Map<*, *>): Map<*, *>? =
+    (step["scores"] as? List<*>)?.filterIsInstance<Map<*, *>>()?.minByOrNull { (it["cost"] as Number).toInt() }
 
 private fun describeScore(score: Map<*, *>): String {
     fun int(key: String) = (score[key] as Number).toInt()
     return "exact=%d/%d cost=%d/%d".format(int("exactNames"), int("names"), int("cost"), int("expectedSize"))
 }
 
-/** Each solution next to the expected answer, with the names whose types differ marked. */
-private fun wrongAnswer(record: Map<*, *>): String {
-    val expected = record["expected"] as Map<*, *>
-    val solutions = record["solutions"] as List<*>
-    val mismatches = record["mismatches"] as List<*>
-    val scores = record["scores"] as List<*>
+/** Each solution of a step next to the expected answer, with the names whose types differ marked. */
+private fun wrongAnswer(step: Map<*, *>): String {
+    val expected = step["expected"] as Map<*, *>
+    val solutions = step["solutions"] as List<*>
+    val scores = step["scores"] as List<*>
     return solutions.indices.joinToString("") { i ->
         val solution = solutions[i] as Map<*, *>
-        val differs = mismatches[i] as List<*>
         val score = scores[i] as Map<*, *>
         val byName = score["byName"] as Map<*, *>
         val names = solution.keys.map { it.toString() }
@@ -279,40 +316,53 @@ private fun wrongAnswer(record: Map<*, *>): String {
         (if (solutions.size > 1) "        Solution ${i + 1}: ${describeScore(score)}\n" else "") +
             row.format(" ", "name", "cost", "returned", "expected") +
             names.joinToString("") { n ->
-                val cost = (byName[n] as? Map<*, *>)?.get("cost")?.let { (it as Number).toInt() } ?: "-"
-                row.format(if (n in differs) "*" else " ", n, cost, solution[n], expected[n])
+                val cost = (byName[n] as? Map<*, *>)?.get("cost")?.let { (it as Number).toInt() }
+                row.format(if (cost != null && cost > 0) "*" else " ", n, cost ?: "-", solution[n], expected[n])
             }
     } + "        (* differs from expected)\n"
 }
 
-private const val SCHEMA = 1
+private const val SCHEMA = 2
 
 private fun SearchState.toJson(): Map<String, String> = asMap().mapValues { it.value.toString() }
 
-/** How far a solution is from [expected]: the cost overall and per name, and the names that match. */
-private fun StateDiff.toJson(expected: SearchState): Map<String, Any?> =
-    linkedMapOf(
-        "cost" to cost,
-        "expectedSize" to expectedSize,
-        "ratio" to ratio,
-        "exactNames" to costByName.count { it.value == 0 },
-        "names" to costByName.size,
-        "byName" to
-            costByName.mapValues { (name, c) ->
-                linkedMapOf(
-                    "cost" to c,
-                    "expectedSize" to (expected.names[name]?.let { expected.types[it].nodeCount() } ?: 0)
-                )
-            },
+/**
+ * How far a solution is from [expected] on [names] only: the cost overall and per name, and the
+ * names that match.
+ */
+private fun StateDiff.toJson(expected: SearchState, names: List<String>): Map<String, Any?> {
+    fun expectedSize(name: String) = expected.names[name]?.let { expected.types[it].nodeCount() } ?: 0
+    val own = StateDiff(
+        cost = names.sumOf { costByName[it] ?: 0 },
+        expectedSize = names.sumOf(::expectedSize),
+        costByName = names.associateWith { costByName[it] ?: 0 }
     )
+    return linkedMapOf(
+        "cost" to own.cost,
+        "expectedSize" to own.expectedSize,
+        "ratio" to own.ratio,
+        "exactNames" to own.costByName.count { it.value == 0 },
+        "names" to own.costByName.size,
+        "byName" to
+            own.costByName.mapValues { (name, c) -> linkedMapOf("cost" to c, "expectedSize" to expectedSize(name)) },
+    )
+}
 
-/** Runs one benchmark in this JVM and writes its record. */
+/** Whether a run is still going, and the step it's on, as far as the step's timeout needs to know. */
+private class Progress {
+    @Volatile var loadMs: Double? = null
+    @Volatile var recording: Recording? = null
+}
+
+/** Runs one benchmark's steps in this JVM, writing its record after each. */
 private fun runOne(opts: Options) {
     val dir = opts.dir!!
     val runId = opts.runId!!
     val benchmark = Benchmarks.all[opts.child!!] ?: error("No benchmark ${opts.child}")
     val variant = Variants.get(opts.variant)
     val config = variant.configure(benchmark.defaults)
+    // One for the whole run, shared by its steps
+    val groundTruth = (variant.ocamlGroundTruth ?: OCamlGroundTruth.default).create()
     Debug.enabled = opts.debug
 
     val base =
@@ -334,68 +384,136 @@ private fun runOne(opts: Options) {
             )
         else null
 
-    val written = AtomicBoolean(false)
-    var recording: Recording? = null
+    // Whichever of a step and its timeout takes the lock first records the step
+    val lock = Any()
+    val steps = mutableListOf<Map<String, Any?>>()
 
-    /** Returns false if the record was already written, by the timeout. */
-    fun finish(fields: Map<String, Any?>): Boolean {
-        if (!written.compareAndSet(false, true)) return false
-        val stats = recording?.let { r -> synchronized(r) { trace?.close(); r.snapshot() } }
-        val record = base + fields + mapOf("stats" to stats, "batch" to RawJson(File(dir, "batch.json").readText()))
+    /** Until [done], the run's status is running. Readers never see half a record. */
+    fun writeRecord(done: Boolean) {
+        // The first step that went wrong or didn't finish, if any
+        val status =
+            if (!done) "running"
+            else (steps.firstOrNull { it["status"] !in setOf("correct", "solved") } ?: steps.last())["status"]
+        val record = base + mapOf(
+            "status" to status,
+            "steps" to steps,
+            "batch" to RawJson(File(dir, "batch.json").readText())
+        )
         val tmp = File(dir, "$runId.json.tmp")
         tmp.writeText(Json.write(record, pretty = true) + "\n")
         tmp.renameTo(File(dir, "$runId.json"))
-        return true
     }
 
-    thread(isDaemon = true, name = "timeout") {
-        Thread.sleep(opts.timeoutSec * 1000)
-        // Exiting rather than halting runs the hook that deletes the solver's files.
-        if (finish(mapOf("status" to "timeout"))) exitProcess(0)
-    }
-
-    val fields =
-        try {
-            val loadStart = System.nanoTime()
-            val problem = benchmark.load(config, variant.ocamlGroundTruth ?: OCamlGroundTruth.default)
-            base["loadMs"] = (System.nanoTime() - loadStart) / 1_000_000.0
-            base["groundTruth"] = problem.groundTruth::class.simpleName
-
-            recording = Stats.start(trace)
-            val solutions = run(problem.query, problem.groundTruth, config)
-            Stats.stop()
-
-            val expected = problem.expected
-            // Each solution with the expected answer for its names. The expected context can have
-            // names that no example mentions, which aren't solved for
-            val compared =
-                expected?.let { e ->
-                    solutions.map { s -> s to stateFromContext(e.asMap().filterKeys { it in s.names }) }
-                }
-            val mismatches = compared?.map { (s, e) -> s.mismatches(e) }
-            linkedMapOf(
-                "status" to
-                    when {
-                        solutions.isEmpty() -> "no-solution"
-                        mismatches == null -> "solved"
-                        mismatches.any { it.isEmpty() } -> "correct"
-                        else -> "wrong"
-                    },
-                "matchesExpected" to mismatches?.let { m -> m.any { it.isEmpty() } },
-                "solutions" to solutions.map { it.toJson() },
-                "expected" to expected?.toJson(),
-                "mismatches" to mismatches,
-                "scores" to compared?.map { (s, e) -> e.diffTo(s).toJson(e) },
-                // For each solution, the rounds with a name whose type differs
-                "mismatchedRounds" to
-                    problem.rounds.takeIf { it.isNotEmpty() }?.let { rounds ->
-                        mismatches?.map { m -> rounds.filter { (_, names) -> names.any { it in m } }.map { it.first } }
-                    },
+    val timer = Executors.newSingleThreadScheduledExecutor { Thread(it, "timeout").apply { isDaemon = true } }
+    var committed = SearchState.emptyState
+    val order = mutableListOf<String>() // every name solved so far, by the step that solved it
+    for ((i, step) in benchmark.steps.withIndex()) {
+        val progress = Progress()
+        val timeout =
+            timer.schedule(
+                {
+                    synchronized(lock) {
+                        if (steps.size == i) {
+                            val recording = progress.recording
+                            val stats = recording?.let { r -> synchronized(r) { trace?.close(); r.snapshot() } }
+                            if (recording == null) trace?.close()
+                            steps += linkedMapOf(
+                                "step" to step.name, "status" to "timeout", "loadMs" to progress.loadMs, "stats" to stats
+                            )
+                            writeRecord(done = true)
+                            // Exiting rather than halting runs the hook that deletes the solver's files.
+                            exitProcess(0)
+                        }
+                    }
+                },
+                opts.timeoutSec,
+                TimeUnit.SECONDS
             )
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            mapOf("status" to "error", "error" to e.stackTraceToString())
+        val (record, solution) = solveStep(step, committed, order, config, groundTruth, trace, progress)
+        timeout.cancel(false)
+        synchronized(lock) {
+            steps += record
+            writeRecord(done = solution == null || i == benchmark.steps.lastIndex)
         }
-    if (!finish(fields)) Thread.sleep(Long.MAX_VALUE) // The timeout is writing the record and will exit.
+        committed = solution ?: break
+    }
+    trace?.close()
     exitProcess(0)
+}
+
+/**
+ * Loads [step] given the answer [committed] to so far, solves it, and compares its answer with the
+ * expected one. Returns the step's record, and the solution to commit to, if there is one. [order]
+ * is every name the steps before it solved, in the order they solved them; this adds the step's.
+ * [groundTruth] is the run's, which [step] may ignore.
+ */
+private fun solveStep(
+    step: Step,
+    committed: SearchState,
+    order: MutableList<String>,
+    config: Configuration,
+    groundTruth: GroundTruth,
+    trace: Writer?,
+    progress: Progress,
+): Pair<Map<String, Any?>, SearchState?> {
+    try {
+        val loadStart = System.nanoTime()
+        val problem = step.load(committed, groundTruth)
+        progress.loadMs = (System.nanoTime() - loadStart) / 1_000_000.0
+
+        val recording = Stats.start(trace, step.name)
+        progress.recording = recording
+        val solutions =
+            try {
+                run(problem.query, problem.groundTruth, config)
+            } finally {
+                Stats.stop()
+            }
+        val stats = recording.snapshot()
+
+        // The step's own names: the ones it wasn't given
+        val seed = problem.query.committedSeed.names.keys
+        val names = solutions.firstOrNull()?.names?.keys?.filter { it !in seed }.orEmpty()
+        // The expected answer, in the order the names were solved in, so that a label conflict is
+        // charged to the step that introduced it. The expected context can have names that no
+        // example mentions, which aren't solved for
+        val expected =
+            problem.expected?.let { e ->
+                val inOrder = seed.filter { it !in order } + order + names
+                stateFromContext(inOrder.filter { it in e.names }.associateWith { e.typeOf(it) })
+            }
+        val scores = expected?.let { e -> solutions.map { s -> e.diffTo(s).toJson(e, names) } }
+        order += names
+        val status =
+            when {
+                solutions.isEmpty() -> "no-solution"
+                scores == null -> "solved"
+                scores.any { it["cost"] == 0 } -> "correct"
+                else -> "wrong"
+            }
+        val record =
+            linkedMapOf(
+                "step" to step.name,
+                "status" to status,
+                "loadMs" to progress.loadMs,
+                "groundTruth" to problem.groundTruth::class.simpleName,
+                "names" to names,
+                "solutions" to solutions.map { s -> s.toJson().filterKeys { it in names } },
+                "expected" to expected?.toJson()?.filterKeys { it in names },
+                "scores" to scores,
+                "stats" to stats,
+            )
+        return record to solutions.firstOrNull()
+    } catch (e: Throwable) {
+        e.printStackTrace()
+        val record =
+            linkedMapOf(
+                "step" to step.name,
+                "status" to "error",
+                "loadMs" to progress.loadMs,
+                "error" to e.stackTraceToString(),
+                "stats" to progress.recording?.snapshot(),
+            )
+        return record to null
+    }
 }
