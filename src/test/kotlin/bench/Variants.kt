@@ -9,7 +9,12 @@ import oneast.*
  * Add a variant here for each alternative worth keeping side by side, i.e. each row of an
  * ablation. A change that only lives on a branch needs no variant: runs record the commit.
  */
-class Variant(val name: String, val description: String, val configure: (Configuration) -> Configuration)
+class Variant(
+    val name: String,
+    val description: String,
+    val load: (LoadOptions) -> LoadOptions = { it },
+    val configure: (Configuration) -> Configuration,
+)
 
 object Variants {
     val all: Map<String, Variant> =
@@ -22,6 +27,11 @@ object Variants {
             Variant("sound", "Let holes nothing constrains also become arrows or any label") {
                 it.copy(soundExpansions = true)
             },
+            Variant(
+                "thunk-lets",
+                "ocamlc checks each let as `let x () = v`, so the value restriction never applies",
+                load = { it.copy(thunkLets = true) },
+            ) { it },
         )
             .associateBy { it.name }
 
@@ -39,9 +49,12 @@ object Variants {
     fun get(names: String): Variant {
         val vs = names.split(",").map { one(it.trim()) }
         return vs.singleOrNull()
-            ?: Variant(vs.joinToString("+") { it.name }, vs.joinToString("; ") { it.description }) { c ->
-                vs.fold(c) { acc, v -> v.configure(acc) }
-            }
+            ?: Variant(
+                vs.joinToString("+") { it.name },
+                vs.joinToString("; ") { it.description },
+                load = { l -> vs.fold(l) { acc, v -> v.load(acc) } },
+                configure = { c -> vs.fold(c) { acc, v -> v.configure(acc) } },
+            )
     }
 }
 

@@ -82,7 +82,7 @@ class ParameterwiseDependencyAnalysis(
                         exsSameTypeBeforeI.all {
                             // for all examples with the same type prefix, the ith argument is always
                             // the same type
-                            oracle.flatEqual(it.args[i], exsSameTypeBeforeI.first().args[i])
+                            oracle.equal(it.args[i], exsSameTypeBeforeI.first().args[i])
                         }
                     }) {
                     currFixed[i] = true

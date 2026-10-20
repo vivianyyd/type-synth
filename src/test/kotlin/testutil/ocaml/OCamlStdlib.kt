@@ -68,12 +68,13 @@ fun loadFromExsFiles(exsFileNames: List<String>): Pair<List<Example>, Map<String
 /**
  * The problem of finding types for the names in modules [task], given the true types of the names
  * in modules [fixed], along with the answer. [committedSeed] replaces the true types of [fixed] as
- * what the search starts from.
+ * what the search starts from. [checker] is the ground truth the examples are checked against.
  */
 fun ocamlModulesQuery(
     task: List<String>,
     fixed: List<String>,
-    committedSeed: SearchState? = null
+    committedSeed: SearchState? = null,
+    checker: OCamlChecker = OCamlChecker(),
 ): Pair<Query, SearchState> {
     val (_, fixedTypes) = loadFromExsFiles(fixed)
     val (examplesAll, desiredTypes) = loadFromExsFiles(task)
@@ -86,7 +87,7 @@ fun ocamlModulesQuery(
     val oracle = CheckingGroundTruthOracle(oracleTypes)
     val query =
         Query(
-            splitOCamlExamples(examples, oracle, OCamlChecker()),
+            splitOCamlExamples(examples, oracle, checker),
             oracle,
             committedSeed = committedSeed ?: stateFromContext(fixedTypes)
         )

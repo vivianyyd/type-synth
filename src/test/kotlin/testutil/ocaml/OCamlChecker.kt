@@ -1,6 +1,10 @@
 package testutil.ocaml
 
+import query.App
 import query.Example
+import query.Lam
+import query.Let
+import query.Name
 import util.GroundTruth
 import java.io.File
 import java.nio.file.Files
@@ -18,12 +22,17 @@ data class TypeCheckResult(
  *
  * @param packages List of OCaml packages to import (e.g., ["base", "core", "lwt"])
  * @param opens List of modules to open in the preamble (e.g., ["Stdlib", "Base"])
+ * @param thunkLets Whether examples are checked as [thunkLets] makes them, so that OCaml's value
+ *   restriction never applies. Without it, the examples must avoid the value restriction; see
+ *   src/test/input/ocaml-stdlib/exs/README.md.
  */
 class OCamlChecker(
     private val packages: List<String> = emptyList(),
-    private val opens: List<String> = listOf("Stdlib")
+    private val opens: List<String> = listOf("Stdlib"),
+    private val thunkLets: Boolean = false,
 ) : GroundTruth {
-    override fun valid(example: Example): Boolean = isValid(example.toString()).isValid
+    override fun valid(example: Example): Boolean =
+        isValid((if (thunkLets) thunkLets(example) else example).toString()).isValid
 
     private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
 
@@ -83,3 +92,25 @@ class OCamlChecker(
         }
     }
 }
+
+/**
+ * [example] with each `let x = v in body` made `let x = fun _ -> v in body`, and each use of x in
+ * body made `x ()`.
+ *
+ * OCaml generalizes a let-bound name only if its value is a syntactic value (a name, a lambda, ...),
+ * where Hindley-Milner generalizes every let. `fun _ -> v` is a value, and each `x ()` has a fresh
+ * instance of v's type, as each use of x has in Hindley-Milner. So ocamlc accepts the result exactly
+ * when Hindley-Milner accepts [example], as far as lets go.
+ */
+fun thunkLets(example: Example): Example = thunkLets(example, emptySet())
+
+private val unit = Name("()")
+
+/** [lets] are the let-bound names in scope. */
+private fun thunkLets(e: Example, lets: Set<String>): Example =
+    when (e) {
+        is Name -> if (e.name in lets) App(e, unit) else e
+        is App -> App(thunkLets(e.fn, lets), thunkLets(e.arg, lets))
+        is Lam -> Lam(e.param, thunkLets(e.body, lets - e.param))
+        is Let -> Let(e.name, Lam("_", thunkLets(e.value, lets)), thunkLets(e.body, lets + e.name))
+    }

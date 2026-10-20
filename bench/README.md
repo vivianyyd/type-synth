@@ -130,6 +130,11 @@ bench/analyze.py compare latest~1 latest
 Keep `Configuration` plain data, since it is recorded as is; that is how records from different
 variants are told apart.
 
+A choice about how a benchmark is loaded rather than searched, such as how ocamlc checks the
+examples, goes in `LoadOptions` (`src/test/kotlin/bench/Benchmarks.kt`) instead, and the variant
+sets it with `load`. It is recorded as `load`, next to `config`. For example, `thunk-lets` has
+ocamlc check each let as `let x () = v`; see `src/test/input/ocaml-stdlib/exs/README.md`.
+
 **A commit or branch** fits a change that replaces the old way, or a one-off experiment you won't
 keep both sides of. Every run records its commit, and `compare-refs.sh` runs the same benchmarks
 at several refs (e.g. `bench/compare-refs.sh main my-branch -- sexp`). A branch only compares

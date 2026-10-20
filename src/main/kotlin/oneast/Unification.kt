@@ -2,6 +2,8 @@ package oneast
 
 import query.App
 import query.Example
+import query.Lam
+import query.Let
 import query.Name
 import util.IntUnionFind
 
@@ -172,6 +174,8 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
         when (ex) {
             is Name -> instantiate(environment.typeOf(ex.name), instantiations++)
             is App -> build(ex.fn)?.let { f -> build(ex.arg)?.let { a -> graph.apply(f, a) } }
+            is Lam, is Let ->
+                throw UnsupportedOperationException("Type checking lambdas and lets is not implemented: $ex")
         }
 
     private fun instantiate(t: Type, inst: Int): Int =

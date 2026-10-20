@@ -1,17 +1,17 @@
 package query
 
-data class FlatApp(val name: String, val args: List<FlatApp> = listOf()) {
+/**
+ * A name applied to arguments, as [Example.flatten] makes it. The arguments are whole examples, so
+ * an argument may be a lambda or a let.
+ */
+data class FlatApp(val name: String, val args: List<Example> = listOf()) {
     fun depth(): Int = args.maxOfOrNull { it.depth() + 1 } ?: 0
 
-    fun unflatten(): Example {
-        if (this.args.isEmpty()) return Name(this.name)
-        return App(
-            FlatApp(this.name, this.args.dropLast(1)).unflatten(), this.args.last().unflatten()
-        )
-    }
+    fun unflatten(): Example = args.fold(Name(name) as Example) { fn, arg -> App(fn, arg) }
 
     override fun toString(): String {
-        return if (args.isEmpty()) name else "($name ${(args.joinToString(separator = " "))})"
+        if (args.isEmpty()) return name
+        return "($name ${args.joinToString(separator = " ") { if (it is Name) "$it" else "($it)" }})"
     }
 }
 
@@ -25,11 +25,5 @@ class FlatExamples(
 ) {
     val posExamples: Set<FlatApp> = (posExamples.toSet() + names.map { FlatApp(it) }.toSet())
     val names: List<String> =
-        posExamples
-            .fold(setOf<String>()) { acc, ex ->
-                fun names(app: FlatApp): Set<String> =
-                    app.args.fold(setOf(app.name)) { a, arg -> a + names(arg) }
-                acc + names(ex)
-            }
-            .toList()
+        posExamples.flatMap { it.unflatten().names }.distinct()
 }

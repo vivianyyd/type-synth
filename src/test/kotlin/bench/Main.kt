@@ -276,7 +276,9 @@ private fun runOne(opts: Options) {
     val dir = opts.dir!!
     val runId = opts.runId!!
     val benchmark = Benchmarks.all[opts.child!!] ?: error("No benchmark ${opts.child}")
-    val config = Variants.get(opts.variant).configure(benchmark.defaults)
+    val variant = Variants.get(opts.variant)
+    val config = variant.configure(benchmark.defaults)
+    val loadOptions = variant.load(LoadOptions())
     Debug.enabled = opts.debug
 
     val base =
@@ -286,6 +288,7 @@ private fun runOne(opts: Options) {
             "benchmark" to benchmark.name,
             "repeat" to opts.repeatIndex,
             "config" to config.toJson(),
+            "load" to loadOptions.toJson(),
         )
 
     val trace =
@@ -321,7 +324,7 @@ private fun runOne(opts: Options) {
     val fields =
         try {
             val loadStart = System.nanoTime()
-            val problem = benchmark.load(config)
+            val problem = benchmark.load(config, loadOptions)
             base["loadMs"] = (System.nanoTime() - loadStart) / 1_000_000.0
 
             recording = Stats.start(trace)

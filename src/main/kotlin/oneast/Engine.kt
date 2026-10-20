@@ -68,11 +68,16 @@ class Engine(
         Debug.log { "Schedule: $scheduled" }
     }
 
+    // Syntactic, so it misses a component that is applied only under another name, as f is in
+    // `let g = f in g x`. That component is then wrongly forced to be a label.
     private fun nameIsApplied(name: String, exs: Examples): Boolean {
         fun nameAppliedIn(ex: Example): Boolean = when (ex) {
             is Name -> false
             is App -> ((ex.fn is Name && ex.fn.name == name) ||
                     (nameAppliedIn(ex.fn) || nameAppliedIn(ex.arg)))
+            // Under a binder of the same name, the name is not the component
+            is Lam -> ex.param != name && nameAppliedIn(ex.body)
+            is Let -> nameAppliedIn(ex.value) || (ex.name != name && nameAppliedIn(ex.body))
         }
         return exs.posNoSubexprs.any { nameAppliedIn(it) }
     }
