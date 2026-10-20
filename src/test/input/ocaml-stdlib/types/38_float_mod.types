@@ -50,7 +50,6 @@ val asinh : float -> float
 val atanh : float -> float
 val erf : float -> float
 val erfc : float -> float
-val mod_float : float -> float -> float
 val modf : float -> float * float
 val frexp : float -> float * int
 val ldexp : float -> int -> float
@@ -121,5 +120,5 @@ val Array.to_seqi : floatarray -> (int * float) Seq.t
 val Array.of_seq : float Seq.t -> floatarray
 val Array.map_to_array : (float -> 'a) -> floatarray -> 'a array
 val Array.map_from_array : ('a -> float) -> 'a array -> floatarray
-val Array.equal : floatarray -> floatarray -> bool
+val Array.equal : (float -> float -> bool) -> floatarray -> floatarray -> bool
 val Array.compare : floatarray -> floatarray -> int

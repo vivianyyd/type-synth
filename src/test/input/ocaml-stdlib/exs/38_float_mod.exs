@@ -78,7 +78,6 @@ Float.epsilon
 (Float.pred Flt)
 (Float.next_after Flt Flt)
 (Float.copy_sign Flt Flt)
-(Float.mod_float Flt Flt)
 
 // Min/max
 (Float.min Flt Flt)
@@ -122,7 +121,7 @@ Float.epsilon
 (Float.Array.exists Float.is_nan (Float.Array.make Num Flt))
 (Float.Array.mem Flt (Float.Array.make Num Flt))
 (Float.Array.fold_left Float.add Flt (Float.Array.make Num Flt))
-(Float.Array.equal (Float.Array.make Num Flt) (Float.Array.make Num Flt))
+(Float.Array.equal Float.equal (Float.Array.make Num Flt) (Float.Array.make Num Flt))
 
 // Chaining: unary ops return float, chain them
 (Float.abs (Float.neg Flt))

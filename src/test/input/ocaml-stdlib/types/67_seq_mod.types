@@ -61,9 +61,5 @@ val partition : ('a -> bool) -> 'a t -> 'a t * 'a t
 val of_dispenser : (unit -> 'a option) -> 'a t
 val to_dispenser : 'a t -> unit -> 'a option
 val ints : int -> int t
-val to_list : 'a t -> 'a list
-val of_list : 'a list -> 'a t
-val to_array : 'a t -> 'a array
-val of_array : 'a array -> 'a t
 val of_string : string -> char t
 val of_bytes : bytes -> char t

@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 9_unit.types, 10_strconv.types, 12_list.types, 14_stdout.types, 67_seq_mod.types, 50_list_mod.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 9_unit.types, 10_strconv.types, 12_list.types, 14_stdout.types, 67_seq_mod.types, 50_list_mod.types, 22_array_mod.types
 
 // empty: 'a t constant
 Seq.empty
@@ -83,22 +83,22 @@ Seq.empty
 (Seq.memoize (Seq.ints Num))
 (Seq.once (Seq.return Num))
 
-// of_list: 'a list -> 'a t
-(Seq.of_list (List.cons Num Nil))
-(Seq.of_list (List.cons Str Nil))
+// List.to_seq: 'a list -> 'a Seq.t
+(List.to_seq (List.cons Num Nil))
+(List.to_seq (List.cons Str Nil))
 
-// to_list: 'a t -> 'a list
-(Seq.to_list (Seq.return Num))
-(Seq.to_list (Seq.return Str))
-(Seq.to_list Seq.empty)
+// List.of_seq: 'a Seq.t -> 'a list
+(List.of_seq (Seq.return Num))
+(List.of_seq (Seq.return Str))
+(List.of_seq Seq.empty)
 
-// of_array: 'a array -> 'a t
-(Seq.of_array (Array.make Num Num))
-(Seq.of_array (Array.make Num Str))
+// Array.to_seq: 'a array -> 'a Seq.t
+(Array.to_seq (Array.make Num Num))
+(Array.to_seq (Array.make Num Str))
 
-// to_array: 'a t -> 'a array
-(Seq.to_array (Seq.return Num))
-(Seq.to_array (Seq.return Str))
+// Array.of_seq: 'a Seq.t -> 'a array
+(Array.of_seq (Seq.return Num))
+(Array.of_seq (Seq.return Str))
 
 // equal: ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 (Seq.equal (=) (Seq.return Num) (Seq.return Num))
@@ -112,16 +112,16 @@ Seq.empty
 (Seq.fold_left (+) Num (Seq.map succ (Seq.return Num)))
 (Seq.length (Seq.map succ (Seq.return Num)))
 (Seq.is_empty (Seq.map succ Seq.empty))
-(Seq.to_list (Seq.map succ (Seq.return Num)))
-(Seq.to_list (Seq.filter (fun x8 -> ((=) x8 Num)) (Seq.return Num)))
-(Seq.to_list (Seq.take Num (Seq.ints Num)))
-(Seq.to_list (Seq.append (Seq.return Num) (Seq.return Num)))
+(List.of_seq (Seq.map succ (Seq.return Num)))
+(List.of_seq (Seq.filter (fun x8 -> ((=) x8 Num)) (Seq.return Num)))
+(List.of_seq (Seq.take Num (Seq.ints Num)))
+(List.of_seq (Seq.append (Seq.return Num) (Seq.return Num)))
 (Seq.length (Seq.take Num (Seq.ints Num)))
 
 // map returns seq — inspect it
 (Seq.is_empty (Seq.map succ (Seq.return Num)))
 (Seq.length (Seq.map string_of_int (Seq.return Num)))
-(Seq.to_list (Seq.map string_of_int (Seq.return Num)))
+(List.of_seq (Seq.map string_of_int (Seq.return Num)))
 (Seq.fold_left (^) Str (Seq.map string_of_int (Seq.return Num)))
 
 // fold_left returns accumulator
@@ -149,12 +149,12 @@ Seq.empty
 (succ (Seq.compare Seq.compare (Seq.return Num) (Seq.return Num)))
 
 // to_list returns list
-((@) (Seq.to_list (Seq.return Num)) (List.cons Num Nil))
+((@) (List.of_seq (Seq.return Num)) (List.cons Num Nil))
 
 // ints returns int seq — chain
 (Seq.fold_left (+) Num (Seq.take Num (Seq.ints Num)))
 (Seq.map succ (Seq.ints Num))
-(Seq.to_list (Seq.take Num (Seq.ints Num)))
+(List.of_seq (Seq.take Num (Seq.ints Num)))
 
 // Invalid
 (succ (Seq.is_empty Seq.empty))
