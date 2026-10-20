@@ -254,7 +254,9 @@ private fun runChild(opts: Options, b: Benchmark, runId: String, repeat: Int, di
             ) + "\n"
         )
     } else {
-        // Keep the steps it finished
+        // The run writes its record after each step, so one still running stopped partway: a crash,
+        // the kill above, or someone killing it to cut it short. Mark it so, keeping the steps it
+        // finished. See "A run that stops early" in bench/README.md
         val fields = readFields(recordFile)
         if (fields["status"]?.let { (it as RawJson).text.trim() } == "\"running\"") {
             val record = linkedMapOf<String, Any?>()

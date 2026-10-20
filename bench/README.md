@@ -100,8 +100,8 @@ step that ran, in order. Each step has:
 
 The run's `status` is that of the first step that isn't `correct` or `solved`, or else of the last
 step. The record is rewritten after each step, with `status: "running"` until the last, so
-`analyze.py show` shows how far a run has got. If the run's JVM crashes or is killed, the record
-keeps the steps it finished, with the run's status `crashed` or `timeout` and an `error`.
+`analyze.py show` shows how far a run has got, and a run that stops early keeps the steps it
+finished (below).
 
 Schema 1 records had a single step's fields at the top level, and also `mismatches`,
 `mismatchedRounds` and `matchesExpected`; `analyze.py` reads both. `ocaml-chained` used to be six
@@ -137,6 +137,25 @@ and `cost` (`--metrics diff` for the ratio), and the cost of each name of a wron
 Records are self-contained JSON, so anything can read them, e.g. pandas:
 `pd.DataFrame(analyze.rows(analyze.load_batch("latest")))`, or DuckDB:
 `select * from read_json_auto('bench-results/*/*.json')`.
+
+### A run that stops early keeps its finished steps
+
+The run's JVM writes its record after every step, to a temporary file that it renames over
+`<run>.json`, so the file always holds a whole record of the steps finished so far. When that JVM
+exits, the bench (the parent JVM) reads the record. If its status is still `running`, the run
+didn't finish: the bench sets the status to `crashed` (or `timeout`, if the bench killed it for
+running past `--timeout` times the number of steps, plus a minute), adds an `error`, and keeps
+every finished step. If there's no record at all, it writes one with no steps.
+
+So a crash, the OOM killer, or killing the run yourself loses only the step in progress. That
+makes it a way to cut a chain short, e.g. to skip a step you know will time out, once
+`analyze.py show latest` shows the steps you want:
+
+```sh
+pkill -9 -f -- '--child ocaml-chained'    # the run's JVM, not ./gradlew bench
+```
+
+The bench then goes on to the next run, and exits non-zero, since the run is `crashed`.
 
 ## Timing lazy code
 
