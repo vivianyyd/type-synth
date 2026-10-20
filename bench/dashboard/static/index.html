@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bench Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js" defer></script>
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#/batches">bench</a>
+    <nav id="nav"></nav>
+    <span class="spacer"></span>
+    <span id="root" class="muted small"></span>
+    <button id="reload" title="Re-read bench-results">Reload data</button>
+  </header>
+  <main id="view"></main>
+</body>
+</html>

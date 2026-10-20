@@ -15,7 +15,11 @@ bench/analyze.py compare latest~1 latest          # side by side, B/A ratios, ge
 bench/analyze.py latex BATCH_A BATCH_B --metrics wall,candidates --labels before,after
 
 bench/compare-refs.sh main my-branch -- sexp      # same benchmarks at several commits
+
+bench/dashboard/serve.py                          # all of the above in a browser, at localhost:8765
 ```
+
+The dashboard is described in `bench/dashboard/README.md`.
 
 Each run gets a JVM of its own, so that nothing carries over between runs (static id counters, the
 JIT, the heap), and a crash takes down only that run. A benchmark is a list of steps, solved in
