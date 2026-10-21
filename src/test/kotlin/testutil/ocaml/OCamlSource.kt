@@ -21,10 +21,20 @@ data class OCamlSource(val labels: Map<String, List<String?>> = emptyMap()) {
 private val dummies =
     mapOf("Num" to "1", "Str" to "\"s\"", "Char" to "'a'", "Flt" to "1.", "Nil" to "[]", "Unit" to "()")
 
-/** [e] with each name in [dummies] replaced by its value. */
+/**
+ * [name] spaced, as `( * )`, if it is an operator that starts or ends with `*`, since in OCaml `(*`
+ * opens a comment and `*)` closes one.
+ */
+private fun spacedOperator(name: String): String =
+    if (name.startsWith("(*") || name.endsWith("*)")) "( ${name.removeSurrounding("(", ")")} )" else name
+
+/**
+ * [e] with each name in [dummies] replaced by its value, and each operator spaced as
+ * [spacedOperator] spaces it.
+ */
 private fun withDummies(e: Example): Example =
     when (e) {
-        is Name -> dummies[e.name]?.let(::Name) ?: e
+        is Name -> Name(dummies[e.name] ?: spacedOperator(e.name))
         is App -> App(withDummies(e.fn), withDummies(e.arg))
     }
 

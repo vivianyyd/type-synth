@@ -4,23 +4,22 @@ import org.junit.jupiter.api.Test
 import testutil.ocaml.loadFromExsFiles
 import testutil.ocaml.ocamlModuleGroups
 import testutil.ocamlName
-import testutil.unsignedExample
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class OCamlNamesTest {
     @Test
-    fun `operators starting or ending with a star get spaces`() {
-        assertEquals("( * )", ocamlName("*"))
-        assertEquals("( *. )", ocamlName("*."))
-        assertEquals("( ** )", ocamlName("**"))
+    fun `operators are parenthesized without spaces`() {
+        assertEquals("(*)", ocamlName("*"))
+        assertEquals("(*.)", ocamlName("*."))
+        assertEquals("(**)", ocamlName("**"))
         assertEquals("(+)", ocamlName("+"))
         assertEquals("(~-.)", ocamlName("~-."))
     }
 
     @Test
     fun `word operators are operators`() {
-        assertEquals("( mod )", ocamlName("mod"))
+        assertEquals("(mod)", ocamlName("mod"))
         assertEquals("(land)", ocamlName("land"))
     }
 
@@ -32,12 +31,6 @@ class OCamlNamesTest {
     @Test
     fun `other names are left alone`() {
         listOf("succ", "Num", "List.map", "x'", "max_int").forEach { assertEquals(it, ocamlName(it)) }
-    }
-
-    @Test
-    fun `examples name operators the way type signatures do`() {
-        assertEquals(setOf("( *. )", "Flt"), unsignedExample("(( *. ) Flt Flt)").names)
-        assertEquals(setOf("( ** )", "Flt"), unsignedExample("(** Flt Flt)").names)
     }
 
     /**
