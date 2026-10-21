@@ -3,6 +3,7 @@ package oneast.unit
 import oneast.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SearchStateDiffTest {
@@ -837,5 +838,35 @@ class SearchStateDiffTest {
         val tree = state(mapOf(0 to 1), "foo" to NamedLabel(0, listOf(Variable(0))))
         assertEquals(hole.diffTo(tree).cost, tree.diffTo(hole).cost)
         assertEquals(2, hole.diffTo(tree).cost)
+    }
+
+    // ----- mismatches are the names with nonzero cost -----
+    @Test
+    fun `mismatches pairs labels after a difference in a type, as the diff does`() {
+        // L1 is paired with L5 in x even though x's argument differs, so y, which uses L1 for L6,
+        // differs too
+        val actual = state(
+            mapOf(0 to 0, 1 to 0),
+            "x" to Arrow(NamedLabel(0, listOf()), NamedLabel(1, listOf())),
+            "y" to NamedLabel(1, listOf())
+        )
+        val expected = state(
+            mapOf(5 to 0, 6 to 0),
+            "x" to Arrow(Variable(0), NamedLabel(5, listOf())),
+            "y" to NamedLabel(6, listOf())
+        )
+        assertEquals(mapOf("x" to 2, "y" to 1), expected.diffTo(actual).costByName)
+        assertEquals(listOf("x", "y"), actual.mismatches(expected))
+    }
+
+    @Test
+    fun `mismatches pairs labels in sorted name order, as the diff does`() {
+        // One label used for two: the first name in sorted order takes the pairing, whatever order
+        // the state lists them in
+        val actual = state(mapOf(0 to 0), "y" to NamedLabel(0, listOf()), "x" to NamedLabel(0, listOf()))
+        val expected = state(mapOf(5 to 0, 6 to 0), "y" to NamedLabel(5, listOf()), "x" to NamedLabel(6, listOf()))
+        assertEquals(mapOf("x" to 0, "y" to 1), expected.diffTo(actual).costByName)
+        assertEquals(listOf("y"), actual.mismatches(expected))
+        assertFalse(actual.equivalentTo(expected))
     }
 }

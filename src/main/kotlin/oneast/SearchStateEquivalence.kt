@@ -13,28 +13,15 @@ package oneast
  * (label / variable) renaming is forced by the corresponding label or variable
  * on the other side.
  */
-fun SearchState.equivalentTo(other: SearchState): Boolean =
-    mismatches(other, stopAtFirst = true)?.isEmpty() ?: false
+fun SearchState.equivalentTo(other: SearchState): Boolean = mismatches(other).isEmpty()
 
 /**
- * The names whose types keep [this] from being equivalent to [other], or null if the two states do
- * not have the same names. Labels are renamed consistently across all names, so a name can be
- * listed because of how an earlier name used a label.
+ * The names whose types keep [this] from being equivalent to [other]: those with a nonzero cost in
+ * [diffTo], including names only one state has. Labels are renamed consistently across all names,
+ * so a name can be listed because of how a name before it (in sorted order) used a label.
  */
-fun SearchState.mismatches(other: SearchState, stopAtFirst: Boolean = false): List<String>? {
-    if (this.names.keys != other.names.keys) return null
-    val labels = Renaming()
-    val mismatches = mutableListOf<String>()
-    for (name in this.names.keys) {
-        val t1 = this.types[this.names.getValue(name)]
-        val t2 = other.types[other.names.getValue(name)]
-        if (!matchTypes(t1, t2, labels, Renaming())) {
-            mismatches.add(name)
-            if (stopAtFirst) break
-        }
-    }
-    return mismatches
-}
+fun SearchState.mismatches(other: SearchState): List<String> =
+    other.diffTo(this).costByName.filterValues { it > 0 }.keys.toList()
 
 /** Whether [a] and [b] are the same type up to renaming variables. Labels must be the same. */
 fun equalUpToVariableRenaming(a: Type, b: Type): Boolean =
@@ -105,11 +92,17 @@ fun SearchState.nodeCount(): Int = types.sumOf { it.nodeCount() }
  * - [expectedSize] is the total node count of the receiver; used as the
  *   normalization denominator in [ratio].
  *
+ * - [costByName] is each name's share of [cost]; a name with 0 matches exactly.
+ *
  * `ratio = cost / expectedSize`, with 0/0 → 0.0 and cost>0/0 → +Inf. The
  * ratio is unbounded: values > 1 mean the actual diverges by more than the
  * expected has nodes (e.g., expected is a hole and actual is a deep tree).
  */
-data class StateDiff(val cost: Int, val expectedSize: Int) {
+data class StateDiff(
+    val cost: Int,
+    val expectedSize: Int,
+    val costByName: Map<String, Int> = emptyMap()
+) {
     val ratio: Double = when {
         expectedSize == 0 -> if (cost == 0) 0.0 else Double.POSITIVE_INFINITY
         else -> cost.toDouble() / expectedSize
@@ -136,19 +129,19 @@ data class StateDiff(val cost: Int, val expectedSize: Int) {
  */
 fun SearchState.diffTo(actual: SearchState): StateDiff {
     val labels = Renaming()
-    var cost = 0
+    val costByName = linkedMapOf<String, Int>()
     val allNames = (this.names.keys + actual.names.keys).sorted()
     for (name in allNames) {
         val expIdx = this.names[name]
         val actIdx = actual.names[name]
-        cost += when {
+        costByName[name] = when {
             expIdx != null && actIdx != null ->
                 diffTypes(this.types[expIdx], actual.types[actIdx], labels, Renaming())
             expIdx != null -> this.types[expIdx].nodeCount()
             else -> actual.types[actIdx!!].nodeCount()
         }
     }
-    return StateDiff(cost = cost, expectedSize = this.nodeCount())
+    return StateDiff(cost = costByName.values.sum(), expectedSize = this.nodeCount(), costByName = costByName)
 }
 
 private fun diffTypes(t1: Type, t2: Type, labels: Renaming, variables: Renaming): Int = when {

@@ -26,6 +26,9 @@ ROOT = Path("bench-results")
 # Metrics a run row has, with how to show them. Times are in seconds.
 METRICS = {
     "status": ("status", str),
+    "exact": ("exact names", str),
+    "cost": ("diff cost", str),
+    "diff": ("diff ratio", lambda v: f"{v:.3f}"),
     "wall": ("time (s)", lambda v: f"{v:.2f}"),
     "outline": ("outline (s)", lambda v: f"{v:.2f}"),
     "arity": ("arity (s)", lambda v: f"{v:.2f}"),
@@ -90,6 +93,16 @@ def row(record):
         "commit": record["batch"]["git"]["commit"][:8],
         "batch": record["batch"]["batchId"],
     }
+    # The solution closest to the expected answer. Older records have no scores
+    scores = [s for s in record.get("scores") or [] if s]
+    if scores:
+        best = min(scores, key=lambda s: s["cost"])
+        r["exact"] = f"{best['exactNames']}/{best['names']}"
+        r["exactNames"] = best["exactNames"]
+        r["names"] = best["names"]
+        r["cost"] = best["cost"]
+        r["expectedSize"] = best["expectedSize"]
+        r["diff"] = best["ratio"]  # None if the expected state is empty and the cost isn't
     if stats:
         r["wall"] = stats["wallMs"] / 1000
         r["unattributed"] = stats["unattributedMs"] / 1000
@@ -173,18 +186,24 @@ def cmd_ls(args):
     table(["batch", "branch", "commit", "variant", "statuses", "time (s)", "notes"], body)
 
 
-DEFAULT_SHOW = ["status", "wall", "outline", "arity", "concretize", "unattributed", "solverCalls",
+DEFAULT_SHOW = ["status", "exact", "cost", "wall", "outline", "arity", "concretize", "unattributed", "solverCalls",
                 "candidates", "prunedPos", "prunedNeg", "stop"]
 
 
 def wrong_answer(record):
     """Each solution next to the expected answer, with the names whose types differ marked."""
     expected = record["expected"]
-    for i, (solution, differs) in enumerate(zip(record["solutions"], record["mismatches"])):
-        if len(record["solutions"]) > 1:
-            print(f"Solution {i + 1}:")
-        table(["", "name", "returned", "expected"],
-              [["*" if n in differs else "", n, t, expected.get(n, "-")] for n, t in solution.items()])
+    scores = record.get("scores") or [None] * len(record["solutions"])
+    for i, (solution, differs, score) in enumerate(zip(record["solutions"], record["mismatches"], scores)):
+        heading = f"Solution {i + 1}: " if len(record["solutions"]) > 1 else ""
+        if score:
+            heading += f"{score['exactNames']}/{score['names']} names exact, cost {score['cost']}/{score['expectedSize']}"
+        if heading:
+            print(heading)
+        by_name = (score or {}).get("byName", {})
+        table(["", "name", "cost", "returned", "expected"],
+              [["*" if n in differs else "", n, by_name.get(n, {}).get("cost", "-"), t, expected.get(n, "-")]
+               for n, t in solution.items()])
     print("(* differs from expected)")
 
 
@@ -223,7 +242,7 @@ def cmd_rounds(args):
            "cegis", "candidates", "pruned +", "pruned -", "solver calls", "solutions"], body)
 
 
-DEFAULT_COMPARE = ["status", "wall", "candidates", "prunedNeg", "solverCalls"]
+DEFAULT_COMPARE = ["status", "exact", "cost", "wall", "candidates", "prunedNeg", "solverCalls"]
 
 
 def cmd_compare(args):

@@ -2,7 +2,10 @@ package bench
 
 import com.squareup.moshi.Moshi
 import oneast.SearchState
+import oneast.StateDiff
+import oneast.diffTo
 import oneast.mismatches
+import oneast.nodeCount
 import oneast.run
 import testutil.ocaml.OCamlGroundTruth
 import util.stateFromContext
@@ -242,10 +245,20 @@ private fun summaryLine(record: Map<*, *>): String {
     val counters = stats?.get("counters") as? Map<*, *>
     fun count(key: String) = (counters?.get(key) as? Number)?.toLong() ?: 0
     val time = (stats?.get("wallMs") as? Number)?.let { "%8.1fs".format(it.toDouble() / 1000) } ?: " ".repeat(9)
-    return "%-24s %-11s %s  candidates=%d prunedPos=%d prunedNeg=%d solverCalls=%d".format(
+    return "%-24s %-11s %s  candidates=%d prunedPos=%d prunedNeg=%d solverCalls=%d%s".format(
         record["runId"], record["status"], time,
-        count("candidates"), count("prunedPos"), count("prunedNeg"), count("solverCalls")
+        count("candidates"), count("prunedPos"), count("prunedNeg"), count("solverCalls"),
+        bestScore(record)?.let { "  ${describeScore(it)}" } ?: ""
     )
+}
+
+/** The score of the solution closest to the expected answer, if there is one to compare with. */
+private fun bestScore(record: Map<*, *>): Map<*, *>? =
+    (record["scores"] as? List<*>)?.filterIsInstance<Map<*, *>>()?.minByOrNull { (it["cost"] as Number).toInt() }
+
+private fun describeScore(score: Map<*, *>): String {
+    fun int(key: String) = (score[key] as Number).toInt()
+    return "exact=%d/%d cost=%d/%d".format(int("exactNames"), int("names"), int("cost"), int("expectedSize"))
 }
 
 /** Each solution next to the expected answer, with the names whose types differ marked. */
@@ -253,17 +266,21 @@ private fun wrongAnswer(record: Map<*, *>): String {
     val expected = record["expected"] as Map<*, *>
     val solutions = record["solutions"] as List<*>
     val mismatches = record["mismatches"] as List<*>
+    val scores = record["scores"] as List<*>
     return solutions.indices.joinToString("") { i ->
         val solution = solutions[i] as Map<*, *>
         val differs = mismatches[i] as List<*>
+        val score = scores[i] as Map<*, *>
+        val byName = score["byName"] as Map<*, *>
         val names = solution.keys.map { it.toString() }
         val nameWidth = maxOf(4, names.maxOf { it.length })
         val gotWidth = maxOf(8, solution.values.maxOf { it.toString().length })
-        val row = "        %s %-${nameWidth}s  %-${gotWidth}s  %s\n"
-        (if (solutions.size > 1) "        Solution ${i + 1}:\n" else "") +
-            row.format(" ", "name", "returned", "expected") +
+        val row = "        %s %-${nameWidth}s  %4s  %-${gotWidth}s  %s\n"
+        (if (solutions.size > 1) "        Solution ${i + 1}: ${describeScore(score)}\n" else "") +
+            row.format(" ", "name", "cost", "returned", "expected") +
             names.joinToString("") { n ->
-                row.format(if (n in differs) "*" else " ", n, solution[n], expected[n])
+                val cost = (byName[n] as? Map<*, *>)?.get("cost")?.let { (it as Number).toInt() } ?: "-"
+                row.format(if (n in differs) "*" else " ", n, cost, solution[n], expected[n])
             }
     } + "        (* differs from expected)\n"
 }
@@ -271,6 +288,23 @@ private fun wrongAnswer(record: Map<*, *>): String {
 private const val SCHEMA = 1
 
 private fun SearchState.toJson(): Map<String, String> = asMap().mapValues { it.value.toString() }
+
+/** How far a solution is from [expected]: the cost overall and per name, and the names that match. */
+private fun StateDiff.toJson(expected: SearchState): Map<String, Any?> =
+    linkedMapOf(
+        "cost" to cost,
+        "expectedSize" to expectedSize,
+        "ratio" to ratio,
+        "exactNames" to costByName.count { it.value == 0 },
+        "names" to costByName.size,
+        "byName" to
+            costByName.mapValues { (name, c) ->
+                linkedMapOf(
+                    "cost" to c,
+                    "expectedSize" to (expected.names[name]?.let { expected.types[it].nodeCount() } ?: 0)
+                )
+            },
+    )
 
 /** Runs one benchmark in this JVM and writes its record. */
 private fun runOne(opts: Options) {
@@ -332,14 +366,13 @@ private fun runOne(opts: Options) {
             Stats.stop()
 
             val expected = problem.expected
-            // The expected context can have names that no example mentions, which aren't solved for
-            val mismatches =
+            // Each solution with the expected answer for its names. The expected context can have
+            // names that no example mentions, which aren't solved for
+            val compared =
                 expected?.let { e ->
-                    solutions.map { s ->
-                        s.mismatches(stateFromContext(e.asMap().filterKeys { it in s.names }))
-                            ?: listOf("different names")
-                    }
+                    solutions.map { s -> s to stateFromContext(e.asMap().filterKeys { it in s.names }) }
                 }
+            val mismatches = compared?.map { (s, e) -> s.mismatches(e) }
             linkedMapOf(
                 "status" to
                     when {
@@ -352,6 +385,7 @@ private fun runOne(opts: Options) {
                 "solutions" to solutions.map { it.toJson() },
                 "expected" to expected?.toJson(),
                 "mismatches" to mismatches,
+                "scores" to compared?.map { (s, e) -> e.diffTo(s).toJson(e) },
                 // For each solution, the rounds with a name whose type differs
                 "mismatchedRounds" to
                     problem.rounds.takeIf { it.isNotEmpty() }?.let { rounds ->
