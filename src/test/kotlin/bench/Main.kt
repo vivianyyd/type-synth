@@ -10,6 +10,7 @@ import oneast.nodeCount
 import oneast.run
 import okio.Buffer
 import testutil.ocaml.OCamlGroundTruth
+import testutil.ocaml.stdlibSource
 import util.GroundTruth
 import util.stateFromContext
 import java.io.BufferedWriter
@@ -361,7 +362,7 @@ private fun runOne(opts: Options) {
     val variant = Variants.get(opts.variant)
     val config = variant.configure(benchmark.defaults)
     // One for the whole run, shared by its steps
-    val groundTruth = (variant.ocamlGroundTruth ?: OCamlGroundTruth.default).create()
+    val groundTruth = (variant.ocamlGroundTruth ?: OCamlGroundTruth.default).create(stdlibSource)
     Debug.enabled = opts.debug
 
     val base =

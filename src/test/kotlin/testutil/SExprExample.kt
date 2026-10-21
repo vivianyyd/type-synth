@@ -39,7 +39,8 @@ fun SExpr.toExample(): Example =
     when (this) {
         is SExpr.Atm -> {
             require(!isLabel(value)) {
-                "Examples cannot pass labelled or optional arguments, as in $value: our types have no labels"
+                "Examples cannot pass labelled or optional arguments, as in $value: pass a labelled " +
+                    "argument positionally, in the order its signature declares it, and leave out optional ones"
             }
             Name(ocamlName(value))
         }

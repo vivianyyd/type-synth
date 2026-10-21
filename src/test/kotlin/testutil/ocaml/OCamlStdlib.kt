@@ -20,7 +20,7 @@ fun oracleFromDir(dir: File) = CheckingGroundTruthOracle(buildMap {
     val parser = OcamlTypeParser()
     dir.listFiles()
         ?.filter { it.extension == "types" && it.isFile }
-        ?.forEach { file -> putAll(parseTypesFile(parser, file)) }
+        ?.forEach { file -> putAll(parseTypesFile(parser, file).mapValues { it.value.type }) }
 })
 
 /** Modules whose .types file has no `// Module` header line. */
@@ -32,17 +32,31 @@ private val moduleNameOverrides = mapOf("22_array_mod.types" to "Array", "24_boo
  * `Char.Ascii.lowercase`), so this qualifies them. As in the examples, operators and constructors
  * stay unqualified, and names the file already qualifies (`List.length`) are kept.
  */
-fun parseTypesFile(parser: OcamlTypeParser, file: File): Map<String, Type> {
-    val types = parser.parseSignatures(file.readText())
-    if (!file.name.endsWith("_mod.types")) return types
+fun parseTypesFile(parser: OcamlTypeParser, file: File): Map<String, Signature> {
+    val signatures = parser.parseSignaturesWithLabels(file.readText())
+    if (!file.name.endsWith("_mod.types")) return signatures
     val module = moduleNameOverrides[file.name]
         ?: file.useLines { it.first() }.removePrefix("//").trim().split(Regex("\\s+")).first()
-    return types.mapKeys { (name) ->
+    return signatures.mapKeys { (name) ->
         val unqualified =
             name.startsWith("(") || name.startsWith("$module.") ||
                 (name.first().isUpperCase() && '.' !in name)
         if (unqualified) name else "$module.$name"
     }
+}
+
+/**
+ * How stdlib examples are written as OCaml: with the labels of every value the stdlib .types files
+ * declare. Names are qualified, so no two modules' values share labels.
+ */
+val stdlibSource: OCamlSource by lazy {
+    val parser = OcamlTypeParser()
+    OCamlSource(
+        labels = ocamlTypesDir.listFiles()!!.filter { it.extension == "types" }
+            .flatMap { parseTypesFile(parser, it).entries }
+            .associate { it.key to it.value.labels }
+            .filterValues { labels -> labels.any { it != null } }
+    )
 }
 
 /**
@@ -86,7 +100,7 @@ fun loadFromExsFiles(
     val oracleTypes = buildMap {
         referencedTypesFiles.forEach { typesFileName ->
             val typesFile = File(ocamlTypesDir, typesFileName)
-            if (typesFile.isFile) putAll(parseTypesFile(parser, typesFile))
+            if (typesFile.isFile) putAll(parseTypesFile(parser, typesFile).mapValues { it.value.type })
         }
     }
     return examples to oracleTypes
@@ -101,7 +115,7 @@ fun ocamlModulesQuery(
     task: List<String>,
     fixed: List<String>,
     committedSeed: SearchState? = null,
-    groundTruth: GroundTruth = OCamlGroundTruth.default.create(),
+    groundTruth: GroundTruth = OCamlGroundTruth.default.create(stdlibSource),
 ): Pair<Query, SearchState> {
     // One parser, so that a label id means the same constructor in both maps.
     val parser = OcamlTypeParser()

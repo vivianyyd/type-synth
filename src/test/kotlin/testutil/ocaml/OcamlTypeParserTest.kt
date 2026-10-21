@@ -15,6 +15,12 @@ class OcamlTypeParserTest {
     /** A [NamedLabel] regardless of its (encounter-order-dependent) label id. */
     private fun Type.asLabel(): NamedLabel = this as NamedLabel
 
+    /** Parses both types within one parser, so that constructor labels are comparable. */
+    private fun assertParsesLike(expected: String, actual: String) {
+        val types = OcamlTypeParser().parseSignatures("val e : $expected\nval a : $actual")
+        assertEquals(types.getValue("e"), types.getValue("a"))
+    }
+
     @Test
     fun `postfix application is left-associative and applies to the preceding atom`() {
         // 'a list -> list applied to 'a, not 'a applied to list.
@@ -168,6 +174,52 @@ class OcamlTypeParserTest {
         val (_, desiredTypes) = loadFromExsFiles(listOf("6_float"), parser)
         assertEquals(fixedTypes.getValue("Num").asLabel().label, desiredTypes.getValue("Num").asLabel().label)
         assertTrue(desiredTypes.getValue("Flt").asLabel().label != fixedTypes.getValue("Nil").asLabel().label)
+    }
+
+    @Test
+    fun `labelled arguments parse as their unlabelled type`() {
+        assertParsesLike(
+            "'a -> ('b -> 'a) -> 'b option -> 'a",
+            "none:'a -> some:('b -> 'a) -> 'b option -> 'a"
+        )
+        // The label is not mistaken for a constructor when its type is not parenthesized.
+        assertParsesLike("'a option -> 'a -> 'a", "'a option -> default:'a -> 'a")
+        assertParsesLike(
+            "formatter -> string * int -> unit",
+            "formatter -> fits:(string * int) -> unit"
+        )
+    }
+
+    @Test
+    fun `optional arguments are left out`() {
+        assertParsesLike("int -> ('a, 'b) t", "?random:bool -> int -> ('a, 'b) t")
+        assertParsesLike(
+            "formatter -> 'a list -> unit",
+            "?pp_sep:(formatter -> unit) -> formatter -> 'a list -> unit"
+        )
+        assertParsesLike(
+            "string -> string list -> string",
+            "string -> ?stdin:string -> string list -> string"
+        )
+        // A variable only the optional argument has takes up no id
+        assertParsesLike("'a list -> 'a", "?cmp:('b -> 'b -> int) -> 'a list -> 'a")
+    }
+
+    private fun labels(sig: String) =
+        OcamlTypeParser().parseSignaturesWithLabels("val x : $sig").getValue("x").labels
+
+    @Test
+    fun `each parameter's label is kept, and optional ones have none`() {
+        assertEquals(listOf(null, "default"), labels("'a option -> default:'a -> 'a"))
+        assertEquals(listOf("none", "some", null), labels("none:'a -> some:('b -> 'a) -> 'b option -> 'a"))
+        assertEquals(listOf(null), labels("?random:bool -> int -> ('a, 'b) t"))
+        assertEquals(listOf(null, null), labels("('a -> 'b) -> 'a list -> 'b list"))
+        assertEquals(emptyList(), labels("int"))
+    }
+
+    @Test
+    fun `an argument type's own labels are not the value's`() {
+        assertEquals(listOf(null, null), labels("(f:int -> int) -> int -> int"))
     }
 
     @Test
