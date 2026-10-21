@@ -158,4 +158,15 @@ class OcamlTypeParserTest {
         val outerList = concat.l as NamedLabel
         assertNamedLabel(outerList.params.single(), arity = 1) // inner 'a list
     }
+
+    /** float's group, loaded after list's: float must not get list's id (as with a fresh parser). */
+    @Test
+    fun `a shared parser keeps label ids apart across loads`() {
+        val parser = OcamlTypeParser()
+        val (_, fixedTypes) =
+            loadFromExsFiles(ocamlModuleGroups.takeWhile { "6_float" !in it }.flatten(), parser)
+        val (_, desiredTypes) = loadFromExsFiles(listOf("6_float"), parser)
+        assertEquals(fixedTypes.getValue("Num").asLabel().label, desiredTypes.getValue("Num").asLabel().label)
+        assertTrue(desiredTypes.getValue("Flt").asLabel().label != fixedTypes.getValue("Nil").asLabel().label)
+    }
 }

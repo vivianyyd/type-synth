@@ -28,8 +28,13 @@ fun oracleFromDir(dir: File) = CheckingGroundTruthOracle(buildMap {
  * Each .exs file's first line must be a comment listing the .types files it depends on, e.g.:
  *   // 0_basics.types, 4_arith.types
  * All subsequent non-comment, non-blank lines are treated as examples.
+ * Constructor ids come from [parser], so types loaded by separate calls share ids only if they share
+ * the parser.
  */
-fun loadFromExsFiles(exsFileNames: List<String>): Pair<List<Example>, Map<String, Type>> {
+fun loadFromExsFiles(
+    exsFileNames: List<String>,
+    parser: OcamlTypeParser = OcamlTypeParser()
+): Pair<List<Example>, Map<String, Type>> {
     val examples = mutableListOf<Example>()
     val referencedTypesFiles = linkedSetOf<String>()
 
@@ -56,7 +61,6 @@ fun loadFromExsFiles(exsFileNames: List<String>): Pair<List<Example>, Map<String
             }
         }
     }
-    val parser = OcamlTypeParser()
     val oracleTypes = buildMap {
         referencedTypesFiles.forEach { typesFileName ->
             val typesFile = File(ocamlTypesDir, typesFileName)
@@ -77,8 +81,10 @@ fun ocamlModulesQuery(
     committedSeed: SearchState? = null,
     groundTruth: GroundTruth = OCamlGroundTruth.default.create(),
 ): Pair<Query, SearchState> {
-    val (_, fixedTypes) = loadFromExsFiles(fixed)
-    val (examplesAll, desiredTypes) = loadFromExsFiles(task)
+    // One parser, so that a label id means the same constructor in both maps.
+    val parser = OcamlTypeParser()
+    val (_, fixedTypes) = loadFromExsFiles(fixed, parser)
+    val (examplesAll, desiredTypes) = loadFromExsFiles(task, parser)
     val oracleTypes = fixedTypes + desiredTypes
     val examples =
         examplesAll
