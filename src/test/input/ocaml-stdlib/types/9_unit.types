@@ -1,2 +1,3 @@
+val Unit : unit
 val ignore : 'a -> unit
 

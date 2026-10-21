@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 74_unit_mod.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 74_unit_mod.types, 9_unit.types
 
 // equal: t -> t -> bool
 (Unit.equal Unit Unit)
