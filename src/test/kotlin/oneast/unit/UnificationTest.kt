@@ -305,6 +305,28 @@ class UnificationTest {
         assertFail(context, App(f, Name("y")))
     }
 
+    /**
+     * Each occurrence of L(a, b) in f's type is a node of its own, but within one use of f both
+     * share the nodes for a and b. So the two must be the same L, and with separate variables
+     * they need not be. D and L are both label 3.
+     */
+    @Test
+    fun `variables are shared between repeated constructors in one type`() {
+        fun d(x: Type, y: Type) = NamedLabel(3, listOf(x, y))
+        val c = Variable(2)
+        val e = Variable(3)
+        val same = makeContext(
+            "f" to Arrow(d(d(a, b), d(a, b)), I),
+            "x" to d(d(I, B), d(I, B)),
+            "y" to d(d(I, B), d(B, I)),
+        )
+        assertOk(same, App(f, Name("x")))
+        assertFail(same, App(f, Name("y")))
+
+        val apart = makeContext("f" to Arrow(d(d(a, b), d(c, e)), I), "y" to d(d(I, B), d(B, I)))
+        assertOk(apart, App(f, Name("y")))
+    }
+
     @Test
     fun `aba and int int int`() {
         val aba = Arrow(a, Arrow(b, a))
