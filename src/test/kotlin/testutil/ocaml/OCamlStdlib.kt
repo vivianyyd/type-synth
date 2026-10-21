@@ -5,7 +5,9 @@ import oneast.Type
 import query.Example
 import query.Query
 import testutil.splitOCamlExamples
-import testutil.unsignedExample
+import testutil.SExpr
+import testutil.parseSExpr
+import testutil.toExample
 import util.CheckingGroundTruthOracle
 import util.GroundTruth
 import util.join
@@ -63,7 +65,8 @@ val stdlibSource: OCamlSource by lazy {
  * Loads examples and oracle types from a list of .exs files.
  * Each .exs file's first line must be a comment listing the .types files it depends on, e.g.:
  *   // 0_basics.types, 4_arith.types
- * All subsequent non-comment, non-blank lines are treated as examples.
+ * All subsequent non-comment, non-blank lines are treated as examples. Examples cannot be lambdas or
+ * lets yet, so of an example that has them, only the subexpressions outside them are kept.
  * Constructor ids come from [parser], so types loaded by separate calls share ids only if they share
  * the parser.
  */
@@ -93,7 +96,9 @@ fun loadFromExsFiles(
         lines.drop(1).forEach { line ->
             val trimmed = line.trim()
             if (trimmed.isNotBlank() && !trimmed.startsWith("//")) {
-                examples.add(unsignedExample(trimmed))
+                val example = parseSExpr(trimmed).withoutBinders().toExample()
+                if (BINDER !in example.names) examples.add(example)
+                else examples.addAll(example.subexprs().filter { BINDER !in it.names })
             }
         }
     }
@@ -105,6 +110,18 @@ fun loadFromExsFiles(
     }
     return examples to oracleTypes
 }
+
+/** The name [withoutBinders] gives a lambda or let, which no example can use. */
+private const val BINDER = "<binder>"
+
+/** [this] with each lambda, `(fun x -> body)`, and let, `(let x = value in body)`, made [BINDER]. */
+private fun SExpr.withoutBinders(): SExpr =
+    when (this) {
+        is SExpr.Atm -> this
+        is SExpr.Lst ->
+            if ((elements.firstOrNull() as? SExpr.Atm)?.value in setOf("fun", "let")) SExpr.Atm(BINDER)
+            else SExpr.Lst(elements.map { it.withoutBinders() })
+    }
 
 /**
  * The problem of finding types for the names in modules [task], given the true types of the names
