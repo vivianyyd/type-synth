@@ -80,16 +80,10 @@ def load_batch(spec):
     return meta, runs
 
 
-def steps(record):
-    """A run's steps. Records before schema 2 are one step, with the step's fields at the top level."""
-    return record.get("steps") or [record]
-
-
 def step_name(name, record, step):
     """[name], with the step's name unless it is the benchmark's, as a one-step benchmark's step is.
     Not by the number of steps, since a chain that stopped after its first step has one."""
-    step = step.get("step", record["benchmark"])
-    return name if step == record["benchmark"] else f"{name}/{step}"
+    return name if step["step"] == record["benchmark"] else f"{name}/{step['step']}"
 
 
 def row(record, step):
@@ -99,14 +93,14 @@ def row(record, step):
     phases = stats.get("phases", {})
     r = {
         "benchmark": step_name(record["benchmark"], record, step),
-        "repeat": record.get("repeat", 0),
+        "repeat": record["repeat"],
         "status": step["status"],
         "variant": record["batch"]["variant"],
         "commit": record["batch"]["git"]["commit"][:8],
         "batch": record["batch"]["batchId"],
     }
-    # The solution closest to the expected answer. Older records have no scores
-    scores = [s for s in step.get("scores") or [] if s]
+    # The solution closest to the expected answer, if there is one to compare with
+    scores = step.get("scores") or []
     if scores:
         best = min(scores, key=lambda s: s["cost"])
         r["exact"] = f"{best['exactNames']}/{best['names']}"
@@ -124,20 +118,18 @@ def row(record, step):
         for k, v in counters.items():
             if k != "solverMs":
                 r[k] = v
-        # Older batches call searches queries
-        searches = stats.get("searches", stats.get("queries", []))
-        r["searches"] = len(searches)
-        sols = [e for e in stats.get("events", []) if e["kind"] == "solution"]
+        r["searches"] = len(stats["searches"])
+        sols = [e for e in stats["events"] if e["kind"] == "solution"]
         if sols:
             s = sols[-1]
-            q = searches[s.get("search", s.get("query"))]
+            q = stats["searches"][s["search"]]
             r["stop"] = (f"round {q['round']} outer depth {q['outerDepth']}: "
                          f"seed depth {s['seedDepth']}, depth {s['depth']}, size {s['size']}")
     return r
 
 
 def rows(batch):
-    return [row(r, s) for r in batch[1] for s in steps(r)]
+    return [row(r, s) for r in batch[1] for s in r["steps"]]
 
 
 def by_benchmark(rs):
@@ -189,7 +181,7 @@ def cmd_ls(args):
         statuses = {}
         for r in runs:
             statuses[r["status"]] = statuses.get(r["status"], 0) + 1
-        total = sum(row(r, s).get("wall", 0) for r in runs for s in steps(r))
+        total = sum(row(r, s).get("wall", 0) for r in runs for s in r["steps"])
         git = meta["git"]
         body.append([
             d.name, git["branch"], git["commit"][:8] + ("+" if git["dirty"] else ""), meta["variant"],
@@ -205,20 +197,12 @@ DEFAULT_SHOW = ["status", "exact", "cost", "wall", "outline", "arity", "concreti
 def wrong_answer(step):
     """Each solution of a step next to the expected answer, with the names whose types differ marked."""
     expected = step["expected"]
-    scores = step.get("scores") or [None] * len(step["solutions"])
-    for i, (solution, score) in enumerate(zip(step["solutions"], scores)):
-        # Older records have mismatches instead of scores
-        differs = ([n for n, c in score["byName"].items() if c["cost"] > 0] if score
-                   else step.get("mismatches", [])[i])
+    for i, (solution, score) in enumerate(zip(step["solutions"], step["scores"])):
         heading = f"Solution {i + 1}: " if len(step["solutions"]) > 1 else ""
-        if score:
-            heading += f"{score['exactNames']}/{score['names']} names exact, cost {score['cost']}/{score['expectedSize']}"
-        if heading:
-            print(heading)
-        by_name = (score or {}).get("byName", {})
+        print(f"{heading}{score['exactNames']}/{score['names']} names exact, cost {score['cost']}/{score['expectedSize']}")
+        cost = {n: c["cost"] for n, c in score["byName"].items()}
         table(["", "name", "cost", "returned", "expected"],
-              [["*" if n in differs else "", n, by_name.get(n, {}).get("cost", "-"), t, expected.get(n, "-")]
-               for n, t in solution.items()])
+              [["*" if cost[n] > 0 else "", n, cost[n], t, expected.get(n, "-")] for n, t in solution.items()])
     print("(* differs from expected)")
 
 
@@ -232,10 +216,10 @@ def cmd_show(args):
           [[name] + [show_value(m, r.get(m)) for m in metrics] for name, r in rs.items()])
     for record in sorted(batch[1], key=lambda r: r["runId"]):
         # A run still going, or stopped before finishing its record
-        if record["status"] not in {s["status"] for s in steps(record)}:
+        if record["status"] not in {s["status"] for s in record["steps"]}:
             error = (record.get("error") or "").partition("\n")[0]
-            print(f"\n{record['runId']} is {record['status']} after {len(record.get('steps', []))} steps. {error}".rstrip())
-        for step in steps(record):
+            print(f"\n{record['runId']} is {record['status']} after {len(record['steps'])} steps. {error}".rstrip())
+        for step in record["steps"]:
             if step["status"] == "wrong":
                 print(f"\n{step_name(record['runId'], record, step)} is wrong:")
                 wrong_answer(step)
@@ -245,17 +229,17 @@ def cmd_rounds(args):
     _, runs = load_batch(args.batch)
     run_id, _, step_spec = args.run.partition("/")
     record = next((r for r in runs if r["runId"] == run_id), None) or sys.exit("No such run")
-    names = [s.get("step") for s in steps(record)]
+    names = [s["step"] for s in record["steps"]]
     if not step_spec and len(names) > 1:
         sys.exit(f"{run_id} has steps {', '.join(names)}: give one, as {run_id}/STEP")
-    step = (next((s for s in steps(record) if s.get("step") == step_spec), None) if step_spec
-            else steps(record)[0]) or sys.exit(f"{run_id} has no step {step_spec}, only {', '.join(names)}")
+    step = (next((s for s in record["steps"] if s["step"] == step_spec), None) if step_spec
+            else next(iter(record["steps"]), None)) or sys.exit(f"{args.run}: no such step; it has {', '.join(names) or 'none'}")
     if not step.get("stats"):
         error = (step.get("error") or record.get("error") or "").partition("\n")[0]
         sys.exit(f"{args.run} has no stats ({step['status']}) {error}".rstrip())
     body = []
     stats = step["stats"]
-    for q in stats.get("searches", stats.get("queries", [])):
+    for q in stats["searches"]:
         ph = q["phases"]
         c = lambda k: sum(p.get(k, 0) for p in ph.values())
         body.append([

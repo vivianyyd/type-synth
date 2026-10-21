@@ -249,6 +249,7 @@ private fun runChild(opts: Options, b: Benchmark, runId: String, repeat: Int, di
                     "repeat" to repeat,
                     "status" to status,
                     "error" to error,
+                    "steps" to emptyList<Any>(),
                     "batch" to RawJson(File(dir, "batch.json").readText()),
                 ),
                 pretty = true

@@ -103,11 +103,6 @@ step. The record is rewritten after each step, with `status: "running"` until th
 `analyze.py show` shows how far a run has got, and a run that stops early keeps the steps it
 finished (below).
 
-Schema 1 records had a single step's fields at the top level, and also `mismatches`,
-`mismatchedRounds` and `matchesExpected`; `analyze.py` reads both. `ocaml-chained` used to be six
-benchmarks, `ocaml-chained-basics` to `ocaml-chained-str`, each solving the groups before it while
-loading; their timings aren't comparable with the steps of `ocaml-chained`.
-
 `stats` has:
 
 - `wallMs`: from starting the search to its answer.
