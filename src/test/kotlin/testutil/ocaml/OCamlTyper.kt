@@ -15,10 +15,12 @@ import java.nio.file.StandardCopyOption
  *
  * @param packages findlib packages whose modules the expressions may use
  * @param opens modules opened around each expression
+ * @param source how examples are written as OCaml
  */
 class OCamlTyper(
     private val packages: List<String> = emptyList(),
     opens: List<String> = listOf("Stdlib"),
+    private val source: OCamlSource = OCamlSource(),
 ) : GroundTruth {
     // Stdlib is open already
     private val prefix = opens.filter { it != "Stdlib" }.joinToString("") { "let open $it in " }
@@ -36,13 +38,13 @@ class OCamlTyper(
     private val input by lazy { process.outputStream.bufferedWriter() }
     private val answers by lazy { process.inputStream.bufferedReader() }
 
-    override fun valid(example: Example): Boolean = validSource(example.toString())
+    override fun valid(example: Example): Boolean = validSource(source.of(example))
 
-    /** Whether [expr], OCaml source that may use the atoms examples use, type-checks. */
+    /** Whether [expr], OCaml source, type-checks. */
     @Synchronized
     fun validSource(expr: String): Boolean {
         require('\n' !in expr) { "The typer reads one expression per line: $expr" }
-        input.write("$prefix(${desugarOCaml(expr)})\n")
+        input.write("$prefix($expr)\n")
         input.flush()
         return when (val answer = answers.readLine()) {
             "ok" -> true

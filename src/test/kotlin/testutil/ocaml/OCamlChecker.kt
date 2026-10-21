@@ -7,11 +7,6 @@ import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlin.streams.toList
 
-private val desugarAtomsToDummies = listOf("Num" to "1", "Str" to "\"s\"", "Char" to "\'a\'", "Flt" to "1.", "Nil" to "[]")
-
-/** Replaces the atoms examples use for literals with literals of their types. */
-fun desugarOCaml(expr: String) = desugarAtomsToDummies.fold(expr) { acc, (from, to) -> acc.replace(from, to) }
-
 data class TypeCheckResult(
     val isValid: Boolean,
     val errorMessage: String? = null,
@@ -23,16 +18,18 @@ data class TypeCheckResult(
  *
  * @param packages List of OCaml packages to import (e.g., ["base", "core", "lwt"])
  * @param opens List of modules to open in the preamble (e.g., ["Stdlib", "Base"])
+ * @param source how examples are written as OCaml
  */
 class OCamlChecker(
     private val packages: List<String> = emptyList(),
-    private val opens: List<String> = listOf("Stdlib")
+    private val opens: List<String> = listOf("Stdlib"),
+    private val source: OCamlSource = OCamlSource(),
 ) : GroundTruth {
-    override fun valid(example: Example): Boolean = isValid(example.toString()).isValid
+    override fun valid(example: Example): Boolean = isValid(source.of(example)).isValid
 
     /** Compiles all of [examples] in one file, which fails if any one of them does. */
     override fun allValid(examples: Collection<Example>): Boolean =
-        examples.isEmpty() || compile(examples.map { it.toString() }).isValid
+        examples.isEmpty() || compile(examples.map { source.of(it) }).isValid
 
     private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
 
@@ -46,7 +43,7 @@ class OCamlChecker(
 
         try {
             // Write preamble + expressions
-            tempFile.writeText(preamble + exprs.joinToString("") { "let _ = (${desugarOCaml(it)})\n" })
+            tempFile.writeText(preamble + exprs.joinToString("") { "let _ = ($it)\n" })
 
             // Build command
             val command = buildCommand(tempFile)

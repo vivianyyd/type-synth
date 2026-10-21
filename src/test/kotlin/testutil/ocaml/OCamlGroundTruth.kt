@@ -29,11 +29,12 @@ enum class OCamlGroundTruth(val description: String) {
     Toplevel("one ocaml toplevel, fed each expression as a phrase"),
     Ocamlc("ocamlc, one process per check");
 
-    fun create(): GroundTruth =
+    /** Asks OCaml about examples written as [source] writes them. */
+    fun create(source: OCamlSource = OCamlSource()): GroundTruth =
         when (this) {
-            Typer -> OCamlTyper()
-            Toplevel -> OCamlToplevel()
-            Ocamlc -> OCamlChecker()
+            Typer -> OCamlTyper(source = source)
+            Toplevel -> OCamlToplevel(source = source)
+            Ocamlc -> OCamlChecker(source = source)
         }
 
     companion object {
