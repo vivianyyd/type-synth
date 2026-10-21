@@ -16,11 +16,12 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
+import java.io.Writer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.io.Writer
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.GZIPOutputStream
 import kotlin.system.exitProcess
@@ -259,12 +260,7 @@ private fun runChild(opts: Options, b: Benchmark, runId: String, repeat: Int, di
         // finished. See "A run that stops early" in bench/README.md
         val fields = readFields(recordFile)
         if (fields["status"]?.let { (it as RawJson).text.trim() } == "\"running\"") {
-            val record = linkedMapOf<String, Any?>()
-            fields.forEach { (k, v) ->
-                record[k] = if (k == "status") status else v
-                if (k == "status") record["error"] = error
-            }
-            recordFile.writeText(Json.write(record, pretty = true) + "\n")
+            recordFile.writeText(Json.write(fields + mapOf("status" to status, "error" to error), pretty = true) + "\n")
         }
     }
     return Moshi.Builder().build().adapter(Map::class.java).fromJson(recordFile.readText())!!
@@ -386,8 +382,6 @@ private fun runOne(opts: Options) {
             )
         else null
 
-    // Whichever of a step and its timeout takes the lock first records the step
-    val lock = Any()
     val steps = mutableListOf<Map<String, Any?>>()
 
     /** Until [done], the run's status is running. Readers never see half a record. */
@@ -406,37 +400,31 @@ private fun runOne(opts: Options) {
         tmp.renameTo(File(dir, "$runId.json"))
     }
 
-    val timer = Executors.newSingleThreadScheduledExecutor { Thread(it, "timeout").apply { isDaemon = true } }
+    // Steps are solved on a worker so that this thread can time them out
+    val worker = Executors.newSingleThreadExecutor { Thread(it, "step").apply { isDaemon = true } }
     var committed = SearchState.emptyState
     val order = mutableListOf<String>() // every name solved so far, by the step that solved it
     for ((i, step) in benchmark.steps.withIndex()) {
         val progress = Progress()
-        val timeout =
-            timer.schedule(
-                {
-                    synchronized(lock) {
-                        if (steps.size == i) {
-                            val recording = progress.recording
-                            val stats = recording?.let { r -> synchronized(r) { trace?.close(); r.snapshot() } }
-                            if (recording == null) trace?.close()
-                            steps += linkedMapOf(
-                                "step" to step.name, "status" to "timeout", "loadMs" to progress.loadMs, "stats" to stats
-                            )
-                            writeRecord(done = true)
-                            // Exiting rather than halting runs the hook that deletes the solver's files.
-                            exitProcess(0)
-                        }
-                    }
-                },
-                opts.timeoutSec,
-                TimeUnit.SECONDS
-            )
-        val (record, solution) = solveStep(step, committed, order, config, groundTruth, trace, progress)
-        timeout.cancel(false)
-        synchronized(lock) {
-            steps += record
-            writeRecord(done = solution == null || i == benchmark.steps.lastIndex)
+        val solving = worker.submit<Pair<Map<String, Any?>, SearchState?>> {
+            solveStep(step, committed, order, config, groundTruth, trace, progress)
         }
+        val (record, solution) =
+            try {
+                solving.get(opts.timeoutSec, TimeUnit.SECONDS)
+            } catch (e: TimeoutException) {
+                // The worker may still be writing the trace; closing it again is a no-op
+                val stats = progress.recording?.let { r -> synchronized(r) { trace?.close(); r.snapshot() } }
+                trace?.close()
+                steps += linkedMapOf(
+                    "step" to step.name, "status" to "timeout", "loadMs" to progress.loadMs, "stats" to stats
+                )
+                writeRecord(done = true)
+                // Exiting rather than halting runs the hook that deletes the solver's files.
+                exitProcess(0)
+            }
+        steps += record
+        writeRecord(done = solution == null || i == benchmark.steps.lastIndex)
         committed = solution ?: break
     }
     trace?.close()
