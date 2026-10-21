@@ -169,4 +169,30 @@ class OcamlTypeParserTest {
         assertEquals(fixedTypes.getValue("Num").asLabel().label, desiredTypes.getValue("Num").asLabel().label)
         assertTrue(desiredTypes.getValue("Flt").asLabel().label != fixedTypes.getValue("Nil").asLabel().label)
     }
+
+    @Test
+    fun `comments are ignored`() {
+        val types = OcamlTypeParser().parseSignatures(
+            """
+            // Ref
+            val ref : 'a -> 'a ref
+            val (!) : 'a ref -> 'a  // Equivalent to fun r -> r.contents.
+            """.trimIndent()
+        )
+        assertEquals(listOf("ref", "(!)"), types.keys.toList())
+        val deref = types.getValue("(!)") as Arrow
+        assertEquals(listOf(Variable(0)), deref.l.asLabel().params)
+        assertEquals(Variable(0), deref.r)
+    }
+
+    @Test
+    fun `operator names may contain a colon`() {
+        val types = OcamlTypeParser().parseSignatures(
+            """
+            val (:=) : 'a ref -> 'a -> unit
+            val set : 'a ref -> 'a -> unit
+            """.trimIndent()
+        )
+        assertEquals(types.getValue("set"), types.getValue("(:=)"))
+    }
 }
