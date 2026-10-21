@@ -45,10 +45,10 @@ enum class SearchStrategyKind {
             emitConstructors: Boolean,
             sizeBound: Int,
             depthBound: Int,
-            soundExpansions: Boolean
+            expansions: Expansions
         ) =
             DFSEnumerator(
-                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, soundExpansions
+                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, expansions
             )
     };
 
@@ -58,7 +58,7 @@ enum class SearchStrategyKind {
         emitConstructors: Boolean,
         sizeBound: Int,
         depthBound: Int,
-        soundExpansions: Boolean
+        expansions: Expansions
     ): SearchStrategy
 }
 
@@ -72,12 +72,8 @@ data class Configuration(
     val depthBound: Int,
     val scheduleInfo: SchedulingInfo = Auto(5),
     val numSols: Solutions,
-    /**
-     * Whether a hole that nothing constrains may also become an arrow, and, after outlining, any
-     * label. Without this, such a hole only becomes a label blank or a variable, which is faster
-     * but can miss solutions.
-     */
-    val soundExpansions: Boolean = false,
+    /** What each hole may be filled with. */
+    val expansions: Expansions = Expansions.Unsound,
     /** How each outline's labels get their arities before concretizing. */
     val labelArities: LabelArities = LabelArities.Solved,
     /** Which oracle answers whether two expressions have the same type. */
@@ -93,6 +89,26 @@ enum class OracleKind {
      * instead of looking at types.
      */
     Observational,
+}
+
+enum class Expansions {
+    /**
+     * Only what unification allows. A hole that nothing constrains becomes only a label blank or a
+     * variable, which is faster but can miss solutions.
+     */
+    Unsound,
+
+    /**
+     * Like [Unsound], but a hole that nothing constrains may also become an arrow and, after
+     * outlining, any label.
+     */
+    Sound,
+
+    /**
+     * Ignore unification: every variable, an arrow, and every label (a label blank, while
+     * outlining).
+     */
+    Simple,
 }
 
 sealed class LabelArities {
