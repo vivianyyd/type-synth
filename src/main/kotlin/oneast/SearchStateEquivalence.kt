@@ -13,24 +13,15 @@ package oneast
  * (label / variable) renaming is forced by the corresponding label or variable
  * on the other side.
  */
-fun SearchState.equivalentTo(other: SearchState): Boolean {
-    if (this.names.keys != other.names.keys) return false
-    val labels = Renaming()
-    return this.names.all { (name, i) ->
-        matchTypes(this.types[i], other.types[other.names.getValue(name)], labels, Renaming())
-    }
-}
+fun SearchState.equivalentTo(other: SearchState): Boolean = mismatches(other).isEmpty()
 
 /**
  * The names whose types keep [this] from being equivalent to [other]: those with a nonzero cost in
- * [diffTo], so the two always agree. Null if the two states do not have the same names. Labels are
- * renamed consistently across all names, so a name can be listed because of how a name before it
- * (in sorted order) used a label. Empty exactly when [equivalentTo] holds.
+ * [diffTo], including names only one state has. Labels are renamed consistently across all names,
+ * so a name can be listed because of how a name before it (in sorted order) used a label.
  */
-fun SearchState.mismatches(other: SearchState): List<String>? {
-    if (this.names.keys != other.names.keys) return null
-    return other.diffTo(this).costByName.filterValues { it > 0 }.keys.toList()
-}
+fun SearchState.mismatches(other: SearchState): List<String> =
+    other.diffTo(this).costByName.filterValues { it > 0 }.keys.toList()
 
 /** Whether [a] and [b] are the same type up to renaming variables. Labels must be the same. */
 fun equalUpToVariableRenaming(a: Type, b: Type): Boolean =

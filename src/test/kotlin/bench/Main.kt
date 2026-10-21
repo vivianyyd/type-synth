@@ -372,7 +372,7 @@ private fun runOne(opts: Options) {
                 expected?.let { e ->
                     solutions.map { s -> s to stateFromContext(e.asMap().filterKeys { it in s.names }) }
                 }
-            val mismatches = compared?.map { (s, e) -> s.mismatches(e) ?: listOf("different names") }
+            val mismatches = compared?.map { (s, e) -> s.mismatches(e) }
             linkedMapOf(
                 "status" to
                     when {
