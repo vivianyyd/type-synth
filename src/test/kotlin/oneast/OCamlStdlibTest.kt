@@ -174,7 +174,7 @@ class OCamlStdlibTest {
         val oracleTypes = buildMap {
             ocamlTypesDir.listFiles()
                 ?.filter { it.extension == "types" && it.isFile }
-                ?.forEach { putAll(parser.parseSignatures(it.readText())) }
+                ?.forEach { putAll(parseTypesFile(parser, it)) }
         }
         val oracle = CheckingGroundTruthOracle(oracleTypes)
 

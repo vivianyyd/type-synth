@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 8_char.types, 26_bytes_mod.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 8_char.types, 26_bytes_mod.types, 50_list_mod.types
 
 // Construction
 (Bytes.create Num)
@@ -28,7 +28,7 @@ Bytes.empty
 (Bytes.sub_string (Bytes.make Num Char) Num Num)
 (Bytes.cat (Bytes.create Num) (Bytes.create Num))
 (Bytes.cat (Bytes.make Num Char) (Bytes.make Num Char))
-(Bytes.concat Bytes.empty (cons (Bytes.make Num Char) []))
+(Bytes.concat Bytes.empty (List.cons (Bytes.make Num Char) Nil))
 (Bytes.extend (Bytes.create Num) Num Num)
 (Bytes.trim (Bytes.make Num Char))
 (Bytes.escaped (Bytes.make Num Char))
