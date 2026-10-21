@@ -1,3 +1,4 @@
 // Oo
-val copy : (< .. > as 'a) -> 'a
-val id : < .. > -> int
+// Skipped: object types, since examples cannot make an object
+// val copy : (< .. > as 'a) -> 'a
+// val id : < .. > -> int
