@@ -238,6 +238,26 @@ class OcamlTypeParserTest {
     }
 
     @Test
+    fun `a comment may hold anything, even a signature we cannot parse`() {
+        val types = OcamlTypeParser().parseSignatures(
+            """
+            // type t = { re : float; im : float }
+            // val copy : (< .. > as 'a) -> 'a
+              // indented: 'a -> 'b
+            val length : 'a list -> int// no space before the comment
+            val (^) : string -> string -> string // a -> b : c
+            """.trimIndent()
+        )
+        assertEquals(listOf("length", "(^)"), types.keys.toList())
+        assertEquals(parse("'a list -> int"), types.getValue("length"))
+    }
+
+    @Test
+    fun `a file of only comments declares nothing`() {
+        assertEquals(emptyMap(), OcamlTypeParser().parseSignatures("// Oo\n// val id : < .. > -> int\n"))
+    }
+
+    @Test
     fun `operator names may contain a colon`() {
         val types = OcamlTypeParser().parseSignatures(
             """

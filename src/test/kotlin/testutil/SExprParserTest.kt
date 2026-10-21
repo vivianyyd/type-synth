@@ -32,4 +32,9 @@ class SExprParserTest {
         assertEquals(App(Name("(~-.)"), Name("Flt")), unsignedExample("(~-. Flt)"))
         assertEquals(Name("(~+)"), unsignedExample("~+"))
     }
+
+    @Test
+    fun `text after an expression is an error, so an example cannot have a trailing comment`() {
+        assertFailsWith<IllegalArgumentException> { parseSExpr("(f x) // note") }
+    }
 }

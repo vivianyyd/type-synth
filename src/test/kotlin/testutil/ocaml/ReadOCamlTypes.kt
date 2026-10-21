@@ -4,6 +4,7 @@ import oneast.Arrow
 import oneast.NamedLabel
 import oneast.Type
 import oneast.Variable
+import testutil.ocamlName
 
 /**
  * Parses OCaml-style value signatures (e.g. `val foo : 'a list -> int`) into the repository's
@@ -45,7 +46,9 @@ class OcamlTypeParser {
         val nameEnd = if (normalized.startsWith("(")) normalized.indexOf(')') else 0
         val colonIndex = normalized.indexOf(':', nameEnd)
         require(colonIndex >= 0) { "Signature must contain ':' : $line" }
-        val name = normalized.substring(0, colonIndex).trim()
+        val name = normalized.substring(0, colonIndex).trim().let {
+            if (it.startsWith("(")) ocamlName(it.removeSurrounding("(", ")").trim()) else it
+        }
         val typePart = normalized.substring(colonIndex + 1).trim()
 
         val tokens = tokenize(typePart)

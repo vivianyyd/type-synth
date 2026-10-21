@@ -4,14 +4,9 @@ package testutil
 private val wordOperators = setOf("mod", "land", "lor", "lxor", "lsl", "lsr", "asr")
 
 /**
- * How the value named [name] is written in OCaml source, which is also the name it goes by in
- * examples and type assignments. Operators, and any other names without letters, are put in
- * parentheses. An operator that begins or ends with `*` gets spaces inside them, or `(*.)` would
- * open a comment and `(**)` would be an empty one; `mod` gets them too, as the signatures spell it.
+ * The name the value [name] goes by in examples, type assignments and signatures, however they
+ * space it. Operators, and any other names without letters, are put in parentheses without spaces:
+ * `(+)`, `(*)`, `(mod)`. `OCamlSource` spaces the ones OCaml would read as a comment when it writes
+ * examples as OCaml.
  */
-fun ocamlName(name: String): String =
-    when {
-        name !in wordOperators && name.any { it.isLetter() } -> name
-        name.startsWith("*") || name.endsWith("*") || name == "mod" -> "( $name )"
-        else -> "($name)"
-    }
+fun ocamlName(name: String): String = if (name !in wordOperators && name.any { it.isLetter() }) name else "($name)"
