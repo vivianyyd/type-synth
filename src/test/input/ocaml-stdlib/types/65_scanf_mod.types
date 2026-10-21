@@ -13,7 +13,6 @@ val Scanning.beginning_of_input : Scanning.in_channel -> bool
 val Scanning.name_of_input : Scanning.in_channel -> string
 val sscanf : string -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
 val scanf : ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
-val fscanf : Scanning.in_channel -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
 val sscanf_opt : string -> ('a, Scanning.in_channel, 'b option) format -> 'a -> 'b option
 val scanf_opt : ('a, Scanning.in_channel, 'b option) format -> 'a -> 'b option
 val bscanf : Scanning.in_channel -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
