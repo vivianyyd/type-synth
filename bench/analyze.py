@@ -86,8 +86,10 @@ def steps(record):
 
 
 def step_name(name, record, step):
-    """[name], with the step's name if the run has more than one."""
-    return name if len(steps(record)) == 1 else f"{name}/{step['step']}"
+    """[name], with the step's name unless it is the benchmark's, as a one-step benchmark's step is.
+    Not by the number of steps, since a chain that stopped after its first step has one."""
+    step = step.get("step", record["benchmark"])
+    return name if step == record["benchmark"] else f"{name}/{step}"
 
 
 def row(record, step):
