@@ -15,6 +15,7 @@ import testutil.unsignedExample
 import util.*
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class OCamlStdlibTest {
     private val ocaml = OCamlGroundTruth.default.create()
@@ -140,6 +141,21 @@ class OCamlStdlibTest {
             }
             val (a, b) = OracleKind.values().map { seeds.getValue(it) }
             println("Solutions equivalent: ${a.equivalentTo(b)}")
+        }
+    }
+
+    /**
+     * Each group's expected answer, loaded given the groups before it, matches the same types
+     * parsed in one go. Separate parses would number constructors separately, so one label could
+     * stand for two constructors (in the float group: float and list).
+     */
+    @Test
+    fun `module query answers keep constructors apart`() {
+        for ((i, task) in ocamlModuleGroups.withIndex()) {
+            val fixed = ocamlModuleGroups.subList(0, i).flatten()
+            val (_, expected) = ocamlModulesQuery(task, fixed)
+            val onePass = stateFromContext(loadFromExsFiles(fixed + task).second)
+            assertEquals(emptyList(), expected.mismatches(onePass), "group $task")
         }
     }
 
