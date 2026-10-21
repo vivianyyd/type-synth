@@ -125,7 +125,7 @@
 (succ (sqrt Flt))
 (ldexp (float Num) (float Num))
 
-// pin each result with (+.), which is in the first round
+// constrain outputs 
 ((+.) (abs_float Flt) Flt)
 ((+.) (floor Flt) Flt)
 ((+.) (exp Flt) Flt)
