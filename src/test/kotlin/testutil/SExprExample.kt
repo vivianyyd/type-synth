@@ -33,21 +33,7 @@ private fun SExpr.toSignedExample(): Pair<Boolean, Example> =
 
 fun SExpr.toExample(): Example =
     when (this) {
-        is SExpr.Atm -> {
-            // TODO ask LLM for cleaner implementation here
-            val name = this.value
-            val prefixAlphaNames = listOf(
-                "land",
-                "lor",
-                "lxor",
-                "lsl",
-                "lsr",
-                "asr"
-            )
-            val parenName =
-                if (name == "*" || name == "mod") "( $name )" else if (name.all { !it.isLetter() } || name in prefixAlphaNames) "($name)" else name
-            Name(parenName)
-        }
+        is SExpr.Atm -> Name(ocamlName(this.value))
         is SExpr.Lst -> {
             require(this.elements.isNotEmpty())
             val apps = this.elements.map { it.toExample() }

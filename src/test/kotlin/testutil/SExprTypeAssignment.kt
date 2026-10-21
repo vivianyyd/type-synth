@@ -11,7 +11,7 @@ fun oracleFromAssignment(context: String) =
                 assign is SExpr.Lst && assign.elements.size == 2 && assign.elements[0] is SExpr.Atm
             )
             val name = (assign.elements[0] as SExpr.Atm).value
-            (if (name.all { !it.isLetter() }) "($name)" else name) to assign.elements[1].toType()
+            ocamlName(name) to assign.elements[1].toType()
         })
 
 fun SExpr.toType(): Type =
