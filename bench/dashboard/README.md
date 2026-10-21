@@ -66,9 +66,7 @@ static/js/
 A run summary is the run's own fields, its totals over steps, and a row per step. Step rows come
 from `analyze.row` in `bench/analyze.py`, so the dashboard and the command line agree on what a
 metric means. `data.py` adds what `row` leaves out (the step's name and place, per-phase counts,
-load time, fraction exact, number of solutions and mismatches, error line). One difference: a step
-is named `benchmark/step` whenever its name isn't the benchmark's, where `analyze.py` names it by
-how many steps the run has, so a chain cut short after its first step keeps its step's name.
+load time, fraction exact, number of solutions, error line).
 
 ### API
 
@@ -93,8 +91,8 @@ how many steps the run has, so a chain cut short after its first step keeps its 
 
 ## Plan
 
-Built first (above): the five views over the record format with steps and scores (schema 2), which
-also read schema 1 records.
+Built first (above): the five views over the record format with steps and scores (schema 2).
+Records from before steps show as unreadable.
 
 Next, roughly in order of value:
 

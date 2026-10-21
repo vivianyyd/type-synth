@@ -128,19 +128,18 @@ class Results:
 
 def summarize(record):
     """The run's fields, its totals over steps, and a row per step."""
-    rows = [step_row(record, s, i) for i, s in enumerate(analyze.steps(record))]
+    rows = [step_row(record, s, i) for i, s in enumerate(record["steps"])]
     r = {
-        "runId": record.get("runId", record["benchmark"]),
+        "runId": record["runId"],
         "benchmark": record["benchmark"],
-        "repeat": record.get("repeat", 0),
+        "repeat": record["repeat"],
         "status": record["status"],
-        "schema": record.get("schema", 1),
         "config": record.get("config"),
         "steps": rows,
         "numSteps": len(rows),
         "goodSteps": sum(s["status"] in GOOD for s in rows),
     }
-    if "steps" in record and record.get("error"):
+    if record.get("error"):
         r["errorLine"] = first_line(record["error"])
     elif rows and rows[-1].get("errorLine"):
         r["errorLine"] = rows[-1]["errorLine"]
@@ -154,9 +153,9 @@ def summarize(record):
 def step_row(record, step, index):
     """analyze.row, plus what it leaves out. Times in seconds, like row."""
     r = analyze.row(record, step)
-    r["runId"] = record.get("runId", record["benchmark"])
+    r["runId"] = record["runId"]
     r["parent"] = record["benchmark"]
-    r["step"] = step.get("step", record["benchmark"])
+    r["step"] = step["step"]
     r["stepIndex"] = index
     if step.get("loadMs") is not None:
         r["load"] = step["loadMs"] / 1000
@@ -165,15 +164,6 @@ def step_row(record, step, index):
     sols = step.get("solutions")
     if sols is not None:
         r["numSolutions"] = len(sols)
-    # Schema 1 has mismatches instead of scores
-    mism = step.get("mismatches")
-    if mism:
-        r["mismatched"] = min(len(m) for m in mism)
-    rounds = step.get("mismatchedRounds")
-    if rounds:
-        first = [x for rs in rounds for x in rs[:1]]
-        if first:
-            r["firstMismatchedRound"] = min(first)
     if step.get("error"):
         r["errorLine"] = first_line(step["error"])
     stats = step.get("stats") or {}
@@ -181,7 +171,7 @@ def step_row(record, step, index):
         for k, v in vals.items():
             if k != "ms" and isinstance(v, (int, float)):
                 r[f"{phase}.{k}"] = v
-    searches = stats.get("searches", stats.get("queries")) or []
+    searches = stats.get("searches") or []
     if searches:
         r["rounds"] = max(q.get("round", 0) for q in searches) + 1
         r["maxOuterDepth"] = max(q.get("outerDepth", 0) for q in searches)

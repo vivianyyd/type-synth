@@ -5,9 +5,9 @@ let TIMES = new Set();
 
 export function init(data) {
   LABELS = { ...data.metrics, load: "load (s)", runId: "run", exactNames: "names exact", names: "names",
-    expectedSize: "expected size", exactFrac: "fraction exact", step: "step", numSolutions: "solutions found", mismatched: "names wrong",
-    firstMismatchedRound: "first wrong round", rounds: "rounds searched", maxOuterDepth: "max outer depth",
-    events: "events", scheduledRounds: "scheduled rounds", bytes: "record size", matchesExpected: "matches expected" };
+    expectedSize: "expected size", exactFrac: "fraction exact", step: "step", numSolutions: "solutions found",
+    rounds: "rounds searched", maxOuterDepth: "max outer depth",
+    events: "events", scheduledRounds: "scheduled rounds", bytes: "record size" };
   TIMES = new Set(data.times);
 }
 

@@ -9,8 +9,8 @@ import { strip, meter } from "../steps.js";
 
 const PHASES = ["outline", "arity", "concretize", "cegis"];
 const STEP_TABS = new Set(["overview", "answer", "searches", "events"]);
-const KNOWN = new Set(["schema", "runId", "benchmark", "repeat", "config", "loadMs", "status", "matchesExpected", "solutions",
-  "expected", "mismatches", "mismatchedRounds", "stats", "batch", "error", "steps", "step", "names", "scores"]);
+// A step's fields that have a place of their own on the page
+const KNOWN = new Set(["step", "status", "loadMs", "names", "solutions", "expected", "scores", "stats", "error"]);
 
 export default {
   id: "run", title: "Run", nav: false,
@@ -45,8 +45,8 @@ export default {
     add(el, stripBox, body);
     let rec;
     try { rec = await api.run(b.id, runId); } catch (e) { body.replaceChildren(errorBox(e)); return; }
-    const recSteps = rec.steps || [rec];
-    const stepOf = (name) => recSteps.find((s) => (s.step ?? rec.benchmark) === name) || null;
+    const recSteps = rec.steps;
+    const stepOf = (name) => recSteps.find((s) => s.step === name) || null;
 
     let tab = params.tab;
     if (!(tab === "chain" ? multi : tab === "log" ? hasLog : tab === "trace" ? hasTrace : STEP_TABS.has(tab) || tab === "raw"))
@@ -56,7 +56,7 @@ export default {
       const step = stepOf(stepName);
       const row = all.find((s) => s.step === stepName);
       const stats = step?.stats || {};
-      const ctx = { rec, recSteps, step, row, all, b, runId, multi, stepName, searches: stats.searches || stats.queries || [],
+      const ctx = { rec, recSteps, step, row, all, b, runId, multi, stepName, searches: stats.searches || [],
         events: stats.events || [], params, select: (name, t) => { stepName = name; tab = t; setParams({ step: name, tab: t }); draw(); } };
       if (multi) stripBox.replaceChildren(strip(summary, chain, { selected: tab === "chain" ? null : stepName,
         linkFor: (s) => href("run", [b.id, runId], { step: s.step, tab: STEP_TABS.has(tab) ? tab : "overview" }) }));
@@ -72,7 +72,7 @@ export default {
         { id: "raw", label: "Raw JSON" },
       ].filter(Boolean);
       body.replaceChildren(...[
-        rec.steps && rec.error ? card(h("span", { class: "row" }, "Run stopped", statusChip(rec.status)), h("pre", { class: "error" }, rec.error)) : null,
+        rec.error ? card(h("span", { class: "row" }, "Run stopped", statusChip(rec.status)), h("pre", { class: "error" }, rec.error)) : null,
         tabs(items, tab, (t) => { tab = t; setParams({ tab: t }); draw(); }), pane].filter(Boolean));
       clear(pane);
       if (STEP_TABS.has(tab) && !step) { unfinished(pane, ctx); return; }
@@ -134,15 +134,14 @@ function chainTab(el, { all, select: choose }) {
 function overview(el, { rec, step, row }) {
   const stats = step.stats || {};
   const c = stats.counters || {};
-  const extra = Object.fromEntries(Object.entries(rec.steps ? step : rec).filter(([k]) => !KNOWN.has(k)));
+  const extra = Object.fromEntries(Object.entries(step).filter(([k]) => !KNOWN.has(k)));
   add(el, h("div", { class: "grid" },
     card("Result", kv([["status", statusChip(step.status)],
       ["names exact", row?.names ? h("span", { class: "row", style: { gap: "6px" } }, meter(row, "inline"), row.exact) : undefined],
       ["cost", row?.names ? `${row.cost} of ${row.expectedSize} expected nodes (${M.fmt("diff", row.diff)})` : undefined],
-      ["matches expected", rec.matchesExpected == null || rec.steps ? undefined : rec.matchesExpected ? "yes" : "no"],
       ["wall (s)", stats.wallMs != null ? M.fmt("wall", stats.wallMs / 1000) : undefined], ["load (s)", step.loadMs != null ? M.fmt("load", step.loadMs / 1000) : undefined],
       ["not in a phase (s)", stats.unattributedMs != null ? M.fmt("wall", stats.unattributedMs / 1000) : undefined],
-      ["searches", (stats.searches || stats.queries || []).length], ["events", (stats.events || []).length],
+      ["searches", (stats.searches || []).length], ["events", (stats.events || []).length],
       ["stopped at", row?.stop], ["repeat", rec.repeat], ["schema", rec.schema]])),
     card("Configuration", configView(rec.config)),
     card("Counters", Object.keys(c).length ? kv(Object.entries(c).map(([k, v]) => [M.label(k), k === "solverMs" ? `${M.fmt("wall", v / 1000)} s` : M.fmt(k, v)]))
@@ -182,16 +181,14 @@ function configView(cfg) {
   return kv(Object.entries(cfg).map(([k, v]) => [k, v && typeof v === "object" ? Object.entries(v).map(([a, b]) => `${a}=${JSON.stringify(b)}`).join(", ") : String(v)]));
 }
 
-// The types of one solution of a step against the expected ones, as rows. Schema 1 records have
-// mismatches instead of scores.
+// The types of one solution of a step against the expected ones, as rows.
 function typeRows(step, i, stepName) {
   const sol = step.solutions[i] || {};
   const expected = step.expected || {};
   const byName = step.scores?.[i]?.byName;
-  const mismatched = new Set(step.mismatches?.[i] || []);
   return [...new Set([...Object.keys(sol), ...Object.keys(expected)])].map((n) => ({
     name: n, step: stepName, returned: sol[n], expected: expected[n], cost: byName?.[n]?.cost, size: byName?.[n]?.expectedSize,
-    differs: !(n in sol) || (byName ? (byName[n]?.cost ?? 1) > 0 : mismatched.has(n)),
+    differs: !(n in sol) || (byName != null && (byName[n]?.cost ?? 1) > 0),
   }));
 }
 
@@ -216,14 +213,10 @@ function answer(el, { step, rec, recSteps, multi, stepName }) {
       // The earlier steps' answers are the ones this step was given: their first solutions
       const rows = [...(withEarlier ? earlier.flatMap((s) => typeRows(s, 0, s.step)) : []), ...typeRows(step, i, stepName)]
         .filter((r) => !only || r.differs);
-      const differs = typeRows(step, i, stepName).filter((r) => r.differs).length;
-      const rounds = (step.mismatchedRounds || [])[i];
       box.append(card(h("span", { class: "row" }, sols.length > 1 ? `Solution ${i + 1}` : "Solution",
         i === closest && sols.length > 1 ? h("span", { class: "chip s-correct" }, "closest") : null,
         score ? h("span", { class: "row small", style: { gap: "6px" } }, meter({ names: score.names, exactNames: score.exactNames }, "inline"),
-          `${score.exactNames}/${score.names} names exact · cost ${score.cost} of ${score.expectedSize}`)
-          : h("span", { class: "muted small" }, `${differs} of ${Object.keys(sols[i]).length} names differ from expected`),
-        rounds && rounds.length ? h("span", { class: "small" }, `mismatched rounds: ${rounds.join(", ")} (first is where it went wrong)`) : null),
+          `${score.exactNames}/${score.names} names exact · cost ${score.cost} of ${score.expectedSize}`) : null),
         typesTable(rows, { withStep: withEarlier, scored: !!score })));
     });
   };
@@ -332,7 +325,7 @@ function toCSV(rows, keys) {
 function eventsTab(el, { events, searches }) {
   if (!events.length) { add(el, h("p", { class: "muted" }, "No events recorded.")); return; }
   const roundOf = new Map(searches.map((q) => [q.id, q.round]));
-  const rows = events.map((e, i) => ({ i, ...e, s: e.ms != null ? e.ms / 1000 : null, round: roundOf.get(e.search ?? e.query) }));
+  const rows = events.map((e, i) => ({ i, ...e, s: e.ms != null ? e.ms / 1000 : null, round: roundOf.get(e.search) }));
   const keys = [...new Set(rows.flatMap((r) => Object.keys(r)))].filter((k) => k !== "ms");
   const numeric = keys.filter((k) => rows.some((r) => typeof r[k] === "number"));
   const kinds = [...new Set(rows.map((r) => r.kind))];
