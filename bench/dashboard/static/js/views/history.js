@@ -47,8 +47,8 @@ export default {
         h("td", {}, h("a", { href: href("history", [], { ...params, bench: [n] }) }, n)),
         folded.map((f, i) => {
           const r = f.get(n);
-          if (!r) return h("td", { class: "cell muted", title: batches[i].runs.some((x) => x.benchmark === parentOf.get(n)) ? "not reached" : "not run" },
-            batches[i].runs.some((x) => x.benchmark === parentOf.get(n)) ? "·" : "");
+          const ran = batches[i].runs.some((x) => x.benchmark === parentOf.get(n));
+          if (!r) return h("td", { class: "cell muted", title: ran ? "not reached" : "not run" }, ran ? "·" : "");
           const v = r[metric];
           const color = statusColor(r.status.split("/")[0]);
           return h("td", { class: "cell", title: `${n} in ${batches[i].label}\n${r.status}\n${M.label(metric)}: ${M.fmt(metric, v)}${r.repeats > 1 ? `\nmedian of ${r.repeats}` : ""}`,

@@ -71,6 +71,8 @@ export function checkbox(label, checked, onChange, title) {
 // onClose(values) runs when the menu closes after a change, for views that re-render on a change.
 export function multiPicker({ label, options, selected, onChange = () => {}, onClose, searchable = true }) {
   const sel = new Set(selected);
+  let changed = false;
+  const changedTo = (values) => { changed = true; onChange(values); };
   const summary = h("summary", {});
   const refresh = () => { summary.textContent = `${label} (${sel.size}) ▾`; };
   const list = h("div", {});
@@ -86,19 +88,16 @@ export function multiPicker({ label, options, selected, onChange = () => {}, onC
       const input = h("input", { type: "checkbox", checked: sel.has(o.value), onchange: () => {
         input.checked ? sel.add(o.value) : sel.delete(o.value);
         refresh();
-        onChange(options.map((x) => x.value).filter((v) => sel.has(v)));
+        changedTo(options.map((x) => x.value).filter((v) => sel.has(v)));
       } });
       list.append(h("label", {}, input, o.label));
     }
   };
   const buttons = h("div", { class: "row small", style: { marginBottom: "6px" } },
-    h("a", { href: "javascript:void 0", onclick: () => { options.forEach((o) => sel.add(o.value)); draw(); refresh(); onChange([...sel]); } }, "all"),
-    h("a", { href: "javascript:void 0", onclick: () => { sel.clear(); draw(); refresh(); onChange([]); } }, "none"));
+    h("a", { href: "javascript:void 0", onclick: () => { options.forEach((o) => sel.add(o.value)); draw(); refresh(); changedTo([...sel]); } }, "all"),
+    h("a", { href: "javascript:void 0", onclick: () => { sel.clear(); draw(); refresh(); changedTo([]); } }, "none"));
   refresh(); draw();
   const el = h("details", { class: "picker" }, summary, h("div", { class: "menu" }, search, buttons, list));
-  let changed = false;
-  const inner = onChange;
-  onChange = (v) => { changed = true; inner(v); };
   el.addEventListener("toggle", () => { if (!el.open && changed && onClose) { changed = false; onClose(options.map((x) => x.value).filter((v) => sel.has(v))); } });
   const outside = (e) => { if (!el.isConnected) document.removeEventListener("click", outside); else if (!el.contains(e.target)) el.open = false; };
   document.addEventListener("click", outside);

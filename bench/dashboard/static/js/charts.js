@@ -3,11 +3,11 @@ import { h } from "./ui.js";
 
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
-export const STATUS_COLORS = () => ({
-  correct: css("--good"), solved: css("--good"), wrong: css("--bad"), error: css("--bad"), crashed: css("--bad"),
-  unreadable: css("--bad"), "no-solution": css("--warn"), timeout: css("--other"), running: css("--info"),
-});
-export const statusColor = (s) => STATUS_COLORS()[s] || css("--none");
+// The CSS variable of each status's color, as the .s-STATUS chips in style.css use them.
+const STATUS_VAR = { correct: "--good", solved: "--good", wrong: "--bad", error: "--bad", crashed: "--bad", unreadable: "--bad",
+  "no-solution": "--warn", timeout: "--other", running: "--info" };
+export const statusVar = (s) => STATUS_VAR[s] || "--none";
+export const statusColor = (s) => css(statusVar(s));
 
 // Categorical colors, in a fixed order (from the CSS, so they follow the theme).
 export const series = (i) => css(`--series-${(i % 8) + 1}`);

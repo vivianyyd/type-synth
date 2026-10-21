@@ -128,9 +128,7 @@ class Results:
 
 def summarize(record):
     """The run's fields, its totals over steps, and a row per step."""
-    # Schema 1 records are one step, with its fields at the top level
-    steps = record["steps"] if "steps" in record else [record]
-    rows = [step_row(record, s, i) for i, s in enumerate(steps)]
+    rows = [step_row(record, s, i) for i, s in enumerate(analyze.steps(record))]
     r = {
         "runId": record.get("runId", record["benchmark"]),
         "benchmark": record["benchmark"],
@@ -159,10 +157,6 @@ def step_row(record, step, index):
     r["runId"] = record.get("runId", record["benchmark"])
     r["parent"] = record["benchmark"]
     r["step"] = step.get("step", record["benchmark"])
-    # A one-step benchmark's step is named like it. analyze.py names a step by its run's number of
-    # steps, so a chain cut short after one step would look like a one-step benchmark
-    if r["step"] != r["parent"]:
-        r["benchmark"] = f"{r['parent']}/{r['step']}"
     r["stepIndex"] = index
     if step.get("loadMs") is not None:
         r["load"] = step["loadMs"] / 1000

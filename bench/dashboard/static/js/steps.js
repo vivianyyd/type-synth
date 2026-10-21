@@ -1,10 +1,7 @@
 // A run's steps: tiles in chain order, and how close each answer came to the expected one.
 import { h, statusChip } from "./ui.js";
 import * as M from "./metrics.js";
-
-const STATUS_VAR = { correct: "--good", solved: "--good", wrong: "--bad", error: "--bad", crashed: "--bad", unreadable: "--bad",
-  "no-solution": "--warn", timeout: "--other", running: "--info" };
-export const statusVar = (s) => `var(${STATUS_VAR[s] || "--none"})`;
+import { statusVar } from "./charts.js";
 
 export const chip = (status) => (status === "not-reached" || status === "not-run" ? statusChip(status, status.replace("-", " ")) : statusChip(status));
 
@@ -29,7 +26,7 @@ export function facts(s) {
 export function tile(s, { link, selected = false, compact = false } = {}) {
   const ghost = s.pending || s.status === "not-reached";
   return h(link ? "a" : "div", {
-    class: `tile${selected ? " selected" : ""}${ghost ? " ghost" : ""}`, href: link, style: `--st: ${statusVar(s.status)}`,
+    class: `tile${selected ? " selected" : ""}${ghost ? " ghost" : ""}`, href: link, style: `--st: var(${statusVar(s.status)})`,
     title: [s.benchmark, s.pending ? "the run stopped during this step" : "", s.errorLine || ""].filter(Boolean).join("\n"),
   },
     h("span", { class: "name" }, s.step),
