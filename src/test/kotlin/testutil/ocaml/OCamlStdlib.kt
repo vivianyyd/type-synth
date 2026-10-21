@@ -7,6 +7,7 @@ import query.Query
 import testutil.splitOCamlExamples
 import testutil.unsignedExample
 import util.CheckingGroundTruthOracle
+import util.GroundTruth
 import util.join
 import util.stateFromContext
 import java.io.File
@@ -68,12 +69,13 @@ fun loadFromExsFiles(exsFileNames: List<String>): Pair<List<Example>, Map<String
 /**
  * The problem of finding types for the names in modules [task], given the true types of the names
  * in modules [fixed], along with the answer. [committedSeed] replaces the true types of [fixed] as
- * what the search starts from.
+ * what the search starts from. [groundTruth] splits the examples into positive and negative ones.
  */
 fun ocamlModulesQuery(
     task: List<String>,
     fixed: List<String>,
-    committedSeed: SearchState? = null
+    committedSeed: SearchState? = null,
+    groundTruth: GroundTruth = OCamlGroundTruth.default.create(),
 ): Pair<Query, SearchState> {
     val (_, fixedTypes) = loadFromExsFiles(fixed)
     val (examplesAll, desiredTypes) = loadFromExsFiles(task)
@@ -86,7 +88,7 @@ fun ocamlModulesQuery(
     val oracle = CheckingGroundTruthOracle(oracleTypes)
     val query =
         Query(
-            splitOCamlExamples(examples, oracle, OCamlChecker()),
+            splitOCamlExamples(examples, oracle, groundTruth),
             oracle,
             committedSeed = committedSeed ?: stateFromContext(fixedTypes)
         )

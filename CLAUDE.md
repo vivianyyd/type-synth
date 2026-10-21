@@ -3,7 +3,8 @@
 ## Setup
 
 Kotlin on the JVM, built with the Gradle wrapper (`./gradlew`). Developed with OpenJDK 11. Two
-external tools have to be on `PATH`: a `python3` that can import cvc5, and an OCaml 5.4 `ocamlc`.
+external tools have to be on `PATH`: a `python3` that can import cvc5, and OCaml 5.4 with
+`ocamlfind`.
 
 ### cvc5 (label arity solver)
 
@@ -30,15 +31,24 @@ doesn't forward system properties, so pass it as `JAVA_TOOL_OPTIONS="-Dtypesynth
 
 ### OCaml (ground truth for the OCaml stdlib examples)
 
-`OCamlChecker` (`src/test/kotlin/testutil/ocaml/OCamlChecker.kt`) runs `ocamlc` from `PATH`. The
-examples use stdlib functions from OCaml 5.1 to 5.4 (`List.is_empty`, `find_index`, `take`, `drop`,
-`singleton`), so anything older fails while loading examples with "Oracle from parsed types
-disagrees with ocamlc ground truth". Set up with opam:
+`OCamlGroundTruth` (`src/test/kotlin/testutil/ocaml/OCamlGroundTruth.kt`) lists the ways to ask
+OCaml whether an example type-checks. The default, `OCamlTyper`, is a server around OCaml's type
+checker: on first use it builds `src/test/ocaml/typer.ml` into `build/ocaml-typer/` with
+`ocamlfind ocamlopt -package compiler-libs.common`. `OCamlToplevel` runs `ocaml`, and
+`OCamlChecker` runs `ocamlc`. All three come from `PATH`.
+
+The examples use stdlib functions from OCaml 5.1 to 5.4 (`List.is_empty`, `find_index`, `take`,
+`drop`, `singleton`), so anything older fails while loading examples with "Oracle from parsed types
+disagrees with ocamlc ground truth". `ocamlfind` has to come from the same switch as the compiler.
+The compiler's own install doesn't include it, so on `PATH` it can resolve to a system `ocamlfind`
+for an older OCaml. Then building the typer fails with "Error: .../compiler-libs/clflags.cmi" (and
+a findlib warning about `topdirs.cmi`). Set up with opam:
 
 ```sh
 opam init -y --bare --no-setup --disable-sandboxing   # --no-setup leaves shell rc files alone;
                                                        # --disable-sandboxing if bubblewrap is missing
 opam switch create 5.4.1 ocaml-base-compiler.5.4.1    # compiles OCaml, a few minutes
+opam install --switch=5.4.1 -y ocamlfind              # for the typer; about a minute
 eval $(opam env --switch=5.4.1)                        # or put ~/.opam/5.4.1/bin first on PATH
 ```
 
@@ -54,7 +64,12 @@ export PATH=$HOME/.opam/5.4.1/bin:$HOME/.venvs/type-synth/bin:$PATH
 ./gradlew bench -q --args="ocaml ocaml-chained"    # see bench/README.md
 ```
 
-Failing on `main` for reasons unrelated to setup: `OCamlStdlibTest.load all and split` (the OCaml
-type parser can't read labelled arguments; `fix-ocaml-type-parser` fixes it).
+Failing for reasons unrelated to setup:
+
+- `OCamlStdlibTest.load all and split`: the OCaml type parser can't read labelled arguments;
+  `fix-ocaml-type-parser` fixes it.
+- The `option` cases of `SexpTests.validate tests` and
+  `ObservationalEquivalenceOracleTest.expressions of the same type are equal`: `option.sexp` labels
+  `value none Num` negative, but it type-checks under the file's own types.
 
 Sketch (`src/main/kotlin/util/io/sketch`) is no longer called from anywhere, so it isn't needed.

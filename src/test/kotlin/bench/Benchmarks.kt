@@ -3,7 +3,7 @@ package bench
 import oneast.*
 import query.AbstractQuery
 import testutil.loadQueryFromFile
-import testutil.ocaml.OCamlChecker
+import testutil.ocaml.OCamlGroundTruth
 import testutil.ocaml.loadFromExsFiles
 import testutil.ocaml.ocamlModuleGroups
 import testutil.ocaml.ocamlModulesQuery
@@ -22,9 +22,14 @@ class Problem(
 
 /**
  * [defaults] is the configuration a variant starts from. [load] gets the configuration the run
- * uses, for benchmarks that search while loading.
+ * uses, for benchmarks that search while loading, and how to ask OCaml about examples, which
+ * benchmarks that aren't OCaml ignore.
  */
-class Benchmark(val name: String, val defaults: Configuration, val load: (Configuration) -> Problem)
+class Benchmark(
+    val name: String,
+    val defaults: Configuration,
+    val load: (Configuration, OCamlGroundTruth) -> Problem
+)
 
 private val sexpDefaults =
     Configuration(
@@ -37,17 +42,18 @@ private val sexpDefaults =
 private val ocamlDefaults = sexpDefaults.copy(scheduleInfo = Auto(3))
 
 private fun sexp(file: String) =
-    Benchmark(file, sexpDefaults) {
+    Benchmark(file, sexpDefaults) { _, _ ->
         val query = loadQueryFromFile(file)
         Problem(query, query.oracle, query.oracle.truth)
     }
 
 /** Solves the [i]th group of modules given the true types of the groups before it. */
 private fun ocaml(name: String, i: Int) =
-    Benchmark("ocaml-$name", ocamlDefaults) {
+    Benchmark("ocaml-$name", ocamlDefaults) { _, ocaml ->
+        val groundTruth = ocaml.create()
         val (query, expected) =
-            ocamlModulesQuery(ocamlModuleGroups[i], fixed = ocamlModuleGroups.subList(0, i).flatten())
-        Problem(query, OCamlChecker(), expected)
+            ocamlModulesQuery(ocamlModuleGroups[i], fixed = ocamlModuleGroups.subList(0, i).flatten(), groundTruth = groundTruth)
+        Problem(query, groundTruth, expected)
     }
 
 /**
@@ -58,17 +64,20 @@ private fun ocaml(name: String, i: Int) =
  * the record's mismatches.
  */
 private fun ocamlChained(name: String, i: Int) =
-    Benchmark("ocaml-chained-$name", ocamlDefaults) { config ->
+    Benchmark("ocaml-chained-$name", ocamlDefaults) { config, ocaml ->
+        val groundTruth = ocaml.create()
         fun query(j: Int, committed: SearchState) =
-            ocamlModulesQuery(ocamlModuleGroups.subList(0, j + 1).flatten(), fixed = emptyList(), committed)
+            ocamlModulesQuery(
+                ocamlModuleGroups.subList(0, j + 1).flatten(), fixed = emptyList(), committed, groundTruth
+            )
 
         val committed =
             (0 until i).fold(SearchState.emptyState) { committed, j ->
-                run(query(j, committed).first, OCamlChecker(), config).firstOrNull()
+                run(query(j, committed).first, groundTruth, config).firstOrNull()
                     ?: error("No solution for ${ocamlModuleNames[j]}, the modules before ${ocamlModuleNames[i]}")
             }
         val (query, expected) = query(i, committed)
-        Problem(query, OCamlChecker(), expected, ocamlRounds(i))
+        Problem(query, groundTruth, expected, ocamlRounds(i))
     }
 
 /** For each group of modules up to the [i]th, its name and the names it adds. */

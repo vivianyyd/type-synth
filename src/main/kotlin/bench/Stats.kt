@@ -32,6 +32,10 @@ enum class Count(val key: String, val nanos: Boolean = false) {
     SOLVER_CALLS("solverCalls"),
     /** Summed across the threads that call the solver, so it can exceed the wall-clock time. */
     SOLVER_NANOS("solverMs", nanos = true),
+    /** Equality queries the search asks its oracle, whichever oracle that is. */
+    ORACLE_CALLS("oracleCalls"),
+    /** Includes any ground-truth calls the oracle makes to answer. */
+    ORACLE_NANOS("oracleMs", nanos = true),
     SOLUTIONS("solutions"),
     CEGIS_POS("cegisPos"),
     CEGIS_NEG("cegisNeg"),

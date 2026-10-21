@@ -1,5 +1,7 @@
 package util
 
+import bench.Count
+import bench.Stats
 import query.*
 
 interface Oracle {
@@ -23,6 +25,24 @@ class ScrappyNewOracle(private val secret: Map<Example, String?>) : Oracle {
 
     override fun dummy(e: Example): Int =
         secret[e]?.let { dummies[it] } ?: throw Exception("Failed oracle precondition")
+}
+
+/** Counts [inner]'s calls and the time they take, while [Stats] is recording. */
+class TimedOracle(private val inner: Oracle) : Oracle {
+    override fun equal(a: Example, b: Example): Boolean = timed { inner.equal(a, b) }
+
+    override fun dummy(e: Example): Int = timed { inner.dummy(e) }
+
+    private inline fun <T> timed(block: () -> T): T {
+        if (Stats.recording == null) return block()
+        val start = System.nanoTime()
+        try {
+            return block()
+        } finally {
+            Stats.inc(Count.ORACLE_CALLS)
+            Stats.add(Count.ORACLE_NANOS, System.nanoTime() - start)
+        }
+    }
 }
 
 interface EqualityOracle {
