@@ -20,8 +20,30 @@ fun oracleFromDir(dir: File) = CheckingGroundTruthOracle(buildMap {
     val parser = OcamlTypeParser()
     dir.listFiles()
         ?.filter { it.extension == "types" && it.isFile }
-        ?.forEach { file -> putAll(parser.parseSignatures(file.readText())) }
+        ?.forEach { file -> putAll(parseTypesFile(parser, file)) }
 })
+
+/** Modules whose .types file has no `// Module` header line. */
+private val moduleNameOverrides = mapOf("22_array_mod.types" to "Array", "24_bool_mod.types" to "Bool")
+
+/**
+ * Parses a .types file. A module's file (`*_mod.types`) names its values relative to the module
+ * (`create`, `Ascii.lowercase`), but examples use full names (`Mutex.create`,
+ * `Char.Ascii.lowercase`), so this qualifies them. As in the examples, operators and constructors
+ * stay unqualified, and names the file already qualifies (`List.length`) are kept.
+ */
+fun parseTypesFile(parser: OcamlTypeParser, file: File): Map<String, Type> {
+    val types = parser.parseSignatures(file.readText())
+    if (!file.name.endsWith("_mod.types")) return types
+    val module = moduleNameOverrides[file.name]
+        ?: file.useLines { it.first() }.removePrefix("//").trim().split(Regex("\\s+")).first()
+    return types.mapKeys { (name) ->
+        val unqualified =
+            name.startsWith("(") || name.startsWith("$module.") ||
+                (name.first().isUpperCase() && '.' !in name)
+        if (unqualified) name else "$module.$name"
+    }
+}
 
 /**
  * Loads examples and oracle types from a list of .exs files.
@@ -64,7 +86,7 @@ fun loadFromExsFiles(
     val oracleTypes = buildMap {
         referencedTypesFiles.forEach { typesFileName ->
             val typesFile = File(ocamlTypesDir, typesFileName)
-            if (typesFile.isFile) putAll(parser.parseSignatures(typesFile.readText()))
+            if (typesFile.isFile) putAll(parseTypesFile(parser, typesFile))
         }
     }
     return examples to oracleTypes
