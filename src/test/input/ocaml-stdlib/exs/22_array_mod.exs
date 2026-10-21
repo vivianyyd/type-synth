@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 4_arith.types, 9_unit.types, 10_strconv.types, 14_stdout.types, 22_array_mod.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 9_unit.types, 10_strconv.types, 14_stdout.types, 22_array_mod.types, 50_list_mod.types
 
 // Construction
 (Array.make Num Num)
@@ -25,12 +25,12 @@
 (Array.append (Array.make Num Str) (Array.make Num Str))
 (Array.sub (Array.make Num Num) Num Num)
 (Array.sub (Array.make Num Str) Num Num)
-(Array.concat (cons (Array.make Num Num) []))
-(Array.concat (cons (Array.make Num Str) (cons (Array.make Num Str) [])))
+(Array.concat (List.cons (Array.make Num Num) Nil))
+(Array.concat (List.cons (Array.make Num Str) (List.cons (Array.make Num Str) Nil)))
 (Array.to_list (Array.make Num Num))
 (Array.to_list (Array.make Num Str))
-(Array.of_list (cons Num []))
-(Array.of_list (cons Str []))
+(Array.of_list (List.cons Num Nil))
+(Array.of_list (List.cons Str Nil))
 
 // Higher-order: iter
 (Array.iter ignore (Array.make Num Num))
@@ -79,7 +79,7 @@
 (Array.length (Array.copy (Array.make Num Num)))
 (Array.length (Array.map succ (Array.make Num Num)))
 (Array.length (Array.sub (Array.make Num Num) Num Num))
-(Array.length (Array.of_list (cons Num [])))
+(Array.length (Array.of_list (List.cons Num Nil)))
 (Array.get (Array.copy (Array.make Num Num)) Num)
 (Array.get (Array.map succ (Array.make Num Num)) Num)
 (Array.get (Array.append (Array.make Num Num) (Array.make Num Num)) Num)

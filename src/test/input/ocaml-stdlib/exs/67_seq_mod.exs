@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 9_unit.types, 10_strconv.types, 12_list.types, 14_stdout.types, 67_seq_mod.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 9_unit.types, 10_strconv.types, 12_list.types, 14_stdout.types, 67_seq_mod.types, 50_list_mod.types
 
 // empty: 'a t constant
 Seq.empty
@@ -84,8 +84,8 @@ Seq.empty
 (Seq.once (Seq.return Num))
 
 // of_list: 'a list -> 'a t
-(Seq.of_list (Seq.cons Num []))
-(Seq.of_list (Seq.cons Str []))
+(Seq.of_list (List.cons Num Nil))
+(Seq.of_list (List.cons Str Nil))
 
 // to_list: 'a t -> 'a list
 (Seq.to_list (Seq.return Num))
@@ -149,7 +149,7 @@ Seq.empty
 (succ (Seq.compare Seq.compare (Seq.return Num) (Seq.return Num)))
 
 // to_list returns list
-((@) (Seq.to_list (Seq.return Num)) (Seq.cons Num []))
+((@) (Seq.to_list (Seq.return Num)) (List.cons Num Nil))
 
 // ints returns int seq — chain
 (Seq.fold_left (+) Num (Seq.take Num (Seq.ints Num)))

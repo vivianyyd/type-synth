@@ -1,27 +1,27 @@
-// 0_basics.types, 1_comparison.types, 4_arith.types, 9_unit.types, 10_strconv.types, 43_iarray_mod.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 9_unit.types, 10_strconv.types, 43_iarray_mod.types, 50_list_mod.types
 
 // Construction
 (Iarray.init Num succ)
 (Iarray.init Num string_of_int)
 (Iarray.init Num (fun i1 -> i1))
-(Iarray.of_list (cons Num []))
-(Iarray.of_list (cons Str []))
-(Iarray.of_list (cons true []))
+(Iarray.of_list (List.cons Num Nil))
+(Iarray.of_list (List.cons Str Nil))
+(Iarray.of_list (List.cons true Nil))
 (Iarray.of_array (Array.make Num Num))
 (Iarray.of_array (Array.make Num Str))
 
 // Inspection
 (Iarray.length (Iarray.init Num succ))
-(Iarray.length (Iarray.of_list (cons Num [])))
+(Iarray.length (Iarray.of_list (List.cons Num Nil)))
 (Iarray.get (Iarray.init Num succ) Num)
-(Iarray.get (Iarray.of_list (cons Str [])) Num)
+(Iarray.get (Iarray.of_list (List.cons Str Nil)) Num)
 
 // Structural operations
 (Iarray.append (Iarray.init Num succ) (Iarray.init Num succ))
-(Iarray.append (Iarray.of_list (cons Num [])) (Iarray.of_list (cons Num [])))
-(Iarray.concat (cons (Iarray.init Num succ) []))
+(Iarray.append (Iarray.of_list (List.cons Num Nil)) (Iarray.of_list (List.cons Num Nil)))
+(Iarray.concat (List.cons (Iarray.init Num succ) Nil))
 (Iarray.to_list (Iarray.init Num succ))
-(Iarray.to_list (Iarray.of_list (cons Num [])))
+(Iarray.to_list (Iarray.of_list (List.cons Num Nil)))
 (Iarray.to_array (Iarray.init Num succ))
 
 // sort: returns a NEW iarray (immutable!)
@@ -30,7 +30,7 @@
 
 // Higher-order: map
 (Iarray.map succ (Iarray.init Num succ))
-(Iarray.map not (Iarray.of_list (cons true [])))
+(Iarray.map not (Iarray.of_list (List.cons true Nil)))
 (Iarray.map string_of_int (Iarray.init Num succ))
 
 // Higher-order: iter
@@ -39,11 +39,11 @@
 
 // Higher-order: fold_left
 (Iarray.fold_left (+) Num (Iarray.init Num succ))
-(Iarray.fold_left (^) Str (Iarray.of_list (cons Str [])))
+(Iarray.fold_left (^) Str (Iarray.of_list (List.cons Str Nil)))
 
 // Higher-order: for_all, exists
 (Iarray.for_all (fun x1 -> ((=) x1 Num)) (Iarray.init Num succ))
-(Iarray.exists (fun x2 -> ((=) x2 Str)) (Iarray.of_list (cons Str [])))
+(Iarray.exists (fun x2 -> ((=) x2 Str)) (Iarray.of_list (List.cons Str Nil)))
 
 // Higher-order: equal, compare
 (Iarray.equal (=) (Iarray.init Num succ) (Iarray.init Num succ))
@@ -51,7 +51,7 @@
 
 // mem
 (Iarray.mem Num (Iarray.init Num succ))
-(Iarray.mem Str (Iarray.of_list (cons Str [])))
+(Iarray.mem Str (Iarray.of_list (List.cons Str Nil)))
 
 // Chaining: length returns int
 ((=) (Iarray.length (Iarray.init Num succ)) Num)
@@ -94,14 +94,14 @@
 (not (Iarray.equal (=) (Iarray.init Num succ) (Iarray.init Num succ)))
 
 // to_list output: use as a list
-((=) (Iarray.to_list (Iarray.init Num succ)) (cons Num []))
+((=) (Iarray.to_list (Iarray.init Num succ)) (List.cons Num Nil))
 (Iarray.length (Iarray.to_list (Iarray.init Num succ)))
 
 // Invalid: wrong output types used in wrong contexts
 (Iarray.get (Iarray.init Num succ) Str)
-(Iarray.append (Iarray.init Num succ) (Iarray.of_list (cons Str [])))
+(Iarray.append (Iarray.init Num succ) (Iarray.of_list (List.cons Str Nil)))
 (Iarray.mem Str (Iarray.init Num succ))
-(Iarray.equal (=) (Iarray.init Num succ) (Iarray.of_list (cons Str [])))
+(Iarray.equal (=) (Iarray.init Num succ) (Iarray.of_list (List.cons Str Nil)))
 (succ (Iarray.length (Iarray.init Num succ)) Num)
 (not (Iarray.length (Iarray.init Num succ)))
 (Iarray.get (Iarray.length (Iarray.init Num succ)) Num)

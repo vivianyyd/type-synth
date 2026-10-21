@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 44_in_channel_mod.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 44_in_channel_mod.types, 50_list_mod.types
 
 // Channel values
 In_channel.stdin
@@ -69,9 +69,9 @@ In_channel.stdin
 ((^) (In_channel.input_all In_channel.stdin) (In_channel.input_all (In_channel.open_text Str)))
 
 // input_lines returns string list
-((=) (In_channel.input_lines In_channel.stdin) (cons Str []))
+((=) (In_channel.input_lines In_channel.stdin) (List.cons Str Nil))
 (In_channel.length (In_channel.input_lines In_channel.stdin))
-(hd (In_channel.input_lines In_channel.stdin))
+(List.hd (In_channel.input_lines In_channel.stdin))
 
 // is_binary_mode / isatty return bool
 ((=) (In_channel.is_binary_mode In_channel.stdin) true)

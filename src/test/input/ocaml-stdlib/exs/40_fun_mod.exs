@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 6_float.types, 7_str.types, 10_strconv.types, 40_fun_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 6_float.types, 7_str.types, 10_strconv.types, 40_fun_mod.types, 35_either_mod.types
 
 // id: 'a -> 'a (polymorphic identity)
 (Fun.id Num)
@@ -44,7 +44,7 @@
 (Fun.negate not false)
 (Fun.negate ((=) Num) Num)
 (Fun.negate ((=) Str) Str)
-(Fun.negate is_left (left Num))
+(Fun.negate Either.is_left (Either.left Num))
 
 // Chaining: id returns same type, chain immediately
 (Fun.id (Fun.id Num))
