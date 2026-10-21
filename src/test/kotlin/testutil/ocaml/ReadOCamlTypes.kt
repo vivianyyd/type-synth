@@ -17,13 +17,14 @@ class OcamlTypeParser {
 
     /**
      * Parses one or more signatures (separated by newlines) into a map from value names to [Type]s.
+     * A `//` comment runs to the end of its line.
      */
     fun parseSignatures(block: String): Map<String, Type> {
         val result = LinkedHashMap<String, Type>()
         block
             .lineSequence()
-            .map { it.trim() }
-            .filter { it.isNotEmpty() && !it.startsWith("//") }
+            .map { it.substringBefore("//").trim() }
+            .filter { it.isNotEmpty() }
             .forEach { line ->
                 val (name, type) = parseSignatureLine(line)
                 result[name] = type
@@ -36,7 +37,9 @@ class OcamlTypeParser {
 
     private fun parseSignatureLine(line: String): Pair<String, Type> {
         val normalized = normalizeLine(line)
-        val colonIndex = normalized.indexOf(':')
+        // An operator name can itself contain ':', e.g. `(:=)`, so the separator comes after it.
+        val nameEnd = if (normalized.startsWith("(")) normalized.indexOf(')') else 0
+        val colonIndex = normalized.indexOf(':', nameEnd)
         require(colonIndex >= 0) { "Signature must contain ':' : $line" }
         val name = normalized.substring(0, colonIndex).trim()
         val typePart = normalized.substring(colonIndex + 1).trim()
