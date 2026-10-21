@@ -13,15 +13,7 @@ package oneast
  * (label / variable) renaming is forced by the corresponding label or variable
  * on the other side.
  */
-fun SearchState.equivalentTo(other: SearchState): Boolean = mismatches(other).isEmpty()
-
-/**
- * The names whose types keep [this] from being equivalent to [other]: those with a nonzero cost in
- * [diffTo], including names only one state has. Labels are renamed consistently across all names,
- * so a name can be listed because of how a name before it (in sorted order) used a label.
- */
-fun SearchState.mismatches(other: SearchState): List<String> =
-    other.diffTo(this).costByName.filterValues { it > 0 }.keys.toList()
+fun SearchState.equivalentTo(other: SearchState): Boolean = other.diffTo(this).cost == 0
 
 /** Whether [a] and [b] are the same type up to renaming variables. Labels must be the same. */
 fun equalUpToVariableRenaming(a: Type, b: Type): Boolean =
@@ -124,13 +116,15 @@ data class StateDiff(
  * | hole vs non-hole                            | nodeCount(non-hole)           | no       |
  *
  * Names appearing on only one side contribute the full nodeCount of that side's
- * tree. Names are processed in sorted order so the (greedy) global label
- * binding is deterministic.
+ * tree. Names are visited in [this] state's order, then the names only in
+ * [actual] in its order. Labels are paired greedily across the whole state: a
+ * label is paired by the first name in that order that uses it, so a conflict
+ * is charged to the later name.
  */
 fun SearchState.diffTo(actual: SearchState): StateDiff {
     val labels = Renaming()
     val costByName = linkedMapOf<String, Int>()
-    val allNames = (this.names.keys + actual.names.keys).sorted()
+    val allNames = this.names.keys + (actual.names.keys - this.names.keys)
     for (name in allNames) {
         val expIdx = this.names[name]
         val actIdx = actual.names[name]
