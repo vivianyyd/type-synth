@@ -32,24 +32,17 @@ class OCamlChecker(
     private val thunkLets: Boolean = false,
 ) : GroundTruth {
     override fun valid(example: Example): Boolean =
-        isValid((if (thunkLets) thunkLets(example) else example).toString()).isValid
+        isValid(withDummies(if (thunkLets) thunkLets(example) else example).toString()).isValid
 
     private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
 
-    private val desugarAtomsToDummies = listOf("Num" to "1", "Str" to "\"s\"", "Char" to "\'a\'", "Flt" to "1.", "Nil" to "[]")
-
-    private fun desugar(expr: String) =
-        desugarAtomsToDummies.fold(expr) { acc, (from, to) -> acc.replace(from, to) }
-
     /** Check if a single expression is valid OCaml code. */
     fun isValid(expr: String): TypeCheckResult {
-        val desugaredExpr = desugar(expr)
-
         val tempFile = Files.createTempFile("ocaml_check_", ".ml").toFile()
 
         try {
             // Write preamble + expression
-            tempFile.writeText(preamble + "let _ = ($desugaredExpr)\n")
+            tempFile.writeText(preamble + "let _ = ($expr)\n")
 
             // Build command
             val command = buildCommand(tempFile)
@@ -92,6 +85,19 @@ class OCamlChecker(
         }
     }
 }
+
+/** OCaml values that the examples name by their type, as `Num` for an int. */
+private val dummies =
+    mapOf("Num" to "1", "Str" to "\"s\"", "Char" to "'a'", "Flt" to "1.", "Nil" to "[]")
+
+/** [e] with each name in [dummies] replaced by its value. Binders are never one, being lowercase. */
+private fun withDummies(e: Example): Example =
+    when (e) {
+        is Name -> dummies[e.name]?.let(::Name) ?: e
+        is App -> App(withDummies(e.fn), withDummies(e.arg))
+        is Lam -> Lam(e.param, withDummies(e.body))
+        is Let -> Let(e.name, withDummies(e.value), withDummies(e.body))
+    }
 
 /**
  * [example] with each `let x = v in body` made `let x = fun _ -> v in body`, and each use of x in
