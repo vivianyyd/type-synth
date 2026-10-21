@@ -78,6 +78,5 @@ val pp_get_formatter_stag_functions : formatter -> unit -> formatter_stag_functi
 val pp_set_formatter_output_functions : formatter -> (string -> int -> int -> unit) -> (unit -> unit) -> unit
 val pp_get_formatter_output_functions : formatter -> unit -> (string -> int -> int -> unit) * (unit -> unit)
 val pp_set_formatter_out_channel : formatter -> out_channel -> unit
-val pp_get_formatter_out_buffer : formatter -> unit -> Buffer.t
-val pp_set_all_formatter_output_functions : formatter -> out:(string -> int -> int -> unit) -> flush:(unit -> unit) -> newline:(unit -> unit) -> spaces:(int -> unit) -> unit
-val pp_get_all_formatter_output_functions : formatter -> unit -> (string -> int -> int -> unit) * (unit -> unit) * (unit -> unit) * (int -> unit)
+val pp_set_formatter_out_functions : formatter -> formatter_out_functions -> unit
+val pp_get_formatter_out_functions : formatter -> unit -> formatter_out_functions
