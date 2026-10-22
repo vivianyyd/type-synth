@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 4_arith.types, 55_obj_mod.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 55_obj_mod.types, 50_list_mod.types
 
 // repr: 'a -> t  (box any value as an Obj.t)
 (Obj.repr Num)
@@ -25,12 +25,12 @@
 (Obj.tag (Obj.repr Num))
 (Obj.tag (Obj.repr Str))
 (Obj.size (Obj.repr Str))
-(Obj.size (Obj.repr (cons Num [])))
+(Obj.size (Obj.repr (List.cons Num Nil)))
 (Obj.reachable_words (Obj.repr Str))
 
 // field: t -> int -> t
 (Obj.field (Obj.repr Str) Num)
-(Obj.field (Obj.repr (cons Num [])) Num)
+(Obj.field (Obj.repr (List.cons Num Nil)) Num)
 
 // double_field: t -> int -> float
 (Obj.double_field (Obj.repr Flt) Num)
@@ -74,7 +74,7 @@ Obj.object_tag
 
 // size / reachable_words return int
 ((=) (Obj.size (Obj.repr Str)) Num)
-(succ (Obj.size (Obj.repr (cons Num []))))
+(succ (Obj.size (Obj.repr (List.cons Num Nil))))
 ((<) (Obj.size (Obj.repr Num)) (Obj.size (Obj.repr Str)))
 (Obj.field (Obj.repr Str) (Obj.size (Obj.repr Str)))
 

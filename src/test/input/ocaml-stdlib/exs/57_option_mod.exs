@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 10_strconv.types, 12_list.types, 57_option_mod.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 10_strconv.types, 12_list.types, 57_option_mod.types, 50_list_mod.types
 
 // none: 'a option constant
 Option.none
@@ -123,8 +123,8 @@ Option.none
 (succ (Option.compare Option.compare (Option.some Num) (Option.some Num)))
 
 // to_list returns list — chain with list ops
-((@) (Option.to_list (Option.some Num)) (cons Num []))
-((@) (Option.to_list Option.none) (cons Num []))
+((@) (Option.to_list (Option.some Num)) (List.cons Num Nil))
+((@) (Option.to_list Option.none) (List.cons Num Nil))
 
 // Invalid
 (succ (Option.some Num))

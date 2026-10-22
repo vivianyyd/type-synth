@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 4_arith.types, 9_unit.types, 10_strconv.types, 14_stdout.types, 33_dynarray_mod.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 9_unit.types, 10_strconv.types, 14_stdout.types, 33_dynarray_mod.types, 50_list_mod.types
 
 // Construction
 (Dynarray.create Unit)
@@ -25,8 +25,8 @@
 (Dynarray.copy (Dynarray.make Num Num))
 (Dynarray.copy (Dynarray.make Num Str))
 (Dynarray.of_array (Array.make Num Num))
-(Dynarray.of_list (cons Num []))
-(Dynarray.of_list (cons Str []))
+(Dynarray.of_list (List.cons Num Nil))
+(Dynarray.of_list (List.cons Str Nil))
 (Dynarray.to_array (Dynarray.make Num Num))
 (Dynarray.to_list (Dynarray.make Num Num))
 (Dynarray.to_list (Dynarray.make Num Str))
@@ -34,7 +34,7 @@
 // Mutation
 (Dynarray.add_last (Dynarray.make Num Num) Num)
 (Dynarray.add_last (Dynarray.make Num Str) Str)
-(Dynarray.append_list (Dynarray.make Num Num) (cons Num []))
+(Dynarray.append_list (Dynarray.make Num Num) (List.cons Num Nil))
 (Dynarray.remove_last (Dynarray.make Num Num))
 (Dynarray.pop_last (Dynarray.make Num Num))
 (Dynarray.pop_last_opt (Dynarray.make Num Num))
@@ -117,7 +117,7 @@
 (succ (Dynarray.fold_left (+) Num (Dynarray.make Num Num)))
 
 // to_list returns list
-((=) (Dynarray.to_list (Dynarray.make Num Num)) (cons Num []))
+((=) (Dynarray.to_list (Dynarray.make Num Num)) (List.cons Num Nil))
 
 // of_list / to_list roundtrip
 (Dynarray.equal (=) (Dynarray.of_list (Dynarray.to_list (Dynarray.make Num Num))) (Dynarray.make Num Num))

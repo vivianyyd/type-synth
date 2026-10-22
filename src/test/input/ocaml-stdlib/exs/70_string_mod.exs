@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 8_char.types, 10_strconv.types, 70_string_mod.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 8_char.types, 10_strconv.types, 70_string_mod.types, 50_list_mod.types, 28_char_mod.types
 
 // make: int -> char -> string
 (String.make Num Char)
@@ -20,8 +20,8 @@ String.empty
 (String.to_bytes Str)
 
 // concat: string -> string list -> string
-(String.concat Str (cons Str []))
-(String.concat String.empty (cons Str []))
+(String.concat Str (List.cons Str Nil))
+(String.concat String.empty (List.cons Str Nil))
 
 // cat: string -> string -> string
 (String.cat Str Str)
@@ -49,7 +49,7 @@ String.empty
 (String.split_on_char Char (String.make Num Char))
 
 // map: (char -> char) -> string -> string
-(String.map (fun c1 -> (chr (succ (code c1)))) Str)
+(String.map (fun c1 -> (Char.chr (succ (Char.code c1)))) Str)
 
 // fold_left: ('acc -> char -> 'acc) -> 'acc -> string -> 'acc
 (String.fold_left (fun acc1 c2 -> acc1) Str Str)
@@ -157,7 +157,7 @@ String.empty
 ((=) (String.seeded_hash Num Str) Num)
 
 // split_on_char returns string list
-((@) (String.split_on_char Char Str) (cons Str []))
+((@) (String.split_on_char Char Str) (List.cons Str Nil))
 
 // Invalid
 (String.length Num)

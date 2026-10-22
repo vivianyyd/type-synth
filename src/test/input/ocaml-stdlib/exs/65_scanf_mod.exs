@@ -14,9 +14,6 @@ Scanf.Scanning.stdin
 // from_string: string -> Scanning.in_channel
 (Scanf.Scanning.from_string Str)
 
-// from_bytes: bytes -> Scanning.in_channel
-(Scanf.Scanning.from_bytes (Bytes.make Num Char))
-
 // from_channel: in_channel -> Scanning.in_channel
 (Scanf.Scanning.from_channel stdin)
 

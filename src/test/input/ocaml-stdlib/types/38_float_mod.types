@@ -50,7 +50,6 @@ val asinh : float -> float
 val atanh : float -> float
 val erf : float -> float
 val erfc : float -> float
-val mod_float : float -> float -> float
 val modf : float -> float * float
 val frexp : float -> float * int
 val ldexp : float -> int -> float
@@ -76,8 +75,6 @@ val copy_sign : float -> float -> float
 val sign_bit : float -> bool
 val seeded_hash : int -> float -> int
 val hash : float -> int
-val of_bits : int64 -> float
-val to_bits : float -> int64
 // Float--Array submodule
 // type Float.Array.t = floatarray
 val Array.make : int -> float -> floatarray
@@ -121,5 +118,5 @@ val Array.to_seqi : floatarray -> (int * float) Seq.t
 val Array.of_seq : float Seq.t -> floatarray
 val Array.map_to_array : (float -> 'a) -> floatarray -> 'a array
 val Array.map_from_array : ('a -> float) -> 'a array -> floatarray
-val Array.equal : floatarray -> floatarray -> bool
+val Array.equal : (float -> float -> bool) -> floatarray -> floatarray -> bool
 val Array.compare : floatarray -> floatarray -> int
