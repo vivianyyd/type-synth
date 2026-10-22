@@ -155,7 +155,8 @@ class OCamlStdlibTest {
             val fixed = ocamlModuleGroups.subList(0, i).flatten()
             val (_, expected) = ocamlModulesQuery(task, fixed)
             val onePass = stateFromContext(loadFromExsFiles(fixed + task).second)
-            assertEquals(emptyList(), expected.mismatches(onePass), "group $task")
+            // Up to renaming labels: the names whose types differ
+            assertEquals(emptyMap(), onePass.diffTo(expected).costByName.filterValues { it > 0 }, "group $task")
         }
     }
 
