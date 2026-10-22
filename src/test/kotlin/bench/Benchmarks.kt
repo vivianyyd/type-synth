@@ -34,7 +34,8 @@ private val sexpDefaults =
         numSols = Solutions.NumSolutions(1)
     )
 
-private val ocamlDefaults = sexpDefaults.copy(scheduleInfo = Auto(3))
+// A round of three list functions, like append, map and fold_left, needs more than 20 holes filled
+private val ocamlDefaults = sexpDefaults.copy(scheduleInfo = Auto(3), sizeBound = 30)
 
 private fun sexp(file: String) =
     oneStep(file, sexpDefaults) { _ ->
