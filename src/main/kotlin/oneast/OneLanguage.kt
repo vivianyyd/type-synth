@@ -255,7 +255,7 @@ sealed class THole : Type {
 
     override fun replace(hole: THole, replacement: Type) = if (hole == this) replacement else this
 
-    /** [sound]: see [Configuration.soundExpansions]. */
+    /** [kind]: see [Configuration.expansions]. */
     abstract fun expansions(
         unification: OneUnification,
         labelArities: Map<Int, Int>,
@@ -264,7 +264,7 @@ sealed class THole : Type {
         emitLabelBlanks: Boolean,
         emitConstructors: Boolean,
         mustBeLeaf: Boolean,
-        sound: Boolean
+        kind: Expansions
     ): List<Type>
 }
 
@@ -279,11 +279,11 @@ class TypeHole : THole() {
         emitLabelBlanks: Boolean,
         emitConstructors: Boolean,
         mustBeLeaf: Boolean,
-        sound: Boolean
+        kind: Expansions
     ): List<Type> =
         if (mustBeLeaf)
             expansionsNoBound(
-                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors, sound
+                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors, kind
             )
                 .filter {
                     when (it) {
@@ -296,7 +296,7 @@ class TypeHole : THole() {
                 }
         else
             expansionsNoBound(
-                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors, sound
+                unification, labelArities, vars, canBeVar, emitLabelBlanks, emitConstructors, kind
             )
 
     private fun expansionsNoBound(
@@ -306,17 +306,21 @@ class TypeHole : THole() {
         canBeVar: Boolean,
         emitLabelBlanks: Boolean,
         emitConstructors: Boolean,
-        sound: Boolean
+        kind: Expansions
     ): List<Type> {
         val variableExps = if (canBeVar) (0 until vars + 1).map { Variable(it) } else emptyList()
         val fnExpansion = Arrow(TypeHole(), TypeHole())
         val labelExpansions = labelArities.map { NamedLabel(it.key, List(it.value) { TypeHole() }) }
 
+        if (kind == Expansions.Simple)
+            return variableExps + fnExpansion +
+                (if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else labelExpansions)
+
         val constructors =
             if (!emitConstructors) null
             else when (val constructor = unification.holeConstructor(this)) {
                 HoleConstructor.None ->
-                    if (sound) {
+                    if (kind == Expansions.Sound) {
                         if (emitLabelBlanks) listOf(Blank(labelOnly = true), fnExpansion)
                         else labelExpansions + fnExpansion
                     } else {
@@ -347,7 +351,7 @@ class Blank(val labelOnly: Boolean) : THole() {
         emitLabelBlanks: Boolean,
         emitConstructors: Boolean,
         mustBeLeaf: Boolean,
-        sound: Boolean
+        kind: Expansions
     ) = listOf(this)
 
     override fun toString() = if (labelOnly) ".L" else "."

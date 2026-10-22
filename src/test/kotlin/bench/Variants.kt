@@ -28,7 +28,10 @@ object Variants {
             },
             Variant("auto3", "Solve for 3 names per round") { it.copy(scheduleInfo = Auto(3)) },
             Variant("sound", "Let holes nothing constrains also become arrows or any label") {
-                it.copy(soundExpansions = true)
+                it.copy(expansions = Expansions.Sound)
+            },
+            Variant("simple", "Ignore unification: holes become any variable, an arrow, or any label") {
+                it.copy(expansions = Expansions.Simple)
             },
             Variant("observational", "Decide type equality by swapping expressions in the examples") {
                 it.copy(oracle = OracleKind.Observational)
@@ -78,7 +81,7 @@ fun Configuration.toJson(): Map<String, Any?> =
                 is CustomSchedule -> mapOf("kind" to "custom", "rounds" to s.customSchedule)
             },
         "numSols" to numSols.toString(),
-        "soundExpansions" to soundExpansions,
+        "expansions" to expansions.name,
         "labelArities" to
             when (val la = labelArities) {
                 LabelArities.Solved -> mapOf("kind" to "solved")

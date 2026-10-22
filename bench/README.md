@@ -57,8 +57,8 @@ Suites: `sexp`, `sexp-unsolved`, `ocaml` (each module group given the true types
 before it). `ocaml-chained` is in no suite: one benchmark of six steps, `basics` to `str`, each
 solving one module group given the search's own answer for the groups before it. It stops at the
 first step with no solution, a timeout or an error; a wrong step is committed to, and the chain
-goes on. Variants: `default`, `single-round`, `auto3`, `sound`, `observational`, `ocaml-toplevel`,
-`deepen-arities=N` (any bound N, e.g. `deepen-arities=2`). Defined in
+goes on. Variants: `default`, `single-round`, `auto3`, `sound`, `simple`, `observational`,
+`ocaml-toplevel`, `deepen-arities=N` (any bound N, e.g. `deepen-arities=2`). Defined in
 `src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
 
 OCaml benchmarks ask OCaml whether examples type-check with a server around its type checker

@@ -26,7 +26,7 @@ class Search(
     ): Sequence<SearchState> =
         config.searchStrategy
             .create(
-                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, config.soundExpansions
+                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, config.expansions
             )
             .candidates(c)
 
