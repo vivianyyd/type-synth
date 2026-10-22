@@ -4,6 +4,7 @@ import oneast.Arrow
 import oneast.NamedLabel
 import oneast.Type
 import oneast.Variable
+import testutil.ocamlName
 
 /**
  * Parses OCaml-style value signatures (e.g. `val foo : 'a list -> int`) into the repository's
@@ -15,18 +16,30 @@ class OcamlTypeParser {
     private val constructorIds = mutableMapOf<String, Int>()
     private var nextConstructorId = 0
 
+    /** The type constructor names parsed so far, after [parseSignatures]'s `typeName`. */
+    val constructorNames: Set<String> get() = constructorIds.keys
+
     /**
      * Parses one or more signatures (separated by newlines) into a map from value names to [Type]s.
+     * A `//` comment runs to the end of its line. [typeName] gives the type each type constructor
+     * name stands for, so that two names for one type, like `Char.t` and `char`, are one label.
      */
-    fun parseSignatures(block: String): Map<String, Type> {
-        val result = LinkedHashMap<String, Type>()
+    fun parseSignatures(block: String, typeName: (String) -> String = { it }): Map<String, Type> =
+        parseSignaturesWithLabels(block, typeName).mapValues { it.value.type }
+
+    /** [parseSignatures], keeping each value's labels. */
+    fun parseSignaturesWithLabels(
+        block: String,
+        typeName: (String) -> String = { it }
+    ): Map<String, Signature> {
+        val result = LinkedHashMap<String, Signature>()
         block
             .lineSequence()
-            .map { it.trim() }
-            .filter { it.isNotEmpty() && !it.startsWith("//") }
+            .map { it.substringBefore("//").trim() }
+            .filter { it.isNotEmpty() }
             .forEach { line ->
-                val (name, type) = parseSignatureLine(line)
-                result[name] = type
+                val (name, signature) = parseSignatureLine(line, typeName)
+                result[name] = signature
             }
         return result
     }
@@ -34,18 +47,23 @@ class OcamlTypeParser {
     /** Convenience wrapper when only a single signature string is provided. */
     fun parseSignature(signature: String): Map<String, Type> = parseSignatures(signature)
 
-    private fun parseSignatureLine(line: String): Pair<String, Type> {
+    private fun parseSignatureLine(line: String, typeName: (String) -> String): Pair<String, Signature> {
         val normalized = normalizeLine(line)
-        val colonIndex = normalized.indexOf(':')
+        // An operator name can itself contain ':', e.g. `(:=)`, so the separator comes after it.
+        val nameEnd = if (normalized.startsWith("(")) normalized.indexOf(')') else 0
+        val colonIndex = normalized.indexOf(':', nameEnd)
         require(colonIndex >= 0) { "Signature must contain ':' : $line" }
-        val name = normalized.substring(0, colonIndex).trim()
+        val name = normalized.substring(0, colonIndex).trim().let {
+            if (it.startsWith("(")) ocamlName(it.removeSurrounding("(", ")").trim()) else it
+        }
         val typePart = normalized.substring(colonIndex + 1).trim()
 
         val tokens = tokenize(typePart)
-        val variableContext = VariableContext()
-        val (type, remaining) = parseArrow(tokens, variableContext)
+        val variableContext = VariableContext(typeName)
+        val labels = mutableListOf<String?>()
+        val (type, remaining) = parseArrow(tokens, variableContext, labels)
         require(remaining.isEmpty()) { "Unparsed tokens: $remaining" }
-        return name to type
+        return name to Signature(type, labels)
     }
 
     private fun normalizeLine(line: String): String {
@@ -62,15 +80,30 @@ class OcamlTypeParser {
     /**
      * Arrows are right-associative and have the lowest precedence: `a -> b -> c` parses as
      * `a -> (b -> c)`.
+     *
+     * Our types have no labels. A labelled parameter is an ordinary one, so `label:a -> b` parses
+     * as `a -> b`, and its label is added to [labels], which has an entry per parameter (null if
+     * unlabelled). An optional parameter is left out, so `?label:a -> b` parses as `b`: OCaml gives
+     * it its default when a later argument is passed. Only the outermost arrows have [labels].
      */
-    private fun parseArrow(tokens: List<String>, ctx: VariableContext): Pair<Type, List<String>> {
-        val (lhs, rest) = parseTuple(tokens, ctx)
-        return if (rest.firstOrNull() == "->") {
-            val (rhs, next) = parseArrow(rest.drop(1), ctx)
-            Arrow(lhs, rhs) to next
-        } else {
-            lhs to rest
+    private fun parseArrow(
+        tokens: List<String>,
+        ctx: VariableContext,
+        labels: MutableList<String?>? = null
+    ): Pair<Type, List<String>> {
+        val label = if (tokens.getOrNull(1) == ":") tokens[0] else null
+        val optional = label?.startsWith("?") == true
+        val typeTokens = if (label == null) tokens else tokens.drop(2)
+        // An optional parameter's type is read only to skip it, so its variables take up no ids
+        val (lhs, rest) = parseTuple(typeTokens, if (optional) ctx.scratch() else ctx)
+        if (rest.firstOrNull() != "->") {
+            require(label == null) { "Parameter $label is not followed by '->'" }
+            return lhs to rest
         }
+        if (optional) return parseArrow(rest.drop(1), ctx, labels)
+        labels?.add(label)
+        val (rhs, next) = parseArrow(rest.drop(1), ctx, labels)
+        return Arrow(lhs, rhs) to next
     }
 
     /**
@@ -104,7 +137,7 @@ class OcamlTypeParser {
     ): Pair<Type, List<String>> {
         var (base, rest) = parseAtom(tokens, ctx)
         while (rest.isNotEmpty() && isConstructorName(rest[0])) {
-            base = NamedLabel(constructorId(rest[0]), listOf(base))
+            base = NamedLabel(constructorId(ctx.typeName(rest[0])), listOf(base))
             rest = rest.drop(1)
         }
         return base to rest
@@ -119,7 +152,7 @@ class OcamlTypeParser {
             }
             head == "(" -> parseParenthesized(tokens.drop(1), ctx)
             isConstructorName(head) -> {
-                NamedLabel(constructorId(head), emptyList()) to tokens.drop(1)
+                NamedLabel(constructorId(ctx.typeName(head)), emptyList()) to tokens.drop(1)
             }
             else -> error("Unexpected token '$head'")
         }
@@ -149,7 +182,7 @@ class OcamlTypeParser {
             require(ctor != null && isConstructorName(ctor)) {
                 "Expected type constructor after parenthesized arguments, got $ctor"
             }
-            return NamedLabel(constructorId(ctor), args) to rest.drop(1)
+            return NamedLabel(constructorId(ctx.typeName(ctor)), args) to rest.drop(1)
         }
         require(rest0.firstOrNull() == ")") { "Expected closing parenthesis" }
         return first to rest0.drop(1)
@@ -165,6 +198,7 @@ class OcamlTypeParser {
             .replace("->", " -> ")
             .replace("*", " * ")
             .replace(",", " , ")
+            .replace(":", " : ")
             .split(Regex("\\s+"))
             .filter { it.isNotEmpty() }
 
@@ -176,9 +210,19 @@ class OcamlTypeParser {
         token.firstOrNull()?.isLetter() == true
 
     private data class VariableContext(
+        val typeName: (String) -> String,
         val ids: MutableMap<String, Int> = mutableMapOf(),
         var nextId: Int = 0
     ) {
         fun variableId(name: String): Int = ids.getOrPut(name) { nextId++ }
+
+        /** A copy, to read a type in without changing this one. */
+        fun scratch() = VariableContext(typeName, HashMap(ids), nextId)
     }
 }
+
+/**
+ * A value's [type], and the label of each of its parameters, or null for an unlabelled one. An
+ * optional parameter is in neither. See [OcamlTypeParser.parseSignaturesWithLabels].
+ */
+data class Signature(val type: Type, val labels: List<String?>)

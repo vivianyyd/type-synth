@@ -31,9 +31,19 @@ private fun SExpr.toSignedExample(): Pair<Boolean, Example> =
         }
     }
 
+/** A labelled or optional argument, like `~f:succ` or `?x`, unlike the operators `~-` and `~-.`. */
+private fun isLabel(atom: String) =
+    atom.length > 1 && atom[0] in "~?" && (atom[1].isLetter() || atom[1] == '_')
+
 fun SExpr.toExample(): Example =
     when (this) {
-        is SExpr.Atm -> Name(ocamlName(this.value))
+        is SExpr.Atm -> {
+            require(!isLabel(value)) {
+                "Examples cannot pass labelled or optional arguments, as in $value: pass a labelled " +
+                    "argument positionally, in the order its signature declares it, and leave out optional ones"
+            }
+            Name(ocamlName(value))
+        }
         is SExpr.Lst -> {
             require(this.elements.isNotEmpty())
             val apps = this.elements.map { it.toExample() }

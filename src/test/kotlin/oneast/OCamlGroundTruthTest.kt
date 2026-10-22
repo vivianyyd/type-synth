@@ -57,7 +57,7 @@ class OCamlGroundTruthTest {
     @Test
     fun `every subexpression of the OCaml benchmarks' examples`() {
         val (examples, _) = loadFromExsFiles(ocamlModuleGroups.flatten())
-        assertAgree(examples.flatMap { it.subexprs() }.distinct().map { it.toString() })
+        assertAgree(examples.flatMap { it.subexprs() }.distinct().map { OCamlSource().of(it) })
     }
 
     @Test
@@ -68,7 +68,7 @@ class OCamlGroundTruthTest {
         fun gen(depth: Int): Example =
             if (depth == 0 || random.nextInt(3) == 0) Name(names[random.nextInt(names.size)])
             else App(gen(depth - 1), gen(depth - 1))
-        assertAgree(List(300) { gen(4).toString() })
+        assertAgree(List(300) { OCamlSource().of(gen(4)) })
     }
 
     @ParameterizedTest

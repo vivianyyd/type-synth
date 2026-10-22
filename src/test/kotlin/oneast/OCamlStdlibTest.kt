@@ -18,7 +18,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class OCamlStdlibTest {
-    private val ocaml = OCamlGroundTruth.default.create()
+    private val ocaml = OCamlGroundTruth.default.create(stdlibSource)
 
     private fun filterBySchedule(examples: Examples, schedule: CustomSchedule) =
         Examples(
@@ -174,7 +174,7 @@ class OCamlStdlibTest {
         val oracleTypes = buildMap {
             ocamlTypesDir.listFiles()
                 ?.filter { it.extension == "types" && it.isFile }
-                ?.forEach { putAll(parser.parseSignatures(it.readText())) }
+                ?.forEach { file -> putAll(parseTypesFile(parser, file).mapValues { it.value.type }) }
         }
         val oracle = CheckingGroundTruthOracle(oracleTypes)
 

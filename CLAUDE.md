@@ -64,12 +64,4 @@ export PATH=$HOME/.opam/5.4.1/bin:$HOME/.venvs/type-synth/bin:$PATH
 ./gradlew bench -q --args="ocaml ocaml-chained"    # see bench/README.md
 ```
 
-Failing for reasons unrelated to setup:
-
-- `OCamlStdlibTest.load all and split`: the OCaml type parser can't read labelled arguments;
-  `fix-ocaml-type-parser` fixes it.
-- The `option` cases of `SexpTests.validate tests` and
-  `ObservationalEquivalenceOracleTest.expressions of the same type are equal`: `option.sexp` labels
-  `value none Num` negative, but it type-checks under the file's own types.
-
 Sketch (`src/main/kotlin/util/io/sketch`) is no longer called from anywhere, so it isn't needed.

@@ -16,10 +16,12 @@ import java.io.File
  *
  * @param packages findlib packages whose modules the expressions may use
  * @param opens modules opened before any expression
+ * @param source how examples are written as OCaml
  */
 class OCamlToplevel(
     packages: List<String> = emptyList(),
     opens: List<String> = listOf("Stdlib"),
+    private val source: OCamlSource = OCamlSource(),
 ) : GroundTruth {
     private val preamble =
         (if (packages.isEmpty()) "" else "#use \"topfind\";;\n#require \"${packages.joinToString(",")}\";;\n") +
@@ -35,7 +37,7 @@ class OCamlToplevel(
     private val output by lazy { process.inputStream.bufferedReader() }
     private var started = false
 
-    override fun valid(example: Example): Boolean = validSource(example.toString())
+    override fun valid(example: Example): Boolean = validSource(source.of(example))
 
     /**
      * Several expressions in one phrase, which fails as a whole if any of them does. A phrase holds
@@ -44,17 +46,15 @@ class OCamlToplevel(
      */
     @Synchronized
     override fun allValid(examples: Collection<Example>): Boolean {
-        val sources = examples.map { desugarOCaml(it.toString()) }
+        val sources = examples.map { source.of(it) }
         return sources.none { leavesLexerOpen(it) } &&
                 sources.chunked(CHUNK).all { chunk -> ok(send(chunk.joinToString("\n") { item(it) } + ";;\n")) }
     }
 
-    /** Whether [expr], OCaml source that may use the atoms examples use, type-checks. */
+    /** Whether [expr], OCaml source, type-checks. */
     @Synchronized
-    fun validSource(expr: String): Boolean =
-        desugarOCaml(expr).let { !leavesLexerOpen(it) && ok(send(item(it) + ";;\n")) }
+    fun validSource(expr: String): Boolean = !leavesLexerOpen(expr) && ok(send(item(expr) + ";;\n"))
 
-    /** [src] is desugared already. */
     private fun item(src: String) = "let _ = fun () -> ($src)"
 
     private fun ok(printed: List<String>) = printed.none { it.startsWith("Error") }
