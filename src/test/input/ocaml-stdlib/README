@@ -87,7 +87,7 @@
 // type Lexing.lexbuf (record)
 50-list-mod | List module | Requires Either.t, Seq.t
 // Skipped ListLabels: it is the same as List but with labeled arguments
-51-map-mod | Map module (functional maps, functor-based)
+51-map-mod | Map module (functional maps, functor-based) | examples use the instance StrMap = Map.Make (String)
 52-marshal-mod | Marshal module (serialization) | Requires extern_flags type
 // type Marshal.extern_flags = No_sharing | Closures | Compat_32
 53-mutex-mod | Mutex module

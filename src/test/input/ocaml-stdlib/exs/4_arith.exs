@@ -94,19 +94,19 @@
 (succ ((+) Num Str))
 (abs (( * ) true Num))
 
-// arithmetic does not accept booleans
+// arithmetic does not accept booleans or chars. (Only true, not false: nothing in this group shows they have one type)
 (succ true)
-(succ false)
+(succ Char)
 (pred true)
-((~-) false)
+((~-) Char)
 ((~+) true)
-(abs false)
+(abs Char)
 ((+) true Num)
-((+) Num false)
-((-) false true)
-(( * ) true false)
+((+) Num Char)
+((-) Char true)
+(( * ) true Char)
 ((/) Num true)
-(( mod ) false Num)
+(( mod ) Char Num)
 
 // arithmetic does not accept function values
 (succ (+))

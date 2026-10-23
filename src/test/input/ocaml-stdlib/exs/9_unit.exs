@@ -1,4 +1,4 @@
-// 0_basics.types, 4_arith.types, 7_str.types, 9_unit.types
+// 0_basics.types, 1_comparison.types, 4_arith.types, 7_str.types, 9_unit.types
 
 (ignore Num)
 (ignore Str)
@@ -18,3 +18,17 @@
 
 // ignore output (unit) can be passed to functions expecting unit
 // (there are no such functions in this file besides ignore itself, shown above)
+
+// ignore returns unit, the type of Unit
+((=) (ignore Num) Unit)
+((=) Unit (ignore Str))
+((=) (ignore true) (ignore Num))
+((=) (ignore Num) Num)
+((=) (ignore Num) Str)
+((=) Unit Num)
+((=) Unit true)
+((=) Num Unit)
+(succ Unit)
+((^) Str Unit)
+(succ (ignore Num))
+((^) Str (ignore Str))

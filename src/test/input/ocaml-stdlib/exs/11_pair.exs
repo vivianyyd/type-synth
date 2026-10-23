@@ -1,53 +1,103 @@
-// 0_basics.types, 1_comparison.types, 11_pair.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 76_pair_mod.types, 11_pair.types
 
+// fst: 'a * 'b -> 'a. Positive uses, the first component varies on its own
 (fst (Pair.make Num Str))
 (fst (Pair.make Str Num))
 (fst (Pair.make true Num))
-(fst (Pair.make Char Flt))
+(fst (Pair.make Char Unit))
 (fst (Pair.make Num Num))
-
-(snd (Pair.make Num Str))
-(snd (Pair.make Str true))
-(snd (Pair.make Num Num))
-(snd (Pair.make Char Flt))
-
 (fst (Pair.make (Pair.make Num Str) true))
-(snd (Pair.make Num (Pair.make Str true)))
-(fst (Pair.make (fst (Pair.make Num Str)) Char))
-(snd (Pair.make Num (snd (Pair.make Str true))))
+(fst (Pair.make Flt Str))
 
-((=) (fst (Pair.make Num Str)) Num)
-((=) (snd (Pair.make Num Str)) Str)
-
-(fst Num)
-(snd Str)
-(fst true)
-
-// fst returns the first component type: use in further calls
+// fst: the result is the first component
+(succ (fst (Pair.make Num Str)))
+(succ (fst (Pair.make Num true)))
+((^) Str (fst (Pair.make Str Num)))
+(not (fst (Pair.make true Str)))
+(not (fst (Pair.make true Num)))
+(succ (fst (Pair.make Str Num)))
+(not (fst (Pair.make Num true)))
+((^) Str (fst (Pair.make Num Str)))
+(succ (fst (Pair.make true Num)))
 ((=) (fst (Pair.make Num Str)) Num)
 ((=) (fst (Pair.make Str Num)) Str)
 ((=) (fst (Pair.make true Char)) true)
+((=) (fst (Pair.make Num Str)) Str)
+((=) (fst (Pair.make Str Num)) Num)
+((=) (fst (Pair.make Num Str)) (Pair.fst (Pair.make Num true)))
+((=) (fst (Pair.make Str Num)) (Pair.fst (Pair.make Str true)))
+((=) (fst (Pair.make Num Str)) (Pair.fst (Pair.make Str Num)))
+((=) (fst (Pair.make true Str)) (Pair.fst (Pair.make Num true)))
+((=) (fst (Pair.make Num Str)) (Pair.snd (Pair.make true Str)))
+
+// fst: the argument must be a pair (negatives, wrong argument last)
+(fst Num)
+(fst Str)
+(fst true)
+
+// snd: 'a * 'b -> 'b. Positive uses, the second component varies on its own
+(snd (Pair.make Num Str))
+(snd (Pair.make Str Num))
+(snd (Pair.make Num true))
+(snd (Pair.make Unit Char))
+(snd (Pair.make Num Num))
+(snd (Pair.make Num (Pair.make Str true)))
+(snd (Pair.make Str Flt))
+
+// snd: the result is the second component
+(succ (snd (Pair.make Str Num)))
+(succ (snd (Pair.make true Num)))
+((^) Str (snd (Pair.make Num Str)))
+(not (snd (Pair.make Str true)))
+(not (snd (Pair.make Num true)))
+(succ (snd (Pair.make Num Str)))
+(not (snd (Pair.make true Num)))
+((^) Str (snd (Pair.make Str Num)))
+(succ (snd (Pair.make Num true)))
 ((=) (snd (Pair.make Num Str)) Str)
-((=) (snd (Pair.make Str true)) true)
+((=) (snd (Pair.make Str Num)) Num)
+((=) (snd (Pair.make Char true)) true)
+((=) (snd (Pair.make Num Str)) Num)
+((=) (snd (Pair.make Str Num)) Str)
+((=) (snd (Pair.make Num Str)) (Pair.snd (Pair.make true Str)))
+((=) (snd (Pair.make Str Num)) (Pair.snd (Pair.make true Num)))
+((=) (snd (Pair.make Num Str)) (Pair.snd (Pair.make Str Num)))
+((=) (snd (Pair.make Str true)) (Pair.snd (Pair.make Num Str)))
+((=) (snd (Pair.make Num Str)) (Pair.fst (Pair.make Num true)))
 
-// Use fst/snd output to build new pairs
-(Pair.make (fst (Pair.make Num Str)) (fst (Pair.make Str Num)))
-(Pair.make (snd (Pair.make Num Str)) (snd (Pair.make Char true)))
-(Pair.make (fst (Pair.make Num Str)) (snd (Pair.make Char true)))
+// snd: the argument must be a pair
+(snd Num)
+(snd Str)
+(snd true)
 
-// Use fst/snd output as argument to fst/snd (nested pairs)
-(fst (Pair.make (fst (Pair.make Num Str)) Char))
-(snd (Pair.make Num (snd (Pair.make Str true))))
-(fst (Pair.make (snd (Pair.make Num Str)) Num))
-(snd (Pair.make Char (fst (Pair.make true Num))))
+// fst and snd on the same pair, each component keeps its own type
+(succ (fst (Pair.make Num Str)))
+((^) Str (snd (Pair.make Num Str)))
+(succ (snd (Pair.make Str Num)))
+((^) Str (fst (Pair.make Str Num)))
+((=) (fst (Pair.make Num Str)) (snd (Pair.make Str Num)))
+((=) (fst (Pair.make Num Str)) (snd (Pair.make Num Str)))
+((=) (snd (Pair.make Num Str)) (fst (Pair.make Str Num)))
+((=) (snd (Pair.make Num Str)) (fst (Pair.make Num Str)))
+(Pair.make (fst (Pair.make Num Str)) (snd (Pair.make Num Str)))
+((=) (Pair.make (fst (Pair.make Num Str)) (snd (Pair.make Num Str))) (Pair.make Num Str))
+((=) (Pair.make (fst (Pair.make Num Str)) (snd (Pair.make Num Str))) (Pair.make Str Num))
+((=) (Pair.make (snd (Pair.make Num Str)) (fst (Pair.make Num Str))) (Pair.make Str Num))
+((=) (Pair.make (snd (Pair.make Num Str)) (fst (Pair.make Num Str))) (Pair.make Num Str))
 
-// fst/snd applied twice: unwrap two levels
+// Nested pairs: unwrap one or two levels
 (fst (fst (Pair.make (Pair.make Num Str) true)))
 (snd (snd (Pair.make Num (Pair.make Str true))))
 (fst (snd (Pair.make Num (Pair.make Str true))))
 (snd (fst (Pair.make (Pair.make Num Str) true)))
-
-// invalid: fst/snd output used at wrong type
-((=) (fst (Pair.make Num Str)) Str)
-((=) (snd (Pair.make Num Str)) Num)
+(succ (fst (fst (Pair.make (Pair.make Num Str) true))))
+(not (snd (snd (Pair.make Num (Pair.make Str true)))))
+((^) Str (fst (snd (Pair.make Num (Pair.make Str true)))))
+((^) Str (snd (fst (Pair.make (Pair.make Num Str) true))))
+(succ (snd (fst (Pair.make (Pair.make Num Str) true))))
+(not (fst (fst (Pair.make (Pair.make Num Str) true))))
+(succ (fst (snd (Pair.make Num (Pair.make Str true)))))
+(not (snd (fst (Pair.make (Pair.make Num Str) true))))
+(fst (fst Num))
+(snd (snd Str))
 (fst (Pair.make Num Str) Char)

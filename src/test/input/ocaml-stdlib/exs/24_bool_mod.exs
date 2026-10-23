@@ -1,4 +1,4 @@
-// 0_basics.types, 4_arith.types, 6_float.types, 7_str.types, 24_bool_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 6_float.types, 7_str.types, 24_bool_mod.types
 
 // Basic bool operations (same as 2-boolean but from Bool module)
 (Bool.not true)
@@ -91,3 +91,12 @@
 (Bool.equal true Num)
 (Bool.compare true Num)
 (Bool.logand Num false)
+
+// logxor gives a bool
+(not (Bool.logxor true false))
+((&&) (Bool.logxor true false) true)
+(Bool.logand true (Bool.logxor false false))
+(succ (Bool.logxor true false))
+((^) Str (Bool.logxor true false))
+(Bool.logxor true Num)
+(Bool.logxor Num)
