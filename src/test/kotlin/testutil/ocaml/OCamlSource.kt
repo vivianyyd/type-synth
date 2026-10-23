@@ -8,8 +8,9 @@ import query.Name
  * How examples are written as OCaml source, for the ways to ask OCaml about them ([OCamlGroundTruth]).
  *
  * @param labels The labels of each value's parameters, as [withLabels] takes them.
+ * @param prelude OCaml definitions that examples may use, like `module StrMap = Map.Make (String)`
  */
-data class OCamlSource(val labels: Map<String, List<String?>> = emptyMap()) {
+data class OCamlSource(val labels: Map<String, List<String?>> = emptyMap(), val prelude: String = "") {
     /** [example] as OCaml source. */
     fun of(example: Example): String = withLabels(withDummies(example), labels).toString()
 }

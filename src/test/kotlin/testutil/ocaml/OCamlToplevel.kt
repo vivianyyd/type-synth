@@ -25,7 +25,8 @@ class OCamlToplevel(
 ) : GroundTruth {
     private val preamble =
         (if (packages.isEmpty()) "" else "#use \"topfind\";;\n#require \"${packages.joinToString(",")}\";;\n") +
-                opens.joinToString("") { "open $it;;\n" }
+                opens.joinToString("") { "open $it;;\n" } +
+                (if (source.prelude.isBlank()) "" else "${source.prelude};;\n")
 
     private val process: Process by lazy {
         ProcessBuilder("ocaml", "-noprompt", "-nopromptcont", "-color=never", "-w", "-a")

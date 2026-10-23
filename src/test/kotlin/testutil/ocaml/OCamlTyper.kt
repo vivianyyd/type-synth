@@ -30,7 +30,8 @@ class OCamlTyper(
             if (packages.isEmpty()) emptyList()
             else output(ProcessBuilder(listOf("ocamlfind", "query", "-r", "-format", "%d") + packages))
                 .lines().filter { it.isNotBlank() }.distinct()
-        ProcessBuilder(listOf(binary().path) + includeDirs)
+        val prelude = if (source.prelude.isBlank()) emptyList() else listOf("-prelude", source.prelude)
+        ProcessBuilder(listOf(binary().path) + prelude + includeDirs)
             .redirectError(ProcessBuilder.Redirect.to(File("/dev/null")))
             .start()
             .also { p -> Runtime.getRuntime().addShutdownHook(Thread { p.destroy() }) }

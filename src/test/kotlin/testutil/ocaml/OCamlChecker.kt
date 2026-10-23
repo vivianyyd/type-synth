@@ -31,7 +31,7 @@ class OCamlChecker(
     override fun allValid(examples: Collection<Example>): Boolean =
         examples.isEmpty() || compile(examples.map { source.of(it) }).isValid
 
-    private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n"
+    private val preamble: String = opens.joinToString("\n") { "open $it" } + "\n" + source.prelude + "\n"
 
     /** Check if a single expression is valid OCaml code. */
     fun isValid(expr: String): TypeCheckResult = compile(listOf(expr))
