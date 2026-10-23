@@ -36,6 +36,12 @@ object Variants {
             Variant("observational", "Decide type equality by swapping expressions in the examples") {
                 it.copy(oracle = OracleKind.Observational)
             },
+            Variant("no-extra-arities", "Never give labels more parameters than the solver's bounds") {
+                it.copy(extraArities = 0)
+            },
+            Variant("no-result-dependence", "Don't bound label arities by how results depend on arguments") {
+                it.copy(resultDependence = false)
+            },
             Variant(
                 "ocaml-toplevel",
                 "Ask OCaml about examples with ${OCamlGroundTruth.Toplevel.description}",
@@ -48,10 +54,24 @@ object Variants {
     const val DEEPEN = "deepen-arities="
     const val DEEPEN_DESCRIPTION = "Try every label arity up to N, without the solver"
 
+    /** `names-per-round=N`, which is not in [all] since it takes a number N. */
+    const val PER_ROUND = "names-per-round="
+    const val PER_ROUND_DESCRIPTION = "Solve for N names per round"
+
+    /** `size-bound=N`, which is not in [all] since it takes a number N. */
+    const val SIZE = "size-bound="
+    const val SIZE_DESCRIPTION = "Fill at most N holes per round"
+
     private fun one(name: String): Variant {
-        if (!name.startsWith(DEEPEN)) return all[name] ?: error("No variant named $name. Try --list")
-        val bound = name.removePrefix(DEEPEN).toIntOrNull() ?: error("$name needs a number after =")
-        return Variant("$DEEPEN$bound", DEEPEN_DESCRIPTION) { it.copy(labelArities = LabelArities.Deepened(bound)) }
+        fun number() = name.substringAfter("=").toIntOrNull() ?: error("$name needs a number after =")
+        return when {
+            name.startsWith(DEEPEN) ->
+                Variant("$DEEPEN${number()}", DEEPEN_DESCRIPTION) { it.copy(labelArities = LabelArities.Deepened(number())) }
+            name.startsWith(SIZE) -> Variant("$SIZE${number()}", SIZE_DESCRIPTION) { it.copy(sizeBound = number()) }
+            name.startsWith(PER_ROUND) ->
+                Variant("$PER_ROUND${number()}", PER_ROUND_DESCRIPTION) { it.copy(scheduleInfo = Auto(number())) }
+            else -> all[name] ?: error("No variant named $name. Try --list")
+        }
     }
 
     /** [names] is one variant, or several separated by commas. */
@@ -87,5 +107,7 @@ fun Configuration.toJson(): Map<String, Any?> =
                 LabelArities.Solved -> mapOf("kind" to "solved")
                 is LabelArities.Deepened -> mapOf("kind" to "deepened", "bound" to la.bound)
             },
+        "extraArities" to extraArities,
+        "resultDependence" to resultDependence,
         "oracle" to oracle.name,
     )

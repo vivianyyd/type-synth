@@ -21,15 +21,18 @@ class LabelConstraints(
     val pinned: Map<Int, Int>
 
     init {
+        // Committed names are left out: their parameters' types have only committed labels and
+        // variables of their own, so they constrain no label the query bounds.
+        val names = s.names.filterKeys { it in dep.names }
         var fresh = 0
-        s.names.keys.forEach { name ->
+        names.keys.forEach { name ->
             val stripped = "_${name.filter { it.isLetterOrDigit() }}"
             if (stripped !in nameToPy.values) nameToPy[name] = stripped
             else nameToPy[name] = stripped + "_${fresh++}"
         }
 
         val paramToType =
-            s.names.entries.fold(mutableMapOf<ParameterNode, Type>()) { m, (name, index) ->
+            names.entries.fold(mutableMapOf<ParameterNode, Type>()) { m, (name, index) ->
                 val tree = s.types[index]
                 var curr = tree
                 var count = 0
@@ -50,7 +53,7 @@ class LabelConstraints(
         - Each unique label corresponds to a label size, which is an integer.
         Note that we only analyze the variables and labels that occur at the top-level.
          */
-        s.names.keys.forEach { name ->
+        names.keys.forEach { name ->
             val nodes = dep.nodes(name)
             decls.addAll(nodes.map { "${py(it)} = Const('${py(it)}', SetSort(IntSort()))" })
         }
@@ -125,7 +128,17 @@ class LabelConstraints(
                     } else null // TODO not sure if we can introduce an == constraint in this case
                 }
             }
-        constrs.addAll(fixedConstrs + constrainedConstrs)
+        // If the result depends on a parameter, they have a variable in common
+        val resultConstrs =
+            dep.resultDependsOn.flatMap { (name, a) ->
+                a.mapIndexedNotNull { i, depends ->
+                    if (depends) {
+                        val result = py(ParameterNode(name, a.size))
+                        "SetIntersect($result, ${py(ParameterNode(name, i))}) != EmptySet(IntSort())"
+                    } else null
+                }
+            }
+        constrs.addAll(fixedConstrs + constrainedConstrs + resultConstrs)
 
         // TODO CVC query needs to ask whether it's SAT to carry over leq prev label arities and
         //   still satisfy dep constraints on new ones.

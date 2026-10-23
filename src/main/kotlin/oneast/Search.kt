@@ -8,7 +8,8 @@ import java.util.stream.Collectors
 
 /**
  * Lazily produces ALL solutions for [examples] from this [seed]. Charges its work to search
- * [statsId] (see [Stats.newSearch]).
+ * [statsId] (see [Stats.newSearch]). With [LabelArities.Solved], each label may have up to
+ * [extraArities] more parameters than the solver's bound for it.
  */
 class Search(
     private val seed: SearchState,
@@ -16,6 +17,7 @@ class Search(
     private val oracle: Oracle,
     private val config: Configuration,
     private val statsId: Int = -1,
+    private val extraArities: Int = 0,
 ) {
     private fun allCandidates(
         c: SearchState,
@@ -71,14 +73,18 @@ class Search(
         return s.mapTypes { assignLabels(it) }
     }
 
-    private fun concreteSeeds(size: Int, depth: Int): List<SearchState> {
+    /**
+     * The outlines of seed depth [depth], each with every choice of arities for its labels: with
+     * [LabelArities.Solved], those up to the solver's bounds plus [extraArities].
+     */
+    private fun concreteSeeds(depth: Int): List<SearchState> {
         val withLabelClasses =
             Stats.phase(statsId, Phase.OUTLINE) {
                 allCandidates(
                     seed,
                     emitLabelBlanks = true,
                     emitConstructors = true,
-                    sizeBound = size,
+                    sizeBound = config.sizeBound,
                     depthBound = depth,
                 )
                     .map {
@@ -90,73 +96,73 @@ class Search(
 
         Debug.log { withLabelClasses.countedLines("Seeds before label arities") }
 
-        return Stats.phase(statsId, Phase.ARITY) {
-            when (val la = config.labelArities) {
-                LabelArities.Solved -> solveLabelArities(withLabelClasses)
-                is LabelArities.Deepened -> deepenLabelArities(withLabelClasses, la.bound)
+        return when (val la = config.labelArities) {
+            LabelArities.Solved -> {
+                val bounds = solvedArityBounds(withLabelClasses)
+                Stats.phase(statsId, Phase.ARITY) {
+                    withArities(bounds.flatMap { (s, bound) -> arityChoices(s, bound).map { s to it } })
+                }
             }
+            is LabelArities.Deepened ->
+                Stats.phase(statsId, Phase.ARITY) { deepenLabelArities(withLabelClasses, la.bound) }
         }
     }
 
-    private fun solveLabelArities(withLabelClasses: Set<SearchState>): List<SearchState> {
-        // First the dependency analyses, one at a time, memoized by arities
-        val dependencyAnalyses = mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
-        val seedsWithDeps =
-            withLabelClasses.map { s ->
-                val arities = s.fnArities()
-                val dep =
-                    dependencyAnalyses.getOrPut(arities) {
-                        ParameterwiseDependencyAnalysis(examples, arities, oracle)
-                    }
-                s to dep
-            }
-
-        // Then the labelArities() calls, in parallel
-        val labelAritySols =
-            seedsWithDeps
-                .parallelStream()
-                .map { (s, dep) -> s to labelArities(s, dep) }
-                .filter { (_, la) -> la != null }
-                .collect(Collectors.toList())
-        Stats.add(Count.ARITY_UNSAT, (seedsWithDeps.size - labelAritySols.size).toLong())
-
-        val resolvedLabelArities = withArities(labelAritySols
-            .flatMap { (s, la) ->
-                // The solver leaves committed labels out, so they keep their arities
-                require(la!!.keys.none { it in s.committedLabels })
-                val committed = s.labelArities.filterKeys { it in s.committedLabels }
-                val (labels, arities) = la.toList().unzip()
-                // lazyCartesianProduct has no choices, not one empty choice, for no labels
-                val choices =
-                    if (labels.isEmpty()) sequenceOf(emptyList())
-                    else lazyCartesianProduct(arities.map { (0..it).toList() })
-                choices.map { s to committed + labels.zip(it) }
-            })
-
-        // Without ordering seeds by arity preserved
-//        val resolvedLabelArities = logger.time("Solving for label arities") {
-//            seedsWithDeps.parallelStream().flatMap { (s, dep) ->
-//                logger.count("Solver call")
-//                val la = labelArities(s, dep)
-//                if (la == null) java.util.stream.Stream.empty()
-//                else {
-//                    val (labels, arities) = la.toList().unzip()
-//                    StreamSupport.stream(
-//                        lazyCartesianProduct(arities.map { (0..it).toList() })
-//                            .map {
-//                                val subla = labels.zip(it).toMap()
-//                                // New label arities overwrite old ones
-//                                s.mapTypesAndSetLabelArities(subla) { t ->
-//                                    t.addParamHoles(subla)
-//                                }
-//                            }.asIterable().spliterator(),
-//                        false)
-//                }
-//            }.collect(Collectors.toList())
-//        }
-
-        return resolvedLabelArities
+    /**
+     * Arities for [s]'s labels: committed ones keep theirs, and each other label has from 0 to its
+     * bound in [bounds] + [extraArities]. None if that is below 0 for a label.
+     */
+    private fun arityChoices(s: SearchState, bounds: Map<Int, Int>): Sequence<Map<Int, Int>> {
+        val committed = s.labelArities.filterKeys { it in s.committedLabels }
+        val (labels, maxes) = bounds.mapValues { it.value + extraArities }.toList().unzip()
+        if (maxes.any { it < 0 }) return emptySequence()
+        // lazyCartesianProduct has no choices, not one empty choice, for no labels
+        val choices =
+            if (labels.isEmpty()) sequenceOf(emptyList())
+            else lazyCartesianProduct(maxes.map { (0..it).toList() })
+        return choices.map { committed + labels.zip(it) }
     }
+
+    /**
+     * For each of [withLabelClasses], the most parameters each of its labels that isn't committed may
+     * need, as the solver bounds it. A label the solver doesn't bound may need none. For an outline
+     * the solver finds unsatisfiable, every bound is -1.
+     */
+    private fun solvedArityBounds(withLabelClasses: Set<SearchState>): List<Pair<SearchState, Map<Int, Int>>> =
+        Stats.phase(statsId, Phase.ARITY) {
+            // First the dependency analyses, one at a time, memoized by arities
+            val dependencyAnalyses = mutableMapOf<Map<String, Int>, ParameterwiseDependencyAnalysis>()
+            val seedsWithDeps =
+                withLabelClasses.map { s ->
+                    val arities = s.fnArities()
+                    val dep =
+                        dependencyAnalyses.getOrPut(arities) {
+                            ParameterwiseDependencyAnalysis(
+                                examples,
+                                arities,
+                                oracle,
+                                config.resultDependence,
+                                names = s.names.filterValues { it >= s.numCommittedTypes }.keys
+                            )
+                        }
+                    s to dep
+                }
+
+            // Then the labelArities() calls, in parallel
+            val bounds =
+                seedsWithDeps
+                    .parallelStream()
+                    .map { (s, dep) -> s to labelArities(s, dep) }
+                    .collect(Collectors.toList())
+            Stats.add(Count.ARITY_UNSAT, bounds.count { it.second == null }.toLong())
+
+            bounds.map { (s, la) ->
+                // The solver leaves committed labels out, so they keep their arities
+                require(la == null || la.keys.none { it in s.committedLabels })
+                val labels = s.types.flatMap { it.labels() }.map { it.first }.toSet() - s.committedLabels
+                s to labels.associateWith { if (la == null) -1 else la[it] ?: 0 }
+            }
+        }
 
     /**
      * Each outline with every choice of arities from 0 to [bound] for its labels. Committed labels
@@ -243,14 +249,11 @@ class Search(
      * label arities.
      */
     fun solutions(): Sequence<SearchState> = sequence {
-//        val seen = mutableSetOf<SearchState>()
+        // Each larger seed depth, depth and size bound finds the solutions of the smaller ones again.
+        // Yielding one twice would make the next round search for it twice.
+        val yielded = mutableListOf<SearchState>()
         for (seedDepth in 0..config.depthBound) {
-            var seeds = concreteSeeds(config.sizeBound, seedDepth)
-            // Only try concretizing the new seeds
-            // TODO this doesn't work right now since holes use physical equals!
-//            seeds = (seeds.toSet() - seen).toList()
-//            seen.addAll(seeds)
-
+            val seeds = concreteSeeds(seedDepth)
             if (seeds.isEmpty()) continue
             Debug.log { seeds.countedLines("Concrete seeds") }
 
@@ -263,10 +266,20 @@ class Search(
                 // If largest seed is greater than the size bound, just try size bound for smaller seeds
                 for (size in maxMinSize.coerceAtMost(config.sizeBound)..config.sizeBound) {
                     for (solution in concretizationSearch(seeds, size, depth)) {
+                        if (yielded.any { it.equivalentTo(solution) }) continue
+                        yielded.add(solution)
                         Stats.inc(Count.SOLUTIONS)
                         Stats.event(
                             "solution",
-                            mapOf("seedDepth" to seedDepth, "depth" to depth, "size" to size)
+                            mapOf(
+                                "seedDepth" to seedDepth,
+                                "depth" to depth,
+                                "size" to size,
+                                // The types this search found, not those it was given
+                                "types" to
+                                    solution.names.filterValues { seed.types[it].allHoles().isNotEmpty() }
+                                        .mapValues { (_, i) -> solution.types[i].toString() }
+                            )
                         )
                         yield(solution)
                     }

@@ -76,6 +76,16 @@ data class Configuration(
     val expansions: Expansions = Expansions.Unsound,
     /** How each outline's labels get their arities before concretizing. */
     val labelArities: LabelArities = LabelArities.Solved,
+    /**
+     * With [LabelArities.Solved], how many parameters past the solver's bound a label may get, one
+     * more at a time, when a search finds no solution within the bounds.
+     */
+    val extraArities: Int = 2,
+    /**
+     * Whether the solver may conclude that a function's result shares a variable with a parameter
+     * when examples differing only in that argument's type have results of different types.
+     */
+    val resultDependence: Boolean = true,
     /** Which oracle answers whether two expressions have the same type. */
     val oracle: OracleKind = OracleKind.Types,
 )

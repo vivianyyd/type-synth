@@ -53,12 +53,20 @@ quotes. Last occurrence of an option wins.
 --help              print options
 ```
 
-Suites: `sexp`, `sexp-unsolved`, `ocaml` (each module group given the true types of the groups
-before it). `ocaml-chained` is in no suite: one benchmark of six steps, `basics` to `str`, each
-solving one module group given the search's own answer for the groups before it. It stops at the
-first step with no solution, a timeout or an error; a wrong step is committed to, and the chain
-goes on. Variants: `default`, `single-round`, `auto3`, `sound`, `simple`, `observational`,
-`ocaml-toplevel`, `deepen-arities=N` (any bound N, e.g. `deepen-arities=2`). Defined in
+Suites: `sexp`, `sexp-unsolved`, `ocaml`. The OCaml benchmarks come from the module groups in
+`ocamlModuleGroups` (`src/test/kotlin/testutil/ocaml/OCamlStdlib.kt`), each with the groups it
+depends on:
+
+- `ocaml-GROUP` (the `ocaml` suite): solves GROUP given the true types of the names its
+  dependencies' examples use. The fast way to work on one group.
+- `ocaml-chained-GROUP`: GROUP and its dependencies, one step each, in order, each step given the
+  search's own answers for the steps before it.
+- `ocaml-chained`: every group, one step each, the same way.
+
+A chain stops at the first step with no solution, a timeout or an error; a wrong step is committed
+to, and the chain goes on. Variants: `default`, `single-round`, `auto3`, `sound`, `simple`,
+`observational`, `ocaml-toplevel`, `no-extra-arities`, `no-result-dependence`, `deepen-arities=N`
+(any bound N, e.g. `deepen-arities=2`), `names-per-round=N`, `size-bound=N`. Defined in
 `src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
 
 OCaml benchmarks ask OCaml whether examples type-check with a server around its type checker

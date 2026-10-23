@@ -136,7 +136,12 @@ class Engine(
         return nextExamples to nextState
     }
 
-    private fun searchRec(state: SearchState, round: Int, outerDepthBound: Int): Sequence<SearchState> = sequence {
+    private fun searchRec(
+        state: SearchState,
+        round: Int,
+        outerDepthBound: Int,
+        extraArities: Int
+    ): Sequence<SearchState> = sequence {
         val nextQueryAndSeed = buildNextQuery(state, round)
 
         if (nextQueryAndSeed == null) {
@@ -158,7 +163,8 @@ class Engine(
                 nextQueryAndSeed.first,
                 oracle(),
                 config.copy(depthBound = outerDepthBound),
-                statsId
+                statsId,
+                extraArities
             )
 
         for (solution in search.solutions()) {
@@ -173,7 +179,7 @@ class Engine(
                 }
             if (ctrex == null) {
                 Debug.log { "Found no counterexamples" }
-                yieldAll(searchRec(solution, round + 1, outerDepthBound))
+                yieldAll(searchRec(solution, round + 1, outerDepthBound, extraArities))
             } else {
                 Debug.log { "Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}" }
                 Stats.event(
@@ -186,8 +192,30 @@ class Engine(
         }
     }
 
-    fun search(): Sequence<SearchState> =
-        (0 until config.depthBound).asSequence().flatMap { searchRec(committedSeed, round = 0, it) }
+    /**
+     * Each outer depth bound in turn. Only if none of them gives a solution, again with labels allowed
+     * one more parameter than the solver's bounds, and so on up to [Configuration.extraArities]: the
+     * bounds come from heuristics, which can be too low. A round with no solution at a small depth
+     * bound is common, and fails fast only with the solver's bounds, so the extra arities wait until
+     * every depth bound has failed.
+     */
+    fun search(): Sequence<SearchState> = sequence {
+        val extras = if (config.labelArities is LabelArities.Solved) 0..config.extraArities else 0..0
+        for (extra in extras) {
+            if (extra > 0) {
+                Debug.log { "No solution with label arities up to the solver's bounds + ${extra - 1}" }
+                Stats.event("extraArities", mapOf("extra" to extra))
+            }
+            var found = false
+            for (outerDepth in 0 until config.depthBound) {
+                for (solution in searchRec(committedSeed, round = 0, outerDepth, extra)) {
+                    found = true
+                    yield(solution)
+                }
+            }
+            if (found) return@sequence
+        }
+    }
 }
 
 /*

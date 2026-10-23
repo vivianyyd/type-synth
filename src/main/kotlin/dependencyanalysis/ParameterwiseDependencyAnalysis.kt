@@ -13,24 +13,36 @@ data class ParameterNode(val f: String, val i: Int) {
     override fun toString(): String = "$f-$i"
 }
 
+/** Analyzes the parameters of [names], the names whose types aren't committed. */
 class ParameterwiseDependencyAnalysis(
     private val examples: Examples,
     private val arities: Map<String, Int>,
-    private val oracle: Oracle
+    private val oracle: Oracle,
+    resultDependence: Boolean = true,
+    val names: Set<String> = examples.names.toSet(),
 ) {
     private val nodes =
-        arities.flatMap { (name, arity) -> (0 until arity).map { ParameterNode(name, it) } }
+        arities.filterKeys { it in names }.flatMap { (name, arity) -> (0 until arity).map { ParameterNode(name, it) } }
 
     fun nodes(name: String) = nodes.filter { it.f == name }
 
-    val fixed = examples.names.associateWith { Array(arities[it]!!) { false } }
-    val constrained = examples.names.associateWith { Array(arities[it]!!) { false } }
+    val fixed = names.associateWith { Array(arities[it]!!) { false } }
+    val constrained = names.associateWith { Array(arities[it]!!) { false } }
+
+    /**
+     * For each name, the parameters its result shares a variable with: those where two positive
+     * examples that apply the name to all its parameters differ in the type of that argument only,
+     * and the results' types differ. `(Pair.make Num Str)` and `(Pair.make true Str)` show that
+     * `Pair.make`'s result depends on its first parameter.
+     */
+    val resultDependsOn = names.associateWith { Array(arities[it]!! - 1) { false } }
 
     override fun toString(): String =
-        "Fixed: ${fixed.mapValues { it.value.contentToString() }}\tConstrained: ${constrained.mapValues { it.value.contentToString() }}"
+        "Fixed: ${fixed.mapValues { it.value.contentToString() }}\tConstrained: ${constrained.mapValues { it.value.contentToString() }}" +
+            "\tResult depends on: ${resultDependsOn.mapValues { it.value.contentToString() }}"
 
     init {
-        examples.names.forEach { name ->
+        names.forEach { name ->
             val arity = arities[name]!!
 
             val posExs = examples.flatPos(name)
@@ -87,6 +99,17 @@ class ParameterwiseDependencyAnalysis(
                     }) {
                     currFixed[i] = true
                 }
+            }
+
+            val applied = if (resultDependence) posExs.filter { it.args.size == arity - 1 } else emptyList()
+            for (i in 0 until arity - 1) {
+                // Examples alike in every argument but the ith
+                val alikeButI =
+                    applied.eqClasses { e1, e2 ->
+                        e1.args.indices.all { j -> j == i || oracle.flatEqual(e1.args[j], e2.args[j]) }
+                    }
+                resultDependsOn[name]!![i] =
+                    alikeButI.any { alike -> alike.any { !oracle.flatEqual(it, alike.first()) } }
             }
 
             //            for (i in 0 until arity) {

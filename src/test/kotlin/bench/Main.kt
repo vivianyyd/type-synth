@@ -131,6 +131,8 @@ private fun list() {
     println("Variants:")
     Variants.all.values.forEach { println("  ${it.name}: ${it.description}") }
     println("  ${Variants.DEEPEN}N: ${Variants.DEEPEN_DESCRIPTION}")
+    println("  ${Variants.PER_ROUND}N: ${Variants.PER_ROUND_DESCRIPTION}")
+    println("  ${Variants.SIZE}N: ${Variants.SIZE_DESCRIPTION}")
 }
 
 private fun runBatch(opts: Options) {
