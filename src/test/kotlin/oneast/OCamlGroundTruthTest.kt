@@ -56,13 +56,13 @@ class OCamlGroundTruthTest {
 
     @Test
     fun `every subexpression of the OCaml benchmarks' examples`() {
-        val (examples, _) = loadFromExsFiles(ocamlModuleGroups.flatten())
+        val (examples, _) = loadFromExsFiles(ocamlModuleGroups.flatMap { it.files })
         assertAgree(examples.flatMap { it.subexprs() }.distinct().map { OCamlSource().of(it) })
     }
 
     @Test
     fun `random expressions`() {
-        val (examples, types) = loadFromExsFiles(ocamlModuleGroups.take(2).flatten())
+        val (examples, types) = loadFromExsFiles(ocamlModuleGroups.take(2).flatMap { it.files })
         val names = (examples.flatMap { it.names } + types.keys).distinct().sorted()
         val random = Random(0)
         fun gen(depth: Int): Example =

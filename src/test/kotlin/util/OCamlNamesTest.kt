@@ -40,7 +40,7 @@ class OCamlNamesTest {
      */
     @Test
     fun `every operator in the OCaml benchmarks' examples has a type`() {
-        val (examples, types) = loadFromExsFiles(ocamlModuleGroups.flatten())
+        val (examples, types) = loadFromExsFiles(ocamlModuleGroups.flatMap { it.files })
         val untyped = examples.flatMap { it.names }.toSet() - types.keys
         val operators = untyped.filter { it.startsWith("(") && it != "(->)" }
         assertTrue(operators.isEmpty(), "No type for $operators")

@@ -3,8 +3,10 @@ package bench
 import oneast.*
 import query.AbstractQuery
 import testutil.loadQueryFromFile
+import testutil.ocaml.OCamlModuleGroup
 import testutil.ocaml.ocamlModuleGroups
 import testutil.ocaml.ocamlModulesQuery
+import testutil.ocaml.withDependencies
 import util.GroundTruth
 
 /** A synthesis problem, and the answer it should have if one is known. */
@@ -43,29 +45,26 @@ private fun sexp(file: String) =
         Problem(query, query.oracle, query.oracle.truth)
     }
 
-private val ocamlModuleNames = listOf("basics", "comparison", "list", "bitwise", "float", "str")
-
-/** Solves the [i]th group of modules given the true types of the groups before it. */
-private fun ocaml(name: String, i: Int) =
-    oneStep("ocaml-$name", ocamlDefaults) { groundTruth ->
-        val (query, expected) =
-            ocamlModulesQuery(ocamlModuleGroups[i], fixed = ocamlModuleGroups.subList(0, i).flatten(), groundTruth = groundTruth)
+/** Solves [group] given the true types of the groups it depends on. */
+private fun ocaml(group: OCamlModuleGroup) =
+    oneStep("ocaml-${group.name}", ocamlDefaults) { groundTruth ->
+        val fixed = withDependencies(group).dropLast(1).flatMap { it.files }
+        val (query, expected) = ocamlModulesQuery(group.files, fixed, groundTruth = groundTruth)
         Problem(query, groundTruth, expected)
     }
 
 /**
- * Solves the groups of modules in order, each given the search's own answer for the groups before
- * it: step i has the examples of every group up to the ith, committed to the answer of the step
- * before it.
+ * Solves [groups] in order, each given the search's own answer for the groups before it: step i has
+ * the examples of every group up to the ith, committed to the answer of the step before it.
  */
-private val ocamlChained =
+private fun ocamlChained(name: String, groups: List<OCamlModuleGroup>) =
     Benchmark(
-        "ocaml-chained",
+        name,
         ocamlDefaults,
-        ocamlModuleNames.mapIndexed { i, name ->
-            Step(name) { committed, groundTruth ->
-                val (query, expected) =
-                    ocamlModulesQuery(ocamlModuleGroups.subList(0, i + 1).flatten(), fixed = emptyList(), committed, groundTruth)
+        groups.mapIndexed { i, group ->
+            Step(group.name) { committed, groundTruth ->
+                val files = groups.subList(0, i + 1).flatMap { it.files }
+                val (query, expected) = ocamlModulesQuery(files, fixed = emptyList(), committed, groundTruth)
                 Problem(query, groundTruth, expected)
             }
         }
@@ -86,10 +85,15 @@ object Benchmarks {
                 )
                     .map(::sexp),
             "sexp-unsolved" to listOf("list-and-dict", "option", "pair").map(::sexp),
-            "ocaml" to ocamlModuleNames.mapIndexed { i, name -> ocaml(name, i) },
+            "ocaml" to ocamlModuleGroups.map(::ocaml),
         )
 
-    val all: Map<String, Benchmark> = (suites.values.flatten() + ocamlChained).associateBy { it.name }
+    /** The full chain, and for each group, the chain of only it and the groups it depends on. */
+    private val chains =
+        listOf(ocamlChained("ocaml-chained", ocamlModuleGroups)) +
+            ocamlModuleGroups.map { ocamlChained("ocaml-chained-${it.name}", withDependencies(it)) }
+
+    val all: Map<String, Benchmark> = (suites.values.flatten() + chains).associateBy { it.name }
 
     /** Each of [names] is a benchmark or a suite. */
     fun resolve(names: List<String>): List<Benchmark> =

@@ -111,7 +111,8 @@ fun parseTypesFile(parser: OcamlTypeParser, file: File): Map<String, Signature> 
 
 /**
  * How stdlib examples are written as OCaml: with the labels of every value the stdlib .types files
- * declare. Names are qualified, so no two modules' values share labels.
+ * declare, and the instances of functors that examples use (see 51_map_mod.types). Names are
+ * qualified, so no two modules' values share labels.
  */
 val stdlibSource: OCamlSource by lazy {
     val parser = OcamlTypeParser()
@@ -119,7 +120,8 @@ val stdlibSource: OCamlSource by lazy {
         labels = ocamlTypesDir.listFiles()!!.filter { it.extension == "types" }
             .flatMap { parseTypesFile(parser, it).entries }
             .associate { it.key to it.value.labels }
-            .filterValues { labels -> labels.any { it != null } }
+            .filterValues { labels -> labels.any { it != null } },
+        prelude = "module StrMap = Map.Make (String)"
     )
 }
 
@@ -187,7 +189,9 @@ private fun SExpr.withoutBinders(): SExpr =
 
 /**
  * The problem of finding types for the names in modules [task], given the true types of the names
- * in modules [fixed], along with the answer. [committedSeed] replaces the true types of [fixed] as
+ * that modules [fixed]'s examples use, along with the answer. Like a chain that solved [fixed] first,
+ * names that no example of [fixed] uses aren't given, so they don't fix labels the task's names
+ * use (`Option.to_list` would fix `list`'s). [committedSeed] replaces the true types of [fixed] as
  * what the search starts from. [groundTruth] splits the examples into positive and negative ones.
  */
 fun ocamlModulesQuery(
@@ -198,8 +202,9 @@ fun ocamlModulesQuery(
 ): Pair<Query, SearchState> {
     // One parser, so that a label id means the same constructor in both maps.
     val parser = OcamlTypeParser()
-    val (_, fixedTypes) = loadFromExsFiles(fixed, parser)
+    val (fixedExamples, fixedTypes) = loadFromExsFiles(fixed, parser)
     val (examplesAll, desiredTypes) = loadFromExsFiles(task, parser)
+    val given = fixedTypes.filterKeys { name -> fixedExamples.any { name in it.names } }
     val oracleTypes = fixedTypes + desiredTypes
     val examples =
         examplesAll
@@ -211,18 +216,68 @@ fun ocamlModulesQuery(
         Query(
             splitOCamlExamples(examples, oracle, groundTruth),
             oracle,
-            committedSeed = committedSeed ?: stateFromContext(fixedTypes)
+            committedSeed = committedSeed ?: stateFromContext(given)
         )
     return query to stateFromContext(oracleTypes)
 }
 
-/** Groups of modules to solve in order, each given the true types of the groups before it. */
-val ocamlModuleGroups =
+/**
+ * Modules solved together, from the examples in [files]. [deps] names the groups whose names
+ * [files]' examples use.
+ */
+class OCamlModuleGroup(val name: String, val files: List<String>, val deps: List<String> = emptyList())
+
+/** In the order the full chain solves them, each after its [OCamlModuleGroup.deps]. */
+val ocamlModuleGroups: List<OCamlModuleGroup> =
     listOf(
-        listOf("0_basics", "2_boolean", "4_arith", "8_char"),
-        listOf("1_comparison"),
-        listOf("50_list_mod"),
-        listOf("5_bitwise"),
-        listOf("6_float"),
-        listOf("7_str"),
+        // Only constants, which every other group uses, and no examples
+        OCamlModuleGroup("basics", listOf("0_basics")),
+        OCamlModuleGroup("arith", listOf("4_arith"), deps = listOf("basics")),
+        OCamlModuleGroup("boolean", listOf("2_boolean"), deps = listOf("arith")),
+        OCamlModuleGroup("char", listOf("8_char"), deps = listOf("arith")),
+        OCamlModuleGroup("comparison", listOf("1_comparison"), deps = listOf("basics")),
+        OCamlModuleGroup("bitwise", listOf("5_bitwise"), deps = listOf("arith")),
+        OCamlModuleGroup("str", listOf("7_str"), deps = listOf("basics")),
+        OCamlModuleGroup("unit", listOf("9_unit"), deps = listOf("arith", "comparison", "str")),
+        OCamlModuleGroup("pair_mod", listOf("76_pair_mod"), deps = listOf("boolean", "comparison", "unit")),
+        OCamlModuleGroup("pair", listOf("11_pair"), deps = listOf("pair_mod")),
+        OCamlModuleGroup("float", listOf("6_float"), deps = listOf("arith", "pair")),
+        OCamlModuleGroup("bool_mod", listOf("24_bool_mod"), deps = listOf("boolean", "comparison", "float", "str")),
+        OCamlModuleGroup("char_mod", listOf("28_char_mod"), deps = listOf("boolean", "char", "comparison", "str")),
+        OCamlModuleGroup("unit_mod", listOf("74_unit_mod"), deps = listOf("boolean", "comparison", "unit")),
+        OCamlModuleGroup("option_mod", listOf("57_option_mod"), deps = listOf("boolean", "comparison", "str", "unit")),
+        OCamlModuleGroup("strconv", listOf("10_strconv"), deps = listOf("boolean", "comparison", "float", "option_mod")),
+        OCamlModuleGroup(
+            "list", listOf("50_list_mod"), deps = listOf("boolean", "char", "comparison", "option_mod", "pair", "unit")
+        ),
+        OCamlModuleGroup("queue_mod", listOf("62_queue_mod"), deps = listOf("list", "option_mod", "str", "unit")),
+        OCamlModuleGroup("fun_mod", listOf("40_fun_mod"), deps = listOf("boolean", "comparison", "str", "unit")),
+        OCamlModuleGroup(
+            "string_mod", listOf("70_string_mod"), deps = listOf("char_mod", "fun_mod", "list", "option_mod", "str")
+        ),
+        OCamlModuleGroup("map_mod", listOf("51_map_mod"), deps = listOf("fun_mod", "list", "option_mod", "str")),
+        // Last, since the search doesn't solve them yet, and a chain stops at its first failing step.
+        // Pair's iter, equal and compare: apart from pair_mod, which they keep from finishing
+        OCamlModuleGroup("pair_mod_cmp", listOf("76_pair_mod_cmp"), deps = listOf("pair_mod")),
+        // List functions apart from list, so that list's dependents aren't blocked
+        OCamlModuleGroup("list_ext", listOf("50_list_mod_ext"), deps = listOf("list")),
     )
+        .also { groups ->
+            groups.forEachIndexed { i, group ->
+                val before = groups.subList(0, i).map { it.name }
+                group.deps.forEach { require(it in before) { "${group.name} comes before its dependency $it" } }
+            }
+        }
+
+fun ocamlModuleGroup(name: String): OCamlModuleGroup =
+    ocamlModuleGroups.find { it.name == name } ?: error("No OCaml module group named $name")
+
+/** [group] and the groups it depends on, directly or not, in [ocamlModuleGroups]' order. */
+fun withDependencies(group: OCamlModuleGroup): List<OCamlModuleGroup> {
+    val needed = mutableSetOf<String>()
+    fun visit(name: String) {
+        if (needed.add(name)) ocamlModuleGroup(name).deps.forEach(::visit)
+    }
+    visit(group.name)
+    return ocamlModuleGroups.filter { it.name in needed }
+}

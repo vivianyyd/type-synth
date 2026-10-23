@@ -169,8 +169,7 @@ class OcamlTypeParserTest {
     @Test
     fun `a shared parser keeps label ids apart across loads`() {
         val parser = OcamlTypeParser()
-        val (_, fixedTypes) =
-            loadFromExsFiles(ocamlModuleGroups.takeWhile { "6_float" !in it }.flatten(), parser)
+        val (_, fixedTypes) = loadFromExsFiles(listOf("50_list_mod"), parser)
         val (_, desiredTypes) = loadFromExsFiles(listOf("6_float"), parser)
         assertEquals(fixedTypes.getValue("Num").asLabel().label, desiredTypes.getValue("Num").asLabel().label)
         assertTrue(desiredTypes.getValue("Flt").asLabel().label != fixedTypes.getValue("Nil").asLabel().label)

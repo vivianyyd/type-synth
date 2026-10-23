@@ -151,12 +151,30 @@ class OCamlStdlibTest {
      */
     @Test
     fun `module query answers keep constructors apart`() {
-        for ((i, task) in ocamlModuleGroups.withIndex()) {
-            val fixed = ocamlModuleGroups.subList(0, i).flatten()
+        for ((i, group) in ocamlModuleGroups.withIndex()) {
+            val task = group.files
+            val fixed = ocamlModuleGroups.subList(0, i).flatMap { it.files }
             val (_, expected) = ocamlModulesQuery(task, fixed)
             val onePass = stateFromContext(loadFromExsFiles(fixed + task).second)
             // Up to renaming labels: the names whose types differ
             assertEquals(emptyMap(), onePass.diffTo(expected).costByName.filterValues { it > 0 }, "group $task")
+        }
+    }
+
+    /**
+     * A group's examples use only its own names and those of the groups it depends on, so that
+     * `ocaml-GROUP`, given its dependencies' true types, solves the same names as the group's step
+     * of the chain. The first line of each .exs file lists the .types files its examples use.
+     */
+    @Test
+    fun `groups' examples use only their dependencies' names`() {
+        for (group in ocamlModuleGroups) {
+            val allowed = withDependencies(group).flatMap { it.files }.map { "$it.types" }.toSet()
+            for (file in group.files) {
+                val header = File(ocamlExsDir, "$file.exs").readLines().first()
+                val used = header.removePrefix("//").split(",").map { it.trim() }.filter { it.endsWith(".types") }
+                assertEquals(emptyList(), used - allowed, "$file.exs uses names of groups ${group.name} doesn't depend on")
+            }
         }
     }
 
