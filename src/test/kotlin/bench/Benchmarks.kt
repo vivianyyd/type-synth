@@ -3,6 +3,7 @@ package bench
 import oneast.*
 import query.AbstractQuery
 import testutil.loadQueryFromFile
+import testutil.ocamlName
 import testutil.ocaml.OCamlModuleGroup
 import testutil.ocaml.ocamlModuleGroups
 import testutil.ocaml.ocamlModulesQuery
@@ -39,8 +40,8 @@ private val sexpDefaults =
 // A round of three list functions, like append, map and fold_left, needs more than 20 holes filled
 private val ocamlDefaults = sexpDefaults.copy(scheduleInfo = Auto(3), sizeBound = 30)
 
-private fun sexp(file: String) =
-    oneStep(file, sexpDefaults) { _ ->
+private fun sexp(file: String, defaults: Configuration = sexpDefaults) =
+    oneStep(file, defaults) { _ ->
         val query = loadQueryFromFile(file)
         Problem(query, query.oracle, query.oracle.truth)
     }
@@ -83,7 +84,18 @@ object Benchmarks {
                     "polymorphic-dictchain",
                     "polymorphic-nil",
                 )
-                    .map(::sexp),
+                    .map(::sexp) +
+                    // In one round, its eight names give too many outlines to search in minutes
+                    sexp(
+                        "polymorphic-zip",
+                        sexpDefaults.copy(
+                            scheduleInfo =
+                                CustomSchedule(
+                                    listOf(listOf("Num", "true", "nil", "cons"), listOf("{}", "put", "chain", "zip"))
+                                        .map { it.map(::ocamlName) }
+                                )
+                        )
+                    ),
             "sexp-unsolved" to listOf("list-and-dict", "option", "pair").map(::sexp),
             "ocaml" to ocamlModuleGroups.map(::ocaml),
         )
