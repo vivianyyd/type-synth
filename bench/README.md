@@ -62,6 +62,8 @@ depends on:
 - `ocaml-chained-GROUP`: GROUP and its dependencies, one step each, in order, each step given the
   search's own answers for the steps before it.
 - `ocaml-chained`: every group, one step each, the same way.
+- `ocaml-chained-fast`: the same for only the groups `ocaml-GROUP` solves in seconds (see
+  `Benchmarks.kt`).
 
 A chain stops at the first step with no solution, a timeout or an error; a wrong step is committed
 to, and the chain goes on. Variants: `default`, `single-round`, `auto3`, `sound`, `simple`,

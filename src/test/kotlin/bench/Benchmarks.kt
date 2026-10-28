@@ -5,6 +5,7 @@ import query.AbstractQuery
 import testutil.loadQueryFromFile
 import testutil.ocamlName
 import testutil.ocaml.OCamlModuleGroup
+import testutil.ocaml.ocamlModuleGroup
 import testutil.ocaml.ocamlModuleGroups
 import testutil.ocaml.ocamlModulesQuery
 import testutil.ocaml.withDependencies
@@ -100,9 +101,23 @@ object Benchmarks {
             "ocaml" to ocamlModuleGroups.map(::ocaml),
         )
 
-    /** The full chain, and for each group, the chain of only it and the groups it depends on. */
+    /** The groups that ocaml-GROUP solves in seconds, as one chain. */
+    private val fastChain =
+        ocamlChained(
+            "ocaml-chained-fast",
+            listOf(
+                "basics", "comparison", "arith", "boolean", "char", "bitwise", "str", "unit", "pair_mod", "pair",
+                "float", "bool_mod", "char_mod", "unit_mod", "option_mod", "strconv", "fun_mod",
+            )
+                .map(::ocamlModuleGroup)
+        )
+
+    /**
+     * The full chain, the fast one, and for each group, the chain of only it and the groups it
+     * depends on.
+     */
     private val chains =
-        listOf(ocamlChained("ocaml-chained", ocamlModuleGroups)) +
+        listOf(ocamlChained("ocaml-chained", ocamlModuleGroups), fastChain) +
             ocamlModuleGroups.map { ocamlChained("ocaml-chained-${it.name}", withDependencies(it)) }
 
     val all: Map<String, Benchmark> = (suites.values.flatten() + chains).associateBy { it.name }
