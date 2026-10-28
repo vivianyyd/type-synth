@@ -9,11 +9,11 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 
 /**
- * Round 0 has `zero`, `one` and `true`, which no example of round 0 relates, so it gives each a label
- * of its own. The examples of round 1 need `zero` and `one` to share one, so round 1 has to change
- * round 0's labels.
+ * Round 0 has `zero`, `one` and `true`, which no example of round 0 relates, so it gives each a
+ * label of its own. The examples of round 1 need `zero` and `one` to share one, so the two rounds
+ * have to be searched again as one.
  */
-class ResolveOnClashTest {
+class LabelsAcrossRoundsTest {
     /** A solution for round 1 being [fn], of type [type]. */
     private fun solve(fn: String, type: String, examples: List<String>): SearchState? {
         val types = "(zero (n));(one (n));(true (b));($fn $type)"
@@ -24,7 +24,6 @@ class ResolveOnClashTest {
                 depthBound = 4,
                 scheduleInfo = CustomSchedule(listOf(listOf("zero", "one", "true"), listOf(fn))),
                 numSols = Solutions.NumSolutions(1),
-                rounds = Rounds.ResolveOnClash,
             )
         return run(query, query.oracle, config).firstOrNull()
     }

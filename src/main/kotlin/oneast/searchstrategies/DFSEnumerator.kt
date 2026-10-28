@@ -15,23 +15,16 @@ class DFSEnumerator(
     /** See [oneast.Configuration.expansions]. */
     private val expansions: Expansions,
     /**
-     * If not null, gets the labels whenever the positive examples need two labels to be equal: when
-     * a state fails to unify because of them, or when a hole is unified with both.
+     * Gets the labels whenever the positive examples need two labels to be equal: when a state fails
+     * to unify because of them, or when a hole is unified with both.
      */
-    private val clashes: MutableSet<Set<Int>>? = null,
+    private val clashes: MutableSet<Set<Int>>,
 ) : SearchStrategy(examples) {
-    /**
-     * Whether the search has stopped changing labels other than by filling holes. While it emits
-     * label blanks, it is outlining: it blanks out labels that clash, and label arities are decided
-     * after it returns.
-     */
-    private val labelsSettled = !emitLabelBlanks
-
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
         return if (u.satisfiable()) recCandidates(c, u, sizeBound, c.numFillableHoles())
         else {
-            clash { u.badLabels() }
+            clash(u.badLabels())
             Stats.inc(Count.PRUNED_POS)
             emptySequence()
         }
@@ -54,7 +47,7 @@ class DFSEnumerator(
     ): Sequence<SearchState> {
         // Before either return below, so that outlines, including those with no blanks left, are
         // checked before label arities are solved for.
-        if (c.acceptsANegative(examples.neg, labelsSettled)) {
+        if (c.acceptsANegative(examples.neg)) {
             Stats.inc(Count.PRUNED_NEG)
             Stats.trace("prunedNeg") { c }
             return emptySequence()
@@ -67,7 +60,7 @@ class DFSEnumerator(
         if (currSizeBound - holesRemaining < 0) return emptySequence()
 
         val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
-        clash { (unification.holeConstructor(hole) as? HoleConstructor.Conflicting)?.labels.orEmpty() }
+        (unification.holeConstructor(hole) as? HoleConstructor.Conflicting)?.let { clash(it.labels) }
         val mark = unification.mark()
         return hole
             .expansions(
@@ -96,58 +89,14 @@ class DFSEnumerator(
                 } else {
                     Stats.inc(Count.PRUNED_POS)
                     Stats.trace("prunedPos") { newCandidate }
-                    val badLabels = unification.badLabels()
-                    clash { badLabels }
-                    retryWithoutBadLabels(newCandidate, badLabels, currSizeBound)
+                    clash(unification.badLabels())
+                    emptySequence()
                 }
             }
     }
 
-    /** Adds the labels that clash, if any, to [clashes]. Computes them only if there is a [clashes]. */
-    private inline fun clash(labels: () -> Set<Int>) {
-        val sink = clashes ?: return
-        labels().let { if (it.isNotEmpty()) sink.add(it) }
-    }
-
-    /**
-     * If we failed only because two distinct labels had to be equal, those labels were guesses we
-     * are free to take back: blank them out and enumerate them again.
-     *
-     * TODO: Not sure how to guarantee termination. I think it holds because we only backtrack if
-     *       there are distinct labels to merge. Does this introduce duplicates?
-     */
-    private fun retryWithoutBadLabels(
-        c: SearchState,
-        badLabels: Set<Int>,
-        currSizeBound: Int
-    ): Sequence<SearchState> {
-        if (!emitLabelBlanks || badLabels.isEmpty()) return emptySequence()
-        // A bad label that is committed cannot be rewritten, so there is no solution.
-        if (badLabels.any { it in c.committedLabels }) return emptySequence()
-
-        fun blankBadLabels(t: Type): Type =
-            when (t) {
-                is Arrow -> Arrow(blankBadLabels(t.l), blankBadLabels(t.r))
-                is NamedLabel ->
-                    if (t.label in badLabels) Blank(labelOnly = true)
-                    else t.copy(params = t.params.map { blankBadLabels(it) })
-                is THole,
-                is Variable -> t
-            }
-
-        val blanked =
-            c.mapTypesAndSetLabelArities(
-                newArities = c.labelArities.filterNot { (l, _) -> l in badLabels }
-            ) { blankBadLabels(it) }
-        Stats.inc(Count.RELABELED)
-        Stats.trace("relabeled") { blanked }
-        // The labels changed everywhere at once, so this subtree needs a check of its own.
-        val unification = posUnification(blanked)
-        return if (unification.satisfiable())
-            recCandidates(blanked, unification, currSizeBound - 1, blanked.numFillableHoles())
-        else {
-            Stats.inc(Count.PRUNED_POS)
-            emptySequence()
-        }
+    /** Adds [labels] to [clashes], unless there are none. */
+    private fun clash(labels: Set<Int>) {
+        if (labels.isNotEmpty()) clashes.add(labels)
     }
 }

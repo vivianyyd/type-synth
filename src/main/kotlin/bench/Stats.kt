@@ -17,9 +17,7 @@ enum class Count(val key: String, val nanos: Boolean = false) {
     CANDIDATES("candidates"),
     /** States that fail to unify with the positive examples. */
     PRUNED_POS("prunedPos"),
-    /** States retried with labels that clashed blanked out, rather than pruned. */
-    RELABELED("relabeled"),
-    /** Rounds searched again as one, to resolve a clash. See [oneast.Rounds.ResolveOnClash]. */
+    /** Rounds searched again as one, to resolve a clash. See [oneast.Engine.resolveClashes]. */
     RESOLVES("resolves"),
     /** States in which some negative example type-checks however the holes are filled. */
     PRUNED_NEG("prunedNeg"),

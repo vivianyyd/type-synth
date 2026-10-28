@@ -10,15 +10,11 @@ import util.lines
 class LabelConstraints(
     private val s: SearchState,
     private val dep: ParameterwiseDependencyAnalysis,
-    preserveValues: Boolean
 ) {
 
     private val nameToPy = mutableMapOf<String, String>()
     private val decls = mutableListOf<String>()
     private val constrs = mutableListOf<String>()
-
-    /** The existing arities the query pins: with [preserveValues], those of labels it guesses. */
-    val pinned: Map<Int, Int>
 
     init {
         // Committed names are left out: their parameters' types have only committed labels and
@@ -67,10 +63,6 @@ class LabelConstraints(
                 .map { pySize(it) }.toSet().toList()
         declareInts(vars)
         declareInts(lsizes)
-
-        pinned =
-            if (preserveValues) s.labelArities.filterKeys { pySize(it) in lsizes } else emptyMap()
-        pinned.forEach { (label, arity) -> constrs.add("${pySize(label)} == $arity") }
 
         // All distinct variables must correspond to unique elements in a set
         val varsDistinct =
@@ -214,15 +206,6 @@ fun labelArities(s: SearchState, deps: ParameterwiseDependencyAnalysis): Map<Int
         }
         return gen.extract(solution)
     }
-    // Keep existing arities if possible. If that's unsat and some were pinned, try without them.
-    // TODO. AllMinSAT, and we should also do both with and without preserving arities
-    //       rather than only allowing overwriting if preserving fails.
-    //       i.e. There might be a better soln that does not preserve old arities.
-    //       If later we iteratively deepen labels anyway, is the latter necessary?
-    //       Could we guarantee if when we add more examples arities only get bigger?
-    //       Bc they could only show off more flexibility
-    val pinning = LabelConstraints(s, deps, preserveValues = true)
-    return attempt(pinning, "${s.id}")
-        ?: if (pinning.pinned.isEmpty()) null
-        else attempt(LabelConstraints(s, deps, preserveValues = false), "${s.id}-unpinned")
+    // TODO AllMinSAT
+    return attempt(LabelConstraints(s, deps), "${s.id}")
 }

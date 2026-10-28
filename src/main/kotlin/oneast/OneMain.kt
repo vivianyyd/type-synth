@@ -46,7 +46,7 @@ enum class SearchStrategyKind {
             sizeBound: Int,
             depthBound: Int,
             expansions: Expansions,
-            clashes: MutableSet<Set<Int>>?
+            clashes: MutableSet<Set<Int>>
         ) =
             DFSEnumerator(
                 examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, expansions, clashes
@@ -60,7 +60,7 @@ enum class SearchStrategyKind {
         sizeBound: Int,
         depthBound: Int,
         expansions: Expansions,
-        clashes: MutableSet<Set<Int>>?
+        clashes: MutableSet<Set<Int>>
     ): SearchStrategy
 }
 
@@ -90,25 +90,7 @@ data class Configuration(
     val resultDependence: Boolean = true,
     /** Which oracle answers whether two expressions have the same type. */
     val oracle: OracleKind = OracleKind.Types,
-    /** How a round treats the labels of the rounds before it. */
-    val rounds: Rounds = Rounds.Retry,
 )
-
-enum class Rounds {
-    /**
-     * Earlier rounds' labels are not committed. While outlining, a round blanks out labels that
-     * clash and enumerates them again, and it may give an earlier label a new arity.
-     */
-    Retry,
-
-    /**
-     * Each round commits to every label that exists when it starts. When labels clash, the round
-     * records it and prunes. After its search, for each clash, the rounds from the one that created
-     * the earliest of those labels up to this one are solved again as one round, so that the clash
-     * can be resolved by giving the values one label.
-     */
-    ResolveOnClash,
-}
 
 enum class OracleKind {
     /** The query's own oracle, which knows the actual types. */

@@ -108,9 +108,9 @@ class SkolemizationTest {
     fun `a negative example prunes only if it checks under every filling`() {
         val holes = consWhoseResultIs(TypeHole())
         assertTrue(ok(holes, bad))
-        assertFalse(holes.acceptsANegative(listOf(bad), labelsSettled = true))
-        assertTrue(holes.acceptsANegative(listOf(good), labelsSettled = true))
-        assertTrue(holes.acceptsANegative(listOf(bad, good), labelsSettled = true))
+        assertFalse(holes.acceptsANegative(listOf(bad)))
+        assertTrue(holes.acceptsANegative(listOf(good)))
+        assertTrue(holes.acceptsANegative(listOf(bad, good)))
     }
 
     @Test
@@ -123,25 +123,20 @@ class SkolemizationTest {
     }
 
     /**
-     * A negative example that type-checks only because two uses of a label agree: once the label is
-     * given parameters, those can differ.
+     * A negative example that type-checks only because two uses of a label agree. The search never
+     * gives a label new parameters, so the uses agree in every state below this one.
      */
     @Test
-    fun `unsettled labels can still tell two values apart`() {
+    fun `two uses of a label agree in every filling`() {
         val s = state("compare" to fn(a, fn(a, int())), "zero" to int(), "one" to int())
-        val program = app("compare", Name("zero"), Name("one"))
-        assertTrue(ok(s.skolemize(), program))
-        assertFalse(ok(s.uncommittedLabelsAsHoles().skolemize(), program))
-        // Unless the label is committed, and so can never be given parameters.
-        assertTrue(ok(s.commitAll().uncommittedLabelsAsHoles().skolemize(), program))
+        assertTrue(s.acceptsANegative(listOf(app("compare", Name("zero"), Name("one")))))
     }
 
-    /** A negative example that type-checks because of a type variable, which no label change touches. */
+    /** A negative example that type-checks because of a type variable. */
     @Test
-    fun `unsettled labels do not change what a type variable accepts`() {
+    fun `a type variable accepts a label in every filling`() {
         val s = state("put" to fn(a, int()), "zero" to int())
-        val program = app("put", Name("zero"))
-        assertTrue(ok(s.uncommittedLabelsAsHoles().skolemize(), program))
+        assertTrue(s.acceptsANegative(listOf(app("put", Name("zero")))))
     }
 
     @Test

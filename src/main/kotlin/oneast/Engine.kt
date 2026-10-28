@@ -131,11 +131,9 @@ class Engine(
                 },
                 labelArities = state.labelArities,
                 numCommittedTypes = state.numCommittedTypes,
-                committedLabels =
-                when (config.rounds) {
-                    Rounds.Retry -> state.committedLabels
-                    Rounds.ResolveOnClash -> state.labelArities.keys.toSet()
-                }
+                // A round never changes an earlier round's labels, not even their arities. When
+                // it needs two of them to be one label, see resolveClashes.
+                committedLabels = state.labelArities.keys
             )
 
         return nextExamples to nextState
@@ -205,8 +203,7 @@ class Engine(
             }
         }
 
-        if (config.rounds == Rounds.ResolveOnClash)
-            yieldAll(resolveClashes(path, search.clashes, outerDepthBound, extraArities, resolved))
+        yieldAll(resolveClashes(path, search.clashes, outerDepthBound, extraArities, resolved))
     }
 
     /**
@@ -214,6 +211,10 @@ class Engine(
      * the steps from the one that created the earliest of its labels to the last again, as one step:
      * the fewest steps first. A clash only between labels of the committed seed or of the last step
      * has no steps to search again.
+     *
+     * An earlier step's examples may not have forced two values to share a label that a later step
+     * needs them to share. Searching both steps as one, from a seed without those labels, lets the
+     * values get one label without any step changing a label it was given.
      */
     private fun resolveClashes(
         path: List<Step>,
@@ -270,7 +271,7 @@ class Engine(
 
 /**
  * Rounds [rounds] of the schedule, searched as one round from [seed]. One round, unless
- * [Rounds.ResolveOnClash] merged several.
+ * [Engine.resolveClashes] merged several.
  */
 private class Step(val seed: SearchState, val rounds: IntRange)
 
