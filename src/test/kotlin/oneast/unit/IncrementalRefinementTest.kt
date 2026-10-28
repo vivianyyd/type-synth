@@ -68,7 +68,7 @@ class IncrementalRefinementTest {
         walk.fill("cons", fn(TypeHole(), TypeHole()))
         val (param, rest) = walk.holesOf("cons")
         // cons's first argument is Num in some examples and a list in others.
-        assertEquals(HoleConstructor.Conflicting, walk.pos.holeConstructor(param))
+        assertTrue(walk.pos.holeConstructor(param) is HoleConstructor.Conflicting)
         // Wherever cons is given a second argument, what it returned is applied to it.
         assertEquals(HoleConstructor.Arrow, walk.pos.holeConstructor(rest))
 
@@ -135,7 +135,7 @@ class IncrementalRefinementTest {
         walk.fill("nil", list(TypeHole()))
         // ...but a list of Num in one example, of true in another, of lists in a third.
         val element = walk.holesOf("nil").single()
-        assertEquals(HoleConstructor.Conflicting, walk.pos.holeConstructor(element))
+        assertTrue(walk.pos.holeConstructor(element) is HoleConstructor.Conflicting)
 
         // So a monomorphic nil breaks a positive example.
         assertFalse(walk.fill("nil", int()).posOk)

@@ -19,6 +19,15 @@ class Search(
     private val statsId: Int = -1,
     private val extraArities: Int = 0,
 ) {
+    /**
+     * With [Rounds.ResolveOnClash], the sets of labels that the positive examples needed to be equal
+     * in the states searched so far.
+     */
+    val clashes: Set<Set<Int>>
+        get() = recordedClashes
+
+    private val recordedClashes = HashSet<Set<Int>>()
+
     private fun allCandidates(
         c: SearchState,
         emitLabelBlanks: Boolean,
@@ -28,7 +37,13 @@ class Search(
     ): Sequence<SearchState> =
         config.searchStrategy
             .create(
-                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, config.expansions
+                examples,
+                emitLabelBlanks,
+                emitConstructors,
+                sizeBound,
+                depthBound,
+                config.expansions,
+                clashes = recordedClashes.takeIf { config.rounds == Rounds.ResolveOnClash }
             )
             .candidates(c)
 

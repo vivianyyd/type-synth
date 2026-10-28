@@ -136,7 +136,12 @@ class OneUnification(private val environment: SearchState, examples: List<Exampl
             val node = instances[i]
             if (!graph.hasConstructor(node)) continue
             if (first == null) first = node
-            else if (!graph.sameConstructor(first, node)) return HoleConstructor.Conflicting
+            else if (!graph.sameConstructor(first, node)) {
+                val labels =
+                    if (graph.isArrow(first) || graph.isArrow(node)) emptySet()
+                    else setOf(graph.labelOf(first), graph.labelOf(node))
+                return HoleConstructor.Conflicting(labels)
+            }
         }
         return when {
             first == null -> HoleConstructor.None
@@ -235,10 +240,11 @@ sealed interface HoleConstructor {
         override fun toString() = "None"
     }
 
-    /** Instantiations of the hole were unified with different constructors. */
-    object Conflicting : HoleConstructor {
-        override fun toString() = "Conflicting"
-    }
+    /**
+     * Instantiations of the hole were unified with different constructors. [labels] are those of two
+     * of them (one label, if at two arities), or empty if one of the two is an arrow.
+     */
+    data class Conflicting(val labels: Set<Int>) : HoleConstructor
 
     /** Every instantiation unified with a constructor was unified with an arrow. */
     object Arrow : HoleConstructor {

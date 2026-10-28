@@ -42,6 +42,9 @@ object Variants {
             Variant("no-result-dependence", "Don't bound label arities by how results depend on arguments") {
                 it.copy(resultDependence = false)
             },
+            Variant("resolve-on-clash", "Commit to earlier rounds' labels; search rounds again as one when they clash") {
+                it.copy(rounds = Rounds.ResolveOnClash)
+            },
             Variant(
                 "ocaml-toplevel",
                 "Ask OCaml about examples with ${OCamlGroundTruth.Toplevel.description}",
@@ -110,4 +113,5 @@ fun Configuration.toJson(): Map<String, Any?> =
         "extraArities" to extraArities,
         "resultDependence" to resultDependence,
         "oracle" to oracle.name,
+        "rounds" to rounds.name,
     )

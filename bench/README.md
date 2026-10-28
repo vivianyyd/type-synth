@@ -65,9 +65,9 @@ depends on:
 
 A chain stops at the first step with no solution, a timeout or an error; a wrong step is committed
 to, and the chain goes on. Variants: `default`, `single-round`, `auto3`, `sound`, `simple`,
-`observational`, `ocaml-toplevel`, `no-extra-arities`, `no-result-dependence`, `deepen-arities=N`
-(any bound N, e.g. `deepen-arities=2`), `names-per-round=N`, `size-bound=N`. Defined in
-`src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
+`observational`, `ocaml-toplevel`, `no-extra-arities`, `no-result-dependence`, `resolve-on-clash`,
+`deepen-arities=N` (any bound N, e.g. `deepen-arities=2`), `names-per-round=N`, `size-bound=N`.
+Defined in `src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
 
 OCaml benchmarks ask OCaml whether examples type-check with a server around its type checker
 (`src/test/ocaml/typer.ml`, built into `build/ocaml-typer/` on first use; needs `ocamlfind` and
@@ -123,7 +123,8 @@ finished (below).
 - `searches`: one per problem the engine hands to the search (a round, at an outer depth bound),
   with its names, number of examples, and time and counts per phase.
 - `events`: each solution a search found, with the seed depth, depth and size it was found at,
-  and each counterexample CEGIS added.
+  each counterexample CEGIS added, and with `resolve-on-clash`, each `resolve`: rounds `from` to
+  `to` searched again as one because of `clashes`, sets of labels that had to be equal.
 - `info.schedule`: the rounds the engine decided on.
 
 Each of `scores` is `diffTo` (`src/main/kotlin/oneast/SearchStateEquivalence.kt`) from the expected

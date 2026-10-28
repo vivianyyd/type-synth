@@ -14,6 +14,11 @@ class DFSEnumerator(
     private val depthBound: Int,
     /** See [oneast.Configuration.expansions]. */
     private val expansions: Expansions,
+    /**
+     * If not null, gets the labels whenever the positive examples need two labels to be equal: when
+     * a state fails to unify because of them, or when a hole is unified with both.
+     */
+    private val clashes: MutableSet<Set<Int>>? = null,
 ) : SearchStrategy(examples) {
     /**
      * Whether the search has stopped changing labels other than by filling holes. While it emits
@@ -26,6 +31,7 @@ class DFSEnumerator(
         val u = posUnification(c)
         return if (u.satisfiable()) recCandidates(c, u, sizeBound, c.numFillableHoles())
         else {
+            clash { u.badLabels() }
             Stats.inc(Count.PRUNED_POS)
             emptySequence()
         }
@@ -61,6 +67,7 @@ class DFSEnumerator(
         if (currSizeBound - holesRemaining < 0) return emptySequence()
 
         val (iToFill, hole, depth) = c.shallowestFillableHole() ?: error("Impossible")
+        clash { (unification.holeConstructor(hole) as? HoleConstructor.Conflicting)?.labels.orEmpty() }
         val mark = unification.mark()
         return hole
             .expansions(
@@ -89,9 +96,17 @@ class DFSEnumerator(
                 } else {
                     Stats.inc(Count.PRUNED_POS)
                     Stats.trace("prunedPos") { newCandidate }
-                    retryWithoutBadLabels(newCandidate, unification.badLabels(), currSizeBound)
+                    val badLabels = unification.badLabels()
+                    clash { badLabels }
+                    retryWithoutBadLabels(newCandidate, badLabels, currSizeBound)
                 }
             }
+    }
+
+    /** Adds the labels that clash, if any, to [clashes]. Computes them only if there is a [clashes]. */
+    private inline fun clash(labels: () -> Set<Int>) {
+        val sink = clashes ?: return
+        labels().let { if (it.isNotEmpty()) sink.add(it) }
     }
 
     /**
