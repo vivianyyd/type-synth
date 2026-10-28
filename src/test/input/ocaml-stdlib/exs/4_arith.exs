@@ -128,3 +128,12 @@
 (((+) Num Num) Num)
 ((abs Num) Num)
 (((~+) Num) Num)
+
+// From main's version of this file
+(succ false)
+((~-) false)
+(abs false)
+((+) Num false)
+((-) false true)
+(( * ) true false)
+(( mod ) false Num)

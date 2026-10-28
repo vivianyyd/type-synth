@@ -1428,3 +1428,14 @@
 (Pair.fst (Pair.make (Queue.of_seq (List.to_seq (List.cons Num Nil))) (Queue.of_seq (List.to_seq (List.cons Str Nil)))))
 (Queue.take (Pair.fst (Pair.make (Queue.of_seq (List.to_seq (List.cons (Queue.of_seq (List.to_seq (List.cons Num Nil))) Nil))) Num)))
 (Queue.length (Pair.snd (Pair.make Num (Queue.of_seq (List.to_seq (List.cons Str Nil))))))
+
+// From main's version of this file
+(Queue.take (Queue.create Unit))
+(Queue.take_opt (Queue.create Unit))
+(Queue.copy (Queue.create Unit))
+(Queue.is_empty (Queue.create Unit))
+(Queue.length (Queue.create Unit))
+(Queue.fold (+) Num (Queue.create Unit))
+(Queue.fold (^) Str (Queue.create Unit))
+(Queue.add (Queue.take (Queue.copy (Queue.create Unit))) (Queue.create Unit))
+(Queue.fold (+) Str (Queue.create Unit))

@@ -1720,3 +1720,34 @@
 (String.concat String.empty (List.map (String.make Num) (List.cons Num Nil)))
 (String.of_seq (List.to_seq (String.fold_right List.cons Str Nil)))
 (String.of_seq (List.to_seq (List.map Char.uppercase_ascii (String.fold_right List.cons Str Nil))))
+
+// From main's version of this file
+String.empty
+(String.to_bytes Str)
+(String.contains (String.make Num Char) Char)
+(String.sub (String.make Num Char) Num Num)
+(String.split_on_char Char (String.make Num Char))
+(String.get (String.cat Str Str) Num)
+(String.index (String.cat Str Str) Char)
+(String.equal (String.trim Str) Str)
+(String.hash (String.uppercase_ascii Str))
+((<) (String.length Str) Num)
+(String.sub Str Num (String.length Str))
+((=) (String.length (String.cat Str Str)) Num)
+((&&) (String.equal Str Str) (String.equal String.empty String.empty))
+((||) (String.equal Str Str) (String.contains Str Char))
+((<) (String.compare Str Str) Num)
+(String.sub Str (String.index Str Char) Num)
+(String.sub Str Num (String.rindex Str Char))
+(String.get Num Num)
+(String.cat Num Str)
+(String.sub Str Char Num)
+
+// Lambdas. The loader replaces each `fun` with a placeholder and keeps only the subexpressions
+// without one, so for now these add little.
+(String.map (fun c1 -> (Char.chr (succ (Char.code c1)))) Str)
+(String.fold_left (fun acc1 c2 -> acc1) Str Str)
+(String.for_all (fun c3 -> ((=) c3 Char)) Str)
+(String.exists (fun c4 -> ((=) c4 Char)) Str)
+(not (String.for_all (fun c5 -> ((=) c5 Char)) Str))
+((&&) (String.contains Str Char) (String.exists (fun c6 -> ((=) c6 Char)) Str))

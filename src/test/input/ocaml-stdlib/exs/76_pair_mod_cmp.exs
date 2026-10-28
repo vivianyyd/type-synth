@@ -47,3 +47,10 @@
 ((=) (Pair.equal (=) (=) (Pair.make Num Str) (Pair.make Num Str)) Num)
 ((=) (Pair.compare compare compare (Pair.make Num Str) (Pair.make Num Str)) Num)
 ((=) (Pair.compare compare compare (Pair.make Num Str) (Pair.make Num Str)) true)
+
+// From main's version of 76_pair_mod.exs
+(Pair.equal (=) (=) (Pair.make Str Num) (Pair.make Str Num))
+(Pair.compare Pair.compare Pair.compare (Pair.make Num Str) (Pair.make Num Str))
+((&&) (Pair.equal (=) (=) (Pair.make Num Str) (Pair.make Num Str)) (Pair.equal (=) (=) (Pair.make Str Num) (Pair.make Str Num)))
+((=) (Pair.compare Pair.compare Pair.compare (Pair.make Num Str) (Pair.make Num Str)) Num)
+(succ (Pair.compare Pair.compare Pair.compare (Pair.make Num Str) (Pair.make Num Str)))

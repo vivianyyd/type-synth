@@ -101,3 +101,14 @@
 (fst (fst Num))
 (snd (snd Str))
 (fst (Pair.make Num Str) Char)
+
+// From main's version of this file
+(snd (Pair.make Str true))
+(fst (Pair.make (fst (Pair.make Num Str)) Char))
+(snd (Pair.make Num (snd (Pair.make Str true))))
+((=) (snd (Pair.make Str true)) true)
+(Pair.make (fst (Pair.make Num Str)) (fst (Pair.make Str Num)))
+(Pair.make (snd (Pair.make Num Str)) (snd (Pair.make Char true)))
+(Pair.make (fst (Pair.make Num Str)) (snd (Pair.make Char true)))
+(fst (Pair.make (snd (Pair.make Num Str)) Num))
+(snd (Pair.make Char (fst (Pair.make true Num))))
