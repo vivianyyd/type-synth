@@ -256,11 +256,6 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             "string_mod", listOf("70_string_mod"), deps = listOf("char_mod", "fun_mod", "list", "option_mod", "str")
         ),
         OCamlModuleGroup("map_mod", listOf("51_map_mod"), deps = listOf("fun_mod", "list", "option_mod", "str")),
-        // Last, since the search doesn't solve them yet, and a chain stops at its first failing step.
-        // Pair's iter, equal and compare: apart from pair_mod, which they keep from finishing
-        OCamlModuleGroup("pair_mod_cmp", listOf("76_pair_mod_cmp"), deps = listOf("pair_mod")),
-        // List functions apart from list, so that list's dependents aren't blocked
-        OCamlModuleGroup("list_ext", listOf("50_list_mod_ext"), deps = listOf("list")),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

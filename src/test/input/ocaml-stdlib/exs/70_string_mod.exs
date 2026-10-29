@@ -949,8 +949,7 @@
 (String.iter (Fun.compose (Fun.const (Fun.compose ignore Char.code)) Char.code))
 (String.iter (Option.iter ignore))
 (String.iter (List.iter ignore))
-// Uses a name of pair_mod_cmp, which this group doesn't depend on, since it doesn't solve yet
-// (String.iter (Pair.iter ignore ignore))
+(String.iter (Pair.iter ignore ignore))
 (String.iter (String.iter ignore))
 (String.iter (Option.map ignore))
 (String.iter Pair.fst)
@@ -1039,8 +1038,7 @@
 (String.iteri (List.nth (List.cons Char.Ascii.is_digit Nil)))
 (String.iteri (List.nth (List.cons (Option.iter ignore) Nil)))
 (String.iteri (List.nth (List.cons (List.iter ignore) Nil)))
-// Uses a name of pair_mod_cmp, which this group doesn't depend on, since it doesn't solve yet
-// (String.iteri (List.nth (List.cons (Pair.iter ignore ignore) Nil)))
+(String.iteri (List.nth (List.cons (Pair.iter ignore ignore) Nil)))
 (String.iteri (List.nth (List.cons (String.iter ignore) Nil)))
 (String.iteri (List.nth (List.cons (Fun.const Char.code) Nil)))
 (String.iteri (Fun.compose (Fun.const Char.code) succ))

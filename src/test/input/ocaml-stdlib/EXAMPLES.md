@@ -86,6 +86,5 @@ tell them apart; a round with none may have a wrong earlier answer committed, or
   (`equal` and `compare` of a container, `List.fold_left_map` and `List.assoc`) don't fit.
 - Types deeper than the depth bound (`StrMap.merge`, `StrMap.union`) can't be found.
 
-Groups the search can't solve yet are kept apart and last in `ocamlModuleGroups` (`pair_mod_cmp`,
-`list_ext`), so that they don't stop a chain early or block the groups that depend on theirs.
-Functions left out of a group for these reasons are noted in its .exs file.
+Don't leave examples out, or move them to another group, because the search fails on them. A group
+the search can't solve is reported as failing.

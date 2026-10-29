@@ -476,10 +476,8 @@
 (Queue.iter (List.iter (Queue.add Num)) (Queue.create Unit))
 (Queue.iter (Option.iter ignore) (Queue.create Unit))
 (Queue.iter (Option.iter (Queue.add Str)) (Queue.create Unit))
-// Uses Pair.iter, which pair_mod_cmp solves; queue_mod does not depend on it, since it doesn't solve yet
-// (Queue.iter (Pair.iter ignore ignore) (Queue.create Unit))
-// Uses Pair.iter, which pair_mod_cmp solves; queue_mod does not depend on it, since it doesn't solve yet
-// (Queue.iter (Pair.iter (Queue.add Num) (Queue.add Str)) (Queue.create Unit))
+(Queue.iter (Pair.iter ignore ignore) (Queue.create Unit))
+(Queue.iter (Pair.iter (Queue.add Num) (Queue.add Str)) (Queue.create Unit))
 (Queue.iter (Queue.fold Queue.add Unit) (Queue.create Unit))
 (Queue.iter (Queue.take) (Queue.create Unit))
 (Queue.iter (Queue.pop) (Queue.create Unit))
@@ -1241,10 +1239,8 @@
 (Queue.iter (List.iter (Queue.add Num)) (Queue.of_seq (List.to_seq (List.cons (List.cons (Queue.of_seq (List.to_seq (List.cons Num Nil))) Nil) Nil))))
 (Queue.iter (Option.iter ignore) (Queue.of_seq (List.to_seq (List.cons (Option.some Num) Nil))))
 (Queue.iter (Option.iter (Queue.add Num)) (Queue.of_seq (List.to_seq (List.cons (Option.some (Queue.of_seq (List.to_seq (List.cons Num Nil)))) Nil))))
-// Uses Pair.iter, which pair_mod_cmp solves; queue_mod does not depend on it, since it doesn't solve yet
-// (Queue.iter (Pair.iter ignore ignore) (Queue.of_seq (List.to_seq (List.cons (Pair.make Num Str) Nil))))
-// Uses Pair.iter, which pair_mod_cmp solves; queue_mod does not depend on it, since it doesn't solve yet
-// (Queue.iter (Pair.iter (Queue.add Num) (Queue.add Str)) (Queue.of_seq (List.to_seq (List.cons (Pair.make (Queue.of_seq (List.to_seq (List.cons Num Nil))) (Queue.of_seq (List.to_seq (List.cons Str Nil)))) Nil))))
+(Queue.iter (Pair.iter ignore ignore) (Queue.of_seq (List.to_seq (List.cons (Pair.make Num Str) Nil))))
+(Queue.iter (Pair.iter (Queue.add Num) (Queue.add Str)) (Queue.of_seq (List.to_seq (List.cons (Pair.make (Queue.of_seq (List.to_seq (List.cons Num Nil))) (Queue.of_seq (List.to_seq (List.cons Str Nil)))) Nil))))
 (Queue.iter (Queue.transfer (Queue.of_seq (List.to_seq (List.cons Num Nil)))) (Queue.of_seq (List.to_seq (List.cons (Queue.of_seq (List.to_seq (List.cons Num Nil))) Nil))))
 (Queue.iter (Queue.transfer (Queue.copy (Queue.of_seq (List.to_seq (List.cons Str Nil))))) (Queue.of_seq (List.to_seq (List.cons (Queue.of_seq (List.to_seq (List.cons Str Nil))) Nil))))
 (Queue.iter (Queue.add (Queue.take (Queue.of_seq (List.to_seq (List.cons Num Nil))))) (Queue.of_seq (List.to_seq (List.cons (Queue.of_seq (List.to_seq (List.cons Num Nil))) Nil))))
@@ -1269,10 +1265,8 @@
 (Queue.iter (List.iter (Queue.add Num)) (Queue.of_seq (List.to_seq (List.cons (List.cons Num Nil) Nil))))
 (Queue.iter (Option.iter ignore) (Queue.of_seq (List.to_seq (List.cons Num Nil))))
 (Queue.iter (Option.iter ignore) (Queue.of_seq (List.to_seq (List.cons (List.cons Num Nil) Nil))))
-// Uses Pair.iter, which pair_mod_cmp solves; queue_mod does not depend on it, since it doesn't solve yet
-// (Queue.iter (Pair.iter ignore ignore) (Queue.of_seq (List.to_seq (List.cons Num Nil))))
-// Uses Pair.iter, which pair_mod_cmp solves; queue_mod does not depend on it, since it doesn't solve yet
-// (Queue.iter (Pair.iter ignore ignore) (Queue.of_seq (List.to_seq (List.cons (List.cons Num Nil) Nil))))
+(Queue.iter (Pair.iter ignore ignore) (Queue.of_seq (List.to_seq (List.cons Num Nil))))
+(Queue.iter (Pair.iter ignore ignore) (Queue.of_seq (List.to_seq (List.cons (List.cons Num Nil) Nil))))
 (Queue.iter (Queue.transfer (Queue.of_seq (List.to_seq (List.cons Num Nil)))) (Queue.of_seq (List.to_seq (List.cons Num Nil))))
 (Queue.iter (Queue.transfer (Queue.of_seq (List.to_seq (List.cons Num Nil)))) (Queue.of_seq (List.to_seq (List.cons (Queue.of_seq (List.to_seq (List.cons Str Nil))) Nil))))
 (Queue.iter (Queue.transfer (Queue.of_seq (List.to_seq (List.cons Str Nil)))) (Queue.of_seq (List.to_seq (List.cons (Queue.of_seq (List.to_seq (List.cons Num Nil))) Nil))))
