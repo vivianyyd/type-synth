@@ -1675,18 +1675,19 @@
 ((=) (List.rev_map2 List.assoc (List.cons Num Nil) (List.cons (List.cons (Pair.make Num Str) Nil) Nil)) (List.cons Num Nil))
 
 // fold_left2: ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a list -> 'b list -> 'acc
-// Option.fold: 'acc -> ('b -> 'acc) -> 'b option -> 'acc has fold_left2's function type
-(List.fold_left2 Option.fold Num (List.cons succ Nil) (List.cons (Option.some Num) Nil))
-(List.fold_left2 Option.fold Str (List.cons ((^) Str) Nil) (List.cons (Option.some Str) Nil))
-(List.fold_left2 Option.fold Num (List.cons succ Nil) (List.cons (Option.some Str) Nil))
-(List.fold_left2 Option.fold Num (List.cons succ Nil) (List.cons Num Nil))
-(List.fold_left2 Option.fold Num (List.cons Num Nil) (List.cons (Option.some Num) Nil))
-(List.fold_left2 Option.fold Str (List.cons succ Nil) (List.cons (Option.some Num) Nil))
-(succ (List.fold_left2 Option.fold Num (List.cons succ Nil) (List.cons (Option.some Num) Nil)))
-(not (List.fold_left2 Option.fold Num (List.cons succ Nil) (List.cons (Option.some Num) Nil)))
-(succ (List.fold_left2 Option.fold Num Nil Nil))
-(not (List.fold_left2 Option.fold Num Nil Nil))
-(List.fold_left2 Option.value Num (List.cons Num Nil) (List.cons Num Nil))
+// List.nth (List.cons compare Nil): int -> 'a -> 'a -> int has fold_left2's function type, and
+// fold_left2 of it has type int -> 'a list -> 'a list -> int
+(List.fold_left2 (List.nth (List.cons compare Nil)) Num (List.cons Str Nil) (List.cons Str Nil))
+(List.fold_left2 (List.nth (List.cons compare Nil)) Num (List.cons Str Nil) (List.cons Num Nil))
+(List.fold_left2 (List.nth (List.cons compare Nil)) Str (List.cons Str Nil) (List.cons Str Nil))
+(succ (List.fold_left2 (List.nth (List.cons compare Nil)) Num (List.cons Str Nil) (List.cons Str Nil)))
+(not (List.fold_left2 (List.nth (List.cons compare Nil)) Num (List.cons Str Nil) (List.cons Str Nil)))
+(succ (List.fold_left2 (List.nth (List.cons compare Nil)) Num Nil Nil))
+(not (List.fold_left2 (List.nth (List.cons compare Nil)) Num Nil Nil))
+(List.fold_left2 (List.fold_left2 (List.nth (List.cons compare Nil))) Num (List.cons (List.cons Str Nil) Nil) (List.cons (List.cons Str Nil) Nil))
+(List.fold_left2 (List.fold_left2 (List.nth (List.cons compare Nil))) Num (List.cons Str Nil) (List.cons Str Nil))
+(List.fold_left2 (List.nth (List.cons compare Nil)) Num (List.cons (Pair.make Num Str) Nil) (List.cons (Pair.make Num Str) Nil))
+(List.fold_left2 (List.nth (List.cons compare Nil)) Num (List.cons (Pair.make Num Str) Nil) (List.cons (Pair.make Str Num) Nil))
 (List.fold_left2 (Option.get Option.none) Num (List.cons Str Nil) (List.cons true Nil))
 (List.fold_left2 (Option.get Option.none) Str (List.cons Num Nil) (List.cons Char Nil))
 (List.fold_left2 (Option.get Option.none) true Nil Nil)
