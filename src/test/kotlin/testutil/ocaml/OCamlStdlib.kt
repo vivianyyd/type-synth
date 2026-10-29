@@ -192,7 +192,8 @@ private fun SExpr.withoutBinders(): SExpr =
  * that modules [fixed]'s examples use, along with the answer. Like a chain that solved [fixed] first,
  * names that no example of [fixed] uses aren't given, so they don't fix labels the task's names
  * use (`Option.to_list` would fix `list`'s). [committedSeed] replaces the true types of [fixed] as
- * what the search starts from. [groundTruth] splits the examples into positive and negative ones.
+ * what the search starts from. Examples that need the search to solve one of [skippedNames] are left
+ * out. [groundTruth] splits the examples into positive and negative ones.
  */
 fun ocamlModulesQuery(
     task: List<String>,
@@ -205,21 +206,25 @@ fun ocamlModulesQuery(
     val (fixedExamples, fixedTypes) = loadFromExsFiles(fixed, parser)
     val (examplesAll, desiredTypes) = loadFromExsFiles(task, parser)
     val given = fixedTypes.filterKeys { name -> fixedExamples.any { name in it.names } }
+    val seed = committedSeed ?: stateFromContext(given)
     val oracleTypes = fixedTypes + desiredTypes
     val examples =
         examplesAll
             .flatMap { it.subexprs() }
             .toSet()
             .filter { it.names.all { it in oracleTypes } }
+            .filter { it.names.none { it in skippedNames && it !in seed.names } }
     val oracle = CheckingGroundTruthOracle(oracleTypes)
-    val query =
-        Query(
-            splitOCamlExamples(examples, oracle, groundTruth),
-            oracle,
-            committedSeed = committedSeed ?: stateFromContext(given)
-        )
+    val query = Query(splitOCamlExamples(examples, oracle, groundTruth), oracle, committedSeed = seed)
     return query to stateFromContext(oracleTypes)
 }
+
+/**
+ * Names the search doesn't solve for now: examples that use one are left out, unless the search starts
+ * with its type. `List.to_seq` gets a Seq label with no parameter, and a later round can't give the
+ * label one, so `List.of_seq` has no solution.
+ */
+val skippedNames = setOf("List.to_seq", "List.of_seq")
 
 /**
  * Modules solved together, from the examples in [files]. [deps] names the groups whose names
