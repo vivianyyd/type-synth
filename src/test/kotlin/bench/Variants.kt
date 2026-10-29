@@ -62,12 +62,17 @@ object Variants {
     const val SIZE = "size-bound="
     const val SIZE_DESCRIPTION = "Fill at most N holes per round"
 
+    /** `depth-bound=N`, which is not in [all] since it takes a number N. */
+    const val DEPTH = "depth-bound="
+    const val DEPTH_DESCRIPTION = "Search outer depth bounds 0 to N-1, which bound outline and fill depth"
+
     private fun one(name: String): Variant {
         fun number() = name.substringAfter("=").toIntOrNull() ?: error("$name needs a number after =")
         return when {
             name.startsWith(DEEPEN) ->
                 Variant("$DEEPEN${number()}", DEEPEN_DESCRIPTION) { it.copy(labelArities = LabelArities.Deepened(number())) }
             name.startsWith(SIZE) -> Variant("$SIZE${number()}", SIZE_DESCRIPTION) { it.copy(sizeBound = number()) }
+            name.startsWith(DEPTH) -> Variant("$DEPTH${number()}", DEPTH_DESCRIPTION) { it.copy(depthBound = number()) }
             name.startsWith(PER_ROUND) ->
                 Variant("$PER_ROUND${number()}", PER_ROUND_DESCRIPTION) { it.copy(scheduleInfo = Auto(number())) }
             else -> all[name] ?: error("No variant named $name. Try --list")

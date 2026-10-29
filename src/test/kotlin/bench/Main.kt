@@ -133,6 +133,7 @@ private fun list() {
     println("  ${Variants.DEEPEN}N: ${Variants.DEEPEN_DESCRIPTION}")
     println("  ${Variants.PER_ROUND}N: ${Variants.PER_ROUND_DESCRIPTION}")
     println("  ${Variants.SIZE}N: ${Variants.SIZE_DESCRIPTION}")
+    println("  ${Variants.DEPTH}N: ${Variants.DEPTH_DESCRIPTION}")
 }
 
 private fun runBatch(opts: Options) {
