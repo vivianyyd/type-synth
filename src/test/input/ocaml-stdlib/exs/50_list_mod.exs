@@ -1688,6 +1688,14 @@
 (List.fold_left2 (List.fold_left2 (List.nth (List.cons compare Nil))) Num (List.cons Str Nil) (List.cons Str Nil))
 (List.fold_left2 (List.nth (List.cons compare Nil)) Num (List.cons (Pair.make Num Str) Nil) (List.cons (Pair.make Num Str) Nil))
 (List.fold_left2 (List.nth (List.cons compare Nil)) Num (List.cons (Pair.make Num Str) Nil) (List.cons (Pair.make Str Num) Nil))
+// fold_left2 (Option.get Option.none) has type 'acc -> 'a list -> 'b list -> 'acc, for accumulators
+// that aren't int
+(not (List.fold_left2 (List.fold_left2 (Option.get Option.none)) true (List.cons Nil Nil) (List.cons Nil Nil)))
+(not (List.fold_left2 (List.fold_left2 (Option.get Option.none)) true Nil Nil))
+((^) (List.fold_left2 (List.fold_left2 (Option.get Option.none)) Str Nil Nil) Str)
+(succ (List.fold_left2 (List.fold_left2 (Option.get Option.none)) Str Nil Nil))
+(not (List.fold_left2 (List.fold_left2 (Option.get Option.none)) Num Nil Nil))
+(List.fold_left2 (List.fold_left2 (Option.get Option.none)) true (List.cons Num Nil) (List.cons Nil Nil))
 (List.fold_left2 (Option.get Option.none) Num (List.cons Str Nil) (List.cons true Nil))
 (List.fold_left2 (Option.get Option.none) Str (List.cons Num Nil) (List.cons Char Nil))
 (List.fold_left2 (Option.get Option.none) true Nil Nil)
