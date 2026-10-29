@@ -178,6 +178,14 @@
 (Pair.iter succ)
 (Pair.iter ignore succ)
 (Pair.iter ignore ignore Num)
+// Pair.iter ignore ignore is a function to unit whose argument must be a pair, so these tie each
+// function's argument to its component of the pair
+(Pair.iter (Pair.iter ignore ignore) ignore (Pair.make (Pair.make Num Str) Num))
+(Pair.iter ignore (Pair.iter ignore ignore) (Pair.make Num (Pair.make Str true)))
+(Pair.iter (Pair.iter ignore ignore) (Pair.iter ignore ignore) (Pair.make (Pair.make Num Num) (Pair.make Str Str)))
+(Pair.iter (Pair.iter ignore ignore) ignore (Pair.make Num Num))
+(Pair.iter ignore (Pair.iter ignore ignore) (Pair.make Num Str))
+(Pair.iter (Pair.iter ignore ignore) ignore (Pair.make Num (Pair.make Num Str)))
 
 // equal: ('a -> 'a -> bool) -> ('b -> 'b -> bool) -> 'a * 'b -> 'a * 'b -> bool
 (Pair.equal (=) (=) (Pair.make Num Str) (Pair.make Num Str))
