@@ -34,6 +34,13 @@
 (List.singleton true)
 
 // hd, tl
+// tl takes and returns a list of the same elements
+(List.tl Num)
+(List.tl Str)
+(List.length (List.tl Num))
+(List.hd (List.tl (List.cons Num (List.cons Num Nil))))
+(succ (List.hd (List.tl (List.cons Num (List.cons Num Nil)))))
+(not (List.hd (List.tl (List.cons Num (List.cons Num Nil)))))
 (List.hd (List.cons Num Nil))
 (List.hd (List.cons Str Nil))
 (List.hd (List.cons true Nil))
@@ -121,6 +128,12 @@
 (List.find_index ((<) Num) Nil)
 
 // take, drop
+// drop takes and returns a list of the same elements
+(List.drop Num Num)
+(List.drop Num Str)
+(List.length (List.drop Num Num))
+(succ (List.hd (List.drop Num (List.cons Num Nil))))
+(not (List.hd (List.drop Num (List.cons Num Nil))))
 (List.take Num (List.cons Num Nil))
 (List.drop Num (List.cons Num Nil))
 (List.take_while (fun x10 -> ((=) x10 Num)) (List.cons Num Nil))
@@ -967,6 +980,12 @@
 (List.partition ((=) Str) (snd (List.partition ((=) Num) (List.cons Num Nil))))
 
 // assoc, assq: 'a -> ('a * 'b) list -> 'b
+// assq's result is the pairs' second component
+(succ (List.assq Num (List.cons (Pair.make Num Num) Nil)))
+(succ (List.assq Num (List.cons (Pair.make Num Str) Nil)))
+(not (List.assq Num (List.cons (Pair.make Num true) Nil)))
+((^) (List.assq Num (List.cons (Pair.make Num Str) Nil)) Str)
+((^) (List.assq Num (List.cons (Pair.make Num Num) Nil)) Str)
 (List.assoc Num (List.cons (Pair.make Num Str) Nil))
 (List.assoc Str (List.cons (Pair.make Str Num) Nil))
 (List.assoc true (List.cons (Pair.make true Char) Nil))
@@ -1115,6 +1134,11 @@
 (List.exists (List.mem_assq Str) (List.cons (List.cons (Pair.make Num Str) Nil) Nil))
 
 // remove_assoc, remove_assq: 'a -> ('a * 'b) list -> ('a * 'b) list
+// remove_assq keeps the pairs' second component
+((^) (List.assoc Num (List.remove_assq Num (List.cons (Pair.make Num Str) Nil))) Str)
+(succ (List.assoc Num (List.remove_assq Num (List.cons (Pair.make Num Str) Nil))))
+(not (List.assoc Str (List.remove_assq Str (List.cons (Pair.make Str true) Nil))))
+(succ (List.assoc Str (List.remove_assq Str (List.cons (Pair.make Str true) Nil))))
 (List.remove_assoc Num (List.cons (Pair.make Num Str) Nil))
 (List.remove_assoc Str (List.cons (Pair.make Str Num) Nil))
 (List.remove_assoc true (List.cons (Pair.make true Char) Nil))
@@ -1275,6 +1299,18 @@
 // iter: ('a -> unit) -> 'a list -> unit
 
 // iteri: (int -> 'a -> unit) -> 'a list -> unit
+// List.nth of a list of functions to unit is a function from int to a function to unit
+(List.iteri (List.nth (List.cons ignore Nil)) (List.cons Num Nil))
+(List.iteri (List.nth (List.cons ignore Nil)) (List.cons Str Nil))
+(List.iteri (List.nth (List.cons ignore Nil)) Num)
+(List.iteri (List.nth (List.cons (Pair.iter ignore ignore) Nil)) (List.cons (Pair.make Num Str) Nil))
+(List.iteri (List.nth (List.cons (Pair.iter ignore ignore) Nil)) (List.cons Num Nil))
+(List.iteri (List.nth (List.cons (Option.iter ignore) Nil)) (List.cons (Option.some Num) Nil))
+(List.iteri (List.nth (List.cons (Option.iter ignore) Nil)) (List.cons Num Nil))
+(List.iteri (Pair.iter ignore ignore) (List.cons Num Nil))
+(List.iteri ignore (List.cons Num Nil))
+(List.iteri succ (List.cons Num Nil))
+(succ (List.iteri (List.nth (List.cons ignore Nil)) (List.cons Num Nil)))
 (List.iteri (Option.get Option.none) (List.cons Num Nil))
 (List.iteri (Option.get Option.none) (List.cons Str Nil))
 (List.iteri (Option.get Option.none) (List.cons true Nil))
@@ -1639,6 +1675,18 @@
 ((=) (List.rev_map2 List.assoc (List.cons Num Nil) (List.cons (List.cons (Pair.make Num Str) Nil) Nil)) (List.cons Num Nil))
 
 // fold_left2: ('acc -> 'a -> 'b -> 'acc) -> 'acc -> 'a list -> 'b list -> 'acc
+// Option.fold: 'acc -> ('b -> 'acc) -> 'b option -> 'acc has fold_left2's function type
+(List.fold_left2 Option.fold Num (List.cons succ Nil) (List.cons (Option.some Num) Nil))
+(List.fold_left2 Option.fold Str (List.cons ((^) Str) Nil) (List.cons (Option.some Str) Nil))
+(List.fold_left2 Option.fold Num (List.cons succ Nil) (List.cons (Option.some Str) Nil))
+(List.fold_left2 Option.fold Num (List.cons succ Nil) (List.cons Num Nil))
+(List.fold_left2 Option.fold Num (List.cons Num Nil) (List.cons (Option.some Num) Nil))
+(List.fold_left2 Option.fold Str (List.cons succ Nil) (List.cons (Option.some Num) Nil))
+(succ (List.fold_left2 Option.fold Num (List.cons succ Nil) (List.cons (Option.some Num) Nil)))
+(not (List.fold_left2 Option.fold Num (List.cons succ Nil) (List.cons (Option.some Num) Nil)))
+(succ (List.fold_left2 Option.fold Num Nil Nil))
+(not (List.fold_left2 Option.fold Num Nil Nil))
+(List.fold_left2 Option.value Num (List.cons Num Nil) (List.cons Num Nil))
 (List.fold_left2 (Option.get Option.none) Num (List.cons Str Nil) (List.cons true Nil))
 (List.fold_left2 (Option.get Option.none) Str (List.cons Num Nil) (List.cons Char Nil))
 (List.fold_left2 (Option.get Option.none) true Nil Nil)
