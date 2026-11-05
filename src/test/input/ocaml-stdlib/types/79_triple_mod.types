@@ -1,0 +1,7 @@
+// Triple
+// Not in the stdlib: examples can't take a triple apart with a pattern, so these stand in for one.
+// Defined for the examples in OCaml as module Triple (see stdlibSource).
+val make : 'a -> 'b -> 'c -> 'a * 'b * 'c
+val fst : 'a * 'b * 'c -> 'a
+val snd : 'a * 'b * 'c -> 'b
+val thd : 'a * 'b * 'c -> 'c

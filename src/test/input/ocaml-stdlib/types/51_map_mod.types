@@ -40,4 +40,8 @@ val choose_opt : 'a t -> (string * 'a) option
 val bindings : 'a t -> (string * 'a) list
 val to_list : 'a t -> (string * 'a) list
 val of_list : (string * 'a) list -> 'a t
-// Skipped: to_seq, to_rev_seq, to_seq_from, add_seq, of_seq (need Seq.t)
+val to_seq : 'a t -> (string * 'a) Seq.t
+val to_rev_seq : 'a t -> (string * 'a) Seq.t
+val to_seq_from : string -> 'a t -> (string * 'a) Seq.t
+val add_seq : (string * 'a) Seq.t -> 'a t -> 'a t
+val of_seq : (string * 'a) Seq.t -> 'a t

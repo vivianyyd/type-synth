@@ -111,8 +111,8 @@ fun parseTypesFile(parser: OcamlTypeParser, file: File): Map<String, Signature> 
 
 /**
  * How stdlib examples are written as OCaml: with the labels of every value the stdlib .types files
- * declare, and the instances of functors that examples use (see 51_map_mod.types). Names are
- * qualified, so no two modules' values share labels.
+ * declare, the instances of functors that examples use (see 51_map_mod.types), and Triple (see
+ * 79_triple_mod.types). Names are qualified, so no two modules' values share labels.
  */
 val stdlibSource: OCamlSource by lazy {
     val parser = OcamlTypeParser()
@@ -121,7 +121,9 @@ val stdlibSource: OCamlSource by lazy {
             .flatMap { parseTypesFile(parser, it).entries }
             .associate { it.key to it.value.labels }
             .filterValues { labels -> labels.any { it != null } },
-        prelude = "module StrMap = Map.Make (String)"
+        prelude = "module StrMap = Map.Make (String) " +
+            "module Triple = struct let make a b c = (a, b, c) let fst (a, _, _) = a let snd (_, b, _) = b " +
+            "let thd (_, _, c) = c end"
     )
 }
 
@@ -246,6 +248,7 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
         OCamlModuleGroup("unit", listOf("9_unit"), deps = listOf("arith", "comparison", "str")),
         OCamlModuleGroup("pair_mod", listOf("76_pair_mod"), deps = listOf("boolean", "comparison", "unit")),
         OCamlModuleGroup("pair", listOf("11_pair"), deps = listOf("pair_mod")),
+        OCamlModuleGroup("triple_mod", listOf("79_triple_mod"), deps = listOf("boolean", "comparison", "unit")),
         OCamlModuleGroup("float", listOf("6_float"), deps = listOf("arith", "pair")),
         OCamlModuleGroup("bool_mod", listOf("24_bool_mod"), deps = listOf("boolean", "comparison", "float", "str")),
         OCamlModuleGroup("char_mod", listOf("28_char_mod"), deps = listOf("boolean", "char", "comparison", "str")),
@@ -260,7 +263,9 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
         OCamlModuleGroup(
             "string_mod", listOf("70_string_mod"), deps = listOf("char_mod", "fun_mod", "list", "option_mod", "str")
         ),
-        OCamlModuleGroup("map_mod", listOf("51_map_mod"), deps = listOf("fun_mod", "list", "option_mod", "str")),
+        OCamlModuleGroup(
+            "map_mod", listOf("51_map_mod"), deps = listOf("fun_mod", "list", "option_mod", "str", "triple_mod")
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
