@@ -157,3 +157,4 @@
 // type ('a, 'b) Pair.t = 'a * 'b
 77-repr-mod | Repr module - polymorphic/physical comparison (new in 5.4)
 78-pqueue-mod | Pqueue module (priority queues, new in 5.4) | Functor-based, all val entries are module-type signatures
+79-triple-mod | Triple: not in the stdlib, defined for the examples so they can take apart a triple (StrMap.split's result)
