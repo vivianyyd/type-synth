@@ -308,6 +308,9 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             deps = listOf("arith", "boolean", "comparison", "fun_mod", "ref", "str", "unit")
         ),
         OCamlModuleGroup("atomic_mod", listOf("23_atomic_mod"), deps = listOf("arith", "boolean", "comparison", "str", "unit")),
+        OCamlModuleGroup(
+            "complex_mod", listOf("29_complex_mod"), deps = listOf("arith", "boolean", "comparison", "float")
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

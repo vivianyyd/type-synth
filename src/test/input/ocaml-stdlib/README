@@ -39,7 +39,7 @@
 
 27-callback-mod | Callback module
 28-char-mod | Char module
-29-complex-mod | Complex module | Requires pairs (for polar/modf result)
+29-complex-mod | Complex module
 30-condition-mod | Condition module (thread synchronization)
 31-digest-mod | Digest module (MD5)
 32-domain-mod | Domain module (multicore)

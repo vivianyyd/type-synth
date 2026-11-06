@@ -55,6 +55,9 @@ checks before the examples. The search never sees the prelude, only .types files
   and `r.contents <- v`. `ref`, `(!)`, `(:=)`, `incr` and `decr` cover the same uses.
 - **`Atomic.Loc`** (OCaml 5.4): its values come from `[%atomic.loc r.field]`, which examples can't
   write, so `23_atomic_mod.types` leaves the submodule out. `Atomic.t`'s functions cover the same uses.
+- **`Complex.t`'s fields**: `Complex.t` is the record `{ re : float; im : float }`, but examples have
+  no record syntax, so `re` and `im` can't be read or built. Complex values come only from
+  `Complex.zero`, `one`, `i`, `polar` and the functions on them.
 - **String**: no Bytes, Uchar, Int32 or Int64 function is given, so `bytes`, `Uchar.utf_decode`,
   `int32` and `int64` values come only from String's own functions.
 
