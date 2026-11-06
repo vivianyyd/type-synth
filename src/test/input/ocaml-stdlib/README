@@ -104,6 +104,7 @@
 58-out-channel-mod | Out_channel module | Requires open_flag type, Bigarray
 // type Out_channel.t = out_channel
 // type Out_channel.open_flag = Open_rdonly | Open_wronly | Open_append | Open_creat | Open_trunc | Open_excl | Open_binary | Open_text | Open_nonblock
+// Skipped: output_bigarray (requires Bigarray)
 59-parsing-mod | Parsing module (ocamlyacc runtime) | Requires Lexing.position
 60-printexc-mod | Printexc module | Requires raw_backtrace types
 // type Printexc.t = exn = ..

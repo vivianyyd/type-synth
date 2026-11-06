@@ -48,8 +48,8 @@ checks before the examples. The search never sees the prelude, only .types files
   search to solve them are left out. Approved as temporary on 2026-10-29. Cause: `to_seq` is solved
   first, with a Seq label of no parameter, and a later round can't give the label one, so `of_seq`
   has no solution. `queue_mod` is still given `List.to_seq`'s true type. Undo by emptying the set.
-- **Bigarray functions of `In_channel` and `Out_channel`**: `input_bigarray` and `really_input_bigarray`.
-  `Bigarray` has no group, so no example can build the argument.
+- **Bigarray functions of `In_channel` and `Out_channel`**: `input_bigarray`, `really_input_bigarray`
+  and `output_bigarray`. `Bigarray` has no group, so no example can build the argument.
 - **`Result.Syntax`**: `( let* )`, `( and* )`, `( let+ )` and `( and+ )`. Examples can't name an
   operator in a submodule (operators stay unqualified), and these are `bind`, `product` and `map`
   with its arguments swapped, which `64_result_mod` already has.

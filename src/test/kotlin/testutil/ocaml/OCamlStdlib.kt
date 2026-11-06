@@ -374,6 +374,14 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "string_mod", "unit"
             )
         ),
+        OCamlModuleGroup(
+            "out_channel_mod",
+            listOf("58_out_channel_mod"),
+            deps = listOf(
+                "arith", "boolean", "char", "comparison", "fun_mod", "in", "int64_mod", "io", "list", "option_mod", "out", "str",
+                "string_mod", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
