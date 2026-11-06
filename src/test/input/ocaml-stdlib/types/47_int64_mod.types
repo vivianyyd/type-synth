@@ -30,6 +30,8 @@ val of_float : float -> int64
 val to_float : int64 -> float
 val of_int32 : int32 -> int64
 val to_int32 : int64 -> int32
+val of_nativeint : nativeint -> int64
+val to_nativeint : int64 -> nativeint
 val of_string : string -> int64
 val of_string_opt : string -> int64 option
 val to_string : int64 -> string
