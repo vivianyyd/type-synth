@@ -273,7 +273,12 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
         ),
         OCamlModuleGroup("ref", listOf("19_ref"), deps = listOf("arith", "comparison", "unit")),
         OCamlModuleGroup("int_mod", listOf("45_int_mod"), deps = listOf("arith", "boolean", "comparison", "float", "str")),
-        OCamlModuleGroup("stack_mod", listOf("69_stack_mod"), deps = listOf("list", "option_mod", "str", "unit")),
+        OCamlModuleGroup(
+            "stdout",
+            listOf("14_stdout"),
+            deps = listOf("boolean", "char", "comparison", "float", "option_mod", "str", "string_mod", "unit")
+        ),
+        OCamlModuleGroup("stack_mod", listOf("69_stack_mod"), deps = listOf("list", "option_mod", "stdout", "str", "unit")),
         OCamlModuleGroup(
             "hashtbl_mod", listOf("42_hashtbl_mod"), deps = listOf("fun_mod", "list", "option_mod", "str", "unit")
         ),
@@ -285,7 +290,9 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
         OCamlModuleGroup(
             "result_mod",
             listOf("64_result_mod"),
-            deps = listOf("boolean", "comparison", "list", "option_mod", "pair_mod", "queue_mod", "str", "strconv", "unit")
+            deps = listOf(
+                "boolean", "comparison", "list", "option_mod", "pair_mod", "queue_mod", "stdout", "str", "strconv", "unit"
+            )
         ),
         OCamlModuleGroup(
             "int32_mod",

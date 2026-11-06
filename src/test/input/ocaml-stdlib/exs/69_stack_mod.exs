@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 50_list_mod.types, 57_option_mod.types, 76_pair_mod.types, 69_stack_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 50_list_mod.types, 57_option_mod.types, 76_pair_mod.types, 14_stdout.types, 69_stack_mod.types
 
 // Stack.t has a type parameter. A fresh (Stack.create Unit) can't be named or reused, so its element type
 // is fixed only by what the consumers around it need. Stacks of a known element type come from of_seq, below.
@@ -1219,7 +1219,6 @@
 
 // iter: ('a -> unit) -> 'a t -> unit
 (Stack.iter ignore (Stack.create Unit))
-// print_int and print_string are in 14_stdout, which is in no group, so the group leaves these two out
 (Stack.iter print_int (Stack.create Unit))
 (Stack.iter print_string (Stack.create Unit))
 

@@ -41,10 +41,9 @@ checks before the examples. The search never sees the prelude, only .types files
   with its arguments swapped, which `64_result_mod` already has.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
-- **Examples that use a name of no group** (`print_int` and `print_string` in `69_stack_mod.exs` and
-  `64_result_mod.exs`, from `14_stdout`; `print_newline`, `flush_all` and others in
-  `21_termination.exs`, from `14_stdout` and `17_out`) are in the file, but the group's query leaves them out,
-  since their names aren't in the group's .types files.
+- **Examples that use a name of no group** (`flush_all` and others in `21_termination.exs`, from
+  `17_out`) are in the file, but the group's query leaves them out, since their names aren't in the
+  group's .types files.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of
   'b`, and no value. Examples can't write the constructors, and `Result.ok` and `Result.error`
   (group `result_mod`) cover them.

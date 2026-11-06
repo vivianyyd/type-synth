@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 10_strconv.types, 50_list_mod.types, 57_option_mod.types, 62_queue_mod.types, 76_pair_mod.types, 64_result_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 10_strconv.types, 50_list_mod.types, 57_option_mod.types, 62_queue_mod.types, 76_pair_mod.types, 14_stdout.types, 64_result_mod.types
 
 // ok: 'a -> ('a, 'e) result
 (Result.ok Num)
@@ -56,7 +56,6 @@
 (Result.retract (Result.error Str))
 
 // iter: ('a -> unit) -> ('a, 'e) result -> unit
-// print_int and print_string are in no group (14_stdout), so the benchmarks leave out the examples that use them
 (Result.iter ignore (Result.ok Num))
 (Result.iter print_int (Result.ok Num))
 (Result.iter print_string (Result.ok Str))
