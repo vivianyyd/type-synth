@@ -42,10 +42,11 @@ checks before the examples. The search never sees the prelude, only .types files
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **Examples that use a name of no group** (`print_int` and `print_string` in `69_stack_mod.exs` and
-  `64_result_mod.exs`, from `14_stdout`) are in the file, but the group's query leaves them out,
+  `64_result_mod.exs`, from `14_stdout`; `print_newline`, `flush_all` and others in
+  `21_termination.exs`, from `14_stdout` and `17_out`) are in the file, but the group's query leaves them out,
   since their names aren't in the group's .types files.
 - **Modules and names in no group yet**: the `// Skipped` lines in `README`, and `// Skipped`
-  comments in .types files (`56_oo_mod`: object types; `21_termination`: `exit`).
+  comments in .types files (`56_oo_mod`: object types).
 - **`ref`'s `contents` field**: `'a ref` is the record `{ mutable contents : 'a }`, but examples
   have no record syntax, so `19_ref` treats `ref` as an abstract type and leaves out `r.contents`
   and `r.contents <- v`. `ref`, `(!)`, `(:=)`, `incr` and `decr` cover the same uses.
