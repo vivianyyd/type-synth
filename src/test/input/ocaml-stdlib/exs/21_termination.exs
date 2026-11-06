@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 19_ref.types, 40_fun_mod.types, 21_termination.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 14_stdout.types, 17_out.types, 19_ref.types, 21_termination.types, 40_fun_mod.types
 
 (at_exit print_newline)
 (at_exit flush_all)
@@ -9,9 +9,6 @@
 (at_exit succ)
 (at_exit print_string)
 (at_exit print_int)
-
-// print_newline, flush_all, print_string and print_int are in no group (14_stdout, 17_out), so the
-// benchmarks leave out the examples above that use them.
 
 // exit's result has any type: used as int, bool, string, unit and as a function
 (succ (exit Num))

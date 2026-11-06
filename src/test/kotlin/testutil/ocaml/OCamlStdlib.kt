@@ -309,11 +309,6 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("47_int64_mod"),
             deps = listOf("arith", "boolean", "comparison", "float", "int32_mod", "nativeint_mod", "option_mod", "str")
         ),
-        OCamlModuleGroup(
-            "termination",
-            listOf("21_termination"),
-            deps = listOf("arith", "boolean", "comparison", "fun_mod", "ref", "str", "unit")
-        ),
         OCamlModuleGroup("atomic_mod", listOf("23_atomic_mod"), deps = listOf("arith", "boolean", "comparison", "str", "unit")),
         OCamlModuleGroup(
             "complex_mod", listOf("29_complex_mod"), deps = listOf("arith", "boolean", "comparison", "float")
@@ -362,6 +357,12 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             deps = listOf(
                 "boolean", "char", "comparison", "float", "io", "list", "option_mod", "out", "str", "string_mod", "unit"
             )
+        ),
+        // The examples pass print_newline, print_string, print_int and flush_all to at_exit
+        OCamlModuleGroup(
+            "termination",
+            listOf("21_termination"),
+            deps = listOf("arith", "boolean", "comparison", "fun_mod", "out", "ref", "stdout", "str", "unit")
         ),
     )
         .also { groups ->
