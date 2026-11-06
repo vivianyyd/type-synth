@@ -45,6 +45,9 @@ checks before the examples. The search never sees the prelude, only .types files
   `64_result_mod.exs`, from `14_stdout`; `print_newline`, `flush_all` and others in
   `21_termination.exs`, from `14_stdout` and `17_out`) are in the file, but the group's query leaves them out,
   since their names aren't in the group's .types files.
+- **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of
+  'b`, and no value. Examples can't write the constructors, and `Result.ok` and `Result.error`
+  (group `result_mod`) cover them.
 - **Modules and names in no group yet**: the `// Skipped` lines in `README`, and `// Skipped`
   comments in .types files (`56_oo_mod`: object types).
 - **`ref`'s `contents` field**: `'a ref` is the record `{ mutable contents : 'a }`, but examples
