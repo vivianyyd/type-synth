@@ -327,6 +327,10 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
         OCamlModuleGroup(
             "list_ops", listOf("12_list"), deps = listOf("arith", "boolean", "comparison", "list", "str")
         ),
+        // lazy_mod's examples pass read_line, read_int and read_float to Lazy.from_fun
+        OCamlModuleGroup(
+            "stdin", listOf("16_stdin"), deps = listOf("arith", "boolean", "comparison", "float", "option_mod", "str", "unit")
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
