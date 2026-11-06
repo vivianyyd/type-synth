@@ -355,6 +355,14 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "boolean", "char", "comparison", "float", "io", "list", "option_mod", "str", "string_mod", "unit"
             )
         ),
+        // Some examples pass the results of input functions to output ones
+        OCamlModuleGroup(
+            "in",
+            listOf("18_in"),
+            deps = listOf(
+                "boolean", "char", "comparison", "float", "io", "list", "option_mod", "out", "str", "string_mod", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

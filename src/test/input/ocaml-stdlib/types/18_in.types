@@ -12,6 +12,6 @@ val input_value : in_channel -> 'a
 val seek_in : in_channel -> int -> unit
 val pos_in : in_channel -> int
 val in_channel_length : in_channel -> int
-val in_channel_length : in_channel -> int
+val close_in : in_channel -> unit
 val close_in_noerr : in_channel -> unit
 val set_binary_mode_in : in_channel -> bool -> unit
