@@ -53,8 +53,9 @@ checks before the examples. The search never sees the prelude, only .types files
 - **`ref`'s `contents` field**: `'a ref` is the record `{ mutable contents : 'a }`, but examples
   have no record syntax, so `19_ref` treats `ref` as an abstract type and leaves out `r.contents`
   and `r.contents <- v`. `ref`, `(!)`, `(:=)`, `incr` and `decr` cover the same uses.
-- **`Atomic.Loc`** (OCaml 5.4): its values come from `[%atomic.loc r.field]`, which examples can't
-  write, so `23_atomic_mod.types` leaves the submodule out. `Atomic.t`'s functions cover the same uses.
+- **`Atomic.Loc`** (OCaml 5.4): its values come only from `[%atomic.loc r.field]`, on a record field
+  declared `[@atomic]`. Examples can't declare types, build records or write that syntax, so
+  `23_atomic_mod.types` leaves the submodule out. Its functions are `Atomic`'s, on `'a Atomic.Loc.t`.
 - **`Complex.t`'s fields**: `Complex.t` is the record `{ re : float; im : float }`, but examples have
   no record syntax, so `re` and `im` can't be read or built. Complex values come only from
   `Complex.zero`, `one`, `i`, `polar` and the functions on them.
