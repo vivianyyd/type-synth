@@ -364,6 +364,16 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("21_termination"),
             deps = listOf("arith", "boolean", "comparison", "fun_mod", "out", "ref", "stdout", "str", "unit")
         ),
+        // Their channels come from `stdin`, `stdout`, `open_in` and `open_out`. `String.to_bytes` and
+        // `Int64.of_int` give the bytes and int64 values.
+        OCamlModuleGroup(
+            "in_channel_mod",
+            listOf("44_in_channel_mod"),
+            deps = listOf(
+                "arith", "boolean", "char", "comparison", "fun_mod", "in", "int64_mod", "io", "list", "option_mod", "out", "str",
+                "string_mod", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

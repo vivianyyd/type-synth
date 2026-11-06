@@ -73,7 +73,7 @@
 44-in-channel-mod | In_channel module | Requires open_flag type
 // type In_channel.t = in_channel
 // type In_channel.open_flag = Open_rdonly | Open_wronly | Open_append | Open_creat | Open_trunc | Open_excl | Open_binary | Open_text | Open_nonblock
-// Skipped: input_bigarray, really_input_bigarray (require Bigarray); fold_lines
+// Skipped: input_bigarray, really_input_bigarray (require Bigarray)
 45-int-mod | Int module
 // type Int.t = int
 // Skipped: no nativeint conversion functions in Int module (use Nativeint.of_int / Nativeint.to_int)
