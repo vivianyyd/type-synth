@@ -40,6 +40,9 @@ checks before the examples. The search never sees the prelude, only .types files
   to solve them, as a chain would.
 - **Modules and names in no group yet**: the `// Skipped` lines in `README`, and `// Skipped`
   comments in .types files (`56_oo_mod`: object types; `21_termination`: `exit`).
+- **`ref`'s `contents` field**: `'a ref` is the record `{ mutable contents : 'a }`, but examples
+  have no record syntax, so `19_ref` treats `ref` as an abstract type and leaves out `r.contents`
+  and `r.contents <- v`. `ref`, `(!)`, `(:=)`, `incr` and `decr` cover the same uses.
 - **String**: no Bytes, Uchar, Int32 or Int64 function is given, so `bytes`, `Uchar.utf_decode`,
   `int32` and `int64` values come only from String's own functions.
 

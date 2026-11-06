@@ -1,4 +1,4 @@
-// 0_basics.types, 2_boolean.types, 3_composition.types, 4_arith.types, 6_float.types, 10_strconv.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 3_composition.types, 4_arith.types, 6_float.types, 10_strconv.types
 
 ((|>) Num succ)
 ((|>) Num abs)
@@ -56,3 +56,67 @@
 ((|>) ((|>) Num succ) not)
 ((@@) not ((@@) succ Num))
 ((|>) ((|>) Num float_of_int) succ)
+
+// |>'s argument and result at more types
+((|>) Str bool_of_string)
+((|>) Str int_of_string)
+((|>) Flt truncate)
+((|>) Flt (~-.))
+((|>) Flt string_of_float)
+((=) ((|>) Num string_of_int) Str)
+((=) ((|>) Str bool_of_string) true)
+((=) ((|>) Num float_of_int) Flt)
+((=) ((|>) Flt truncate) Num)
+((=) ((|>) Num string_of_int) Num)
+((=) ((|>) Num float_of_int) Num)
+((=) ((|>) Str bool_of_string) Str)
+((=) ((|>) Flt truncate) Flt)
+
+// @@'s argument and result at more types
+((@@) bool_of_string Str)
+((@@) int_of_string Str)
+((@@) truncate Flt)
+((@@) (~-.) Flt)
+((=) ((@@) string_of_int Num) Str)
+((=) ((@@) bool_of_string Str) true)
+((=) ((@@) float_of_int Num) Flt)
+((=) ((@@) truncate Flt) Num)
+((=) ((@@) string_of_int Num) Num)
+((=) ((@@) bool_of_string Str) Str)
+((=) ((@@) float_of_int Num) Num)
+((=) ((@@) truncate Flt) Flt)
+
+// Partial application
+((|>) Num)
+((|>) Str)
+((|>) true)
+((@@) succ)
+((@@) not)
+((@@) string_of_int)
+
+// invalid: the last argument has the wrong type
+((|>) Num Num)
+((|>) Str Str)
+((|>) Str succ)
+((|>) true float_of_int)
+((|>) Flt string_of_int)
+((@@) Num)
+((@@) Str)
+((@@) true)
+((@@) string_of_int Flt)
+((@@) bool_of_string Num)
+((@@) truncate Num)
+
+// One passed to the other
+((@@) ((|>) Num) succ)
+((@@) ((|>) Str) bool_of_string)
+((@@) ((|>) Flt) truncate)
+((|>) Num ((@@) succ))
+((|>) Str ((@@) bool_of_string))
+((|>) Num ((@@) float_of_int))
+((=) ((@@) ((|>) Num) string_of_int) Str)
+((=) ((|>) Num ((@@) float_of_int)) Flt)
+((@@) ((|>) Num) not)
+((@@) ((|>) Str) succ)
+((|>) true ((@@) succ))
+((|>) Flt ((@@) bool_of_string))
