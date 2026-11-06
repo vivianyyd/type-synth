@@ -287,6 +287,11 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("64_result_mod"),
             deps = listOf("boolean", "comparison", "list", "option_mod", "pair_mod", "queue_mod", "str", "strconv", "unit")
         ),
+        OCamlModuleGroup(
+            "int32_mod",
+            listOf("46_int32_mod"),
+            deps = listOf("arith", "boolean", "comparison", "float", "option_mod", "str")
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
