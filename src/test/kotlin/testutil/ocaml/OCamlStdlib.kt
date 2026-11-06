@@ -382,6 +382,11 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "string_mod", "unit"
             )
         ),
+        OCamlModuleGroup(
+            "float_mod",
+            listOf("38_float_mod"),
+            deps = listOf("arith", "boolean", "comparison", "float", "fun_mod", "list", "option_mod", "pair_mod", "unit")
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

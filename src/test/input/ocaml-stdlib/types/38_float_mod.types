@@ -4,6 +4,8 @@ val zero : float
 val one : float
 val minus_one : float
 val nan : float
+val signaling_nan : float
+val quiet_nan : float
 val infinity : float
 val neg_infinity : float
 val pi : float
@@ -19,12 +21,13 @@ val to_int : float -> int
 val of_string : string -> float
 val of_string_opt : string -> float option
 val to_string : float -> string
-// type fpclass = FP_normal | FP_subnormal | FP_zero | FP_infinite | FP_nan
+// type fpclass = fpclass = FP_normal | FP_subnormal | FP_zero | FP_infinite | FP_nan
 val classify_float : float -> fpclass
 val round : float -> float
 val floor : float -> float
 val ceil : float -> float
 val trunc : float -> float
+val pow : float -> float -> float
 val sqrt : float -> float
 val cbrt : float -> float
 val exp : float -> float
@@ -65,6 +68,7 @@ val add : float -> float -> float
 val sub : float -> float -> float
 val mul : float -> float -> float
 val div : float -> float -> float
+val fma : float -> float -> float -> float
 val rem : float -> float -> float
 val abs : float -> float
 val neg : float -> float
@@ -80,6 +84,8 @@ val hash : float -> int
 val Array.make : int -> float -> floatarray
 val Array.create : int -> floatarray
 val Array.init : int -> (int -> float) -> floatarray
+val Array.make_matrix : int -> int -> float -> floatarray array
+val Array.init_matrix : int -> int -> (int -> int -> float) -> floatarray array
 val Array.append : floatarray -> floatarray -> floatarray
 val Array.concat : floatarray list -> floatarray
 val Array.sub : floatarray -> int -> int -> floatarray
@@ -89,6 +95,8 @@ val Array.blit : floatarray -> int -> floatarray -> int -> int -> unit
 val Array.length : floatarray -> int
 val Array.get : floatarray -> int -> float
 val Array.set : floatarray -> int -> float -> unit
+val Array.unsafe_get : floatarray -> int -> float
+val Array.unsafe_set : floatarray -> int -> float -> unit
 val Array.to_list : floatarray -> float list
 val Array.of_list : float list -> floatarray
 val Array.iter : (float -> unit) -> floatarray -> unit
@@ -119,4 +127,4 @@ val Array.of_seq : float Seq.t -> floatarray
 val Array.map_to_array : (float -> 'a) -> floatarray -> 'a array
 val Array.map_from_array : ('a -> float) -> 'a array -> floatarray
 val Array.equal : (float -> float -> bool) -> floatarray -> floatarray -> bool
-val Array.compare : floatarray -> floatarray -> int
+val Array.compare : (float -> float -> int) -> floatarray -> floatarray -> int
