@@ -63,7 +63,15 @@ checks before the examples. The search never sees the prelude, only .types files
 
 ## Known wrong results
 
-None.
+- **`type_mod` (`72_type_mod`)**: the search returns `Type.Id.make : unit -> Id.t`, `uid : Id.t -> int`
+  and `provably_equal : Id.t -> Id.t -> eq option`, with no type parameters; the true types have
+  `'a Id.t` and `('a, 'b) eq`. No example can show the parameters. Only `provably_equal` relates
+  them (`'a Id.t -> 'b Id.t -> ('a, 'b) eq option`), the result's parameters can be seen only by
+  something that takes an `eq`, and nothing in the stdlib does (its one value is the constructor
+  `Equal`, which examples can't write). Every `make ()` call is a fresh instance, so no example
+  can make two `Id.t` arguments share a parameter either (that takes a `let`). The search picks
+  the smallest arity, 0, for both types. Leaving `provably_equal` out would not help: `make` and
+  `uid` have the same problem.
 
 ## Settings some groups need
 
