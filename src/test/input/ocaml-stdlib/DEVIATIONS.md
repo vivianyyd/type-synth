@@ -58,8 +58,9 @@ None.
 
 ## Settings some groups need
 
-`list`, `queue_mod`, `pair_mod` and `map_mod` are correct only on branch `resolve-on-clash`, with
-`--variant names-per-round=1,depth-bound=6`. Other groups are correct with the default settings.
+`list`, `queue_mod`, `pair_mod`, `map_mod`, `either_mod` and `result_mod` are correct only on branch
+`resolve-on-clash`, with `--variant names-per-round=1,depth-bound=6`. Other groups are correct with the
+default settings.
 
 ## Copy in tyind
 
