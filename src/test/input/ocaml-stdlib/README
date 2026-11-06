@@ -67,6 +67,7 @@
 // type Gc.Memprof.tracker (record)
 42-hashtbl-mod | Hashtbl module | Requires Seq.t
 // type Hashtbl.statistics (record)
+// Skipped: the functors Make and MakeSeeded and their module types (examples can't apply a functor)
 43-iarray-mod | Iarray module (immutable arrays) | Requires Seq.t
 // type +'a Iarray.t = 'a iarray
 44-in-channel-mod | In_channel module | Requires open_flag type
