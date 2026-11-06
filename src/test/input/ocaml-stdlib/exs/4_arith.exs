@@ -94,7 +94,7 @@
 (succ ((+) Num Str))
 (abs (( * ) true Num))
 
-// arithmetic does not accept booleans or chars. (Only true, not false: nothing in this group shows they have one type)
+// arithmetic does not accept booleans or chars
 (succ true)
 (succ Char)
 (pred true)

@@ -239,10 +239,12 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
     listOf(
         // Only constants, which every other group uses, and no examples
         OCamlModuleGroup("basics", listOf("0_basics")),
-        OCamlModuleGroup("arith", listOf("4_arith"), deps = listOf("basics")),
+        OCamlModuleGroup("comparison", listOf("1_comparison"), deps = listOf("basics")),
+        // Its examples use `true` and `false` without anything tying them, so `comparison`, whose
+        // examples do (`((=) true false)`), gives them their type. `boolean` can't: it uses arith's names.
+        OCamlModuleGroup("arith", listOf("4_arith"), deps = listOf("basics", "comparison")),
         OCamlModuleGroup("boolean", listOf("2_boolean"), deps = listOf("arith")),
         OCamlModuleGroup("char", listOf("8_char"), deps = listOf("arith")),
-        OCamlModuleGroup("comparison", listOf("1_comparison"), deps = listOf("basics")),
         OCamlModuleGroup("bitwise", listOf("5_bitwise"), deps = listOf("arith")),
         OCamlModuleGroup("str", listOf("7_str"), deps = listOf("basics")),
         OCamlModuleGroup("unit", listOf("9_unit"), deps = listOf("arith", "comparison", "str")),

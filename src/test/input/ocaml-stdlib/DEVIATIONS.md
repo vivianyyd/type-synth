@@ -48,9 +48,7 @@ checks before the examples. The search never sees the prelude, only .types files
 
 ## Known wrong results
 
-- **`arith`** (16/17): nothing in its group ties `true` to `false` (`boolean` comes after `arith`),
-  so the search gives them different labels. The cause is the `false` examples, such as
-  `(abs false)`, restored from main. Open.
+None.
 
 ## Settings some groups need
 
