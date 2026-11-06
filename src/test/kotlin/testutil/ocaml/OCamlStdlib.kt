@@ -336,6 +336,7 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("48_lazy_mod"),
             deps = listOf("arith", "boolean", "comparison", "fun_mod", "stdin", "str", "strconv")
         ),
+        OCamlModuleGroup("repr_mod", listOf("77_repr_mod"), deps = listOf("arith", "boolean", "comparison", "str")),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
