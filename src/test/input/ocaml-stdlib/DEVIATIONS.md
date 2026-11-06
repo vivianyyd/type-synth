@@ -74,6 +74,11 @@ checks before the examples. The search never sees the prelude, only .types files
 - **`Complex.t`'s fields**: `Complex.t` is the record `{ re : float; im : float }`, but examples have
   no record syntax, so `re` and `im` can't be read or built. Complex values come only from
   `Complex.zero`, `one`, `i`, `polar` and the functions on them.
+- **Bytes**: `compare` is in the .types file, which lacked it. The `unsafe_get`, `unsafe_set`, `unsafe_blit`,
+  `unsafe_blit_string`, `unsafe_fill` and `unsafe_escape` externals are left out: they have the types of
+  `get`, `set`, `blit`, `blit_string`, `fill` and `escaped`, and the stdlib documents none of them. Bytes
+  values in the examples come from `String.to_bytes` (given by `string_mod`) as well as from Bytes' own
+  functions.
 - **String**: no Bytes, Uchar, Int32 or Int64 function is given, so `bytes`, `Uchar.utf_decode`,
   `int32` and `int64` values come only from String's own functions.
 
