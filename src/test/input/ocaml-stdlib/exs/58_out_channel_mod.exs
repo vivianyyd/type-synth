@@ -30,7 +30,9 @@ Out_channel.stderr
 
 // output_bytes: t -> bytes -> unit
 (Out_channel.output_bytes Out_channel.stdout (String.to_bytes Str))
+(Out_channel.output_bytes Out_channel.stdout (Bytes.make Num Char))
 (Out_channel.output_bytes Out_channel.stderr (String.to_bytes Str))
+(Out_channel.output_bytes Out_channel.stderr (Bytes.make Num Char))
 
 // flush: t -> unit
 (Out_channel.flush Out_channel.stdout)
