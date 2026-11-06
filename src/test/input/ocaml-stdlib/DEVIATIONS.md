@@ -36,6 +36,9 @@ checks before the examples. The search never sees the prelude, only .types files
   search to solve them are left out. Approved as temporary on 2026-10-29. Cause: `to_seq` is solved
   first, with a Seq label of no parameter, and a later round can't give the label one, so `of_seq`
   has no solution. `queue_mod` is still given `List.to_seq`'s true type. Undo by emptying the set.
+- **`Result.Syntax`**: `( let* )`, `( and* )`, `( let+ )` and `( and+ )`. Examples can't name an
+  operator in a submodule (operators stay unqualified), and these are `bind`, `product` and `map`
+  with its arguments swapped, which `64_result_mod` already has.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **Examples that use a name of no group** (`print_int` and `print_string` in `69_stack_mod.exs`, from

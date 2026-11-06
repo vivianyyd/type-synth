@@ -117,6 +117,7 @@
 63-random-mod | Random module | Requires Int32.t, Nativeint.t, Int64.t
 // type Random.State.t
 64-result-mod | Result module | Requires Seq.t
+// Skipped: Result.Syntax, the binding operators (see DEVIATIONS.md)
 // type ('a,'e) Result.t = ('a,'e) result = Ok of 'a | Error of 'e
 65-scanf-mod | Scanf module | Requires format types
 // type Scanf.Scanning.in_channel
