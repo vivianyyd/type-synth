@@ -131,7 +131,6 @@
 // Skipped StdLabels: it is a collection of labeled modules (ArrayLabels, ListLabels, StringLabels)
 70-string-mod | String module | Requires Seq.t, Uchar.utf_decode, bytes
 // type String.t = string
-// Skipped: Binary decoding of integers section (get_uint8, get_int8, get_uint16_ne/be/le, get_int16_ne/be/le, get_int32_ne/be/le, get_int64_ne/be/le)
 // Skipped StringLabels: it is the same as String but with labeled arguments
 71-sys-mod | Sys module
 // type Sys.backend_type = Native | Bytecode | Other of string
