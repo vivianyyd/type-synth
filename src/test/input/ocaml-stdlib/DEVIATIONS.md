@@ -53,6 +53,8 @@ checks before the examples. The search never sees the prelude, only .types files
 - **`ref`'s `contents` field**: `'a ref` is the record `{ mutable contents : 'a }`, but examples
   have no record syntax, so `19_ref` treats `ref` as an abstract type and leaves out `r.contents`
   and `r.contents <- v`. `ref`, `(!)`, `(:=)`, `incr` and `decr` cover the same uses.
+- **`Atomic.Loc`** (OCaml 5.4): its values come from `[%atomic.loc r.field]`, which examples can't
+  write, so `23_atomic_mod.types` leaves the submodule out. `Atomic.t`'s functions cover the same uses.
 - **String**: no Bytes, Uchar, Int32 or Int64 function is given, so `bytes`, `Uchar.utf_decode`,
   `int32` and `int64` values come only from String's own functions.
 

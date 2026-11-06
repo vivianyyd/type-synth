@@ -1,6 +1,5 @@
 // Atomic
-// type !'a t
-// TODO: for the !: https://stackoverflow.com/questions/70450821/ocaml-meaning-of-in-type-a-t#:~:text=%2C%20meaning%20of%20%60!-,+%60%20in%20%60type%20%60!+,type%2Ddeclaration
+// `!` in `type !'a t` marks 'a as injective; it doesn't change the types here
 // type !'a t
 val make : 'a -> 'a t
 val make_contended : 'a -> 'a t
