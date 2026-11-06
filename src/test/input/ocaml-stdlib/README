@@ -147,7 +147,7 @@
 73-uchar-mod | Uchar module (Unicode characters)
 // type Uchar.t
 // type Uchar.utf_decode
-// Skipped: utf_8_decode_length_of_byte, max_utf_8_decode_length, utf_8_byte_length, utf_16_byte_length
+// Skipped: unsafe_of_int, unsafe_to_char (hidden in uchar.mli)
 74-unit-mod | Unit module
 // type Unit.t = unit = ()
 75-weak-mod | Weak module (weak pointers and hash sets)

@@ -311,6 +311,7 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
         OCamlModuleGroup(
             "complex_mod", listOf("29_complex_mod"), deps = listOf("arith", "boolean", "comparison", "float")
         ),
+        OCamlModuleGroup("uchar_mod", listOf("73_uchar_mod"), deps = listOf("arith", "boolean", "char", "comparison")),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
