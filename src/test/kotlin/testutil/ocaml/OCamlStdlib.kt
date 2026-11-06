@@ -348,6 +348,13 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("15_stderr"),
             deps = listOf("boolean", "char", "comparison", "float", "option_mod", "str", "string_mod", "unit")
         ),
+        OCamlModuleGroup(
+            "out",
+            listOf("17_out"),
+            deps = listOf(
+                "boolean", "char", "comparison", "float", "io", "list", "option_mod", "str", "string_mod", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

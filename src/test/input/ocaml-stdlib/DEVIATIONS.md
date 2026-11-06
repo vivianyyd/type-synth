@@ -10,7 +10,8 @@ How to write examples under these rules is in `EXAMPLES.md`.
 - **Constants are placeholders.** `Num`, `Str`, `Char`, `Flt`, `Nil` and `Unit` are names in
   `0_basics.types`. To ask OCaml, `OCamlSource` writes them as `1`, `"s"`, `'a'`, `1.`, `[]`, `()`.
   There are no other literals: no tuple, list or record syntax, and no constructors such as `Some`
-  or `FP_normal` (examples use functions like `Option.some` instead).
+  or `FP_normal` (examples use functions like `Option.some` instead), except those of `open_flag`
+  (see below).
 - **No `fun`, `let` or patterns.** The loader keeps only the subexpressions outside a `fun` or
   `let`, so the 12 lambda examples in `57_option_mod.exs` and `70_string_mod.exs` add little.
 - **Labelled arguments are positional**, in declared order. `OCamlSource.withLabels` adds the labels
@@ -29,6 +30,14 @@ checks before the examples. The search never sees the prelude, only .types files
 - **`Triple`** (`79_triple_mod.types`, group `triple_mod`): `make`, `fst`, `snd`, `thd` for
   3-tuples, in the style of `Pair`. Examples can't build or take apart a tuple, and the stdlib has
   no functions for 3-tuples, so without it nothing pins `StrMap.split`'s result. Approved 2026-11-06.
+
+## Constructors that are names
+
+- **`open_flag`'s constructors** (`Open_rdonly`, `Open_wronly`, `Open_append`, `Open_creat`,
+  `Open_trunc`, `Open_excl`, `Open_binary`, `Open_text`, `Open_nonblock`) are values in
+  `17_out.types`, with type `open_flag`. `open_out_gen` and `open_in_gen` take an `open_flag list`,
+  and no function builds an `open_flag`. OCaml accepts the constructors as written, and examples
+  build the list with `List.cons` and `Nil`.
 
 ## Names left out
 

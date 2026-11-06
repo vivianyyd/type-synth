@@ -1,15 +1,17 @@
 // General output functions: Requires list
-// TODO: We desugar these variant type constructors to simply values
 // type open_flag =
-// |Open_rdonly
-// |Open_wronly
-// |Open_append
-// |Open_creat
-// |Open_trunc
-// |Open_excl
-// |Open_binary
-// |Open_text
-// |Open_nonblock
+// | Open_rdonly | Open_wronly | Open_append | Open_creat | Open_trunc | Open_excl | Open_binary
+// | Open_text | Open_nonblock
+// Examples can't write constructors, so the constructors of open_flag are values (see DEVIATIONS.md)
+val Open_rdonly : open_flag
+val Open_wronly : open_flag
+val Open_append : open_flag
+val Open_creat : open_flag
+val Open_trunc : open_flag
+val Open_excl : open_flag
+val Open_binary : open_flag
+val Open_text : open_flag
+val Open_nonblock : open_flag
 val open_out : string -> out_channel
 val open_out_bin : string -> out_channel
 val open_out_gen : open_flag list -> int -> string -> out_channel
