@@ -1083,6 +1083,10 @@ Seq.empty
 ((=) Seq.empty (List.to_seq (List.cons Num Nil)))
 ((=) Seq.empty Num)
 ((=) Seq.empty succ)
+((=) Seq.empty (List.to_seq (List.cons Str Nil)))
+((=) Seq.empty (List.to_seq (List.cons true Nil)))
+((=) Seq.empty (List.to_seq (List.cons Char Nil)))
+((=) Seq.empty (List.to_seq (List.cons Unit Nil)))
 
 // return: 'a -> 'a t
 (Seq.return ((^) Str Str))
