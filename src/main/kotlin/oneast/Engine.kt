@@ -102,11 +102,12 @@ class Engine(
         return exs.posNoSubexprs.any { nameAppliedIn(it) }
     }
 
-    /** Returns the next synthesis problem, or null if we are done. */
-    private fun buildNextQuery(state: SearchState, round: Int): Pair<Examples, SearchState>? {
-        if (round >= scheduled.size) return null
+    /** Returns the synthesis problem of [step], or null if the schedule has no rounds left. */
+    private fun buildNextQuery(step: Step): Pair<Examples, SearchState>? {
+        if (step.rounds.first >= scheduled.size) return null
 
-        val scheduledRound = scheduled[round]
+        val state = step.seed
+        val scheduledRound = names(step)
         // TODO I think enumeration doesn't actually need the subexprs, so we should make a separate
         //   query type which contains only maximal examples so we don't waste so much space
         val oldSize = state.names.size
@@ -130,36 +131,45 @@ class Engine(
                 },
                 labelArities = state.labelArities,
                 numCommittedTypes = state.numCommittedTypes,
-                committedLabels = state.committedLabels
+                // A round never changes an earlier round's labels, not even their arities. When
+                // it needs two of them to be one label, see resolveClashes.
+                committedLabels = state.labelArities.keys
             )
 
         return nextExamples to nextState
     }
 
+    private fun names(step: Step) = step.rounds.flatMap { scheduled[it] }
+
     /**
-     * The solutions of round [round] from [state], each followed by the rest of the schedule. The round
-     * tries each outer depth bound in [depths] in turn, skipping solutions a smaller bound found.
+     * The solutions that solve the last step of [path] and then the rest of the schedule. Each step
+     * of [path] is seeded by a solution of the step before it. The step tries each outer depth bound
+     * in [depths] in turn, skipping solutions a smaller bound found, and resolves the clashes of all
+     * of them only after that. [resolved] holds the merged steps already searched in this call of
+     * [search], by their seed's [SearchState.id] and rounds.
      */
     private fun searchRec(
-        state: SearchState,
-        round: Int,
+        path: List<Step>,
         depths: IntRange,
-        extraArities: Int
+        extraArities: Int,
+        resolved: MutableSet<Pair<Int, IntRange>>,
     ): Sequence<SearchState> = sequence {
-        val nextQueryAndSeed = buildNextQuery(state, round)
+        val step = path.last()
+        val nextQueryAndSeed = buildNextQuery(step)
 
         if (nextQueryAndSeed == null) {
-            yield(state)
+            yield(step.seed)
             return@sequence
         }
         val found = mutableListOf<SearchState>()
+        val clashes = mutableSetOf<Set<Int>>()
         for (outerDepthBound in depths) {
             Debug.log { "Current query: ${nextQueryAndSeed.second} with depth bound $outerDepthBound" }
             val statsId =
                 Stats.newSearch(
-                    round,
+                    step.rounds.first,
                     outerDepthBound,
-                    scheduled[round],
+                    names(step),
                     nextQueryAndSeed.first.posNoSubexprs.size,
                     nextQueryAndSeed.first.neg.size
                 )
@@ -187,7 +197,8 @@ class Engine(
                     }
                 if (ctrex == null) {
                     Debug.log { "Found no counterexamples" }
-                    yieldAll(searchRec(solution, round + 1, depths, extraArities))
+                    val next = step.rounds.last + 1
+                    yieldAll(searchRec(path + Step(solution, next..next), depths, extraArities, resolved))
                 } else {
                     Debug.log { "Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}" }
                     Stats.event(
@@ -198,6 +209,45 @@ class Engine(
                     observationalOracle = null
                 }
             }
+            clashes += search.clashes
+        }
+
+        yieldAll(resolveClashes(path, clashes, depths, extraArities, resolved))
+    }
+
+    /**
+     * [clashes] are sets of labels that the last step of [path] needed to be equal. For each, searches
+     * the steps from the one that created the earliest of its labels to the last again, as one step:
+     * the fewest steps first. A clash only between labels of the committed seed or of the last step
+     * has no steps to search again.
+     *
+     * An earlier step's examples may not have forced two values to share a label that a later step
+     * needs them to share. Searching both steps as one, from a seed without those labels, lets the
+     * values get one label without any step changing a label it was given.
+     */
+    private fun resolveClashes(
+        path: List<Step>,
+        clashes: Set<Set<Int>>,
+        depths: IntRange,
+        extraArities: Int,
+        resolved: MutableSet<Pair<Int, IntRange>>,
+    ): Sequence<SearchState> = sequence {
+        // The labels each step created: those in the next step's seed but not its own
+        val created = path.zipWithNext { s, next -> next.seed.labelArities.keys - s.seed.labelArities.keys }
+        val clashesByStart =
+            clashes.groupBy { labels -> created.indexOfFirst { it.any { l -> l in labels } } }
+                .filterKeys { it >= 0 }
+                .toSortedMap(reverseOrder())
+        for ((start, startClashes) in clashesByStart) {
+            val merged = Step(path[start].seed, path[start].rounds.first..path.last().rounds.last)
+            if (!resolved.add(merged.seed.id to merged.rounds)) continue
+            Stats.inc(Count.RESOLVES)
+            Stats.event(
+                "resolve",
+                mapOf("from" to merged.rounds.first, "to" to merged.rounds.last, "clashes" to startClashes)
+            )
+            Debug.log { "Clashes $startClashes: searching rounds ${merged.rounds} again as one" }
+            yieldAll(searchRec(path.take(start) + merged, depths, extraArities, resolved))
         }
     }
 
@@ -220,7 +270,8 @@ class Engine(
             }
             var found = false
             for (depths in passes) {
-                for (solution in searchRec(committedSeed, round = 0, depths, extra)) {
+                val path = listOf(Step(committedSeed, 0..0))
+                for (solution in searchRec(path, depths, extra, resolved = HashSet())) {
                     found = true
                     yield(solution)
                 }
@@ -229,6 +280,12 @@ class Engine(
         }
     }
 }
+
+/**
+ * Rounds [rounds] of the schedule, searched as one round from [seed]. One round, unless
+ * [Engine.resolveClashes] merged several.
+ */
+private class Step(val seed: SearchState, val rounds: IntRange)
 
 /*
 Another option that could've worked:

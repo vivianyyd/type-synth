@@ -45,10 +45,11 @@ enum class SearchStrategyKind {
             emitConstructors: Boolean,
             sizeBound: Int,
             depthBound: Int,
-            expansions: Expansions
+            expansions: Expansions,
+            clashes: MutableSet<Set<Int>>
         ) =
             DFSEnumerator(
-                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, expansions
+                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, expansions, clashes
             )
     };
 
@@ -58,7 +59,8 @@ enum class SearchStrategyKind {
         emitConstructors: Boolean,
         sizeBound: Int,
         depthBound: Int,
-        expansions: Expansions
+        expansions: Expansions,
+        clashes: MutableSet<Set<Int>>
     ): SearchStrategy
 }
 
@@ -90,7 +92,7 @@ data class Configuration(
     val oracle: OracleKind = OracleKind.Types,
     /**
      * Whether each round tries every outer depth bound before the search goes back to the round
-     * before it. Otherwise all rounds share one outer depth bound, and only when no choice of earlier
+     * before it or re-solves earlier rounds for a clash. Otherwise all rounds share one outer depth bound, and only when no choice of earlier
      * rounds' solutions gives a solution at that bound does the search start again at the next.
      */
     val depthPerRound: Boolean = false,

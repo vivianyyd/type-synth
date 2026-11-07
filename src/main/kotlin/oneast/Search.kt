@@ -19,6 +19,15 @@ class Search(
     private val statsId: Int = -1,
     private val extraArities: Int = 0,
 ) {
+    /**
+     * The sets of labels that the positive examples needed to be equal, in the states searched so
+     * far.
+     */
+    val clashes: Set<Set<Int>>
+        get() = recordedClashes
+
+    private val recordedClashes = HashSet<Set<Int>>()
+
     private fun allCandidates(
         c: SearchState,
         emitLabelBlanks: Boolean,
@@ -28,7 +37,13 @@ class Search(
     ): Sequence<SearchState> =
         config.searchStrategy
             .create(
-                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, config.expansions
+                examples,
+                emitLabelBlanks,
+                emitConstructors,
+                sizeBound,
+                depthBound,
+                config.expansions,
+                recordedClashes
             )
             .candidates(c)
 
@@ -63,9 +78,7 @@ class Search(
                 is Arrow -> Arrow(assignLabels(t.l), assignLabels(t.r))
                 is NamedLabel -> t.copy(params = t.params.map { assignLabels(it) })
                 is Blank -> NamedLabel(label = getLabel(t), params = emptyList())
-                // If it's a new label, we haven't decided its arity yet. If it's an existing label,
-                // we could assign the appropriate arity here. But we will do it again later, and
-                // the arity might be changed when we resolve anyway. So don't bother yet
+                // Its parameters come once its arity is decided, from addParamHoles
                 is TypeHole -> error("Shouldn't happen")
                 is Variable -> t
             }
@@ -181,15 +194,7 @@ class Search(
 
     /** [choices] of arities for outlines as seeds. */
     private fun withArities(choices: List<Pair<SearchState, Map<Int, Int>>>): List<SearchState> {
-        val seeds = choices
-            // Order seeds by whether label arities from previous rounds are preserved
-            .partition { (s, subla) -> s.labelArities.all { (l, a) -> subla[l] == a } }
-            .let { it.first + it.second }
-            .map { (s, subla) -> // New label arities overwrite old ones
-                s.mapTypesAndSetLabelArities(subla) { t ->
-                    t.addParamHoles(subla)
-                }
-            }
+        val seeds = choices.map { (s, subla) -> s.mapTypesAndSetLabelArities(subla) { it.addParamHoles(subla) } }
         Stats.add(Count.SEEDS, seeds.size.toLong())
         return seeds
     }
@@ -296,7 +301,7 @@ class Search(
                     r.addParamHoles(labelArities, underArrow = true)
                 )
             is NamedLabel -> {
-                // We *always* overwrite parameters if there is mismatch
+                // Only a label that was a blank has fewer parameters than its arity: none
                 val arity = labelArities[this.label] ?: 0
                 if (this.params.size != arity) {
                     // Children of labels are type holes if under a function, and blanks with

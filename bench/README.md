@@ -94,7 +94,7 @@ Example:
   or why it failed.
 - `<benchmark>.trace.jsonl.gz`: with `--trace`, one line per candidate:
   `{step, search, phase, kind, state}`, where kind is `candidate` (passed the positive examples),
-  `prunedPos`, `prunedNeg` or `relabeled`. Search ids restart with each step.
+  `prunedPos` or `prunedNeg`. Search ids restart with each step.
 
 A record (`schema` 2) holds the batch, the configuration, the run's `status`, and `steps`, one per
 step that ran, in order. Each step has:
@@ -123,7 +123,8 @@ finished (below).
 - `searches`: one per problem the engine hands to the search (a round, at an outer depth bound),
   with its names, number of examples, and time and counts per phase.
 - `events`: each solution a search found, with the seed depth, depth and size it was found at,
-  and each counterexample CEGIS added.
+  each counterexample CEGIS added, and each `resolve`: rounds `from` to `to` searched again as one
+  because of `clashes`, sets of labels that had to be equal.
 - `info.schedule`: the rounds the engine decided on.
 
 Each of `scores` is `diffTo` (`src/main/kotlin/oneast/SearchStateEquivalence.kt`) from the expected

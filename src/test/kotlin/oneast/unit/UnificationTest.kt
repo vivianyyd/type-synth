@@ -559,7 +559,7 @@ class UnificationTest {
         val examples = listOf(App(Name("gi"), App(f, Name("i"))), App(Name("gb"), App(f, Name("b"))))
         val u = OneUnification(context, examples)
         assertTrue(u.ok)
-        assertEquals(HoleConstructor.Conflicting, u.holeConstructor(hole))
+        assertEquals(HoleConstructor.Conflicting(setOf(I.label, B.label)), u.holeConstructor(hole))
         val expansions = hole.expansions(
             unification = u,
             labelArities = labelArities,

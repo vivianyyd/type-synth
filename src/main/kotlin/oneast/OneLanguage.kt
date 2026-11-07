@@ -326,7 +326,7 @@ class TypeHole : THole() {
                     } else {
                         if (emitLabelBlanks) listOf(Blank(labelOnly = true)) else null
                     }
-                HoleConstructor.Conflicting -> null
+                is HoleConstructor.Conflicting -> null
                 HoleConstructor.Arrow -> listOf(fnExpansion)
                 is HoleConstructor.Label -> labelExpansions.filter { it.label == constructor.label }
             }
