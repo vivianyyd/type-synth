@@ -194,15 +194,6 @@ checks before the examples. The search never sees the prelude, only .types files
   type parameters; the true types have `('minor, 'major) tracker`. Only the fields of a tracker (a record, which
   examples can't use) mention the parameters, and `null_tracker` is the only tracker, so no example can show them.
   Every other name gets its true type, with either setting, in a few seconds.
-- **`dynarray_mod` (`33_dynarray_mod`) is not solved.** `fold_left`, `exists2` and the other functions
-  with a two-parameter callback need outer depth 2, and every name fails at depth 1 first. The search
-  then re-solves the names before it together, and that takes over 20 minutes when `blit` is among them
-  (about 2.4 million candidates). `blit` is picked early because it has many examples. With `blit`'s
-  examples cut to a fifth the search got through 45 names at depth 2 in a few minutes and stopped at
-  `append_array`: `to_array` fixed the `array` label before `of_array` and `append_array` existed (the
-  same cause as `List.to_seq`/`List.of_seq` above). Tried: default settings and
-  `names-per-round=1,depth-bound=6` on `resolve-on-clash`; neither finishes within 20 minutes. These runs
-  were before `dynarray_mod` depended on `array_mod`, which now gives the `array` label its parameter.
 - **`format_mod`** is not solved: the default settings run out of memory (4 GB) in the outline phase of round 0 at
   outer depth 2 after 20 minutes, and `--variant names-per-round=1,depth-bound=6` on `resolve-on-clash` times out
   (1800 s). Its examples agree with OCaml and the .types file. `pp_print_iter` (`(('a -> unit) -> 'b -> unit) -> ...`)
