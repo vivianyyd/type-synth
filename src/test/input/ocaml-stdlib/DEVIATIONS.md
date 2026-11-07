@@ -96,6 +96,22 @@ checks before the examples. The search never sees the prelude, only .types files
   as `"s"` and the .types files give the type `string`, so no example can pass a `format6`, and nothing in the stdlib
   returns one without taking one. `65_scanf_mod` has `Scanning`'s values (`stdin`, `open_in`, `from_string`, ...) and
   `unescaped`. `Scanf.Scan_failure` is an exception with an argument, so it is left out as other such exceptions are.
+- **Effect**: only `Shallow.fiber` and `Shallow.get_callstack` are in `34_effect_mod.types` (group `effect_mod`). `fiber` takes
+  an ordinary function; `get_callstack` takes the continuation it returns. The other 10 names are left out:
+  - `perform` takes an `'a Effect.t`, which only an `effect E : ...` declaration builds, and examples can't declare.
+    `Effect.Unhandled` (an exception with an argument) is left out for the same reason, and `Continuation_already_resumed`
+    would have no use: only functions that take a handler or a continuation raise it.
+  - `Deep.match_with` and `Deep.try_with` take a `handler` or `effect_handler` record, which examples can't build.
+  - `Shallow.continue_with`, `discontinue_with` and `discontinue_with_backtrace` take a `Shallow.handler` record too.
+  - `Deep.continue`, `discontinue`, `discontinue_with_backtrace` and `get_callstack` take a `Deep.continuation`, which
+    only a handler is given (`match_with` and `try_with` pass one to `effc`).
+  The only value of `Shallow.continuation` is `fiber`'s result, so the continuation's two parameters are
+  shown by comparing continuations with `(=)`.
+- **Printf**: no value is in `61_printf_mod.types` and the module has no group: all 13 functions (`fprintf`, `printf`,
+  `eprintf`, `sprintf`, `bprintf`, `ifprintf`, `ibprintf`, `kfprintf`, `ikfprintf`, `ksprintf`, `kbprintf`,
+  `ikbprintf` and `kprintf`) take a format string. The reason is the same as for Scanf and Format: no example
+  can write a `format`. The .types file was missing `kprintf` and had the wrong type for `ifprintf`; both are fixed in
+  its `// Left out` comments.
 - **Printexc**: `location` is a record (`filename`, `line_number`, ...), so `Slot.location` returns an
   abstract `location option` that examples can only compare and pass to `Option` functions, and
   `raw_backtrace_entry` (`private int`) is abstract too. `backtrace_slot` is abstract in OCaml 5.4 (the old

@@ -116,7 +116,7 @@
 // type Printexc.raw_backtrace_slot
 // type Printexc.backtrace_slot = Unknown_location | Known_location of ...
 61-printf-mod | Printf module | Requires Buffer.t, format types
-// Skipped: deprecated kprintf (use ksprintf instead)
+// Skipped: every function takes a format string (see DEVIATIONS.md)
 62-queue-mod | Queue module | Requires Seq.t
 // type !'a Queue.t
 63-random-mod | Random module | Requires Int32.t, Nativeint.t, Int64.t

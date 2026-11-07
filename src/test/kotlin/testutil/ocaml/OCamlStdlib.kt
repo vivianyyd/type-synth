@@ -581,6 +581,16 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "strconv", "unit"
             )
         ),
+        // Only `Shallow.fiber` and `Shallow.get_callstack` (see DEVIATIONS.md). The continuations are built with
+        // `fiber` from named functions, and the backtraces are read with Printexc's functions.
+        OCamlModuleGroup(
+            "effect_mod",
+            listOf("34_effect_mod"),
+            deps = listOf(
+                "arith", "boolean", "comparison", "float", "fun_mod", "io", "list", "option_mod", "printexc_mod",
+                "stdout", "str", "strconv", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
