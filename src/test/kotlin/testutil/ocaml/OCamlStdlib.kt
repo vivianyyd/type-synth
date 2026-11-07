@@ -596,7 +596,7 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("67_seq_mod"),
             deps = listOf(
                 "arith", "array_mod", "bool_mod", "boolean", "char_mod", "comparison", "either_mod", "fun_mod", "int_mod",
-                "list", "option_mod", "pair_mod", "ref", "stdout", "str", "strconv", "unit"
+                "list", "list_ops", "option_mod", "pair_mod", "ref", "stdout", "str", "strconv", "unit"
             )
         ),
     )

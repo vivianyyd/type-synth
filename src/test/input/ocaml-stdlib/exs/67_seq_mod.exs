@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 10_strconv.types, 14_stdout.types, 19_ref.types, 22_array_mod.types, 24_bool_mod.types, 28_char_mod.types, 35_either_mod.types, 40_fun_mod.types, 45_int_mod.types, 50_list_mod.types, 57_option_mod.types, 76_pair_mod.types, 67_seq_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 10_strconv.types, 12_list.types, 14_stdout.types, 19_ref.types, 22_array_mod.types, 24_bool_mod.types, 28_char_mod.types, 35_either_mod.types, 40_fun_mod.types, 45_int_mod.types, 50_list_mod.types, 57_option_mod.types, 67_seq_mod.types, 76_pair_mod.types
 
 // empty: 'a t constant
 Seq.empty
@@ -147,6 +147,9 @@ Seq.empty
 // compare returns int
 ((=) (Seq.compare compare (Seq.return Num) (Seq.return Num)) Num)
 (succ (Seq.compare compare (Seq.return Num) (Seq.return Num)))
+(Seq.compare Seq.compare (Seq.return Num) (Seq.return Num))
+((=) (Seq.compare Seq.compare (Seq.return Num) (Seq.return Num)) Num)
+(succ (Seq.compare Seq.compare (Seq.return Num) (Seq.return Num)))
 
 // to_list returns list
 ((@) (List.of_seq (Seq.return Num)) (List.cons Num Nil))

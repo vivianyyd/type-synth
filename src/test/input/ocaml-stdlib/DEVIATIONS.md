@@ -120,8 +120,6 @@ checks before the examples. The search never sees the prelude, only .types files
   arguments are those four.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
-- **`(@)`** (`12_list`, which has no group) is in an example of `67_seq_mod.exs`, but the group's query leaves it
-  out. `List.append` is the same function.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of
   'b`, and no value. Examples can't write the constructors, and `Result.ok` and `Result.error`
   (group `result_mod`) cover them.
@@ -230,13 +228,12 @@ checks before the examples. The search never sees the prelude, only .types files
 
 ## Settings some groups need
 
-`list`, `queue_mod`, `pair_mod`, `map_mod`, `either_mod`, `result_mod` and `float_mod` are correct only
-on branch `resolve-on-clash`, with `--variant names-per-round=1,depth-bound=6`. Other groups are correct
-with the default settings, except those under "Known wrong results". (`float_mod` with the default
-settings times out in the round of `Float.Array.compare`, `find_mapi` and `map2`.)
-`list`, `queue_mod`, `pair_mod`, `map_mod`, `either_mod`, `result_mod`, `float_mod` and `seq_mod` are correct only on branch
-`find_mapi` and `map2`. `seq_mod` with the default settings times out in the round of `sorted_merge`, `exists2` and `for_all2`, which has no
-answer: the three types need more than the 30-hole bound.)
+`list`, `queue_mod`, `pair_mod`, `map_mod`, `either_mod`, `result_mod`, `float_mod` and `seq_mod` are
+correct only on branch `resolve-on-clash`, with `--variant names-per-round=1,depth-bound=6`. Other groups
+are correct with the default settings, except those under "Known wrong results". With the default
+settings, `float_mod` times out in the round of `Float.Array.compare`, `find_mapi` and `map2`, and
+`seq_mod` in the round of `sorted_merge`, `exists2` and `for_all2`, whose three types need more than the
+30-hole bound.
 
 ## Copy in tyind
 
