@@ -1149,6 +1149,8 @@ Format.str_formatter
 
 // Constants: formatters, stdbuf, pp_infinity, the two symbolic output items
 ((=) Format.std_formatter Format.err_formatter)
+((=) Format.str_formatter Format.std_formatter)
+((=) Format.err_formatter Format.str_formatter)
 ((=) Format.str_formatter (Format.get_str_formatter Unit))
 ((=) Format.err_formatter (Format.formatter_of_out_channel stderr))
 ((=) Format.std_formatter Num)
