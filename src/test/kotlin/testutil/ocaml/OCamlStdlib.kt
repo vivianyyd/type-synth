@@ -407,7 +407,9 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
         OCamlModuleGroup(
             "array_mod",
             listOf("22_array_mod"),
-            deps = listOf("arith", "boolean", "comparison", "float", "list", "option_mod", "pair", "str", "strconv", "unit")
+            deps = listOf(
+                "arith", "boolean", "comparison", "float", "list", "option_mod", "pair", "stdout", "str", "strconv", "unit"
+            )
         ),
     )
         .also { groups ->
