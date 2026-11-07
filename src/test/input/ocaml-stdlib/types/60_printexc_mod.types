@@ -36,3 +36,4 @@ val convert_raw_backtrace_slot : raw_backtrace_slot -> backtrace_slot
 val get_raw_backtrace_next_slot : raw_backtrace_slot -> raw_backtrace_slot option
 val exn_slot_id : exn -> int
 val exn_slot_name : exn -> string
+val string_of_extension_constructor : Obj.t -> string

@@ -1,4 +1,4 @@
-// 0_basics.types, 10_strconv.types, 13_io.types, 14_stdout.types, 1_comparison.types, 22_array_mod.types, 27_callback_mod.types, 2_boolean.types, 40_fun_mod.types, 4_arith.types, 50_list_mod.types, 57_option_mod.types, 60_printexc_mod.types, 6_float.types, 7_str.types, 8_char.types, 9_unit.types
+// 0_basics.types, 10_strconv.types, 13_io.types, 14_stdout.types, 1_comparison.types, 22_array_mod.types, 27_callback_mod.types, 2_boolean.types, 40_fun_mod.types, 4_arith.types, 50_list_mod.types, 55_obj_mod.types, 57_option_mod.types, 60_printexc_mod.types, 6_float.types, 7_str.types, 8_char.types, 9_unit.types
 // to_string, to_string_default: exn -> string
 (Printexc.to_string Not_found)
 (Printexc.to_string Exit)
@@ -1724,3 +1724,13 @@
 (Printexc.print_raw_backtrace Str (Printexc.get_raw_backtrace Unit))
 (succ (Printexc.raw_backtrace_to_string (Printexc.get_raw_backtrace Unit)))
 (not (Printexc.raw_backtrace_length (Printexc.get_raw_backtrace Unit)))
+
+// string_of_extension_constructor: Obj.t -> string
+(Printexc.string_of_extension_constructor (Obj.repr Num))
+(Printexc.string_of_extension_constructor (Obj.repr Not_found))
+((^) (Printexc.string_of_extension_constructor (Obj.repr Str)) Str)
+((=) (Printexc.string_of_extension_constructor (Obj.repr Exit)) Str)
+(Printexc.string_of_extension_constructor Num)
+(Printexc.string_of_extension_constructor Not_found)
+((+) (Printexc.string_of_extension_constructor (Obj.repr Num)) Num)
+(Printexc.to_string (Printexc.string_of_extension_constructor (Obj.repr Exit)))

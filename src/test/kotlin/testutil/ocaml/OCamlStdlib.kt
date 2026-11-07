@@ -535,7 +535,7 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("60_printexc_mod"),
             deps = listOf(
                 "arith", "array_mod", "boolean", "callback_mod", "char", "comparison", "float", "fun_mod", "io", "list",
-                "option_mod", "stdout", "str", "strconv", "unit"
+                "obj_mod", "option_mod", "stdout", "str", "strconv", "unit"
             )
         ),
         // Only Scanning's values and `unescaped`: the other names take format strings (see DEVIATIONS.md).

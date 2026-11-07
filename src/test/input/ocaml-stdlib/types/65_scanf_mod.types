@@ -15,3 +15,13 @@ val Scanning.end_of_input : Scanning.in_channel -> bool
 val Scanning.beginning_of_input : Scanning.in_channel -> bool
 val Scanning.name_of_input : Scanning.in_channel -> string
 val unescaped : string -> string
+// Left out (they take format strings; see DEVIATIONS.md):
+// val sscanf : string -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
+// val scanf : ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
+// val sscanf_opt : string -> ('a, Scanning.in_channel, 'b option) format -> 'a -> 'b option
+// val scanf_opt : ('a, Scanning.in_channel, 'b option) format -> 'a -> 'b option
+// val bscanf : Scanning.in_channel -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
+// val bscanf_opt : Scanning.in_channel -> ('a, Scanning.in_channel, 'b option) format -> 'a -> 'b option
+// val kscanf : Scanning.in_channel -> (Scanning.in_channel -> exn -> 'b) -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
+// val ksscanf : string -> (Scanning.in_channel -> exn -> 'b) -> ('a, Scanning.in_channel, 'b) format -> 'a -> 'b
+// val format_from_string : string -> ('a, 'b, 'c, 'd) format4 -> ('a, 'b, 'c, 'd) format4
