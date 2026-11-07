@@ -122,6 +122,26 @@ checks before the examples. The search never sees the prelude, only .types files
 - **String**: no Bytes, Uchar, Int32 or Int64 function is given, so `bytes`, `Uchar.utf_decode`,
   `int32` and `int64` values come only from String's own functions.
 
+- **Format**:
+  - The functions with format string parameters are left out: `printf`, `eprintf`, `fprintf`, `sprintf`,
+    `asprintf`, `dprintf`, `ifprintf`, `kfprintf`, `kdprintf`, `ikfprintf`, `ksprintf`, `kasprintf` and
+    `format_text` (the same skip as `Printf`, see `README`). The only literal for a string is `Str`, which
+    OCaml reads as `"s"` and the .types files give the type `string`, so no example can pass a `format`
+    (a format's type parameters also depend on the literal's contents).
+  - `pp_open_stag` and `open_stag` are left out: a `stag` comes only from the constructor `String_tag of tag`,
+    which has an argument, so examples can't write it. `stag` has no other value.
+  - **Record types are abstract.** `formatter_out_functions`, `formatter_stag_functions` and `geometry` are
+    records, but examples have no record syntax, so their fields can't be read or built (as `Complex.t`).
+    Their values come only from the getters (`pp_get_formatter_out_functions`, `get_geometry`, ...), and the
+    setters and `check_geometry` take them. `update_geometry` is given `Fun.id` or `Fun.const g`.
+  - **`Output_flush` and `Output_newline`** (constructors of `symbolic_output_item`) are values of the .types file,
+    written `Format.Output_flush`, as the constructors of `open_flag`. `Output_string`, `Output_spaces` and
+    `Output_indent` have arguments and are left out, so a symbolic buffer only gets flush and newline items.
+  - `pp_print_custom_break`'s `fits` and `breaks` triples are made with `Triple.make`.
+  - The .types file was corrected (`pp_get_geometry` and `pp_update_geometry` use `geometry`, not `int * int`;
+    `dprintf` was wrong) and completed: it now has every other value of `Format` in OCaml 5.4, including the
+    functions that use the standard formatter (`print_string`, `open_box`, ...).
+
 ## Known wrong results
 
 - **`type_mod` (`72_type_mod`)**: the search returns `Type.Id.make : unit -> Id.t`, `uid : Id.t -> int`

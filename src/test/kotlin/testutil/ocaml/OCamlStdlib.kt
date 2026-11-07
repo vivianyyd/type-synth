@@ -549,6 +549,16 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "stdout", "str", "strconv", "unit"
             )
         ),
+        // Buffers, channels and DLS keys come from `Buffer.create`, `stdout` and `Domain.DLS.get`; the containers
+        // printed from `List.cons`, `Array.of_list`, `List.to_seq`, `Option.some`, `Result.ok` and `Either.left`.
+        OCamlModuleGroup(
+            "format_mod",
+            listOf("39_format_mod"),
+            deps = listOf(
+                "arith", "array_mod", "boolean", "buffer_mod", "comparison", "domain_mod", "either_mod", "fun_mod", "io",
+                "list", "option_mod", "pair_mod", "result_mod", "string_mod", "triple_mod", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
