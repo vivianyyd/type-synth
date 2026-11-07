@@ -83,8 +83,7 @@ checks before the examples. The search never sees the prelude, only .types files
   can call them.
 - **Parsing**: `yyparse` (takes a `parse_tables` record), `peek_val` (takes a `parser_env`, which only the
   action functions inside a `parse_tables` receive), the types `parse_tables` and `parser_env`, and the
-  constructor `YYexit of Obj.t`. `Lexing.position` values come only from `Parsing`'s own `*_pos` functions: `Lexing`
-  has no group on this branch, so `Lexing.dummy_pos` is not given.
+  constructor `YYexit of Obj.t`.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of

@@ -524,7 +524,7 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             "parsing_mod",
             listOf("59_parsing_mod"),
             deps = listOf(
-                "arith", "boolean", "callback_mod", "comparison", "float", "list", "option_mod", "str", "unit"
+                "arith", "boolean", "callback_mod", "comparison", "float", "lexing_mod", "list", "option_mod", "str", "unit"
             )
         ),
     )

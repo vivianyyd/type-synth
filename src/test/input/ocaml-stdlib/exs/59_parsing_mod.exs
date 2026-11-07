@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 6_float.types, 7_str.types, 9_unit.types, 27_callback_mod.types, 50_list_mod.types, 57_option_mod.types, 59_parsing_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 6_float.types, 7_str.types, 9_unit.types, 27_callback_mod.types, 49_lexing_mod.types, 50_list_mod.types, 57_option_mod.types, 59_parsing_mod.types
 
 // symbol_start, symbol_end: unit -> int
 (Parsing.symbol_start Unit)
@@ -814,3 +814,13 @@
 (List.cons (Parsing.symbol_start_pos Unit) (List.cons Parsing.Parse_error Nil))
 (List.cons Num Parsing.Parse_error)
 (List.cons Str Parsing.Parse_error)
+
+// Positions compared with Lexing.dummy_pos
+((=) (Parsing.symbol_start_pos Unit) Lexing.dummy_pos)
+((=) (Parsing.symbol_end_pos Unit) Lexing.dummy_pos)
+((=) (Parsing.rhs_start_pos Num) Lexing.dummy_pos)
+((=) (Parsing.rhs_end_pos Num) Lexing.dummy_pos)
+((=) Lexing.dummy_pos (Parsing.symbol_start_pos Unit))
+((=) (Parsing.symbol_start Unit) Lexing.dummy_pos)
+((=) (Parsing.rhs_start Num) Lexing.dummy_pos)
+((=) Lexing.dummy_pos (Parsing.symbol_end Unit))
