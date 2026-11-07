@@ -1,6 +1,5 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 8_char.types, 9_unit.types, 11_pair.types, 25_buffer_mod.types, 26_bytes_mod.types, 28_char_mod.types, 40_fun_mod.types, 46_int32_mod.types, 47_int64_mod.types, 50_list_mod.types, 57_option_mod.types, 70_string_mod.types, 73_uchar_mod.types, 76_pair_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 8_char.types, 9_unit.types, 11_pair.types, 13_io.types, 25_buffer_mod.types, 26_bytes_mod.types, 28_char_mod.types, 40_fun_mod.types, 46_int32_mod.types, 47_int64_mod.types, 50_list_mod.types, 57_option_mod.types, 70_string_mod.types, 73_uchar_mod.types, 76_pair_mod.types
 
-// Buffer.output_buffer and Buffer.add_channel are left out: they need channels, which no group has yet.
 // The first part was written first. Generated: examples for each function that doesn't take a function
 // or a Seq.t, then add_substitute and the Seq functions (through List.to_seq and List.of_seq), then examples
 // that use Buffer, Bytes and String together.
@@ -34,6 +33,13 @@
 (Buffer.clear (Buffer.create Num))
 (Buffer.reset (Buffer.create Num))
 (Buffer.truncate (Buffer.create Num) Num)
+
+// Output to channel
+(Buffer.output_buffer stdout (Buffer.create Num))
+(Buffer.output_buffer stderr (Buffer.create Num))
+
+// add_channel
+(Buffer.add_channel (Buffer.create Num) stdin Num)
 
 
 

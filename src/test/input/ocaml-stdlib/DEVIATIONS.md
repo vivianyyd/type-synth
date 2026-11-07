@@ -60,9 +60,6 @@ checks before the examples. The search never sees the prelude, only .types files
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of
   'b`, and no value. Examples can't write the constructors, and `Result.ok` and `Result.error`
   (group `result_mod`) cover them.
-- **Examples that use a name of no group** (`Bytes.make` in `58_out_channel_mod.exs`, from
-  `26_bytes_mod`) are in the file, but the group's query leaves them out, since their names aren't in
-  the group's .types files.
 - **Modules and names in no group yet**: the `// Skipped` lines in `README`, and `// Skipped`
   comments in .types files (`56_oo_mod`: object types).
 - **`ref`'s `contents` field**: `'a ref` is the record `{ mutable contents : 'a }`, but examples
@@ -79,10 +76,6 @@ checks before the examples. The search never sees the prelude, only .types files
   `get`, `set`, `blit`, `blit_string`, `fill` and `escaped`, and the stdlib documents none of them. Bytes
   values in the examples come from `String.to_bytes` (given by `string_mod`) as well as from Bytes' own
   functions.
-- **Buffer**: `output_buffer` and `add_channel` are left out of `25_buffer_mod.types` and the examples, since
-  they take an `out_channel` and an `in_channel` and no group the Buffer group could depend on has a channel
-  value. The examples with them were `(Buffer.output_buffer stdout b)`, `(Buffer.output_buffer stderr b)` and
-  `(Buffer.add_channel b stdin Num)` (see git history). Put them back once a channel group exists.
 - **String**: no Bytes, Uchar, Int32 or Int64 function is given, so `bytes`, `Uchar.utf_decode`,
   `int32` and `int64` values come only from String's own functions.
 

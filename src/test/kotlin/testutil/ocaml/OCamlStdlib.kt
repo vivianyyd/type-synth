@@ -375,19 +375,6 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             )
         ),
         OCamlModuleGroup(
-            "out_channel_mod",
-            listOf("58_out_channel_mod"),
-            deps = listOf(
-                "arith", "boolean", "char", "comparison", "fun_mod", "in", "int64_mod", "io", "list", "option_mod", "out", "str",
-                "string_mod", "unit"
-            )
-        ),
-        OCamlModuleGroup(
-            "float_mod",
-            listOf("38_float_mod"),
-            deps = listOf("arith", "boolean", "comparison", "float", "fun_mod", "list", "option_mod", "pair_mod", "unit")
-        ),
-        OCamlModuleGroup(
             "bytes_mod",
             listOf("26_bytes_mod"),
             deps = listOf(
@@ -396,11 +383,24 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             )
         ),
         OCamlModuleGroup(
+            "out_channel_mod",
+            listOf("58_out_channel_mod"),
+            deps = listOf(
+                "arith", "boolean", "bytes_mod", "char", "comparison", "fun_mod", "in", "int64_mod", "io", "list", "option_mod",
+                "out", "str", "string_mod", "unit"
+            )
+        ),
+        OCamlModuleGroup(
+            "float_mod",
+            listOf("38_float_mod"),
+            deps = listOf("arith", "boolean", "comparison", "float", "fun_mod", "list", "option_mod", "pair_mod", "unit")
+        ),
+        OCamlModuleGroup(
             "buffer_mod",
             listOf("25_buffer_mod"),
             deps = listOf(
                 "arith", "boolean", "bytes_mod", "char", "char_mod", "comparison", "fun_mod", "int32_mod", "int64_mod",
-                "list", "option_mod", "pair", "pair_mod", "str", "string_mod", "uchar_mod", "unit"
+                "io", "list", "option_mod", "pair", "pair_mod", "str", "string_mod", "uchar_mod", "unit"
             )
         ),
     )

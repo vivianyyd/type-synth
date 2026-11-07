@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 13_io.types, 17_out.types, 18_in.types, 40_fun_mod.types, 47_int64_mod.types, 50_list_mod.types, 57_option_mod.types, 58_out_channel_mod.types, 70_string_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 13_io.types, 17_out.types, 18_in.types, 26_bytes_mod.types, 40_fun_mod.types, 47_int64_mod.types, 50_list_mod.types, 57_option_mod.types, 58_out_channel_mod.types, 70_string_mod.types
 
 // Channel constants
 Out_channel.stdout
