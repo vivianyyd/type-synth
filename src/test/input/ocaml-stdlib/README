@@ -41,7 +41,7 @@
 28-char-mod | Char module
 29-complex-mod | Complex module
 30-condition-mod | Condition module (thread synchronization)
-31-digest-mod | Digest module (MD5)
+31-digest-mod | Digest module (MD5), and its submodules BLAKE128, BLAKE256, BLAKE512 and MD5
 32-domain-mod | Domain module (multicore)
 33-dynarray-mod | Dynarray module (dynamic arrays)
 34-effect-mod | Effect module (algebraic effects) | Requires Printexc.raw_backtrace

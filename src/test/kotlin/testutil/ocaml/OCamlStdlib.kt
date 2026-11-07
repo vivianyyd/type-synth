@@ -439,6 +439,16 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("66_semaphore_mod"),
             deps = listOf("arith", "boolean", "comparison", "float", "list", "stdout", "str", "unit")
         ),
+        // Digest.t is string, so its values are strings. Channels come from `stdin`, `stdout`, `open_in`
+        // and `open_out`; bytes from `String.to_bytes`.
+        OCamlModuleGroup(
+            "digest_mod",
+            listOf("31_digest_mod"),
+            deps = listOf(
+                "arith", "boolean", "comparison", "float", "in", "io", "list", "option_mod", "out", "str", "string_mod",
+                "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

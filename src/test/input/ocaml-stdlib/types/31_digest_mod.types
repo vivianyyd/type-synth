@@ -13,3 +13,59 @@ val input : in_channel -> t
 val to_hex : t -> string
 val of_hex : string -> t
 val from_hex : string -> t
+// Digest--BLAKE128 submodule (signature Digest.S)
+val BLAKE128.hash_length : int
+val BLAKE128.compare : t -> t -> int
+val BLAKE128.equal : t -> t -> bool
+val BLAKE128.string : string -> t
+val BLAKE128.bytes : bytes -> t
+val BLAKE128.substring : string -> int -> int -> t
+val BLAKE128.subbytes : bytes -> int -> int -> t
+val BLAKE128.channel : in_channel -> int -> t
+val BLAKE128.file : string -> t
+val BLAKE128.output : out_channel -> t -> unit
+val BLAKE128.input : in_channel -> t
+val BLAKE128.to_hex : t -> string
+val BLAKE128.of_hex : string -> t
+// Digest--BLAKE256 submodule (signature Digest.S)
+val BLAKE256.hash_length : int
+val BLAKE256.compare : t -> t -> int
+val BLAKE256.equal : t -> t -> bool
+val BLAKE256.string : string -> t
+val BLAKE256.bytes : bytes -> t
+val BLAKE256.substring : string -> int -> int -> t
+val BLAKE256.subbytes : bytes -> int -> int -> t
+val BLAKE256.channel : in_channel -> int -> t
+val BLAKE256.file : string -> t
+val BLAKE256.output : out_channel -> t -> unit
+val BLAKE256.input : in_channel -> t
+val BLAKE256.to_hex : t -> string
+val BLAKE256.of_hex : string -> t
+// Digest--BLAKE512 submodule (signature Digest.S)
+val BLAKE512.hash_length : int
+val BLAKE512.compare : t -> t -> int
+val BLAKE512.equal : t -> t -> bool
+val BLAKE512.string : string -> t
+val BLAKE512.bytes : bytes -> t
+val BLAKE512.substring : string -> int -> int -> t
+val BLAKE512.subbytes : bytes -> int -> int -> t
+val BLAKE512.channel : in_channel -> int -> t
+val BLAKE512.file : string -> t
+val BLAKE512.output : out_channel -> t -> unit
+val BLAKE512.input : in_channel -> t
+val BLAKE512.to_hex : t -> string
+val BLAKE512.of_hex : string -> t
+// Digest--MD5 submodule (signature Digest.S)
+val MD5.hash_length : int
+val MD5.compare : t -> t -> int
+val MD5.equal : t -> t -> bool
+val MD5.string : string -> t
+val MD5.bytes : bytes -> t
+val MD5.substring : string -> int -> int -> t
+val MD5.subbytes : bytes -> int -> int -> t
+val MD5.channel : in_channel -> int -> t
+val MD5.file : string -> t
+val MD5.output : out_channel -> t -> unit
+val MD5.input : in_channel -> t
+val MD5.to_hex : t -> string
+val MD5.of_hex : string -> t
