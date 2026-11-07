@@ -55,6 +55,16 @@ For each function `f`:
 8. **Constants** (`infinity`, `String.empty`) where their type is required, positive and negative.
    Polymorphic ones (`Option.none`, `Nil`, `StrMap.empty`) at several types, with several functions.
 
+## Parameters that no value shows
+
+Each `Weak.create` is a fresh weak array, so nothing ties its element type to anything else, and `'a Weak.t`
+looks like `Weak.t`. `(=)` accepts any two values of one type, functions included, so it can tie the
+parameter. `Fun.compose` and `Fun.flip` build a function of one weak array whose element type another
+function fixes: `(Fun.flip (Fun.flip Weak.set Num) (Option.some Num))` is `int Weak.t -> unit`, and with
+`Str` it is `string Weak.t -> unit`. `((=) f g)` is accepted only if both have the same element type.
+`75_weak_mod.exs` does this for every function of `Weak`, including `blit`, whose two weak arrays share
+their element type.
+
 ## Independence from the schedule
 
 The search solves a few functions at a time, in rounds, and commits to each round's answer. A
