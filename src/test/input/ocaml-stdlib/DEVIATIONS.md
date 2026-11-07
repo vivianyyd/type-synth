@@ -60,6 +60,11 @@ checks before the examples. The search never sees the prelude, only .types files
   with its arguments swapped, which `64_result_mod` already has.
 - **`Float.ArrayLabels`**: the same functions as `Float.Array` with labelled parameters (`Array` has the
   same skip in `README`). Everything in `Float.Array` is in `38_float_mod`.
+- **`Dynarray.unsafe_to_iarray`**: `capacity:int -> ('a t -> unit) -> 'a iarray`. `Iarray` has no group
+  that `dynarray_mod` depends on, and the function is unsafe by design.
+- **Arrays in `Dynarray`'s examples**: `Array` has no group, so `of_array`, `to_array` and `append_array`
+  get their arrays only from each other (`Dynarray.to_array`), and the old `Array.make` examples in
+  `33_dynarray_mod.exs` are left out of the query.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of
@@ -110,6 +115,15 @@ checks before the examples. The search never sees the prelude, only .types files
   result in a function parameter), so the pass at depth 2 goes on to resolve clashes by re-solving a
   round of all earlier names, which takes most of the time. With only `fold_left_map` and a few other
   names, `resolve-on-clash` finds it at depth 3 in 10 minutes.
+
+- **`dynarray_mod` (`33_dynarray_mod`) is not solved.** `fold_left`, `exists2` and the other functions
+  with a two-parameter callback need outer depth 2, and every name fails at depth 1 first. The search
+  then re-solves the names before it together, and that takes over 20 minutes when `blit` is among them
+  (about 2.4 million candidates). `blit` is picked early because it has many examples. With `blit`'s
+  examples cut to a fifth the search got through 45 names at depth 2 in a few minutes and stopped at
+  `append_array`: `Array` has no group, so `to_array` fixes the `array` label before `of_array` and
+  `append_array` exist (the same cause as `List.to_seq`/`List.of_seq` above). Tried: default settings and
+  `names-per-round=1,depth-bound=6` on `resolve-on-clash`; neither finishes within 20 minutes.
 
 ## Settings some groups need
 

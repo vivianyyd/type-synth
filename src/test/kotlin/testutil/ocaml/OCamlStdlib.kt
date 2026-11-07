@@ -449,6 +449,16 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "unit"
             )
         ),
+        // The Seq values come from `List.to_seq`, and `Dynarray.to_array` and `Dynarray.of_array` give the
+        // arrays, since Array has no group.
+        OCamlModuleGroup(
+            "dynarray_mod",
+            listOf("33_dynarray_mod"),
+            deps = listOf(
+                "arith", "boolean", "char", "comparison", "float", "fun_mod", "list", "option_mod", "stdout", "str", "strconv",
+                "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

@@ -1,5 +1,5 @@
 // Dynarray
-// type 'a t
+// type !'a t
 val create : unit -> 'a t
 val make : int -> 'a -> 'a t
 val init : int -> (int -> 'a) -> 'a t
@@ -62,4 +62,6 @@ val capacity : 'a t -> int
 val ensure_capacity : 'a t -> int -> unit
 val ensure_extra_capacity : 'a t -> int -> unit
 val fit_capacity : 'a t -> unit
+val set_capacity : 'a t -> int -> unit
 val reset : 'a t -> unit
+// Left out: unsafe_to_iarray : capacity:int -> ('a t -> unit) -> 'a iarray (see DEVIATIONS.md)
