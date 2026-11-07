@@ -84,6 +84,17 @@ checks before the examples. The search never sees the prelude, only .types files
 - **Parsing**: `yyparse` (takes a `parse_tables` record), `peek_val` (takes a `parser_env`, which only the
   action functions inside a `parse_tables` receive), the types `parse_tables` and `parser_env`, and the
   constructor `YYexit of Obj.t`.
+- **Scanf's functions with format strings**: `scanf`, `sscanf`, `bscanf`, `kscanf`, `ksscanf`, their `_opt` versions,
+  `sscanf_format`, `bscanf_format` and `format_from_string`. The only literal for a string is `Str`, which OCaml reads
+  as `"s"` and the .types files give the type `string`, so no example can pass a `format6`, and nothing in the stdlib
+  returns one without taking one. `65_scanf_mod` has `Scanning`'s values (`stdin`, `open_in`, `from_string`, ...) and
+  `unescaped`. `Scanf.Scan_failure` is an exception with an argument, so it is left out as other such exceptions are.
+- **Printexc**: `string_of_extension_constructor` takes an `Obj.t`, which no group this depends on gives. Its
+  `location` is a record (`filename`, `line_number`, ...), so `Slot.location` returns an abstract `location option`
+  that examples can only compare and pass to `Option` functions, and `raw_backtrace_entry` (`private int`) is abstract
+  too. `backtrace_slot` is abstract in OCaml 5.4 (the old .types file had its variant, `Known_location` with a
+  record argument). Exceptions are values only for `Not_found`, `Exit`, `End_of_file` and `Division_by_zero` (see
+  "Constructors that are names"), so the exn arguments are those four.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of
