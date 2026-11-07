@@ -276,7 +276,6 @@
 (not (Weak.blit (Weak.create Num) Num (Weak.create Num) Num Num))
 
 // The element type of a weak array is shared by its elements. Each function below takes a weak array of one element
-
 // type, found by what it does to the elements; (=) on two of them needs the same element type.
 ((=) (Fun.compose Option.is_some (Fun.compose (Option.map succ) (Fun.flip Weak.get Num))) (Fun.compose Option.is_some (Fun.compose (Option.map succ) (Fun.flip Weak.get Num))))
 ((=) (Fun.compose Option.is_some (Fun.compose (Option.map succ) (Fun.flip Weak.get Num))) (Fun.compose Option.is_some (Fun.compose (Option.map not) (Fun.flip Weak.get Num))))
@@ -325,7 +324,6 @@
 ((=) (Fun.flip (Fun.flip (Fun.flip Weak.fill Num) Num) (Option.some Str)) (Fun.flip (Fun.flip (Fun.flip Weak.fill Num) Num) (Option.some Str)))
 
 // create, length and check take a weak array whose element type is any type: composed with a function of a
-
 // weak array of one element type (which fixes it), they and the function agree
 (Fun.compose (Fun.flip (Fun.flip Weak.set Num) (Option.some Num)) Weak.create)
 ((=) Weak.length (Fun.compose (Fun.const Num) (Fun.flip (Fun.flip Weak.set Num) (Option.some Num))))
@@ -339,3 +337,15 @@
 ((=) Weak.length (Fun.compose (Fun.const Str) (Fun.flip (Fun.flip Weak.set Num) (Option.some Num))))
 ((=) Weak.check (Fun.compose (Fun.const (Fun.const Num)) (Fun.flip (Fun.flip Weak.set Num) (Option.some Num))))
 ((=) Weak.check (Fun.compose (Fun.const (Fun.const true)) Weak.create))
+
+// blit's two weak arrays have the same element type: a function of the same shape, whose weak arrays have
+// element types fixed by Weak.set, agrees with blit only when its two element types are the same
+((=) Weak.blit (Fun.compose (Fun.const (Fun.flip (Fun.compose (Fun.const (Fun.const (Fun.const (Fun.const Unit)))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Num))))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Num))))
+((=) Weak.blit (Fun.compose (Fun.const (Fun.flip (Fun.compose (Fun.const (Fun.const (Fun.const (Fun.const Unit)))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Num))))) (Fun.flip (Fun.flip Weak.set Num) (Option.some true))))
+((=) Weak.blit (Fun.compose (Fun.const (Fun.flip (Fun.compose (Fun.const (Fun.const (Fun.const (Fun.const Unit)))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Num))))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Str))))
+((=) Weak.blit (Fun.compose (Fun.const (Fun.flip (Fun.compose (Fun.const (Fun.const (Fun.const (Fun.const Unit)))) (Fun.flip (Fun.flip Weak.set Num) (Option.some true))))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Num))))
+((=) Weak.blit (Fun.compose (Fun.const (Fun.flip (Fun.compose (Fun.const (Fun.const (Fun.const (Fun.const Unit)))) (Fun.flip (Fun.flip Weak.set Num) (Option.some true))))) (Fun.flip (Fun.flip Weak.set Num) (Option.some true))))
+((=) Weak.blit (Fun.compose (Fun.const (Fun.flip (Fun.compose (Fun.const (Fun.const (Fun.const (Fun.const Unit)))) (Fun.flip (Fun.flip Weak.set Num) (Option.some true))))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Str))))
+((=) Weak.blit (Fun.compose (Fun.const (Fun.flip (Fun.compose (Fun.const (Fun.const (Fun.const (Fun.const Unit)))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Str))))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Num))))
+((=) Weak.blit (Fun.compose (Fun.const (Fun.flip (Fun.compose (Fun.const (Fun.const (Fun.const (Fun.const Unit)))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Str))))) (Fun.flip (Fun.flip Weak.set Num) (Option.some true))))
+((=) Weak.blit (Fun.compose (Fun.const (Fun.flip (Fun.compose (Fun.const (Fun.const (Fun.const (Fun.const Unit)))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Str))))) (Fun.flip (Fun.flip Weak.set Num) (Option.some Str))))
