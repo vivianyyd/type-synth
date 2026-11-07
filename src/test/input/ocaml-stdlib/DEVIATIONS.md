@@ -234,6 +234,9 @@ checks before the examples. The search never sees the prelude, only .types files
 on branch `resolve-on-clash`, with `--variant names-per-round=1,depth-bound=6`. Other groups are correct
 with the default settings, except those under "Known wrong results". (`float_mod` with the default
 settings times out in the round of `Float.Array.compare`, `find_mapi` and `map2`.)
+`list`, `queue_mod`, `pair_mod`, `map_mod`, `either_mod`, `result_mod`, `float_mod` and `seq_mod` are correct only on branch
+`find_mapi` and `map2`. `seq_mod` with the default settings times out in the round of `sorted_merge`, `exists2` and `for_all2`, which has no
+answer: the three types need more than the 30-hole bound.)
 
 ## Copy in tyind
 
