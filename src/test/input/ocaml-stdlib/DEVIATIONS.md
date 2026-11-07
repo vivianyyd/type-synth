@@ -79,6 +79,10 @@ checks before the examples. The search never sees the prelude, only .types files
   `get`, `set`, `blit`, `blit_string`, `fill` and `escaped`, and the stdlib documents none of them. Bytes
   values in the examples come from `String.to_bytes` (given by `string_mod`) as well as from Bytes' own
   functions.
+- **Buffer**: `output_buffer` and `add_channel` are left out of `25_buffer_mod.types` and the examples, since
+  they take an `out_channel` and an `in_channel` and no group the Buffer group could depend on has a channel
+  value. The examples with them were `(Buffer.output_buffer stdout b)`, `(Buffer.output_buffer stderr b)` and
+  `(Buffer.add_channel b stdin Num)` (see git history). Put them back once a channel group exists.
 - **String**: no Bytes, Uchar, Int32 or Int64 function is given, so `bytes`, `Uchar.utf_decode`,
   `int32` and `int64` values come only from String's own functions.
 
@@ -93,6 +97,12 @@ checks before the examples. The search never sees the prelude, only .types files
   can make two `Id.t` arguments share a parameter either (that takes a `let`). The search picks
   the smallest arity, 0, for both types. Leaving `provably_equal` out would not help: `make` and
   `uid` have the same problem.
+- **`buffer_mod`** times out with the default settings (1800 s limit; stopped after 17 minutes in round 2) and with
+  `--variant names-per-round=1,depth-bound=6` on `resolve-on-clash` (3000 s). Its examples agree with OCaml and the .types file. With the default 3 names per
+  round, the round of `add_substitute`, `length` and `add_subbytes` has no answer in
+  the time (the three types need size about 27 of the 30-hole bound). With 1 name per round, `add_substitute` is found in 35 s, but `to_seqi` (`(int * char) Seq.t`) needs
+  outer depth 2 and every earlier round succeeds at depth 1, so the search resolves label clashes at depth 1
+  (re-searching ever larger merged rounds) before it tries depth 2.
 
 ## Settings some groups need
 
