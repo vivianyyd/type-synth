@@ -403,7 +403,6 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "io", "list", "option_mod", "pair", "pair_mod", "str", "string_mod", "uchar_mod", "unit"
             )
         ),
-        OCamlModuleGroup("atomic_mod", listOf("23_atomic_mod"), deps = listOf("arith", "boolean", "comparison", "str", "unit")),
         OCamlModuleGroup(
             "array_mod",
             listOf("22_array_mod"),
@@ -444,6 +443,7 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
         .also { groups ->
             groups.forEachIndexed { i, group ->
                 val before = groups.subList(0, i).map { it.name }
+                require(group.name !in before) { "Two groups are named ${group.name}" }
                 group.deps.forEach { require(it in before) { "${group.name} comes before its dependency $it" } }
             }
         }
