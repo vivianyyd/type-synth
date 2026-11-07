@@ -468,6 +468,15 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "str", "strconv", "unit"
             )
         ),
+        // The `int array` arguments of `Random.State.make` and `Random.full_init` come from `Iarray.to_array`.
+        OCamlModuleGroup(
+            "random_mod",
+            listOf("63_random_mod"),
+            deps = listOf(
+                "arith", "boolean", "comparison", "float", "iarray_mod", "int32_mod", "int64_mod", "list", "nativeint_mod",
+                "stdout", "str", "strconv", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
