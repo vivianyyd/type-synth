@@ -1674,3 +1674,13 @@ Format.str_formatter
 ((=) (Format.get_stdbuf Unit) Format.std_formatter)
 (Buffer.add_string (Format.get_stdbuf Unit) Str)
 (Buffer.add_string (Format.get_stdbuf Unit) Num)
+
+// Output callbacks must return int -> unit after the string and the int, not any other type
+(Format.make_formatter String.get)
+(Format.make_formatter String.sub)
+(Format.make_synchronized_formatter String.get)
+(Format.make_synchronized_formatter String.sub)
+(Format.set_formatter_output_functions String.get)
+(Format.set_formatter_output_functions String.sub)
+(Format.pp_set_formatter_output_functions Format.std_formatter String.get)
+(Format.pp_set_formatter_output_functions Format.std_formatter String.sub)

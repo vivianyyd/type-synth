@@ -37,9 +37,15 @@
 // Output to channel
 (Buffer.output_buffer stdout (Buffer.create Num))
 (Buffer.output_buffer stderr (Buffer.create Num))
+((=) (Buffer.output_buffer stdout (Buffer.create Num)) Unit)
+((=) (Buffer.output_buffer stdout (Buffer.create Num)) Num)
+((=) (Buffer.output_buffer stdout (Buffer.create Num)) Str)
 
 // add_channel
 (Buffer.add_channel (Buffer.create Num) stdin Num)
+((=) (Buffer.add_channel (Buffer.create Num) stdin Num) Unit)
+((=) (Buffer.add_channel (Buffer.create Num) stdin Num) Num)
+((=) (Buffer.add_channel (Buffer.create Num) stdin Num) Str)
 
 
 
