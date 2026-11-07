@@ -53,6 +53,8 @@ checks before the examples. The search never sees the prelude, only .types files
 - **`Result.Syntax`**: `( let* )`, `( and* )`, `( let+ )` and `( and+ )`. Examples can't name an
   operator in a submodule (operators stay unqualified), and these are `bind`, `product` and `map`
   with its arguments swapped, which `64_result_mod` already has.
+- **`Float.ArrayLabels`**: the same functions as `Float.Array` with labelled parameters (`Array` has the
+  same skip in `README`). Everything in `Float.Array` is in `38_float_mod`.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of
@@ -89,9 +91,10 @@ checks before the examples. The search never sees the prelude, only .types files
 
 ## Settings some groups need
 
-`list`, `queue_mod`, `pair_mod`, `map_mod`, `either_mod` and `result_mod` are correct only on branch
+`list`, `queue_mod`, `pair_mod`, `map_mod`, `either_mod`, `result_mod` and `float_mod` are correct only on branch
 `resolve-on-clash`, with `--variant names-per-round=1,depth-bound=6`. Other groups are correct with the
-default settings.
+default settings. (`float_mod` with the default settings times out in the round of `Float.Array.compare`,
+`find_mapi` and `map2`.)
 
 ## Copy in tyind
 
