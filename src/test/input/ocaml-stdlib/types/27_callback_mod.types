@@ -1,3 +1,9 @@
 // Callback
 val register : string -> 'a -> unit
 val register_exception : string -> exn -> unit
+// Examples can't write exceptions, and nothing in the stdlib builds an exn without arguments, so some
+// of the stdlib's exceptions without arguments are values (see DEVIATIONS.md)
+val Not_found : exn
+val Exit : exn
+val End_of_file : exn
+val Division_by_zero : exn

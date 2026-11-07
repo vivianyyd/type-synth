@@ -411,6 +411,35 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "arith", "boolean", "comparison", "float", "list", "option_mod", "pair", "stdout", "str", "strconv", "unit"
             )
         ),
+        OCamlModuleGroup(
+            "callback_mod",
+            listOf("27_callback_mod"),
+            deps = listOf("arith", "boolean", "comparison", "float", "list", "stdout", "str", "unit")
+        ),
+        // Mutex.protect's body: read_line, read_int, read_float (stdin), print_newline (stdout) and Fun.const
+        OCamlModuleGroup(
+            "mutex_mod",
+            listOf("53_mutex_mod"),
+            deps = listOf("arith", "boolean", "comparison", "float", "fun_mod", "list", "stdin", "stdout", "str", "unit")
+        ),
+        OCamlModuleGroup(
+            "condition_mod",
+            listOf("30_condition_mod"),
+            deps = listOf("arith", "boolean", "comparison", "float", "list", "mutex_mod", "str", "unit")
+        ),
+        // The bodies are read_line, read_int, read_float (stdin), print_newline (stdout), flush_all (out) and Fun.const
+        OCamlModuleGroup(
+            "domain_mod",
+            listOf("32_domain_mod"),
+            deps = listOf(
+                "arith", "boolean", "comparison", "float", "fun_mod", "list", "out", "stdin", "stdout", "str", "unit"
+            )
+        ),
+        OCamlModuleGroup(
+            "semaphore_mod",
+            listOf("66_semaphore_mod"),
+            deps = listOf("arith", "boolean", "comparison", "float", "list", "stdout", "str", "unit")
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

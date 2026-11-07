@@ -41,6 +41,11 @@ checks before the examples. The search never sees the prelude, only .types files
   `In_channel.open_flag` and `Out_channel.open_flag` are the same type (`Stdlib.open_flag`), so
   their .types files declare them as a rename, and `In_channel.open_gen` and `Out_channel.open_gen`
   take these constructors too.
+- **Exception constants** (`Not_found`, `Exit`, `End_of_file`, `Division_by_zero`) are values of type `exn` in
+  `27_callback_mod.types`. `Callback.register_exception` takes an `exn`, and nothing in the stdlib builds
+  one, so examples need a name for it. OCaml accepts the constructors as written. Only constructors without
+  arguments are given: a bare `Failure` is not an OCaml expression, and the loader asks OCaml about every
+  name on its own.
 
 ## Names left out
 
