@@ -561,14 +561,14 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "list", "option_mod", "pair_mod", "result_mod", "string_mod", "triple_mod", "unit"
             )
         ),
-        // StrSet = Set.Make (String). The Seq values come from `List.to_seq`, and `split`'s result is taken apart
-        // with Triple.
+        // StrSet = Set.Make (String). The Seq values come from `List.to_seq`, `split`'s result is taken apart
+        // with Triple, and the `string -> unit` callbacks are `(:=) (ref Str)` and the like.
         OCamlModuleGroup(
             "set_mod",
             listOf("68_set_mod"),
             deps = listOf(
-                "arith", "boolean", "comparison", "fun_mod", "list", "option_mod", "pair", "pair_mod", "str", "strconv",
-                "triple_mod", "unit"
+                "arith", "boolean", "comparison", "fun_mod", "list", "option_mod", "pair", "pair_mod", "ref", "str",
+                "strconv", "triple_mod", "unit"
             )
         ),
         // IntMinQueue = Pqueue.MakeMin (Int). The `int array` arguments come from `Array.make`, `Array.of_list` and
