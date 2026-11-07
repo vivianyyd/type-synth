@@ -22,11 +22,18 @@ How to write examples under these rules is in `EXAMPLES.md`.
 
 ## Definitions that aren't in the stdlib
 
-Both are in `stdlibSource.prelude` (`src/test/kotlin/testutil/ocaml/OCamlStdlib.kt`), which OCaml
+All of them are in `stdlibSource.prelude` (`src/test/kotlin/testutil/ocaml/OCamlStdlib.kt`), which OCaml
 checks before the examples. The search never sees the prelude, only .types files and examples.
 
 - **`StrMap = Map.Make (String)`.** Examples can't apply a functor, so `51_map_mod` uses this one
   instance of `Map`. It is the only instance: no other key type is tested.
+- **`StrSet = Set.Make (String)`.** The same for `68_set_mod`: one instance, with strings as elements, so no
+  other element type is tested.
+- **`IntMinQueue = Pqueue.MakeMin (Int)`.** The same for `78_pqueue_mod`: one instance, with ints as elements
+  (`Int.t` is `int`). The other three functors (`MakeMax`, `MakeMinPoly`, `MakeMaxPoly`) are left out.
+  `MakeMax`'s values are `MakeMin`'s with `min` in the names changed to `max` (`max_elt`, `get_max_elt`,
+  `pop_max`, `remove_max`) and the same types, so it adds no type to find. The `Poly` functors take a type
+  with a parameter (`'a t`), and examples can't declare one.
 - **`Triple`** (`79_triple_mod.types`, group `triple_mod`): `make`, `fst`, `snd`, `thd` for
   3-tuples, in the style of `Pair`. Examples can't build or take apart a tuple, and the stdlib has
   no functions for 3-tuples, so without it nothing pins `StrMap.split`'s result. Approved 2026-11-06.

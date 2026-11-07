@@ -132,7 +132,7 @@
 67-seq-mod | Seq module (lazy sequences) | Requires Either.t
 // type 'a Seq.t = unit -> 'a Seq.node
 // type +'a Seq.node = Nil | Cons of 'a * 'a Seq.t
-68-set-mod | Set module (functional sets, functor-based)
+68-set-mod | Set module (functional sets, functor-based) | examples use the instance StrSet = Set.Make (String)
 69-stack-mod | Stack module | Requires Seq.t
 // type !'a Stack.t
 // Skipped StdLabels: it is a collection of labeled modules (ArrayLabels, ListLabels, StringLabels)
@@ -162,5 +162,5 @@
 76-pair-mod | Pair module (new in 5.4)
 // type ('a, 'b) Pair.t = 'a * 'b
 77-repr-mod | Repr module - polymorphic/physical comparison (new in 5.4)
-78-pqueue-mod | Pqueue module (priority queues, new in 5.4) | Functor-based, all val entries are module-type signatures
+78-pqueue-mod | Pqueue module (priority queues, new in 5.4) | examples use the instance IntMinQueue = Pqueue.MakeMin (Int)
 79-triple-mod | Triple: not in the stdlib, defined for the examples so they can take apart a triple (StrMap.split's result)

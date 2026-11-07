@@ -111,8 +111,9 @@ fun parseTypesFile(parser: OcamlTypeParser, file: File): Map<String, Signature> 
 
 /**
  * How stdlib examples are written as OCaml: with the labels of every value the stdlib .types files
- * declare, the instances of functors that examples use (see 51_map_mod.types), and Triple (see
- * 79_triple_mod.types). Names are qualified, so no two modules' values share labels.
+ * declare, the instances of functors that examples use (see 51_map_mod.types, 68_set_mod.types and
+ * 78_pqueue_mod.types), and Triple (see 79_triple_mod.types). Names are qualified, so no two modules'
+ * values share labels.
  */
 val stdlibSource: OCamlSource by lazy {
     val parser = OcamlTypeParser()
@@ -121,7 +122,8 @@ val stdlibSource: OCamlSource by lazy {
             .flatMap { parseTypesFile(parser, it).entries }
             .associate { it.key to it.value.labels }
             .filterValues { labels -> labels.any { it != null } },
-        prelude = "module StrMap = Map.Make (String) " +
+        prelude = "module StrMap = Map.Make (String) module StrSet = Set.Make (String) " +
+            "module IntMinQueue = Pqueue.MakeMin (Int) " +
             "module Triple = struct let make a b c = (a, b, c) let fst (a, _, _) = a let snd (_, b, _) = b " +
             "let thd (_, _, c) = c end"
     )
@@ -557,6 +559,26 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             deps = listOf(
                 "arith", "array_mod", "boolean", "buffer_mod", "comparison", "domain_mod", "either_mod", "fun_mod", "io",
                 "list", "option_mod", "pair_mod", "result_mod", "string_mod", "triple_mod", "unit"
+            )
+        ),
+        // StrSet = Set.Make (String). The Seq values come from `List.to_seq`, and `split`'s result is taken apart
+        // with Triple.
+        OCamlModuleGroup(
+            "set_mod",
+            listOf("68_set_mod"),
+            deps = listOf(
+                "arith", "boolean", "comparison", "fun_mod", "list", "option_mod", "pair", "pair_mod", "str", "strconv",
+                "triple_mod", "unit"
+            )
+        ),
+        // IntMinQueue = Pqueue.MakeMin (Int). The `int array` arguments come from `Array.make`, `Array.of_list` and
+        // `Array.init`, and the `int -> unit` callbacks from `(:=) (ref Num)`.
+        OCamlModuleGroup(
+            "pqueue_mod",
+            listOf("78_pqueue_mod"),
+            deps = listOf(
+                "arith", "array_mod", "boolean", "comparison", "fun_mod", "list", "option_mod", "pair_mod", "ref", "str",
+                "strconv", "unit"
             )
         ),
     )
