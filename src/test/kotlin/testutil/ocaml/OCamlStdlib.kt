@@ -591,6 +591,14 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "stdout", "str", "strconv", "unit"
             )
         ),
+        OCamlModuleGroup(
+            "seq_mod",
+            listOf("67_seq_mod"),
+            deps = listOf(
+                "arith", "array_mod", "bool_mod", "boolean", "char_mod", "comparison", "either_mod", "fun_mod", "int_mod",
+                "list", "option_mod", "pair_mod", "ref", "str", "strconv", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
