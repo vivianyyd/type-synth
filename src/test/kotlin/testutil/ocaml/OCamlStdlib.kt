@@ -599,6 +599,19 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "list", "list_ops", "option_mod", "pair_mod", "ref", "stdout", "str", "strconv", "unit"
             )
         ),
+        // Sys.Break is an exn, which only `callback_mod` takes; argv and readdir are string arrays; interactive is a ref
+        OCamlModuleGroup(
+            "sys_mod",
+            listOf("71_sys_mod"),
+            deps = listOf(
+                "arith", "array_mod", "boolean", "callback_mod", "comparison", "float", "option_mod", "ref", "str", "unit"
+            )
+        ),
+        OCamlModuleGroup(
+            "weak_mod",
+            listOf("75_weak_mod"),
+            deps = listOf("arith", "boolean", "comparison", "float", "option_mod", "str", "unit")
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

@@ -60,6 +60,11 @@ checks before the examples. The search never sees the prelude, only .types files
 - **`extern_flags`'s constructors** (`Marshal.No_sharing`, `Marshal.Closures`, `Marshal.Compat_32`) are values of
   type `extern_flags` in `52_marshal_mod.types`. `Marshal.to_string`, `to_bytes`, `to_buffer` and `to_channel`
   take an `extern_flags list`, and nothing builds an `extern_flags`. They are qualified, as OCaml needs.
+- **`Sys`'s constructors without arguments** are values in `71_sys_mod.types`, qualified as OCaml needs:
+  `Sys.Native` and `Sys.Bytecode` (type `backend_type`, the type of `Sys.backend_type`), `Sys.Signal_default` and
+  `Sys.Signal_ignore` (type `signal_behavior`, taken and returned by `Sys.signal` and `Sys.set_signal`), and `Sys.Plus` and
+  `Sys.Tilde` (type `extra_prefix`, which only the record `ocaml_release_info` uses, so no function takes it). `Sys.Break`
+  is a value of type `exn`, so `sys_mod` depends on `callback_mod`, as `parsing_mod` does for `Parse_error`.
 - **`Parsing.Parse_error`** is a value of type `exn` in `59_parsing_mod.types`, qualified as OCaml needs. Only
   `Callback.register_exception` takes an `exn`, so `parsing_mod` depends on `callback_mod`.
 
@@ -118,6 +123,13 @@ checks before the examples. The search never sees the prelude, only .types files
   .types file had its variant, `Known_location` with a record argument). Exceptions are values only for
   `Not_found`, `Exit`, `End_of_file` and `Division_by_zero` (see "Constructors that are names"), so the exn
   arguments are those four.
+- **Sys**: the constructors with arguments, `Signal_handle of (signal -> unit)` and `Other of string` (no example can
+  write them, so no `signal_behavior` or `backend_type` value carries a function or a string), the fields of
+  `ocaml_release_info` (a record; `Sys.ocaml_release` is a value of that type, and no field can be read), and
+  `Sys.Immediate64` (`Make` is a functor, and the module types `Immediate` and `Non_immediate` have no values).
+  `Sys.signal_to_string`'s and `Sys.signal_of_int`'s `signal` is `int`, as in the stdlib.
+- **Weak**: the functor `Weak.Make` and the module type `Weak.S` (`Hashtbl` leaves out its functors for the same reason).
+  `75_weak_mod` has the 8 values of `Weak` itself.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of

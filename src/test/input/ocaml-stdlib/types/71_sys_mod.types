@@ -19,6 +19,9 @@ val io_buffer_size : int
 val interactive : bool ref
 val os_type : string
 // type backend_type = Native | Bytecode | Other of string
+// Examples can't write constructors, so the constructors without arguments are values (see DEVIATIONS.md)
+val Sys.Native : backend_type
+val Sys.Bytecode : backend_type
 val backend_type : backend_type
 val unix : bool
 val win32 : bool
@@ -34,7 +37,11 @@ val runtime_parameters : unit -> string
 val poll_actions : unit -> unit
 // type signal = int
 // type signal_behavior = Signal_default | Signal_ignore | Signal_handle of (signal -> unit)
+val Sys.Signal_default : signal_behavior
+val Sys.Signal_ignore : signal_behavior
 // type extra_prefix = Plus | Tilde
+val Sys.Plus : extra_prefix
+val Sys.Tilde : extra_prefix
 // type extra_info = extra_prefix * string
 // type ocaml_release_info = { major : int; minor : int; patchlevel : int; extra : extra_info option }
 val signal : signal -> signal_behavior -> signal_behavior
@@ -72,6 +79,8 @@ val sigwinch : signal
 val signal_to_string : signal -> string
 val signal_of_int : int -> signal
 val signal_to_int : signal -> int
+// Examples can't write exceptions, so Break is a value (see DEVIATIONS.md)
+val Sys.Break : exn
 val catch_break : bool -> unit
 val ocaml_version : string
 val development_version : bool
