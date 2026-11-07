@@ -33,6 +33,7 @@ val find_map : ('a -> 'b option) -> 'a iarray -> 'b option
 val find_mapi : (int -> 'a -> 'b option) -> 'a iarray -> 'b option
 val sort : ('a -> 'a -> int) -> 'a iarray -> 'a iarray
 val stable_sort : ('a -> 'a -> int) -> 'a iarray -> 'a iarray
+val fast_sort : ('a -> 'a -> int) -> 'a iarray -> 'a iarray
 val split : ('a * 'b) iarray -> 'a iarray * 'b iarray
 val combine : 'a iarray -> 'b iarray -> ('a * 'b) iarray
 val to_seq : 'a iarray -> 'a Seq.t

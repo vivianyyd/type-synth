@@ -458,6 +458,16 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "str", "strconv", "unit"
             )
         ),
+        // The Seq values come from `List.to_seq`, and `Iarray.to_array` and `Iarray.of_array` give the
+        // arrays, since Array has no group.
+        OCamlModuleGroup(
+            "iarray_mod",
+            listOf("43_iarray_mod"),
+            deps = listOf(
+                "arith", "boolean", "char", "comparison", "float", "fun_mod", "list", "option_mod", "pair_mod", "stdout",
+                "str", "strconv", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
