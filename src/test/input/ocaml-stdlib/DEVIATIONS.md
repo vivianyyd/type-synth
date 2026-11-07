@@ -76,8 +76,6 @@ checks before the examples. The search never sees the prelude, only .types files
   `get`, `set`, `blit`, `blit_string`, `fill` and `escaped`, and the stdlib documents none of them. Bytes
   values in the examples come from `String.to_bytes` (given by `string_mod`) as well as from Bytes' own
   functions.
-- **`Atomic.Loc`** (OCaml 5.4): its values come from `[%atomic.loc r.field]`, which examples can't
-  write, so `23_atomic_mod.types` leaves the submodule out. `Atomic.t`'s functions cover the same uses.
 - **Array**: `unsafe_get` and `unsafe_set` (the types of `get` and `set`, so examples can't tell them
   apart) and the `Floatarray` submodule (a separate float array type with its own functions) are left
   out. `Array.t` is an alias of `array`, so there is no value to give it.
