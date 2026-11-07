@@ -607,10 +607,11 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "arith", "array_mod", "boolean", "callback_mod", "comparison", "float", "option_mod", "ref", "str", "unit"
             )
         ),
+        // Fun.compose and Fun.flip build functions of one weak array, which (=) compares to share its element type
         OCamlModuleGroup(
             "weak_mod",
             listOf("75_weak_mod"),
-            deps = listOf("arith", "boolean", "comparison", "float", "option_mod", "str", "unit")
+            deps = listOf("arith", "boolean", "comparison", "float", "fun_mod", "option_mod", "str", "unit")
         ),
     )
         .also { groups ->
