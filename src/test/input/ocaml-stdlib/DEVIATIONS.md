@@ -216,16 +216,21 @@ checks before the examples. The search never sees the prelude, only .types files
   Before `dynarray_mod` depended on `array_mod`, a run with `blit`'s examples cut to a fifth also stopped at
   `append_array`, because `to_array` fixed the `array` label with no parameter; `array_mod` now gives it.
 
-- **`ephemeron_mod`**: the search returns `Bucket.t` (in `K1`, `K2` and `Kn`) with no type parameters, so all 18 `Bucket`
-  names are wrong; the true types have `('k, 'd) Bucket.t`. A bucket comes only from `Bucket.make`, so it is a fresh
-  value in every example, and its operations return `unit`, `int` or an option, never a bucket. A bucket's type
-  therefore never meets another constraint than the one operation applied to it, and arity 0, with every operation
-  taking its own free key and data types, accepts and rejects exactly the same examples. No example can show the
-  parameters, as with `type_mod`. `Kn.make` and `Kn.query` also differ from the .types file, with the parameters of
-  `Kn.t` in the other order (data, key), which no example can tell apart. Every other name (`K1`, `K2`, `make`,
-  `query`) gets its true type. With the default settings the search times out (1800 s) or runs out of memory in
-  the round of `K2.query`, `Kn.Bucket.make` and `Kn.query`; with `names-per-round=1,depth-bound=6` on
-  `resolve-on-clash` it answers in 835 s.
+- **`ephemeron_mod`** is not solved. Two things differ from the .types file:
+  - A bucket comes only from `Bucket.make`, a fresh value in every example, so only `Fun.flip`/`Fun.compose` examples
+    (see EXAMPLES.md, "Parameters that no value shows") can tie its key and data types: functions of one bucket whose
+    types another function fixes, compared with `(=)`. The group has these for every `Bucket` function of `K1`, `K2`
+    and `Kn`. They are enough when `make` and the functions are solved in one round (a test group with `make` and
+    `add` returns `Bucket.t` with the right parameters), but the search can't use them in this group. With the default
+    settings the schedule puts `Bucket.make` in an earlier round than the functions of its bucket, so no example
+    tells its arity in that round, it is committed as 0, and later rounds fail; the search times out (1800 s) in
+    round 0. With `names-per-round=1,depth-bound=6` on `resolve-on-clash`, the clash is found, but searching the
+    merged rounds again finds no solution, and each retry re-solves rounds for every order of `K1.make`'s and
+    `K2.make`'s parameters; it times out (1800 s) in round 4. Before the `Bucket` examples it answered in 835 s,
+    with all 18 `Bucket` names wrong (arity 0). One round of the 8 `K1` names alone also times out (1200 s).
+  - `Kn.make` and `Kn.query` come back with the parameters of `Kn.t` in the other order (data, key). The benchmark
+    compares a label's parameters by position, so this scores as wrong, but no example can tell the orders apart: they
+    are the same abstract type with its parameters renamed, and `Kn.t` values come only from `Kn.make`.
 - **`gc_mod`**: the search returns `Memprof.null_tracker : tracker` and `Memprof.start : float -> tracker -> t` with no
   type parameters; the true types have `('minor, 'major) tracker`. Only the fields of a tracker (a record, which
   examples can't use) mention the parameters, and `null_tracker` is the only tracker, so no example can show them.
