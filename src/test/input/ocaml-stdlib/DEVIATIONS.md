@@ -245,12 +245,14 @@ checks before the examples. The search never sees the prelude, only .types files
 
 ## Settings some groups need
 
-`list`, `queue_mod`, `pair_mod`, `map_mod`, `either_mod`, `result_mod`, `float_mod` and `seq_mod` are
-correct only on branch `resolve-on-clash`, with `--variant names-per-round=1,depth-bound=6`. Other groups
-are correct with the default settings, except those under "Known wrong results". With the default
-settings, `float_mod` times out in the round of `Float.Array.compare`, `find_mapi` and `map2`, and
-`seq_mod` in the round of `sorted_merge`, `exists2` and `for_all2`, whose three types need more than the
-30-hole bound.
+`map_mod` and `seq_mod` are correct with `--variant names-per-round=1,depth-bound=6`. `list`, `queue_mod`,
+`pair_mod`, `either_mod`, `result_mod` and `float_mod` are correct only on branch `resolve-on-clash`, with
+that variant. `pair_mod`, `either_mod` and `result_mod` time out (1800 s) with the variant alone, against 30 s,
+62 s and 405 s on `resolve-on-clash`; `list` and `float_mod` also time out with it alone, but that run had 7
+benchmarks at once, and they take 2197 s and 1475 s on `resolve-on-clash`. Other groups are correct with the
+default settings, except those under "Known wrong results". With the default settings, `float_mod` times
+out in the round of `Float.Array.compare`, `find_mapi` and `map2`, and `seq_mod` in the round of
+`sorted_merge`, `exists2` and `for_all2`, whose three types need more than the 30-hole bound.
 
 ## Copy in tyind
 
