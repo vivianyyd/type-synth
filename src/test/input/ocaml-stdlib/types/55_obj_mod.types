@@ -38,24 +38,24 @@ val int_tag : int
 val out_of_heap_tag : int
 val unaligned_tag : int
 // Obj--Extension_constructor submodule
-// type Extension_constructor.t = extension_constructor
+// Extension_constructor.t is Stdlib's extension_constructor, so these types use that
 val Extension_constructor.of_val : 'a -> extension_constructor
 val Extension_constructor.name : extension_constructor -> string
 val Extension_constructor.id : extension_constructor -> int
 // Obj--Ephemeron submodule
-// type Ephemeron.obj_t = t
+// Ephemeron.obj_t is t, so these types use t
 // type Ephemeron.t
 val Ephemeron.create : int -> Ephemeron.t
 val Ephemeron.length : Ephemeron.t -> int
-val Ephemeron.get_key : Ephemeron.t -> int -> Ephemeron.obj_t option
-val Ephemeron.get_key_copy : Ephemeron.t -> int -> Ephemeron.obj_t option
-val Ephemeron.set_key : Ephemeron.t -> int -> Ephemeron.obj_t -> unit
+val Ephemeron.get_key : Ephemeron.t -> int -> t option
+val Ephemeron.get_key_copy : Ephemeron.t -> int -> t option
+val Ephemeron.set_key : Ephemeron.t -> int -> t -> unit
 val Ephemeron.unset_key : Ephemeron.t -> int -> unit
 val Ephemeron.check_key : Ephemeron.t -> int -> bool
 val Ephemeron.blit_key : Ephemeron.t -> int -> Ephemeron.t -> int -> int -> unit
-val Ephemeron.get_data : Ephemeron.t -> Ephemeron.obj_t option
-val Ephemeron.get_data_copy : Ephemeron.t -> Ephemeron.obj_t option
-val Ephemeron.set_data : Ephemeron.t -> Ephemeron.obj_t -> unit
+val Ephemeron.get_data : Ephemeron.t -> t option
+val Ephemeron.get_data_copy : Ephemeron.t -> t option
+val Ephemeron.set_data : Ephemeron.t -> t -> unit
 val Ephemeron.unset_data : Ephemeron.t -> unit
 val Ephemeron.check_data : Ephemeron.t -> bool
 val Ephemeron.blit_data : Ephemeron.t -> Ephemeron.t -> unit

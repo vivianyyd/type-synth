@@ -1,4 +1,8 @@
 // Parsing
+// Left out: parser_env and parse_tables (nothing builds either, so no example can use peek_val or
+// yyparse) and YYexit (a constructor with an argument); see DEVIATIONS.md
+// Examples can't write exceptions, so Parse_error is a value (see DEVIATIONS.md)
+val Parsing.Parse_error : exn
 val symbol_start : unit -> int
 val symbol_end : unit -> int
 val rhs_start : int -> int
@@ -9,3 +13,5 @@ val rhs_start_pos : int -> Lexing.position
 val rhs_end_pos : int -> Lexing.position
 val clear_parser : unit -> unit
 val set_trace : bool -> bool
+val is_current_lookahead : 'a -> bool
+val parse_error : string -> unit

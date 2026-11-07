@@ -50,6 +50,11 @@ checks before the examples. The search never sees the prelude, only .types files
   `41_gc_mod.types`, named `Gc.Memprof.Normal` and so on, with type `Gc.Memprof.allocation_source`. The only other
   source of that type is a field of `Gc.Memprof.allocation`, a record that no example can get, and
   `string_of_allocation_source` takes one.
+- **`extern_flags`'s constructors** (`Marshal.No_sharing`, `Marshal.Closures`, `Marshal.Compat_32`) are values of
+  type `extern_flags` in `52_marshal_mod.types`. `Marshal.to_string`, `to_bytes`, `to_buffer` and `to_channel`
+  take an `extern_flags list`, and nothing builds an `extern_flags`. They are qualified, as OCaml needs.
+- **`Parsing.Parse_error`** is a value of type `exn` in `59_parsing_mod.types`, qualified as OCaml needs. Only
+  `Callback.register_exception` takes an `exn`, so `parsing_mod` depends on `callback_mod`.
 
 ## Names left out
 
@@ -76,6 +81,10 @@ checks before the examples. The search never sees the prelude, only .types files
   `Gc.Memprof.null_tracker`.
 - **`Lexing.engine`, `Lexing.new_engine`**: they take a `lex_tables`, which only ocamllex's output builds, so no example
   can call them.
+- **Parsing**: `yyparse` (takes a `parse_tables` record), `peek_val` (takes a `parser_env`, which only the
+  action functions inside a `parse_tables` receive), the types `parse_tables` and `parser_env`, and the
+  constructor `YYexit of Obj.t`. `Lexing.position` values come only from `Parsing`'s own `*_pos` functions: `Lexing`
+  has no group on this branch, so `Lexing.dummy_pos` is not given.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of

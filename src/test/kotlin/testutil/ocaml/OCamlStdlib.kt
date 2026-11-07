@@ -502,6 +502,31 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "stdout", "str", "string_mod", "unit"
             )
         ),
+        // The channels are `stdin`, `stdout` and `stderr`; bytes come from `Bytes.make` and `String.to_bytes`.
+        OCamlModuleGroup(
+            "marshal_mod",
+            listOf("52_marshal_mod"),
+            deps = listOf(
+                "arith", "boolean", "bytes_mod", "comparison", "float", "io", "list", "option_mod", "str", "string_mod",
+                "unit"
+            )
+        ),
+        // `Int32.of_int` and `Nativeint.of_int` give the int32 and nativeint arguments.
+        OCamlModuleGroup(
+            "obj_mod",
+            listOf("55_obj_mod"),
+            deps = listOf(
+                "arith", "boolean", "comparison", "float", "int32_mod", "list", "nativeint_mod", "option_mod", "str", "unit"
+            )
+        ),
+        // `Callback.register_exception` takes `Parse_error`.
+        OCamlModuleGroup(
+            "parsing_mod",
+            listOf("59_parsing_mod"),
+            deps = listOf(
+                "arith", "boolean", "callback_mod", "comparison", "float", "list", "option_mod", "str", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
