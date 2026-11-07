@@ -478,12 +478,14 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "stdout", "str", "strconv", "unit"
             )
         ),
-        // Kn's keys are arrays, which only `Array.make` builds
+        // Kn's keys are arrays, which only `Array.make` builds. Fun.compose and Fun.flip build functions of one bucket, which
+        // (=) compares to share its key and data types
         OCamlModuleGroup(
             "ephemeron_mod",
             listOf("36_ephemeron_mod"),
             deps = listOf(
-                "arith", "array_mod", "boolean", "comparison", "float", "list", "option_mod", "pair_mod", "str", "unit"
+                "arith", "array_mod", "boolean", "comparison", "float", "fun_mod", "list", "option_mod", "pair_mod", "str",
+                "unit"
             )
         ),
         // The finalisers and ramp_up's bodies are print_newline, flush_all, read_line, read_int, read_float and Fun.const
