@@ -403,6 +403,12 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "io", "list", "option_mod", "pair", "pair_mod", "str", "string_mod", "uchar_mod", "unit"
             )
         ),
+        OCamlModuleGroup("atomic_mod", listOf("23_atomic_mod"), deps = listOf("arith", "boolean", "comparison", "str", "unit")),
+        OCamlModuleGroup(
+            "array_mod",
+            listOf("22_array_mod"),
+            deps = listOf("arith", "boolean", "comparison", "float", "list", "option_mod", "pair", "str", "strconv", "unit")
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

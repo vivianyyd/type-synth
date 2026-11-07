@@ -76,6 +76,11 @@ checks before the examples. The search never sees the prelude, only .types files
   `get`, `set`, `blit`, `blit_string`, `fill` and `escaped`, and the stdlib documents none of them. Bytes
   values in the examples come from `String.to_bytes` (given by `string_mod`) as well as from Bytes' own
   functions.
+- **`Atomic.Loc`** (OCaml 5.4): its values come from `[%atomic.loc r.field]`, which examples can't
+  write, so `23_atomic_mod.types` leaves the submodule out. `Atomic.t`'s functions cover the same uses.
+- **Array**: `unsafe_get` and `unsafe_set` (the types of `get` and `set`, so examples can't tell them
+  apart) and the `Floatarray` submodule (a separate float array type with its own functions) are left
+  out. `Array.t` is an alias of `array`, so there is no value to give it.
 - **String**: no Bytes, Uchar, Int32 or Int64 function is given, so `bytes`, `Uchar.utf_decode`,
   `int32` and `int64` values come only from String's own functions.
 
@@ -96,6 +101,12 @@ checks before the examples. The search never sees the prelude, only .types files
   the time (the three types need size about 27 of the 30-hole bound). With 1 name per round, `add_substitute` is found in 35 s, but `to_seqi` (`(int * char) Seq.t`) needs
   outer depth 2 and every earlier round succeeds at depth 1, so the search resolves label clashes at depth 1
   (re-searching ever larger merged rounds) before it tries depth 2.
+- **`array_mod`** is not solved within 30 minutes, with the default settings or with
+  `names-per-round=1,depth-bound=6` (also on `resolve-on-clash`). Every name up to `fold_left_map` gets
+  its true type. `fold_left_map` has no solution at outer depth 2 (its type nests a pair in a function
+  result in a function parameter), so the pass at depth 2 goes on to resolve clashes by re-solving a
+  round of all earlier names, which takes most of the time. With only `fold_left_map` and a few other
+  names, `resolve-on-clash` finds it at depth 3 in 10 minutes.
 
 ## Settings some groups need
 
