@@ -126,6 +126,12 @@ checks before the examples. The search never sees the prelude, only .types files
   result in a function parameter), so the pass at depth 2 goes on to resolve clashes by re-solving a
   round of all earlier names, which takes most of the time. With only `fold_left_map` and a few other
   names, `resolve-on-clash` finds it at depth 3 in 10 minutes.
+- **`iarray_mod`** times out (1800 s). With the default settings it times out at 1000 s in the rounds around
+  `Iarray.fold_left_map`, which needs outer depth 3. With `names-per-round=1,depth-bound=6` on
+  `resolve-on-clash` it was correct (39/39, 249 s) before it depended on `array_mod`; now `Array.make` is given
+  with its `array` label, `Iarray.to_array` is solved with a new label, and the `Array.make` examples need
+  the two to be equal. `resolve-on-clash` re-solves only rounds, and the given label belongs to no round, so
+  it re-solves rounds 21 to 38 again and again until the time runs out.
 - **`dynarray_mod` (`33_dynarray_mod`) is not solved** (1800 s, with the default settings and with
   `names-per-round=1,depth-bound=6` on `resolve-on-clash`). The time goes to rounds that hold `blit`: with
   the default settings the round of `blit`, `of_seq` and `to_array` takes 1792 s in concretize (3.1 million
@@ -152,11 +158,10 @@ checks before the examples. The search never sees the prelude, only .types files
 
 ## Settings some groups need
 
-`list`, `queue_mod`, `pair_mod`, `map_mod`, `either_mod`, `result_mod`, `float_mod` and `iarray_mod` are
-correct only on branch `resolve-on-clash`, with `--variant names-per-round=1,depth-bound=6`. Other groups
-are correct with the default settings, except those under "Known wrong results". (`float_mod` with the
-default settings times out in the round of `Float.Array.compare`, `find_mapi` and `map2`; `iarray_mod`
-times out at 1000 s in the rounds around `Iarray.fold_left_map`.)
+`list`, `queue_mod`, `pair_mod`, `map_mod`, `either_mod`, `result_mod` and `float_mod` are correct only
+on branch `resolve-on-clash`, with `--variant names-per-round=1,depth-bound=6`. Other groups are correct
+with the default settings, except those under "Known wrong results". (`float_mod` with the default
+settings times out in the round of `Float.Array.compare`, `find_mapi` and `map2`.)
 
 ## Copy in tyind
 
