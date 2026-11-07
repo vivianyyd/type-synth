@@ -111,15 +111,14 @@ checks before the examples. The search never sees the prelude, only .types files
   result in a function parameter), so the pass at depth 2 goes on to resolve clashes by re-solving a
   round of all earlier names, which takes most of the time. With only `fold_left_map` and a few other
   names, `resolve-on-clash` finds it at depth 3 in 10 minutes.
-- **`dynarray_mod` (`33_dynarray_mod`) is not solved.** `fold_left`, `exists2` and the other functions
-  with a two-parameter callback need outer depth 2, and every name fails at depth 1 first. The search
-  then re-solves the names before it together, and that takes over 20 minutes when `blit` is among them
-  (about 2.4 million candidates). `blit` is picked early because it has many examples. With `blit`'s
-  examples cut to a fifth the search got through 45 names at depth 2 in a few minutes and stopped at
-  `append_array`: `to_array` fixed the `array` label before `of_array` and `append_array` existed (the
-  same cause as `List.to_seq`/`List.of_seq` above). Tried: default settings and
-  `names-per-round=1,depth-bound=6` on `resolve-on-clash`; neither finishes within 20 minutes. These runs
-  were before `dynarray_mod` depended on `array_mod`, which now gives the `array` label its parameter.
+- **`dynarray_mod` (`33_dynarray_mod`) is not solved** (1800 s, with the default settings and with
+  `names-per-round=1,depth-bound=6` on `resolve-on-clash`). The time goes to rounds that hold `blit`: with
+  the default settings the round of `blit`, `of_seq` and `to_array` takes 1792 s in concretize (3.1 million
+  candidates). With one name per round, `fold_left`, `exists2` and the other functions with a two-parameter
+  callback need outer depth 2, every name fails at depth 1 first, and the search then re-solves the names
+  before it as one round; the merged round of `make`, `of_list`, `get`, `blit` and `of_seq` takes 1668 s.
+  Before `dynarray_mod` depended on `array_mod`, a run with `blit`'s examples cut to a fifth also stopped at
+  `append_array`, because `to_array` fixed the `array` label with no parameter; `array_mod` now gives it.
 
 ## Settings some groups need
 
