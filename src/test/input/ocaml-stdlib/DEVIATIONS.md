@@ -60,13 +60,7 @@ checks before the examples. The search never sees the prelude, only .types files
   with its arguments swapped, which `64_result_mod` already has.
 - **`Float.ArrayLabels`**: the same functions as `Float.Array` with labelled parameters (`Array` has the
   same skip in `README`). Everything in `Float.Array` is in `38_float_mod`.
-- **`Dynarray.unsafe_to_iarray`**: `capacity:int -> ('a t -> unit) -> 'a iarray`. `Iarray` has no group
-  that `dynarray_mod` depends on, and the function is unsafe by design.
 - **`Iarray.unsafe_get`**: an `external` for `get` without the bounds check; `get` covers it.
-- **Arrays in `Iarray`'s examples**: `Array` has no group, so an `'a array` comes only from
-  `Iarray.to_array`. The old `Array.make` examples in `43_iarray_mod.exs` are left out of the query.
-- **Arrays in `Random`'s examples**: `Random.State.make` and `Random.full_init` take an `int array`, which
-  comes from `Iarray.to_array` (`Random` depends on `iarray_mod`), since `Array` has no group.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of

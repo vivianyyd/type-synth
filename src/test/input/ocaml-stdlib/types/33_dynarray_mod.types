@@ -64,4 +64,4 @@ val ensure_extra_capacity : 'a t -> int -> unit
 val fit_capacity : 'a t -> unit
 val set_capacity : 'a t -> int -> unit
 val reset : 'a t -> unit
-// Left out: unsafe_to_iarray : capacity:int -> ('a t -> unit) -> 'a iarray (see DEVIATIONS.md)
+val unsafe_to_iarray : capacity:int -> ('a t -> unit) -> 'a iarray

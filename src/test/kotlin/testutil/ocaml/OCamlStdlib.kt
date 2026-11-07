@@ -451,21 +451,20 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
         ),
         // The Seq values come from `List.to_seq`.
         OCamlModuleGroup(
-            "dynarray_mod",
-            listOf("33_dynarray_mod"),
-            deps = listOf(
-                "arith", "array_mod", "boolean", "char", "comparison", "float", "fun_mod", "list", "option_mod", "stdout",
-                "str", "strconv", "unit"
-            )
-        ),
-        // The Seq values come from `List.to_seq`, and `Iarray.to_array` and `Iarray.of_array` give the
-        // arrays, since Array has no group.
-        OCamlModuleGroup(
             "iarray_mod",
             listOf("43_iarray_mod"),
             deps = listOf(
-                "arith", "boolean", "char", "comparison", "float", "fun_mod", "list", "option_mod", "pair_mod", "stdout",
-                "str", "strconv", "unit"
+                "arith", "array_mod", "boolean", "char", "comparison", "float", "fun_mod", "list", "option_mod", "pair_mod",
+                "stdout", "str", "strconv", "unit"
+            )
+        ),
+        // The Seq values come from `List.to_seq`.
+        OCamlModuleGroup(
+            "dynarray_mod",
+            listOf("33_dynarray_mod"),
+            deps = listOf(
+                "arith", "array_mod", "boolean", "char", "comparison", "float", "fun_mod", "iarray_mod", "list", "option_mod",
+                "stdout", "str", "strconv", "unit"
             )
         ),
         // The `int array` arguments of `Random.State.make` and `Random.full_init` come from `Iarray.to_array`.

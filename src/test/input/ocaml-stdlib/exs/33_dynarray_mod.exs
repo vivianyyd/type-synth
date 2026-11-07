@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 6_float.types, 7_str.types, 8_char.types, 9_unit.types, 10_strconv.types, 14_stdout.types, 22_array_mod.types, 33_dynarray_mod.types, 40_fun_mod.types, 50_list_mod.types, 57_option_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 6_float.types, 7_str.types, 8_char.types, 9_unit.types, 10_strconv.types, 14_stdout.types, 22_array_mod.types, 33_dynarray_mod.types, 40_fun_mod.types, 43_iarray_mod.types, 50_list_mod.types, 57_option_mod.types
 
 // Construction
 (Dynarray.create Unit)
@@ -4989,3 +4989,14 @@
 ((=) Unit (Dynarray.reset (Dynarray.make Num (List.cons Num Nil))))
 (Dynarray.reset (Dynarray.make Num (Option.some Num)))
 ((=) Unit (Dynarray.reset (Dynarray.make Num (Option.some Num))))
+
+// unsafe_to_iarray: capacity, then a function that fills the Dynarray
+(Dynarray.unsafe_to_iarray Num Dynarray.clear)
+(Iarray.length (Dynarray.unsafe_to_iarray Num Dynarray.clear))
+((=) (Dynarray.unsafe_to_iarray Num (Fun.flip Dynarray.add_last Num)) (Iarray.init Num succ))
+((=) (Dynarray.unsafe_to_iarray Num (Fun.flip Dynarray.add_last Str)) (Iarray.init Num string_of_int))
+((=) (Dynarray.unsafe_to_iarray Num (Fun.flip Dynarray.add_last Num)) (Iarray.init Num string_of_int))
+(Dynarray.unsafe_to_iarray Str Dynarray.clear)
+(Dynarray.unsafe_to_iarray Num Num)
+(Dynarray.unsafe_to_iarray Num Dynarray.length)
+(Dynarray.length (Dynarray.unsafe_to_iarray Num Dynarray.clear))
