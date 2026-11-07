@@ -527,6 +527,28 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "arith", "boolean", "callback_mod", "comparison", "float", "lexing_mod", "list", "option_mod", "str", "unit"
             )
         ),
+        // The exn values come from callback_mod and the channels from io. The arrays that
+        // Printexc.raw_backtrace_entries and backtrace_slots return are read with Array.get and Array.length. The
+        // printers and handlers are built with Fun.const and Fun.compose.
+        OCamlModuleGroup(
+            "printexc_mod",
+            listOf("60_printexc_mod"),
+            deps = listOf(
+                "arith", "array_mod", "boolean", "callback_mod", "char", "comparison", "float", "fun_mod", "io", "list",
+                "option_mod", "stdout", "str", "strconv", "unit"
+            )
+        ),
+        // Only Scanning's values and `unescaped`: the other names take format strings (see DEVIATIONS.md).
+        // from_channel takes `stdin` and `open_in`'s channels; from_function takes `Fun.compose Char.chr read_int`
+        // and the like.
+        OCamlModuleGroup(
+            "scanf_mod",
+            listOf("65_scanf_mod"),
+            deps = listOf(
+                "arith", "boolean", "char_mod", "comparison", "float", "fun_mod", "in", "io", "list", "option_mod", "stdin",
+                "stdout", "str", "strconv", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->
