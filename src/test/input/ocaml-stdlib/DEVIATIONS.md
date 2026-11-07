@@ -135,12 +135,29 @@ checks before the examples. The search never sees the prelude, only .types files
   Before `dynarray_mod` depended on `array_mod`, a run with `blit`'s examples cut to a fifth also stopped at
   `append_array`, because `to_array` fixed the `array` label with no parameter; `array_mod` now gives it.
 
+- **`ephemeron_mod`**: the search returns `Bucket.t` (in `K1`, `K2` and `Kn`) with no type parameters, so all 18 `Bucket`
+  names are wrong; the true types have `('k, 'd) Bucket.t`. A bucket comes only from `Bucket.make`, so it is a fresh
+  value in every example, and its operations return `unit`, `int` or an option, never a bucket. A bucket's type
+  therefore never meets another constraint than the one operation applied to it, and arity 0, with every operation
+  taking its own free key and data types, accepts and rejects exactly the same examples. No example can show the
+  parameters, as with `type_mod`. `Kn.make` and `Kn.query` also differ from the .types file, with the parameters of
+  `Kn.t` in the other order (data, key), which no example can tell apart. Every other name (`K1`, `K2`, `make`,
+  `query`) gets its true type. With the default settings the search times out (1800 s) or runs out of memory in
+  the round of `K2.query`, `Kn.Bucket.make` and `Kn.query`; with `names-per-round=1,depth-bound=6` on
+  `resolve-on-clash` it answers in 835 s.
+- **`gc_mod`**: the search returns `Memprof.null_tracker : tracker` and `Memprof.start : float -> tracker -> t` with no
+  type parameters; the true types have `('minor, 'major) tracker`. Only the fields of a tracker (a record, which
+  examples can't use) mention the parameters, and `null_tracker` is the only tracker, so no example can show them.
+  Every other name gets its true type, with either setting, in a few seconds.
+
 ## Settings some groups need
 
 `list`, `queue_mod`, `pair_mod`, `map_mod`, `either_mod`, `result_mod`, `float_mod` and `iarray_mod` are correct only on branch
 `resolve-on-clash`, with `--variant names-per-round=1,depth-bound=6`. Other groups are correct with the
 default settings. (`float_mod` with the default settings times out in the round of `Float.Array.compare`,
 `find_mapi` and `map2`; `iarray_mod` times out at 1000 s in the rounds around `Iarray.fold_left_map`.)
+default settings, except those under "Known wrong results". (`float_mod` with the default settings times out in the round of `Float.Array.compare`,
+`find_mapi` and `map2`.)
 
 ## Copy in tyind
 
