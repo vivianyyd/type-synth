@@ -476,6 +476,32 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
                 "stdout", "str", "strconv", "unit"
             )
         ),
+        // Kn's keys are arrays, which only `Array.make` builds
+        OCamlModuleGroup(
+            "ephemeron_mod",
+            listOf("36_ephemeron_mod"),
+            deps = listOf(
+                "arith", "array_mod", "boolean", "comparison", "float", "list", "option_mod", "pair_mod", "str", "unit"
+            )
+        ),
+        // The finalisers and ramp_up's bodies are print_newline, flush_all, read_line, read_int, read_float and Fun.const
+        OCamlModuleGroup(
+            "gc_mod",
+            listOf("41_gc_mod"),
+            deps = listOf(
+                "arith", "boolean", "comparison", "float", "fun_mod", "io", "list", "option_mod", "out", "pair_mod",
+                "stdin", "stdout", "str", "triple_mod", "unit"
+            )
+        ),
+        // from_function's argument is a `bytes -> int -> int`, such as Bytes.get_uint8
+        OCamlModuleGroup(
+            "lexing_mod",
+            listOf("49_lexing_mod"),
+            deps = listOf(
+                "arith", "boolean", "bytes_mod", "char", "comparison", "float", "fun_mod", "io", "list", "option_mod",
+                "stdout", "str", "string_mod", "unit"
+            )
+        ),
     )
         .also { groups ->
             groups.forEachIndexed { i, group ->

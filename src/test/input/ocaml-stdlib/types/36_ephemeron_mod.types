@@ -1,20 +1,6 @@
 // Ephemeron
-// Ephemeron--S module type (weak hash table interface)
-// type S.key
-// type 'a S.t
-// val S.create : int -> 'a S.t
-// val S.clear : 'a S.t -> unit
-// val S.reset : 'a S.t -> unit
-// val S.copy : 'a S.t -> 'a S.t
-// val S.add : 'a S.t -> S.key -> 'a -> unit
-// val S.remove : 'a S.t -> S.key -> unit
-// val S.find : 'a S.t -> S.key -> 'a
-// val S.find_opt : 'a S.t -> S.key -> 'a option
-// val S.find_all : 'a S.t -> S.key -> 'a list
-// val S.replace : 'a S.t -> S.key -> 'a -> unit
-// val S.mem : 'a S.t -> S.key -> bool
-// val S.length : 'a S.t -> int
-// val S.clean : 'a S.t -> unit
+// Skipped: the module types S and SeededS and the functors K1.Make, K1.MakeSeeded, K2.Make, K2.MakeSeeded, Kn.Make and
+// Kn.MakeSeeded (examples can't apply a functor)
 // Ephemeron--K1 submodule (one-key ephemerons)
 // type ('k,'d) K1.t
 val K1.make : 'k -> 'd -> ('k, 'd) K1.t

@@ -49,6 +49,7 @@
 35-either-mod | Either module
 // type Either.t = Left of 'a | Right of 'b
 36-ephemeron-mod | Ephemeron module (weak hash tables)
+// Skipped: the module types S and SeededS and the functors Make and MakeSeeded of K1, K2 and Kn (examples can't apply a functor)
 37-filename-mod | Filename module
 38-float-mod | Float module | Requires pairs, Seq.t, fpclass type
 // type Float.fpclass = FP_normal | FP_subnormal | FP_zero | FP_infinite | FP_nan
@@ -62,7 +63,9 @@
 // type Gc.stat (record)
 // type Gc.control (record)
 // type Gc.alarm
-// type Gc.Memprof.allocation_source = Normal | Marshal | Custom
+// type Gc.suspended_collection_work
+// type Gc.Memprof.t
+// type Gc.Memprof.allocation_source = Normal | Marshal | Custom | Map_file
 // type Gc.Memprof.allocation (record)
 // type Gc.Memprof.tracker (record)
 42-hashtbl-mod | Hashtbl module | Requires Seq.t
@@ -86,6 +89,7 @@
 49-lexing-mod | Lexing module (ocamllex runtime)
 // type Lexing.position (record)
 // type Lexing.lexbuf (record)
+// Skipped: Lexing.lex_tables (record), engine and new_engine (examples can't build a lex_tables)
 50-list-mod | List module | Requires Either.t, Seq.t
 // Skipped ListLabels: it is the same as List but with labeled arguments
 51-map-mod | Map module (functional maps, functor-based) | examples use the instance StrMap = Map.Make (String)

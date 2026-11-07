@@ -21,9 +21,22 @@ val finalise_release : unit -> unit
 // type alarm
 val create_alarm : (unit -> unit) -> alarm
 val delete_alarm : alarm -> unit
+val eventlog_pause : unit -> unit
+val eventlog_resume : unit -> unit
+// type suspended_collection_work
+val ramp_up : (unit -> 'a) -> 'a * suspended_collection_work
+val ramp_down : suspended_collection_work -> unit
 // Gc--Memprof submodule
-// type Memprof.allocation_source = Normal | Marshal | Custom
-// type 'a Memprof.allocation = { n_samples : int; size : int; source : allocation_source; callstack : Printexc.raw_backtrace; }
-// type 'a Memprof.tracker = { alloc_minor : 'a allocation -> 'a option; alloc_major : 'a allocation -> 'a option; promote : 'a -> 'a option; dealloc_minor : 'a -> unit; dealloc_major : 'a -> unit; }
-val Memprof.start : rate:float -> stack_size:int -> 'a Memprof.tracker -> unit
+// type Memprof.t
+// type Memprof.allocation_source = Normal | Marshal | Custom | Map_file
+// type Memprof.allocation = private { n_samples : int; size : int; source : allocation_source; callstack : Printexc.raw_backtrace }
+// type ('minor, 'major) Memprof.tracker = { alloc_minor : allocation -> 'minor option; alloc_major : allocation -> 'major option; promote : 'minor -> 'major option; dealloc_minor : 'minor -> unit; dealloc_major : 'major -> unit }
+val Memprof.Normal : Memprof.allocation_source
+val Memprof.Marshal : Memprof.allocation_source
+val Memprof.Custom : Memprof.allocation_source
+val Memprof.Map_file : Memprof.allocation_source
+val Memprof.string_of_allocation_source : Memprof.allocation_source -> string
+val Memprof.null_tracker : ('minor, 'major) Memprof.tracker
+val Memprof.start : sampling_rate:float -> ?callstack_size:int -> ('minor, 'major) Memprof.tracker -> Memprof.t
 val Memprof.stop : unit -> unit
+val Memprof.discard : Memprof.t -> unit

@@ -46,6 +46,10 @@ checks before the examples. The search never sees the prelude, only .types files
   one, so examples need a name for it. OCaml accepts the constructors as written. Only constructors without
   arguments are given: a bare `Failure` is not an OCaml expression, and the loader asks OCaml about every
   name on its own.
+- **`Gc.Memprof.allocation_source`'s constructors** (`Normal`, `Marshal`, `Custom`, `Map_file`) are values in
+  `41_gc_mod.types`, named `Gc.Memprof.Normal` and so on, with type `Gc.Memprof.allocation_source`. The only other
+  source of that type is a field of `Gc.Memprof.allocation`, a record that no example can get, and
+  `string_of_allocation_source` takes one.
 
 ## Names left out
 
@@ -61,6 +65,17 @@ checks before the examples. The search never sees the prelude, only .types files
 - **`Float.ArrayLabels`**: the same functions as `Float.Array` with labelled parameters (`Array` has the
   same skip in `README`). Everything in `Float.Array` is in `38_float_mod`.
 - **`Iarray.unsafe_get`**: an `external` for `get` without the bounds check; `get` covers it.
+- **Ephemeron functors**: `K1.Make`, `K1.MakeSeeded`, `K2.Make`, `K2.MakeSeeded`, `Kn.Make` and `Kn.MakeSeeded`, and the
+  module types `S` and `SeededS` (`Hashtbl` leaves out its functors for the same reason). `36_ephemeron_mod` has
+  the other 24 values, in `K1`, `K2`, `Kn` and their `Bucket`s. Its `Kn` examples build arrays with `Array.make`, so the
+  group depends on `array_mod`.
+- **Records in `Gc` and `Lexing`**: `Gc.stat`, `Gc.control`, `Gc.Memprof.allocation`, `Gc.Memprof.tracker`,
+  `Lexing.position`, `Lexing.lexbuf` and `Lexing.lex_tables` are records, but examples have no record syntax, so no field
+  can be read or built (as with `Complex.t`'s `re` and `im`). Their values come only from functions:
+  `Gc.stat`, `Gc.quick_stat`, `Gc.get`, `Lexing.dummy_pos`, `Lexing.from_string` and so on. The only tracker is
+  `Gc.Memprof.null_tracker`.
+- **`Lexing.engine`, `Lexing.new_engine`**: they take a `lex_tables`, which only ocamllex's output builds, so no example
+  can call them.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of
