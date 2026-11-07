@@ -42,6 +42,9 @@ object Variants {
             Variant("no-result-dependence", "Don't bound label arities by how results depend on arguments") {
                 it.copy(resultDependence = false)
             },
+            Variant("depth-per-round", "Each round tries every outer depth bound before going back a round") {
+                it.copy(depthPerRound = true)
+            },
             Variant(
                 "ocaml-toplevel",
                 "Ask OCaml about examples with ${OCamlGroundTruth.Toplevel.description}",

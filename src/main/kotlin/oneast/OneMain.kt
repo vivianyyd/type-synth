@@ -88,6 +88,12 @@ data class Configuration(
     val resultDependence: Boolean = true,
     /** Which oracle answers whether two expressions have the same type. */
     val oracle: OracleKind = OracleKind.Types,
+    /**
+     * Whether each round tries every outer depth bound before the search goes back to the round
+     * before it. Otherwise all rounds share one outer depth bound, and only when no choice of earlier
+     * rounds' solutions gives a solution at that bound does the search start again at the next.
+     */
+    val depthPerRound: Boolean = false,
 )
 
 enum class OracleKind {

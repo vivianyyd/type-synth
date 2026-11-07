@@ -65,7 +65,7 @@ depends on:
 
 A chain stops at the first step with no solution, a timeout or an error; a wrong step is committed
 to, and the chain goes on. Variants: `default`, `single-round`, `auto3`, `sound`, `simple`,
-`observational`, `ocaml-toplevel`, `no-extra-arities`, `no-result-dependence`, `deepen-arities=N`
+`observational`, `ocaml-toplevel`, `no-extra-arities`, `no-result-dependence`, `depth-per-round`, `deepen-arities=N`
 (any bound N, e.g. `deepen-arities=2`), `names-per-round=N`, `size-bound=N`, `depth-bound=N`. Defined in
 `src/test/kotlin/bench/Benchmarks.kt` and `Variants.kt`.
 

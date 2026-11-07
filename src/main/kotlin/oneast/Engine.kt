@@ -136,10 +136,14 @@ class Engine(
         return nextExamples to nextState
     }
 
+    /**
+     * The solutions of round [round] from [state], each followed by the rest of the schedule. The round
+     * tries each outer depth bound in [depths] in turn, skipping solutions a smaller bound found.
+     */
     private fun searchRec(
         state: SearchState,
         round: Int,
-        outerDepthBound: Int,
+        depths: IntRange,
         extraArities: Int
     ): Sequence<SearchState> = sequence {
         val nextQueryAndSeed = buildNextQuery(state, round)
@@ -148,67 +152,75 @@ class Engine(
             yield(state)
             return@sequence
         }
-        Debug.log { "Current query: ${nextQueryAndSeed.second} with depth bound $outerDepthBound" }
-        val statsId =
-            Stats.newSearch(
-                round,
-                outerDepthBound,
-                scheduled[round],
-                nextQueryAndSeed.first.posNoSubexprs.size,
-                nextQueryAndSeed.first.neg.size
-            )
-        val search =
-            Search(
-                nextQueryAndSeed.second,
-                nextQueryAndSeed.first,
-                oracle(),
-                config.copy(depthBound = outerDepthBound),
-                statsId,
-                extraArities
-            )
-
-        for (solution in search.solutions()) {
-            Debug.log { "Looking for counterexamples for potential solution $solution" }
-            val ctrex =
-                Stats.phase(statsId, Phase.CEGIS) {
-                    CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth::valid) { s, e ->
-                        OneUnification(s, listOf(e)).ok
-                    }
-                        .counterexample()
-                        ?.also { Stats.inc(if (it.second) Count.CEGIS_POS else Count.CEGIS_NEG) }
-                }
-            if (ctrex == null) {
-                Debug.log { "Found no counterexamples" }
-                yieldAll(searchRec(solution, round + 1, outerDepthBound, extraArities))
-            } else {
-                Debug.log { "Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}" }
-                Stats.event(
-                    "counterexample",
-                    mapOf("search" to statsId, "positive" to ctrex.second, "example" to ctrex.first)
+        val found = mutableListOf<SearchState>()
+        for (outerDepthBound in depths) {
+            Debug.log { "Current query: ${nextQueryAndSeed.second} with depth bound $outerDepthBound" }
+            val statsId =
+                Stats.newSearch(
+                    round,
+                    outerDepthBound,
+                    scheduled[round],
+                    nextQueryAndSeed.first.posNoSubexprs.size,
+                    nextQueryAndSeed.first.neg.size
                 )
-                if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
-                observationalOracle = null
+            val search =
+                Search(
+                    nextQueryAndSeed.second,
+                    nextQueryAndSeed.first,
+                    oracle(),
+                    config.copy(depthBound = outerDepthBound),
+                    statsId,
+                    extraArities
+                )
+
+            for (solution in search.solutions()) {
+                if (found.any { it.equivalentTo(solution) }) continue
+                found.add(solution)
+                Debug.log { "Looking for counterexamples for potential solution $solution" }
+                val ctrex =
+                    Stats.phase(statsId, Phase.CEGIS) {
+                        CEGISCheck(nextQueryAndSeed.first, solution, languageGroundTruth::valid) { s, e ->
+                            OneUnification(s, listOf(e)).ok
+                        }
+                            .counterexample()
+                            ?.also { Stats.inc(if (it.second) Count.CEGIS_POS else Count.CEGIS_NEG) }
+                    }
+                if (ctrex == null) {
+                    Debug.log { "Found no counterexamples" }
+                    yieldAll(searchRec(solution, round + 1, depths, extraArities))
+                } else {
+                    Debug.log { "Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}" }
+                    Stats.event(
+                        "counterexample",
+                        mapOf("search" to statsId, "positive" to ctrex.second, "example" to ctrex.first)
+                    )
+                    if (ctrex.second) posExamples.add(ctrex.first) else negExamples.add(ctrex.first)
+                    observationalOracle = null
+                }
             }
         }
     }
 
     /**
-     * Each outer depth bound in turn. Only if none of them gives a solution, again with labels allowed
-     * one more parameter than the solver's bounds, and so on up to [Configuration.extraArities]: the
-     * bounds come from heuristics, which can be too low. A round with no solution at a small depth
-     * bound is common, and fails fast only with the solver's bounds, so the extra arities wait until
-     * every depth bound has failed.
+     * Each outer depth bound in turn, or with [Configuration.depthPerRound] all of them in each round.
+     * Only if none of them gives a solution, again with labels allowed one more parameter than the
+     * solver's bounds, and so on up to [Configuration.extraArities]: the bounds come from heuristics,
+     * which can be too low. A round with no solution at a small depth bound is common, and fails fast
+     * only with the solver's bounds, so the extra arities wait until every depth bound has failed.
      */
     fun search(): Sequence<SearchState> = sequence {
         val extras = if (config.labelArities is LabelArities.Solved) 0..config.extraArities else 0..0
+        val passes =
+            if (config.depthPerRound) listOf(0 until config.depthBound)
+            else (0 until config.depthBound).map { it..it }
         for (extra in extras) {
             if (extra > 0) {
                 Debug.log { "No solution with label arities up to the solver's bounds + ${extra - 1}" }
                 Stats.event("extraArities", mapOf("extra" to extra))
             }
             var found = false
-            for (outerDepth in 0 until config.depthBound) {
-                for (solution in searchRec(committedSeed, round = 0, outerDepth, extra)) {
+            for (depths in passes) {
+                for (solution in searchRec(committedSeed, round = 0, depths, extra)) {
                     found = true
                     yield(solution)
                 }
