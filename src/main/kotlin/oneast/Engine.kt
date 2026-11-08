@@ -234,9 +234,18 @@ class Engine(
         outcome.conflicts += if (outcome.solved) (0 until i).toSet() else conflicts
     }
 
-    /** The steps of [path] before its last whose names [examples] use. */
+    /**
+     * The steps of [path] before its last whose names are used by those of [examples] that use the
+     * last step's names. The other examples use only earlier steps' names, whose types are fixed.
+     */
     private fun dependencies(path: List<Step>, examples: Examples): Set<Int> {
-        val used = (examples.posNoSubexprs + examples.neg).flatMap { it.names }.toSet()
+        val own = names(path.last()).toSet()
+        val used =
+            (examples.posNoSubexprs + examples.neg)
+                .map { it.names }
+                .filter { names -> names.any { it in own } }
+                .flatten()
+                .toSet()
         return path.indices.filter { j -> j < path.lastIndex && names(path[j]).any { it in used } }.toSet()
     }
 
