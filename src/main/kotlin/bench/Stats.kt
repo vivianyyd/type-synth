@@ -19,6 +19,8 @@ enum class Count(val key: String, val nanos: Boolean = false) {
     PRUNED_POS("prunedPos"),
     /** Rounds searched again as one, to resolve a clash. See [oneast.Engine.resolveClashes]. */
     RESOLVES("resolves"),
+    /** Steps that skipped their other solutions. See [oneast.Configuration.backjump]. */
+    BACKJUMPS("backjumps"),
     /** States in which some negative example type-checks however the holes are filled. */
     PRUNED_NEG("prunedNeg"),
     /** Finished states rejected by the negative examples after concretizing. */

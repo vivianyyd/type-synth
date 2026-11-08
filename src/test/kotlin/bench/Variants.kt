@@ -45,6 +45,9 @@ object Variants {
             Variant("depth-per-round", "Each round tries every outer depth bound before going back a round") {
                 it.copy(depthPerRound = true)
             },
+            Variant("backjump", "Go back to the latest round a failure depends on, not the round before") {
+                it.copy(backjump = true)
+            },
             Variant(
                 "ocaml-toplevel",
                 "Ask OCaml about examples with ${OCamlGroundTruth.Toplevel.description}",

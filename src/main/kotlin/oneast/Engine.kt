@@ -146,24 +146,30 @@ class Engine(
      * of [path] is seeded by a solution of the step before it. The step tries each outer depth bound
      * in [depths] in turn, skipping solutions a smaller bound found, and resolves the clashes of all
      * of them only after that. [resolved] holds the merged steps already searched in this call of
-     * [search], by their seed's [SearchState.id] and rounds.
+     * [search], by their seed's [SearchState.id] and rounds, with what each search found out.
+     * [outcome] gets what this call found out.
      */
     private fun searchRec(
         path: List<Step>,
         depths: IntRange,
         extraArities: Int,
-        resolved: MutableSet<Pair<Int, IntRange>>,
+        resolved: MutableMap<Pair<Int, IntRange>, Outcome>,
+        outcome: Outcome,
     ): Sequence<SearchState> = sequence {
+        val i = path.lastIndex
         val step = path.last()
         val nextQueryAndSeed = buildNextQuery(step)
 
         if (nextQueryAndSeed == null) {
+            outcome.solved = true
             yield(step.seed)
             return@sequence
         }
         val found = mutableListOf<SearchState>()
         val clashes = mutableSetOf<Set<Int>>()
-        for (outerDepthBound in depths) {
+        // Whether this step has a solution depends only on the types of the names its examples use
+        val conflicts = dependencies(path, nextQueryAndSeed.first).toMutableSet()
+        depths@ for (outerDepthBound in depths) {
             Debug.log { "Current query: ${nextQueryAndSeed.second} with depth bound $outerDepthBound" }
             val statsId =
                 Stats.newSearch(
@@ -198,7 +204,19 @@ class Engine(
                 if (ctrex == null) {
                     Debug.log { "Found no counterexamples" }
                     val next = step.rounds.last + 1
-                    yieldAll(searchRec(path + Step(solution, next..next), depths, extraArities, resolved))
+                    val rest = Outcome()
+                    yieldAll(searchRec(path + Step(solution, next..next), depths, extraArities, resolved, rest))
+                    if (rest.solved) outcome.solved = true
+                    else if (config.backjump && i !in rest.conflicts && !outcome.solved) {
+                        // The rest fails whatever this step's solution is: go back to the latest step
+                        // it depends on, skipping this step's other solutions
+                        Stats.inc(Count.BACKJUMPS)
+                        Stats.event("backjump", mapOf("from" to i, "to" to rest.conflicts.maxOrNull()))
+                        conflicts.clear()
+                        conflicts += rest.conflicts
+                        clashes += search.clashes
+                        break@depths
+                    } else conflicts += rest.conflicts - i
                 } else {
                     Debug.log { "Adding ${if (ctrex.second) "+" else "-"} counterexample ${ctrex.first}" }
                     Stats.event(
@@ -212,7 +230,14 @@ class Engine(
             clashes += search.clashes
         }
 
-        yieldAll(resolveClashes(path, clashes, depths, extraArities, resolved))
+        yieldAll(resolveClashes(path, clashes, depths, extraArities, resolved, outcome, conflicts))
+        outcome.conflicts += if (outcome.solved) (0 until i).toSet() else conflicts
+    }
+
+    /** The steps of [path] before its last whose names [examples] use. */
+    private fun dependencies(path: List<Step>, examples: Examples): Set<Int> {
+        val used = (examples.posNoSubexprs + examples.neg).flatMap { it.names }.toSet()
+        return path.indices.filter { j -> j < path.lastIndex && names(path[j]).any { it in used } }.toSet()
     }
 
     /**
@@ -224,13 +249,18 @@ class Engine(
      * An earlier step's examples may not have forced two values to share a label that a later step
      * needs them to share. Searching both steps as one, from a seed without those labels, lets the
      * values get one label without any step changing a label it was given.
+     *
+     * Marks [outcome] solved if one of the searches is, and adds to [conflicts] the steps the
+     * failures of the others depend on.
      */
     private fun resolveClashes(
         path: List<Step>,
         clashes: Set<Set<Int>>,
         depths: IntRange,
         extraArities: Int,
-        resolved: MutableSet<Pair<Int, IntRange>>,
+        resolved: MutableMap<Pair<Int, IntRange>, Outcome>,
+        outcome: Outcome,
+        conflicts: MutableSet<Int>,
     ): Sequence<SearchState> = sequence {
         // The labels each step created: those in the next step's seed but not its own
         val created = path.zipWithNext { s, next -> next.seed.labelArities.keys - s.seed.labelArities.keys }
@@ -240,14 +270,21 @@ class Engine(
                 .toSortedMap(reverseOrder())
         for ((start, startClashes) in clashesByStart) {
             val merged = Step(path[start].seed, path[start].rounds.first..path.last().rounds.last)
-            if (!resolved.add(merged.seed.id to merged.rounds)) continue
+            val again = resolved[merged.seed.id to merged.rounds]
+            if (again != null) {
+                // Searched already, from the same seed, so it ends the same way
+                if (again.solved) outcome.solved = true else conflicts += again.conflicts
+                continue
+            }
             Stats.inc(Count.RESOLVES)
             Stats.event(
                 "resolve",
                 mapOf("from" to merged.rounds.first, "to" to merged.rounds.last, "clashes" to startClashes)
             )
             Debug.log { "Clashes $startClashes: searching rounds ${merged.rounds} again as one" }
-            yieldAll(searchRec(path.take(start) + merged, depths, extraArities, resolved))
+            val outcomeOfMerged = Outcome().also { resolved[merged.seed.id to merged.rounds] = it }
+            yieldAll(searchRec(path.take(start) + merged, depths, extraArities, resolved, outcomeOfMerged))
+            if (outcomeOfMerged.solved) outcome.solved = true else conflicts += outcomeOfMerged.conflicts
         }
     }
 
@@ -271,7 +308,7 @@ class Engine(
             var found = false
             for (depths in passes) {
                 val path = listOf(Step(committedSeed, 0..0))
-                for (solution in searchRec(path, depths, extra, resolved = HashSet())) {
+                for (solution in searchRec(path, depths, extra, resolved = HashMap(), Outcome())) {
                     found = true
                     yield(solution)
                 }
@@ -286,6 +323,19 @@ class Engine(
  * [Engine.resolveClashes] merged several.
  */
 private class Step(val seed: SearchState, val rounds: IntRange)
+
+/** What a call of [Engine.searchRec] found out about the last step of its path. */
+private class Outcome {
+    /** Whether it yielded a solution. */
+    var solved = false
+
+    /**
+     * If it did not, the steps of the path, by index, that its failure depends on: as long as their
+     * solutions stay the same, so does the failure. All are before the last step. See
+     * [Configuration.backjump].
+     */
+    val conflicts = mutableSetOf<Int>()
+}
 
 /*
 Another option that could've worked:

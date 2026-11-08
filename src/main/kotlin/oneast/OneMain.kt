@@ -92,10 +92,18 @@ data class Configuration(
     val oracle: OracleKind = OracleKind.Types,
     /**
      * Whether each round tries every outer depth bound before the search goes back to the round
-     * before it or re-solves earlier rounds for a clash. Otherwise all rounds share one outer depth bound, and only when no choice of earlier
-     * rounds' solutions gives a solution at that bound does the search start again at the next.
+     * before it or re-solves earlier rounds for a clash. Otherwise all rounds share one outer depth
+     * bound, and only when no choice of earlier rounds' solutions gives a solution at that bound does
+     * the search start again at the next.
      */
     val depthPerRound: Boolean = false,
+    /**
+     * Whether a step whose later steps fail, for a reason that depends only on steps before it,
+     * skips its other solutions and goes back to the latest of those steps (conflict-directed
+     * backjumping). A step's failure depends on the steps whose names its examples use, and on what
+     * the failures of the steps after it, and of its re-solves, depend on.
+     */
+    val backjump: Boolean = false,
 )
 
 enum class OracleKind {

@@ -42,6 +42,7 @@ METRICS = {
     "prunedNegFinal": ("pruned - final", str),
     "relabeled": ("relabeled", str),
     "resolves": ("re-solves", str),
+    "backjumps": ("backjumps", str),
     "outlines": ("outlines", str),
     "seeds": ("seeds", str),
     "arityUnsat": ("arity unsat", str),
