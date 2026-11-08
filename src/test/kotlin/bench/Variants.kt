@@ -56,7 +56,7 @@ object Variants {
 
     /** `names-per-round=N`, which is not in [all] since it takes a number N. */
     const val PER_ROUND = "names-per-round="
-    const val PER_ROUND_DESCRIPTION = "Solve for N names per round"
+    const val PER_ROUND_DESCRIPTION = "Solve for N names per round, in benchmarks that choose rounds automatically"
 
     /** `size-bound=N`, which is not in [all] since it takes a number N. */
     const val SIZE = "size-bound="
@@ -74,7 +74,9 @@ object Variants {
             name.startsWith(SIZE) -> Variant("$SIZE${number()}", SIZE_DESCRIPTION) { it.copy(sizeBound = number()) }
             name.startsWith(DEPTH) -> Variant("$DEPTH${number()}", DEPTH_DESCRIPTION) { it.copy(depthBound = number()) }
             name.startsWith(PER_ROUND) ->
-                Variant("$PER_ROUND${number()}", PER_ROUND_DESCRIPTION) { it.copy(scheduleInfo = Auto(number())) }
+                Variant("$PER_ROUND${number()}", PER_ROUND_DESCRIPTION) {
+                    if (it.scheduleInfo is Auto) it.copy(scheduleInfo = Auto(number())) else it
+                }
             else -> all[name] ?: error("No variant named $name. Try --list")
         }
     }
