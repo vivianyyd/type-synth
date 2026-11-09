@@ -945,6 +945,10 @@
 (List.map succ (List.filter_map Option.some (List.cons Num Nil)))
 (List.map not (List.filter_map Option.some (List.cons Num Nil)))
 (List.filter_map (List.nth_opt (List.cons Str Nil)) (List.filter_map Option.some (List.cons Num Nil)))
+(List.cons Str (List.filter_map Option.some (List.cons Str Nil)))
+(List.cons Num (List.filter_map Option.some (List.cons Str Nil)))
+(List.cons Str (List.filter_map (List.assoc_opt Num) (List.cons (List.cons (Pair.make Num Str) Nil) Nil)))
+(List.cons Num (List.filter_map (List.assoc_opt Num) (List.cons (List.cons (Pair.make Num Str) Nil) Nil)))
 
 // ---- pairs: partition, assoc family, split, combine, fold_left_map ----
 
