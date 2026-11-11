@@ -46,10 +46,10 @@ enum class SearchStrategyKind {
             sizeBound: Int,
             depthBound: Int,
             expansions: Expansions,
-            clashes: MutableSet<Set<Int>>
+            onClash: (Set<Int>) -> Unit
         ) =
             DFSEnumerator(
-                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, expansions, clashes
+                examples, emitLabelBlanks, emitConstructors, sizeBound, depthBound, expansions, onClash
             )
     };
 
@@ -60,7 +60,7 @@ enum class SearchStrategyKind {
         sizeBound: Int,
         depthBound: Int,
         expansions: Expansions,
-        clashes: MutableSet<Set<Int>>
+        onClash: (Set<Int>) -> Unit
     ): SearchStrategy
 }
 

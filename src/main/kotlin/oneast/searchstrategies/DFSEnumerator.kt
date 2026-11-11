@@ -18,7 +18,7 @@ class DFSEnumerator(
      * Gets the labels whenever the positive examples need two labels to be equal: when a state fails
      * to unify because of them, or when a hole is unified with both.
      */
-    private val clashes: MutableSet<Set<Int>>,
+    private val onClash: (Set<Int>) -> Unit,
 ) : SearchStrategy(examples) {
     override fun candidates(c: SearchState): Sequence<SearchState> {
         val u = posUnification(c)
@@ -95,8 +95,8 @@ class DFSEnumerator(
             }
     }
 
-    /** Adds [labels] to [clashes], unless there are none. */
+    /** Passes [labels] to [onClash], unless there are none. */
     private fun clash(labels: Set<Int>) {
-        if (labels.isNotEmpty()) clashes.add(labels)
+        if (labels.isNotEmpty()) onClash(labels)
     }
 }

@@ -31,6 +31,21 @@ enum class Count(val key: String, val nanos: Boolean = false) {
     ARITY_UNSAT("arityUnsat"),
     /** Seeds handed to concretization, one per choice of label arities. */
     SEEDS("seeds"),
+    /**
+     * Outlines with two labels merged because they clashed while concretizing, before the checks
+     * below. See [oneast.Search.mergedOutlines].
+     */
+    MERGES("merges"),
+    /** Merged outlines already searched or queued at their seed depth. */
+    MERGES_DUPLICATE("mergesDuplicate"),
+    /** Merged outlines that fail to unify with the positive examples. */
+    MERGES_PRUNED_POS("mergesPrunedPos"),
+    /** Merged outlines in which some negative example type-checks however they are concretized. */
+    MERGES_PRUNED_NEG("mergesPrunedNeg"),
+    /** Merged outlines with no label arities that fit. Also counted in [ARITY_UNSAT]. */
+    MERGES_ARITY_UNSAT("mergesArityUnsat"),
+    /** Solutions from merged outlines. Also counted in [SOLUTIONS]. */
+    MERGED_SOLUTIONS("mergedSolutions"),
     SOLVER_CALLS("solverCalls"),
     /** Summed across the threads that call the solver, so it can exceed the wall-clock time. */
     SOLVER_NANOS("solverMs", nanos = true),

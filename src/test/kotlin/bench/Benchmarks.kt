@@ -88,15 +88,22 @@ private fun labelMergeAfterHelpers(name: String, vararg rounds: List<String>) =
 
 /**
  * p's label is fixed only through k q p, by q's parameter, which m q fixes. An outline gives p a new
- * label of its own, so no search with the solver's label arities finds q a type, and re-solving the
- * rounds as one doesn't help. With one more parameter allowed, M gets two and the answer is wrong.
+ * label of its own, which clashes with lv's while concretizing q, so the search merges the two
+ * labels (see oneast.Search.mergedOutlines).
  */
 private val labelMerge =
     listOf(
-        sexp("label-merge"),
         labelMergeAfterHelpers("label-merge-pq", listOf("p", "q")),
         labelMergeAfterHelpers("label-merge-p-q", listOf("p"), listOf("q")),
     )
+
+/**
+ * label-merge in one round. Concretizing fills k's parameter, then m's, then mk's, so when it fills
+ * m's, nothing says it is L. It only gets a variable, which accepts m (mk one), so concretizing
+ * reaches no clash to merge. With Expansions.Simple it does, and finds the answer. With
+ * one more parameter allowed, M gets two and the answer is wrong.
+ */
+private val labelMergeOneRound = sexp("label-merge")
 
 /**
  * Only the negative eq l1 l4 tells l1 from l4: k l1 nil and k nil l4 bind no label of theirs, and a
@@ -145,8 +152,10 @@ object Benchmarks {
                                         .map { it.map(::ocamlName) }
                                 )
                         )
-                    ),
-            "sexp-unsolved" to listOf("list-and-dict", "option", "pair").map(::sexp) + labelMerge + nilArity,
+                    ) +
+                    labelMerge,
+            "sexp-unsolved" to
+                listOf("list-and-dict", "option", "pair").map(::sexp) + labelMergeOneRound + nilArity,
             "ocaml" to ocamlModuleGroups.map(::ocaml),
         )
 
