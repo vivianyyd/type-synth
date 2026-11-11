@@ -141,6 +141,8 @@ class Search(
      * aren't, the higher becomes the lower. Two committed labels are left to
      * [Engine.resolveClashes]. A merged outline gets its own arities from the solver and its own
      * concretization, and can clash and be merged again. Each merge removes a label, so this ends.
+     * A clash names two labels, so a hole unified with more of them has its labels merged a pair at
+     * a time, one merged outline after another.
      *
      * Sound: each search is as it would be without merging, but for the merged outlines after it,
      * which are concretized and checked like any other. A merge is a label map, so positive

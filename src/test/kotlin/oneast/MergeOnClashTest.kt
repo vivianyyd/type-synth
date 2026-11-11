@@ -9,13 +9,14 @@ import kotlin.test.assertTrue
  * label-merge.sexp, with its helpers in a first round: p's label is fixed only through k q p, by
  * q's parameter, which m q fixes. Its outline gives p a new label, which clashes with lv's while
  * concretizing q, so the search merges the two labels (see [Search.mergedOutlines]).
+ * label-merge-3.sexp adds r, which k q r ties to q's parameter the same way.
  */
 class MergeOnClashTest {
     private val helpers = listOf("one", "lv", "nv", "inc", "mk", "k", "m", "n")
 
     /** With no parameters past the solver's bounds, so M keeps its one parameter. */
-    private fun assertSolvedAfterHelpers(vararg rounds: List<String>) {
-        val query = loadQueryFromFile("label-merge")
+    private fun assertSolvedAfterHelpers(vararg rounds: List<String>, file: String = "label-merge") {
+        val query = loadQueryFromFile(file)
         val config =
             Configuration(
                 sizeBound = 20,
@@ -34,4 +35,12 @@ class MergeOnClashTest {
 
     @Test
     fun `p, then q`() = assertSolvedAfterHelpers(listOf("p"), listOf("q"))
+
+    /**
+     * p and r get new labels of their own, so q's parameter is unified with three labels. A clash
+     * names only two, so the search merges two of them, and the merged outline clashes again.
+     */
+    @Test
+    fun `p and r both need lv's label`() =
+        assertSolvedAfterHelpers(listOf("p", "q", "r"), file = "label-merge-3")
 }

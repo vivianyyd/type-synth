@@ -72,10 +72,10 @@ private fun ocamlChained(name: String, groups: List<OCamlModuleGroup>) =
         }
     )
 
-/** label-merge with a first round of every name but p and q, then [rounds]. */
-private fun labelMergeAfterHelpers(name: String, vararg rounds: List<String>) =
+/** [file] with a first round of the helpers, the names that p, q and r's examples use, then [rounds]. */
+private fun labelMergeAfterHelpers(name: String, vararg rounds: List<String>, file: String = "label-merge") =
     sexp(
-        "label-merge",
+        file,
         sexpDefaults.copy(
             scheduleInfo =
                 CustomSchedule(
@@ -89,12 +89,14 @@ private fun labelMergeAfterHelpers(name: String, vararg rounds: List<String>) =
 /**
  * p's label is fixed only through k q p, by q's parameter, which m q fixes. An outline gives p a new
  * label of its own, which clashes with lv's while concretizing q, so the search merges the two
- * labels (see oneast.Search.mergedOutlines).
+ * labels (see oneast.Search.mergedOutlines). label-merge-3 adds r, tied to q's parameter by k q r
+ * the same way, so the parameter is unified with three labels and takes two merges.
  */
 private val labelMerge =
     listOf(
         labelMergeAfterHelpers("label-merge-pq", listOf("p", "q")),
         labelMergeAfterHelpers("label-merge-p-q", listOf("p"), listOf("q")),
+        labelMergeAfterHelpers("label-merge-3", listOf("p", "q", "r"), file = "label-merge-3"),
     )
 
 /**
