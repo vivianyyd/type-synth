@@ -54,14 +54,21 @@ class ParameterwiseDependencyAnalysis(
             val currFixed = fixed[name]!!
             val currConstrained = constrained[name]!!
 
+            // Parameter k is constrained when a negative example fails at its kth argument, and
+            // that argument's type is accepted at k in some positive example. Then the failure
+            // can't be a label mismatch: the argument's labels fit the parameter. It must be
+            // that the argument doesn't share a variable with earlier arguments the way the
+            // parameter requires.
+            // Requires: negative examples only fail on the LAST argument.
             negExs.forEach { neg ->
-                // requires: negative examples only fail on the LAST argument
-                if (neg.args.size > 1 &&
-                    arities[neg.name]!! > neg.args.size &&
-                    !currConstrained[neg.args.size - 1] &&
-                    prefixChecker.lookup(FlatApp(neg.name, neg.args.dropLast(1)))
+                val k = neg.args.size - 1
+                if (k > 0 &&
+                    arity > neg.args.size &&
+                    !currConstrained[k] &&
+                    prefixChecker.lookup(FlatApp(neg.name, neg.args.dropLast(1))) &&
+                    posExs.any { k < it.args.size && oracle.flatEqual(it.args[k], neg.args[k]) }
                 ) {
-                    currConstrained[neg.args.size - 1] = true
+                    currConstrained[k] = true
                 }
             }
 
