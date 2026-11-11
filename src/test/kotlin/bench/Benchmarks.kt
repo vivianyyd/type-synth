@@ -98,6 +98,29 @@ private val labelMerge =
         labelMergeAfterHelpers("label-merge-p-q", listOf("p"), listOf("q")),
     )
 
+/**
+ * Only the negative eq l1 l4 tells l1 from l4: k l1 nil and k nil l4 bind no label of theirs, and a
+ * nullary label would give l1 and l4 the same type. They need L's parameter, with nil polymorphic.
+ */
+private val nilArity =
+    listOf(
+        sexp("nil-arity"),
+        sexp(
+            "nil-arity",
+            sexpDefaults.copy(
+                scheduleInfo =
+                    CustomSchedule(
+                        listOf(
+                            listOf("one", "tt", "inc", "not", "sing", "length", "k", "eq"),
+                            listOf("l1", "nil", "l4"),
+                        )
+                            .map { it.map(::ocamlName) }
+                    )
+            ),
+            "nil-arity-after-helpers",
+        ),
+    )
+
 object Benchmarks {
     val suites: Map<String, List<Benchmark>> =
         linkedMapOf(
@@ -123,7 +146,7 @@ object Benchmarks {
                                 )
                         )
                     ),
-            "sexp-unsolved" to listOf("list-and-dict", "option", "pair").map(::sexp) + labelMerge,
+            "sexp-unsolved" to listOf("list-and-dict", "option", "pair").map(::sexp) + labelMerge + nilArity,
             "ocaml" to ocamlModuleGroups.map(::ocaml),
         )
 
