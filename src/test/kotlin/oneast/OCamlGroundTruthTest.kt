@@ -54,9 +54,22 @@ class OCamlGroundTruthTest {
         wellTyped.forEach { assertTrue(typer.validSource(it), it) }
     }
 
+    /**
+     * The groups whose examples are checked: all of them, or those the system property
+     * typesynth.groundTruthGroups names, separated by commas, to check only groups just edited.
+     * `./gradlew test` doesn't forward system properties, so pass it as
+     * `JAVA_TOOL_OPTIONS="-Dtypesynth.groundTruthGroups=weak_mod"`.
+     */
+    private val groups =
+        System.getProperty("typesynth.groundTruthGroups")?.split(",")?.map { it.trim() }?.let { names ->
+            ocamlModuleGroups.filter { it.name in names }.also {
+                require(it.size == names.size) { "Unknown groups in $names" }
+            }
+        } ?: ocamlModuleGroups
+
     @Test
     fun `every subexpression of the OCaml benchmarks' examples`() {
-        val (examples, _) = loadFromExsFiles(ocamlModuleGroups.flatMap { it.files })
+        val (examples, _) = loadFromExsFiles(groups.flatMap { it.files })
         assertAgree(examples.flatMap { it.subexprs() }.distinct().map { OCamlSource().of(it) })
     }
 
