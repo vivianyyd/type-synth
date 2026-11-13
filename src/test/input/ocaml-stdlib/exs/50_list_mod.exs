@@ -612,7 +612,21 @@
 (List.equal Option.value)
 (List.sort (Option.fold Num))
 
-// to_seq, of_seq: Seq.t only flows through
+// to_seq, of_seq. seq_core builds and consumes sequences, so these tie the result of to_seq and
+// the argument of of_seq to the Seq label itself, not just to a label of one parameter.
+(Seq.length (List.to_seq (List.cons Num Nil)))
+(Seq.for_all ((=) Num) (List.to_seq (List.cons Num Nil)))
+(Seq.for_all ((=) Str) (List.to_seq (List.cons Str Nil)))
+(Seq.for_all ((=) Num) (List.to_seq (List.cons Str Nil)))
+(Seq.for_all ((=) Str) (List.to_seq (List.cons Num Nil)))
+(List.of_seq (Seq.return Num))
+(List.of_seq Seq.empty)
+(List.of_seq (Seq.cons Str Seq.empty))
+(List.of_seq Num)
+(List.hd (List.of_seq (Seq.return Num)))
+(not (List.hd (List.of_seq (Seq.return Num))))
+((=) (List.of_seq (Seq.return Num)) (List.cons Num Nil))
+((=) (List.of_seq (Seq.return Num)) (List.cons Str Nil))
 (List.to_seq (List.cons Num Nil))
 (List.to_seq (List.cons Str Nil))
 (List.to_seq (List.cons true Nil))

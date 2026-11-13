@@ -88,12 +88,16 @@ checks before the examples. The search never sees the prelude, only .types files
 ## Names left out
 
 - **Nothing is in `skippedNames`** (`OCamlStdlib.kt`), the set whose names' examples are left out.
-  `List.to_seq` and `List.of_seq` were in it from 2026-10-29: `to_seq` was solved first, with a Seq
-  label of no parameter, and a later round can't give a committed label one, so `of_seq` had no
-  solution. The `seq_core` group (above) removes the cause -- `Seq` reaches `list` already at one
-  parameter, so `to_seq`'s round can't commit it at none -- and the set is empty again as of
-  2026-11-12. The `list` group has not been benchmarked since, so whether its 52 `to_seq`/`of_seq`
-  examples now solve is unmeasured; `list` takes about 37 minutes when it succeeds.
+  `List.to_seq` and `List.of_seq` were in it from 2026-10-29, because `to_seq` was solved first with
+  a Seq label of no parameter and a later round can't give a committed label one, so `of_seq` had no
+  solution. Two changes retired it, both on 2026-11-12. The `seq_core` group (above) gives `Seq` its
+  parameter before `list` runs. That alone left both names wrong (69/71 exact, cost 2): the arity was
+  right but the search made a *fresh* label of one parameter, because `list`'s examples only passed a
+  sequence through List's own functions and nothing tied it to `Seq` itself. `50_list_mod.exs` now
+  ties it with `seq_core`'s consumers -- `(Seq.for_all ((=) Num) (List.to_seq (List.cons Num Nil)))`
+  against `(Seq.for_all ((=) Num) (List.to_seq (List.cons Str Nil)))`, and `List.of_seq` applied to
+  `Seq.return`, `Seq.cons` and `Seq.empty`. `ocaml-list` is then correct, 71/71 exact in 965 s with
+  `--variant depth-per-round,names-per-round=1,depth-bound=6,backjump`.
 - **Bigarray functions of `In_channel` and `Out_channel`**: `input_bigarray`, `really_input_bigarray`
   and `output_bigarray`. `Bigarray` has no group, so no example can build the argument.
 - **`Result.Syntax`**: `( let* )`, `( and* )`, `( let+ )` and `( and+ )`. Examples can't name an
@@ -216,18 +220,6 @@ checks before the examples. The search never sees the prelude, only .types files
   can make two `Id.t` arguments share a parameter either (that takes a `let`). The search picks
   the smallest arity, 0, for both types. Leaving `provably_equal` out would not help: `make` and
   `uid` have the same problem.
-- **`buffer_mod`** times out with the default settings (1800 s limit; stopped after 17 minutes in round 2) and with
-  `--variant names-per-round=1,depth-bound=6` on `resolve-on-clash` (3000 s). Its examples agree with OCaml and the .types file. With the default 3 names per
-  round, the round of `add_substitute`, `length` and `add_subbytes` has no answer in
-  the time (the three types need size about 27 of the 30-hole bound). With 1 name per round, `add_substitute` is found in 35 s, but `to_seqi` (`(int * char) Seq.t`) needs
-  outer depth 2 and every earlier round succeeds at depth 1, so the search resolves label clashes at depth 1
-  (re-searching ever larger merged rounds) before it tries depth 2.
-- **`array_mod`** is not solved within 30 minutes, with the default settings or with
-  `names-per-round=1,depth-bound=6` (also on `resolve-on-clash`). Every name up to `fold_left_map` gets
-  its true type. `fold_left_map` has no solution at outer depth 2 (its type nests a pair in a function
-  result in a function parameter), so the pass at depth 2 goes on to resolve clashes by re-solving a
-  round of all earlier names, which takes most of the time. With only `fold_left_map` and a few other
-  names, `resolve-on-clash` finds it at depth 3 in 10 minutes.
 - **`iarray_mod`** times out (1800 s). With the default settings it times out at 1000 s in the rounds around
   `Iarray.fold_left_map`, which needs outer depth 3. With `names-per-round=1,depth-bound=6` on
   `resolve-on-clash` it was correct (39/39, 249 s) before it depended on `array_mod`; now `Array.make` is given
@@ -262,16 +254,30 @@ checks before the examples. The search never sees the prelude, only .types files
   type parameters; the true types have `('minor, 'major) tracker`. Only the fields of a tracker (a record, which
   examples can't use) mention the parameters, and `null_tracker` is the only tracker, so no example can show them.
   Every other name gets its true type, with either setting, in a few seconds.
-- **`format_mod`** is not solved: the default settings run out of memory (4 GB) in the outline phase of round 0 at
+## Settings some groups need
+
+- **`buffer_mod`** is correct with `--variant depth-per-round,names-per-round=1,depth-bound=6,backjump` (40/40 exact; batch `2026-11-08_153240` at
+  commit `6d9943e`, an ancestor of `constrained-needs-positive`). Why it used to be hard: it times out with the default settings (1800 s limit; stopped after 17 minutes in round 2) and with
+  `--variant names-per-round=1,depth-bound=6` on `resolve-on-clash` (3000 s). Its examples agree with OCaml and the .types file. With the default 3 names per
+  round, the round of `add_substitute`, `length` and `add_subbytes` has no answer in
+  the time (the three types need size about 27 of the 30-hole bound). With 1 name per round, `add_substitute` is found in 35 s, but `to_seqi` (`(int * char) Seq.t`) needs
+  outer depth 2 and every earlier round succeeds at depth 1, so the search resolves label clashes at depth 1
+  (re-searching ever larger merged rounds) before it tries depth 2.
+- **`array_mod`** is correct with `--variant depth-per-round,names-per-round=1,depth-bound=6,backjump` (48/48 exact; batch `2026-11-08_153240` at
+  commit `6d9943e`, an ancestor of `constrained-needs-positive`). Why it used to be hard: it was not solved within 30 minutes, with the default settings or with
+  `names-per-round=1,depth-bound=6` (also on `resolve-on-clash`). Every name up to `fold_left_map` gets
+  its true type. `fold_left_map` has no solution at outer depth 2 (its type nests a pair in a function
+  result in a function parameter), so the pass at depth 2 goes on to resolve clashes by re-solving a
+  round of all earlier names, which takes most of the time. With only `fold_left_map` and a few other
+  names, `resolve-on-clash` finds it at depth 3 in 10 minutes.
+- **`format_mod`** is correct with `--variant depth-per-round,names-per-round=1,depth-bound=6,backjump` (143/143 exact; batch `2026-11-08_153240` at
+  commit `6d9943e`, an ancestor of `constrained-needs-positive`). Why it used to be hard: the default settings ran out of memory (4 GB) in the outline phase of round 0 at
   outer depth 2 after 20 minutes, and `--variant names-per-round=1,depth-bound=6` on `resolve-on-clash` times out
   (1800 s). Its examples agree with OCaml and the .types file. `pp_print_iter` (`(('a -> unit) -> 'b -> unit) -> ...`)
   needs outer depth 2, so its round fails at depth 1 over and over, and each failure that clashes labels re-searches
   the earlier rounds merged (the same cause as `dynarray_mod`). The formatter's label also clashes with unit's and
   option's after the round of `pp_print_option`, which merges rounds 0 to 5 again. With only the formatter constants,
   `pp_print_int`, `pp_print_string` and `pp_print_option` (83 examples) it is correct in 380 s on `resolve-on-clash`.
-
-## Settings some groups need
-
 `map_mod` and `seq_mod` are correct with `--variant names-per-round=1,depth-bound=6`. `list`,
 `pair_mod`, `either_mod`, `result_mod` and `float_mod` are correct only on branch `resolve-on-clash`, with
 that variant. `queue_mod` was in that list; with `seq_core` it is correct with the default settings
