@@ -114,7 +114,11 @@ class Engine(
         val newSize = oldSize + scheduledRound.size
         val newNames = state.names + (scheduledRound.zip(oldSize until newSize))
 
-        fun takeExs(exs: Collection<Example>) = exs.filter { newNames.keys.containsAll(it.names) }
+        // An example that uses none of the step's names only uses types that are fixed already, so it
+        // passes whatever the step finds: leave it out rather than check it for every candidate.
+        val stepNames = scheduledRound.toSet()
+        fun takeExs(exs: Collection<Example>) =
+            exs.filter { ex -> newNames.keys.containsAll(ex.names) && ex.names.any { it in stepNames } }
         val nextExamples = Examples(takeExs(posExamples), takeExs(negExamples))
 
         val nextState =
