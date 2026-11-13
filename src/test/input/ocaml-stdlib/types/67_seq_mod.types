@@ -1,14 +1,11 @@
 // Seq
 // type 'a t = unit -> 'a node
 // type +'a node = Nil | Cons of 'a * 'a t
-val is_empty : 'a t -> bool
 val uncons : 'a t -> ('a * 'a t) option
-val length : 'a t -> int
 val iter : ('a -> unit) -> 'a t -> unit
 val fold_left : ('acc -> 'a -> 'acc) -> 'acc -> 'a t -> 'acc
 val iteri : (int -> 'a -> unit) -> 'a t -> unit
 val fold_lefti : ('acc -> int -> 'a -> 'acc) -> 'acc -> 'a t -> 'acc
-val for_all : ('a -> bool) -> 'a t -> bool
 val exists : ('a -> bool) -> 'a t -> bool
 val find : ('a -> bool) -> 'a t -> 'a option
 val find_index : ('a -> bool) -> 'a t -> int option
@@ -20,9 +17,6 @@ val for_all2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 val exists2 : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 val equal : ('a -> 'b -> bool) -> 'a t -> 'b t -> bool
 val compare : ('a -> 'b -> int) -> 'a t -> 'b t -> int
-val empty : 'a t
-val return : 'a -> 'a t
-val cons : 'a -> 'a t -> 'a t
 val singleton : 'a -> 'a t
 val init : int -> (int -> 'a) -> 'a t
 val unfold : ('b -> ('a * 'b) option) -> 'b -> 'a t

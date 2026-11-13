@@ -1,0 +1,13 @@
+// Seq
+// The part of Seq that every other module needs: enough to build a sequence and to see its
+// element type. Seq's own file (67_seq_mod.types) has the rest. Split out because `Seq.t` appears
+// in Option, List, String, Hashtbl and a dozen more modules, while Seq's own examples need lists,
+// arrays and options, so `seq_mod` can only come last; without this group every earlier module
+// commits `Seq` with no parameter. See DEVIATIONS.md.
+// type 'a t = unit -> 'a node
+val empty : 'a t
+val return : 'a -> 'a t
+val cons : 'a -> 'a t -> 'a t
+val is_empty : 'a t -> bool
+val length : 'a t -> int
+val for_all : ('a -> bool) -> 'a t -> bool

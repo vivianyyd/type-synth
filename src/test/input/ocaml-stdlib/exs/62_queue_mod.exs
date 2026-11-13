@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 50_list_mod.types, 57_option_mod.types, 76_pair_mod.types, 62_queue_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 50_list_mod.types, 57_option_mod.types, 62_queue_mod.types, 76_pair_mod.types, 80_seq_core_mod.types
 
 // Queue.t has a type parameter and every queue below is a fresh (Queue.create Unit), so (Queue.create Unit)
 // can't be named or reused. Its element type is fixed only by what the consumers around it need.

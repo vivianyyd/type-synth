@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 8_char.types, 9_unit.types, 11_pair.types, 57_option_mod.types, 76_pair_mod.types, 50_list_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 8_char.types, 9_unit.types, 11_pair.types, 50_list_mod.types, 57_option_mod.types, 76_pair_mod.types, 80_seq_core_mod.types
 
 (List.cons Num (List.cons Num Nil))
 (List.cons true (List.cons true Nil))

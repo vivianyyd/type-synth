@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 11_pair.types, 40_fun_mod.types, 50_list_mod.types, 57_option_mod.types, 76_pair_mod.types, 51_map_mod.types, 79_triple_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 11_pair.types, 40_fun_mod.types, 50_list_mod.types, 51_map_mod.types, 57_option_mod.types, 76_pair_mod.types, 79_triple_mod.types, 80_seq_core_mod.types
 //
 // StrMap is Map.Make (String): keys are strings (Str), values are of any type.
 // Pinning a result: compare it with (=) to a value built from singleton/empty, positive and negative.

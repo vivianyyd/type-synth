@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 8_char.types, 9_unit.types, 11_pair.types, 26_bytes_mod.types, 28_char_mod.types, 40_fun_mod.types, 46_int32_mod.types, 47_int64_mod.types, 50_list_mod.types, 57_option_mod.types, 70_string_mod.types, 73_uchar_mod.types, 76_pair_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 8_char.types, 9_unit.types, 11_pair.types, 26_bytes_mod.types, 28_char_mod.types, 40_fun_mod.types, 46_int32_mod.types, 47_int64_mod.types, 50_list_mod.types, 57_option_mod.types, 70_string_mod.types, 73_uchar_mod.types, 76_pair_mod.types, 80_seq_core_mod.types
 
 // The first part, up to "Generated", was written first. Generated: examples for the functions String has
 // no counterpart of, and for bytes where a string goes. The rest is 70_string_mod.exs with bytes in place of

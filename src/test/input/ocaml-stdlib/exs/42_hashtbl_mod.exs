@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 40_fun_mod.types, 50_list_mod.types, 57_option_mod.types, 76_pair_mod.types, 42_hashtbl_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 40_fun_mod.types, 42_hashtbl_mod.types, 50_list_mod.types, 57_option_mod.types, 76_pair_mod.types, 80_seq_core_mod.types
 
 // Hashtbl.t has two type parameters, keys and values. A fresh (Hashtbl.create Num) fits any key and
 // value types, so negatives about them need tables of known types, built with of_seq from a list of pairs:

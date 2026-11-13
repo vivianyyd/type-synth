@@ -225,10 +225,10 @@ fun ocamlModulesQuery(
 
 /**
  * Names the search doesn't solve for now: examples that use one are left out, unless the search starts
- * with its type. `List.to_seq` gets a Seq label with no parameter, and a later round can't give the
- * label one, so `List.of_seq` has no solution.
+ * with its type. Empty: the `seq_core` group gives `Seq` its parameter before any module that uses it,
+ * which is what `List.to_seq` and `List.of_seq` needed.
  */
-val skippedNames = setOf("List.to_seq", "List.of_seq")
+val skippedNames = emptySet<String>()
 
 /**
  * Modules solved together, from the examples in [files]. [deps] names the groups whose names
@@ -257,18 +257,45 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
         OCamlModuleGroup("bool_mod", listOf("24_bool_mod"), deps = listOf("boolean", "comparison", "float", "str")),
         OCamlModuleGroup("char_mod", listOf("28_char_mod"), deps = listOf("boolean", "char", "comparison", "str")),
         OCamlModuleGroup("unit_mod", listOf("74_unit_mod"), deps = listOf("boolean", "comparison", "unit")),
-        OCamlModuleGroup("option_mod", listOf("57_option_mod"), deps = listOf("boolean", "comparison", "str", "unit")),
+        // Seq's own examples need lists, arrays and options, so seq_mod can only come last, while `Seq.t` is in
+        // a dozen earlier modules. seq_core comes first, with the part of Seq that gives the label its parameter.
+        OCamlModuleGroup("seq_core", listOf("80_seq_core_mod"), deps = listOf("arith", "boolean", "comparison")),
+        OCamlModuleGroup(
+            "option_mod",
+            listOf("57_option_mod"),
+            deps = listOf(
+                "boolean", "comparison", "seq_core", "str", "unit"
+            )
+        ),
         OCamlModuleGroup("strconv", listOf("10_strconv"), deps = listOf("boolean", "comparison", "float", "option_mod")),
         OCamlModuleGroup(
-            "list", listOf("50_list_mod"), deps = listOf("boolean", "char", "comparison", "option_mod", "pair", "unit")
+            "list",
+            listOf("50_list_mod"),
+            deps = listOf(
+                "boolean", "char", "comparison", "option_mod", "pair", "seq_core", "unit"
+            )
         ),
-        OCamlModuleGroup("queue_mod", listOf("62_queue_mod"), deps = listOf("list", "option_mod", "str", "unit")),
+        OCamlModuleGroup(
+            "queue_mod",
+            listOf("62_queue_mod"),
+            deps = listOf(
+                "list", "option_mod", "seq_core", "str", "unit"
+            )
+        ),
         OCamlModuleGroup("fun_mod", listOf("40_fun_mod"), deps = listOf("boolean", "comparison", "str", "unit")),
         OCamlModuleGroup(
-            "string_mod", listOf("70_string_mod"), deps = listOf("char_mod", "fun_mod", "list", "option_mod", "str")
+            "string_mod",
+            listOf("70_string_mod"),
+            deps = listOf(
+                "char_mod", "fun_mod", "list", "option_mod", "seq_core", "str"
+            )
         ),
         OCamlModuleGroup(
-            "map_mod", listOf("51_map_mod"), deps = listOf("fun_mod", "list", "option_mod", "str", "triple_mod")
+            "map_mod",
+            listOf("51_map_mod"),
+            deps = listOf(
+                "fun_mod", "list", "option_mod", "seq_core", "str", "triple_mod"
+            )
         ),
         OCamlModuleGroup(
             "composition", listOf("3_composition"), deps = listOf("arith", "boolean", "comparison", "float", "strconv")
@@ -280,9 +307,19 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("14_stdout"),
             deps = listOf("boolean", "char", "comparison", "float", "option_mod", "str", "string_mod", "unit")
         ),
-        OCamlModuleGroup("stack_mod", listOf("69_stack_mod"), deps = listOf("list", "option_mod", "stdout", "str", "unit")),
         OCamlModuleGroup(
-            "hashtbl_mod", listOf("42_hashtbl_mod"), deps = listOf("fun_mod", "list", "option_mod", "str", "unit")
+            "stack_mod",
+            listOf("69_stack_mod"),
+            deps = listOf(
+                "list", "option_mod", "seq_core", "stdout", "str", "unit"
+            )
+        ),
+        OCamlModuleGroup(
+            "hashtbl_mod",
+            listOf("42_hashtbl_mod"),
+            deps = listOf(
+                "fun_mod", "list", "option_mod", "seq_core", "str", "unit"
+            )
         ),
         OCamlModuleGroup(
             "either_mod",
@@ -293,7 +330,8 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             "result_mod",
             listOf("64_result_mod"),
             deps = listOf(
-                "boolean", "comparison", "list", "option_mod", "pair_mod", "queue_mod", "stdout", "str", "strconv", "unit"
+                "boolean", "comparison", "list", "option_mod", "pair_mod", "queue_mod", "seq_core", "stdout", "str",
+                "strconv", "unit"
             )
         ),
         OCamlModuleGroup(
@@ -381,7 +419,7 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("26_bytes_mod"),
             deps = listOf(
                 "arith", "boolean", "char", "char_mod", "comparison", "fun_mod", "int32_mod", "int64_mod", "list",
-                "option_mod", "pair", "pair_mod", "str", "string_mod", "uchar_mod", "unit"
+                "option_mod", "pair", "pair_mod", "seq_core", "str", "string_mod", "uchar_mod", "unit"
             )
         ),
         OCamlModuleGroup(
@@ -395,21 +433,24 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
         OCamlModuleGroup(
             "float_mod",
             listOf("38_float_mod"),
-            deps = listOf("arith", "boolean", "comparison", "float", "fun_mod", "list", "option_mod", "pair_mod", "unit")
+            deps = listOf(
+                "arith", "boolean", "comparison", "float", "fun_mod", "list", "option_mod", "pair_mod", "seq_core", "unit"
+            )
         ),
         OCamlModuleGroup(
             "buffer_mod",
             listOf("25_buffer_mod"),
             deps = listOf(
                 "arith", "boolean", "bytes_mod", "char", "char_mod", "comparison", "fun_mod", "int32_mod", "int64_mod",
-                "io", "list", "option_mod", "pair", "pair_mod", "str", "string_mod", "uchar_mod", "unit"
+                "io", "list", "option_mod", "pair", "pair_mod", "seq_core", "str", "string_mod", "uchar_mod", "unit"
             )
         ),
         OCamlModuleGroup(
             "array_mod",
             listOf("22_array_mod"),
             deps = listOf(
-                "arith", "boolean", "comparison", "float", "list", "option_mod", "pair", "stdout", "str", "strconv", "unit"
+                "arith", "boolean", "comparison", "float", "list", "option_mod", "pair", "seq_core", "stdout", "str",
+                "strconv", "unit"
             )
         ),
         OCamlModuleGroup(
@@ -457,7 +498,7 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("43_iarray_mod"),
             deps = listOf(
                 "arith", "array_mod", "boolean", "char", "comparison", "float", "fun_mod", "list", "option_mod", "pair_mod",
-                "stdout", "str", "strconv", "unit"
+                "seq_core", "stdout", "str", "strconv", "unit"
             )
         ),
         // The Seq values come from `List.to_seq`.
@@ -465,8 +506,8 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             "dynarray_mod",
             listOf("33_dynarray_mod"),
             deps = listOf(
-                "arith", "array_mod", "boolean", "char", "comparison", "float", "fun_mod", "iarray_mod", "list", "option_mod",
-                "stdout", "str", "strconv", "unit"
+                "arith", "array_mod", "boolean", "char", "comparison", "float", "fun_mod", "iarray_mod", "list",
+                "option_mod", "seq_core", "stdout", "str", "strconv", "unit"
             )
         ),
         // The `int array` arguments of `Random.State.make` and `Random.full_init` come from `Iarray.to_array`.
@@ -560,7 +601,7 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("39_format_mod"),
             deps = listOf(
                 "arith", "array_mod", "boolean", "buffer_mod", "comparison", "domain_mod", "either_mod", "fun_mod", "io",
-                "list", "option_mod", "pair_mod", "result_mod", "string_mod", "triple_mod", "unit"
+                "list", "option_mod", "pair_mod", "result_mod", "seq_core", "string_mod", "triple_mod", "unit"
             )
         ),
         // StrSet = Set.Make (String). The Seq values come from `List.to_seq`, `split`'s result is taken apart
@@ -569,8 +610,8 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             "set_mod",
             listOf("68_set_mod"),
             deps = listOf(
-                "arith", "boolean", "comparison", "fun_mod", "list", "option_mod", "pair", "pair_mod", "ref", "str",
-                "strconv", "triple_mod", "unit"
+                "arith", "boolean", "comparison", "fun_mod", "list", "option_mod", "pair", "pair_mod", "ref", "seq_core",
+                "str", "strconv", "triple_mod", "unit"
             )
         ),
         // IntMinQueue = Pqueue.MakeMin (Int). The `int array` arguments come from `Array.make`, `Array.of_list` and
@@ -598,7 +639,7 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
             listOf("67_seq_mod"),
             deps = listOf(
                 "arith", "array_mod", "bool_mod", "boolean", "char_mod", "comparison", "either_mod", "fun_mod", "int_mod",
-                "list", "list_ops", "option_mod", "pair_mod", "ref", "stdout", "str", "strconv", "unit"
+                "list", "list_ops", "option_mod", "pair_mod", "ref", "seq_core", "stdout", "str", "strconv", "unit"
             )
         ),
         // Sys.Break is an exn, which only `callback_mod` takes; argv and readdir are string arrays; interactive is a ref
@@ -627,12 +668,15 @@ val ocamlModuleGroups: List<OCamlModuleGroup> =
 fun ocamlModuleGroup(name: String): OCamlModuleGroup =
     ocamlModuleGroups.find { it.name == name } ?: error("No OCaml module group named $name")
 
-/** [group] and the groups it depends on, directly or not, in [ocamlModuleGroups]' order. */
-fun withDependencies(group: OCamlModuleGroup): List<OCamlModuleGroup> {
+/** [groups] and the groups they depend on, directly or not, in [ocamlModuleGroups]' order. */
+fun withDependencies(groups: List<OCamlModuleGroup>): List<OCamlModuleGroup> {
     val needed = mutableSetOf<String>()
     fun visit(name: String) {
         if (needed.add(name)) ocamlModuleGroup(name).deps.forEach(::visit)
     }
-    visit(group.name)
+    groups.forEach { visit(it.name) }
     return ocamlModuleGroups.filter { it.name in needed }
 }
+
+/** [group] and the groups it depends on, directly or not, in [ocamlModuleGroups]' order. */
+fun withDependencies(group: OCamlModuleGroup): List<OCamlModuleGroup> = withDependencies(listOf(group))

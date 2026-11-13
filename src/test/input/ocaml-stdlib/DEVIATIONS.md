@@ -38,6 +38,23 @@ checks before the examples. The search never sees the prelude, only .types files
   3-tuples, in the style of `Pair`. Examples can't build or take apart a tuple, and the stdlib has
   no functions for 3-tuples, so without it nothing pins `StrMap.split`'s result. Approved 2026-11-06.
 
+## Modules split across groups
+
+- **`Seq` is two groups.** `80_seq_core_mod.types` (group `seq_core`) has `empty`, `return`, `cons`,
+  `is_empty`, `length` and `for_all`; `67_seq_mod.types` (group `seq_mod`) has the rest. Both files
+  head with `// Seq`, so both declare the same module, and `Seq.t` is one label across them.
+  The reason is an ordering cycle: `Seq.t` is in the types of Option, List, String, Hashtbl, Queue,
+  Stack, Map, Set, Array, Iarray, Dynarray, Bytes, Buffer, Float, Result and Format, but `Seq`'s own
+  examples need lists, arrays, options and either, so `seq_mod` can only come last. Before the split,
+  every earlier module saw `Seq` only as a function's result type -- `Option.to_seq : 'a option -> 'a Seq.t`
+  with nothing that takes a sequence apart -- so no example could show its parameter and the search
+  committed `Seq` with no parameter. `seq_core` comes before `option_mod`, the first module that
+  mentions `Seq`, and depends only on `arith`, `boolean` and `comparison`. Its `for_all` examples are
+  what give the label its parameter: `(Seq.for_all ((=) Num) (Seq.return Num))` is positive and
+  `(Seq.for_all ((=) Num) (Seq.return Str))` is negative, and the negative type-checks if `Seq.t` has
+  no parameter. Every group whose types mention `Seq` depends on `seq_core`, so the label and the six
+  names are given to it. Approved 2026-11-12.
+
 ## Constructors that are names
 
 - **`open_flag`'s constructors** (`Open_rdonly`, `Open_wronly`, `Open_append`, `Open_creat`,
@@ -130,6 +147,15 @@ checks before the examples. The search never sees the prelude, only .types files
   `Sys.signal_to_string`'s and `Sys.signal_of_int`'s `signal` is `int`, as in the stdlib.
 - **Weak**: the functor `Weak.Make` and the module type `Weak.S` (`Hashtbl` leaves out its functors for the same reason).
   `75_weak_mod` has the 8 values of `Weak` itself.
+- **Names whose type needs a module scheduled later have no examples**, so they are left out of
+  their group's benchmark, although the .types file declares them. Nothing available when the group
+  runs can take the result apart, so no example can show its type. `57_option_mod.exs` leaves out
+  `Option.to_list`, `to_result` and `to_seq` (16 names declared, 13 solved), and `62_queue_mod.exs`
+  leaves out `Queue.to_seq`, `add_seq` and `of_seq`; each .exs file says so in a comment on its
+  first lines. This is why no group before `seq_mod` ever returned a wrong `Seq` type: the names
+  were absent, not wrong. The `seq_core` group (above) makes the `Seq` ones writable; the examples
+  still have to be written.
+
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of

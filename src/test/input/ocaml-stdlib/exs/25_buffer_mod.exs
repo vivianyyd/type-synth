@@ -1,4 +1,4 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 8_char.types, 9_unit.types, 11_pair.types, 13_io.types, 25_buffer_mod.types, 26_bytes_mod.types, 28_char_mod.types, 40_fun_mod.types, 46_int32_mod.types, 47_int64_mod.types, 50_list_mod.types, 57_option_mod.types, 70_string_mod.types, 73_uchar_mod.types, 76_pair_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 8_char.types, 9_unit.types, 11_pair.types, 13_io.types, 25_buffer_mod.types, 26_bytes_mod.types, 28_char_mod.types, 40_fun_mod.types, 46_int32_mod.types, 47_int64_mod.types, 50_list_mod.types, 57_option_mod.types, 70_string_mod.types, 73_uchar_mod.types, 76_pair_mod.types, 80_seq_core_mod.types
 
 // The first part was written first. Generated: examples for each function that doesn't take a function
 // or a Seq.t, then add_substitute and the Seq functions (through List.to_seq and List.of_seq), then examples

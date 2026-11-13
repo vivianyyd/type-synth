@@ -161,15 +161,20 @@ object Benchmarks {
             "ocaml" to ocamlModuleGroups.map(::ocaml),
         )
 
-    /** The groups that ocaml-GROUP solves in seconds, as one chain. */
+    /**
+     * The groups that ocaml-GROUP solves in seconds, as one chain, with their dependencies: a
+     * dependency left out would make the chain solve its names again instead of being given them.
+     */
     private val fastChain =
         ocamlChained(
             "ocaml-chained-fast",
-            listOf(
-                "basics", "comparison", "arith", "boolean", "char", "bitwise", "str", "unit", "pair_mod", "pair",
-                "float", "bool_mod", "char_mod", "unit_mod", "option_mod", "strconv", "fun_mod",
+            withDependencies(
+                listOf(
+                    "basics", "comparison", "arith", "boolean", "char", "bitwise", "str", "unit", "pair_mod", "pair",
+                    "float", "bool_mod", "char_mod", "unit_mod", "option_mod", "strconv", "fun_mod",
+                )
+                    .map(::ocamlModuleGroup)
             )
-                .map(::ocamlModuleGroup)
         )
 
     /**
