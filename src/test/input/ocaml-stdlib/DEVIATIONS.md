@@ -87,10 +87,13 @@ checks before the examples. The search never sees the prelude, only .types files
 
 ## Names left out
 
-- **`List.to_seq`, `List.of_seq`** (`skippedNames` in `OCamlStdlib.kt`): examples that need the
-  search to solve them are left out. Approved as temporary on 2026-10-29. Cause: `to_seq` is solved
-  first, with a Seq label of no parameter, and a later round can't give the label one, so `of_seq`
-  has no solution. `queue_mod` is still given `List.to_seq`'s true type. Undo by emptying the set.
+- **Nothing is in `skippedNames`** (`OCamlStdlib.kt`), the set whose names' examples are left out.
+  `List.to_seq` and `List.of_seq` were in it from 2026-10-29: `to_seq` was solved first, with a Seq
+  label of no parameter, and a later round can't give a committed label one, so `of_seq` had no
+  solution. The `seq_core` group (above) removes the cause -- `Seq` reaches `list` already at one
+  parameter, so `to_seq`'s round can't commit it at none -- and the set is empty again as of
+  2026-11-12. The `list` group has not been benchmarked since, so whether its 52 `to_seq`/`of_seq`
+  examples now solve is unmeasured; `list` takes about 37 minutes when it succeeds.
 - **Bigarray functions of `In_channel` and `Out_channel`**: `input_bigarray`, `really_input_bigarray`
   and `output_bigarray`. `Bigarray` has no group, so no example can build the argument.
 - **`Result.Syntax`**: `( let* )`, `( and* )`, `( let+ )` and `( and+ )`. Examples can't name an
@@ -149,13 +152,11 @@ checks before the examples. The search never sees the prelude, only .types files
   `75_weak_mod` has the 8 values of `Weak` itself.
 - **Names whose type needs a module scheduled later have no examples**, so they are left out of
   their group's benchmark, although the .types file declares them. Nothing available when the group
-  runs can take the result apart, so no example can show its type. `57_option_mod.exs` leaves out
-  `Option.to_list`, `to_result` and `to_seq` (16 names declared, 13 solved), and `62_queue_mod.exs`
-  leaves out `Queue.to_seq`, `add_seq` and `of_seq`; each .exs file says so in a comment on its
-  first lines. This is why no group before `seq_mod` ever returned a wrong `Seq` type: the names
-  were absent, not wrong. The `seq_core` group (above) makes the `Seq` ones writable; the examples
-  still have to be written.
-
+  runs can take the result apart, so no example can show its type. Two cases are left:
+  `57_option_mod.exs` leaves out `Option.to_list` and `to_result` (16 names declared, 14 solved),
+  and says so in a comment on its first lines; `50_list_mod.exs` leaves out `List.partition_map`,
+  whose result needs `Either` (group `either_mod`, after `list`). The `Seq` results were in this
+  list until the `seq_core` group (above) gave `Seq` its parameter before every module that uses it.
 - **A dependency's names that its own examples don't use** aren't given to a group; the group has
   to solve them, as a chain would.
 - **`20_result`** has no group: it declares only the type `('a, 'b) result = Ok of 'a | Error of
@@ -271,9 +272,10 @@ checks before the examples. The search never sees the prelude, only .types files
 
 ## Settings some groups need
 
-`map_mod` and `seq_mod` are correct with `--variant names-per-round=1,depth-bound=6`. `list`, `queue_mod`,
+`map_mod` and `seq_mod` are correct with `--variant names-per-round=1,depth-bound=6`. `list`,
 `pair_mod`, `either_mod`, `result_mod` and `float_mod` are correct only on branch `resolve-on-clash`, with
-that variant. `pair_mod`, `either_mod` and `result_mod` time out (1800 s) with the variant alone, against 30 s,
+that variant. `queue_mod` was in that list; with `seq_core` it is correct with the default settings
+(20/20 exact in 5.4 s, measured 2026-11-12). `pair_mod`, `either_mod` and `result_mod` time out (1800 s) with the variant alone, against 30 s,
 62 s and 405 s on `resolve-on-clash`; `list` and `float_mod` also time out with it alone, but that run had 7
 benchmarks at once, and they take 2197 s and 1475 s on `resolve-on-clash`. Other groups are correct with the
 default settings, except those under "Known wrong results". With the default settings, `float_mod` times

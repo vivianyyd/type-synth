@@ -1,6 +1,6 @@
-// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 57_option_mod.types
+// 0_basics.types, 1_comparison.types, 2_boolean.types, 4_arith.types, 7_str.types, 9_unit.types, 57_option_mod.types, 80_seq_core_mod.types
 
-// to_list, to_result and to_seq need lists, results and sequences, which come later
+// to_list and to_result need lists and results, which come later
 
 // some: 'a -> 'a option
 (Option.some Num)
@@ -271,6 +271,24 @@ Option.none
 (succ (Option.compare Option.compare (Option.some Num) (Option.some Num)))
 ((^) (Option.some Str) Str)
 ((=) (Option.get (Option.some Num)) (Option.get (Option.some Str)))
+
+// to_seq: 'a option -> 'a Seq.t. seq_core consumes sequences, so Seq.for_all's predicate is what
+// shows the element type: the mismatched negatives below refuse 'a option -> 'b Seq.t.
+(Option.to_seq (Option.some Num))
+(Option.to_seq (Option.some Str))
+(Option.to_seq (Option.some Char))
+(Option.to_seq Option.none)
+(Option.to_seq Num)
+(Option.to_seq Seq.empty)
+(Seq.length (Option.to_seq (Option.some Str)))
+(Seq.for_all ((=) Num) (Option.to_seq (Option.some Num)))
+(Seq.for_all ((=) Str) (Option.to_seq (Option.some Str)))
+(Seq.for_all not (Option.to_seq (Option.some true)))
+(Seq.for_all ((=) Num) (Option.to_seq (Option.some Str)))
+(Seq.for_all ((=) Str) (Option.to_seq (Option.some Num)))
+(Seq.for_all not (Option.to_seq (Option.some Num)))
+(succ (Option.to_seq (Option.some Num)))
+(Option.get (Option.to_seq (Option.some Num)))
 
 // Lambdas. The loader replaces each `fun` with a placeholder and keeps only the subexpressions
 // without one, so for now these add little.

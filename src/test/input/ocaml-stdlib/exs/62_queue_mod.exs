@@ -2,7 +2,6 @@
 
 // Queue.t has a type parameter and every queue below is a fresh (Queue.create Unit), so (Queue.create Unit)
 // can't be named or reused. Its element type is fixed only by what the consumers around it need.
-// to_seq, add_seq and of_seq need Seq.t, which comes later.
 
 // create: unit -> 'a t. Element type is free: queues of ints, strings, bools, queues, lists, options
 (Queue.create Unit)
